@@ -1,0 +1,2 @@
+/Users/roma/StudioProjects/cab_drive/android/app/.cxx/RelWithDebInfo/3a375431/x86_64/CMakeFiles/edit_cache.dir
+/Users/roma/StudioProjects/cab_drive/android/app/.cxx/RelWithDebInfo/3a375431/x86_64/CMakeFiles/rebuild_cache.dir
