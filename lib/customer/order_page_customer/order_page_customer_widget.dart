@@ -462,13 +462,17 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                       .circular(
                                                                           12.0),
                                                               child:
-                                                                  Image.network(
-                                                                containerUsersRecord
-                                                                    .photoUrl,
+                                                                  custom_widgets
+                                                                      .UserAvatarImage(
+                                                                imageUrl:
+                                                                    containerUsersRecord
+                                                                        .photoUrl,
                                                                 width: 60.0,
                                                                 height: 80.0,
-                                                                fit: BoxFit
-                                                                    .cover,
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            12.0),
                                                               ),
                                                             ),
                                                           ),
@@ -504,6 +508,9 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                           .displayName,
                                                                       maxLines:
                                                                           1,
+                                                                      overflow:
+                                                                          TextOverflow
+                                                                              .ellipsis,
                                                                       style: FlutterFlowTheme.of(
                                                                               context)
                                                                           .bodyMedium
@@ -553,10 +560,11 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                             8.0,
                                                                             0.0,
                                                                             0.0),
-                                                                    child: Row(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .max,
+                                                                    child: Wrap(
+                                                                      spacing:
+                                                                          4.0,
+                                                                      runSpacing:
+                                                                          4.0,
                                                                       children:
                                                                           [
                                                                         if (containerUsersRecord.numberOfReviews !=
@@ -693,6 +701,8 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                                 ),
                                                                                 Text(
                                                                                   containerUsersRecord.car.nomer,
+                                                                                  maxLines: 1,
+                                                                                  overflow: TextOverflow.ellipsis,
                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                         fontFamily: 'SF',
                                                                                         color: Color(0xFFA4A6B2),
@@ -1416,13 +1426,17 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                       .circular(
                                                                           12.0),
                                                               child:
-                                                                  Image.network(
-                                                                containerUsersRecord
-                                                                    .photoUrl,
+                                                                  custom_widgets
+                                                                      .UserAvatarImage(
+                                                                imageUrl:
+                                                                    containerUsersRecord
+                                                                        .photoUrl,
                                                                 width: 60.0,
                                                                 height: 80.0,
-                                                                fit: BoxFit
-                                                                    .cover,
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            12.0),
                                                               ),
                                                             ),
                                                           ),
@@ -1458,6 +1472,9 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                           .displayName,
                                                                       maxLines:
                                                                           1,
+                                                                      overflow:
+                                                                          TextOverflow
+                                                                              .ellipsis,
                                                                       style: FlutterFlowTheme.of(
                                                                               context)
                                                                           .bodyMedium
@@ -1507,10 +1524,11 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                             8.0,
                                                                             0.0,
                                                                             0.0),
-                                                                    child: Row(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .max,
+                                                                    child: Wrap(
+                                                                      spacing:
+                                                                          4.0,
+                                                                      runSpacing:
+                                                                          4.0,
                                                                       children:
                                                                           [
                                                                         if (containerUsersRecord.numberOfReviews !=
@@ -1647,6 +1665,8 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                                 ),
                                                                                 Text(
                                                                                   containerUsersRecord.car.nomer,
+                                                                                  maxLines: 1,
+                                                                                  overflow: TextOverflow.ellipsis,
                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                         fontFamily: 'SF',
                                                                                         color: Color(0xFFA4A6B2),
@@ -2532,26 +2552,49 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                             ),
                                             child: Container(
                                               width: double.infinity,
-                                              height: 150.0,
-                                              child: custom_widgets.YandexOrderMap(
-                                                width: double.infinity,
-                                                height: 150.0,
-                                                startLatLng:
-                                                    orderPageCustomerOrderRecord
-                                                        .pointA.latlng!,
-                                                endLatLng:
-                                                    orderPageCustomerOrderRecord
-                                                        .pointB.latlng!,
-                                                driverLocation:
-                                                    orderPageCustomerOrderRecord
-                                                        .driverLocation,
-                                                showDriver:
-                                                    orderPageCustomerOrderRecord
-                                                            .status ==
-                                                        StatusOrder.at_work &&
-                                                    orderPageCustomerOrderRecord
-                                                        .hasDriverLocation(),
-                                                isStatic: true,
+                                              height: 300.0,
+                                              child: Builder(
+                                                builder: (context) {
+                                                  final order =
+                                                      orderPageCustomerOrderRecord;
+                                                  final showDriver = (order
+                                                                  .status ==
+                                                              StatusOrder
+                                                                  .at_work ||
+                                                          order.status ==
+                                                              StatusOrder
+                                                                  .spec_set) &&
+                                                      order.hasDriverLocation();
+                                                  const apiKey =
+                                                      'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY';
+
+                                                  if (showDriver) {
+                                                    return custom_widgets
+                                                        .DriverTrackingMap(
+                                                      width: double.infinity,
+                                                      height: 300.0,
+                                                      googleApiKey: apiKey,
+                                                      startLatLng:
+                                                          order.pointA.latlng!,
+                                                      endLatLng:
+                                                          order.pointB.latlng!,
+                                                      driverLocation:
+                                                          order.driverLocation!,
+                                                      isStatic: true,
+                                                    );
+                                                  }
+                                                  return custom_widgets
+                                                      .PolylineMap(
+                                                    width: double.infinity,
+                                                    height: 300.0,
+                                                    googleApiKey: apiKey,
+                                                    startLatLng:
+                                                        order.pointA.latlng!,
+                                                    endLatLng:
+                                                        order.pointB.latlng!,
+                                                    isStatic: true,
+                                                  );
+                                                },
                                               ),
                                             ),
                                           ),

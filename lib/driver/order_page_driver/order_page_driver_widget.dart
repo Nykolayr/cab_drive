@@ -1985,13 +1985,17 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                 BorderRadius
                                                                     .circular(
                                                                         8.0),
-                                                            child:
-                                                                Image.network(
-                                                              containerUsersRecord
-                                                                  .photoUrl,
+                                                            child: custom_widgets
+                                                                .UserAvatarImage(
+                                                              imageUrl:
+                                                                  containerUsersRecord
+                                                                      .photoUrl,
                                                               width: 45.0,
                                                               height: 60.0,
-                                                              fit: BoxFit.cover,
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          8.0),
                                                             ),
                                                           ),
                                                         ),
@@ -2463,25 +2467,17 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                   width: double.infinity,
                                                   height: 150.0,
                                                   child: custom_widgets
-                                                      .YandexOrderMap(
+                                                      .PolylineMap(
                                                     width: double.infinity,
                                                     height: 150.0,
+                                                    googleApiKey:
+                                                        'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
                                                     startLatLng:
                                                         orderPageDriverOrderRecord
                                                             .pointA.latlng!,
                                                     endLatLng:
                                                         orderPageDriverOrderRecord
                                                             .pointB.latlng!,
-                                                    driverLocation:
-                                                        orderPageDriverOrderRecord
-                                                            .driverLocation,
-                                                    showDriver:
-                                                        orderPageDriverOrderRecord
-                                                                .status ==
-                                                            StatusOrder
-                                                                .at_work &&
-                                                        orderPageDriverOrderRecord
-                                                            .hasDriverLocation(),
                                                     isStatic: true,
                                                   ),
                                                 ),
@@ -2714,62 +2710,60 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                   ),
                                                   Column(
                                                     mainAxisSize:
-                                                        MainAxisSize.max,
+                                                        MainAxisSize.min,
                                                     crossAxisAlignment:
                                                         CrossAxisAlignment
                                                             .start,
                                                     children: [
-                                                      Expanded(
-                                                        child: Stack(
-                                                          alignment:
-                                                              AlignmentDirectional(
-                                                                  0.0, 0.0),
-                                                          children: [
-                                                            wrapWithModel(
-                                                              model: _model
-                                                                  .textInfoModel3,
-                                                              updateCallback: () =>
-                                                                  safeSetState(
-                                                                      () {}),
-                                                              child:
-                                                                  TextInfoWidget(
-                                                                tittle:
-                                                                    'Откуда',
-                                                                pole:
-                                                                    orderPageDriverOrderRecord
+                                                      Stack(
+                                                        alignment:
+                                                            AlignmentDirectional(
+                                                                0.0, 0.0),
+                                                        children: [
+                                                          wrapWithModel(
+                                                            model: _model
+                                                                .textInfoModel3,
+                                                            updateCallback: () =>
+                                                                safeSetState(
+                                                                    () {}),
+                                                            child:
+                                                                TextInfoWidget(
+                                                              tittle:
+                                                                  'Откуда',
+                                                              pole:
+                                                                  orderPageDriverOrderRecord
+                                                                      .pointA
+                                                                      .address,
+                                                            ),
+                                                          ),
+                                                          Align(
+                                                            alignment:
+                                                                AlignmentDirectional(
+                                                                    1.0, 0.0),
+                                                            child:
+                                                                FlutterFlowIconButton(
+                                                              buttonSize:
+                                                                  50.0,
+                                                              icon: Icon(
+                                                                Icons
+                                                                    .content_copy_outlined,
+                                                                color: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .tertiary,
+                                                                size: 20.0,
+                                                              ),
+                                                              onPressed:
+                                                                  () async {
+                                                                HapticFeedback
+                                                                    .heavyImpact();
+                                                                await Clipboard.setData(ClipboardData(
+                                                                    text: orderPageDriverOrderRecord
                                                                         .pointA
-                                                                        .address,
-                                                              ),
+                                                                        .fullAddress));
+                                                              },
                                                             ),
-                                                            Align(
-                                                              alignment:
-                                                                  AlignmentDirectional(
-                                                                      1.0, 0.0),
-                                                              child:
-                                                                  FlutterFlowIconButton(
-                                                                buttonSize:
-                                                                    50.0,
-                                                                icon: Icon(
-                                                                  Icons
-                                                                      .content_copy_outlined,
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .tertiary,
-                                                                  size: 20.0,
-                                                                ),
-                                                                onPressed:
-                                                                    () async {
-                                                                  HapticFeedback
-                                                                      .heavyImpact();
-                                                                  await Clipboard.setData(ClipboardData(
-                                                                      text: orderPageDriverOrderRecord
-                                                                          .pointA
-                                                                          .fullAddress));
-                                                                },
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
+                                                          ),
+                                                        ],
                                                       ),
                                                       Row(
                                                         mainAxisSize:

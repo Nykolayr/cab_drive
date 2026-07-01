@@ -80,17 +80,36 @@ class _ZakazNaKarteWidgetState extends State<ZakazNaKarteWidget> {
                 Builder(
                   builder: (context) {
                     final order = zakazNaKarteOrderRecord;
-                    return Container(
-                      width: double.infinity,
-                      height: double.infinity,
-                      child: custom_widgets.YandexOrderMap(
+                    final showDriver = (order.status == StatusOrder.at_work ||
+                            order.status == StatusOrder.spec_set) &&
+                        order.hasDriverLocation();
+
+                    if (showDriver) {
+                      return Container(
                         width: double.infinity,
                         height: double.infinity,
+                        child: custom_widgets.DriverTrackingMap(
+                          width: double.infinity,
+                          height: double.infinity,
+                          googleApiKey:
+                              'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
+                          startLatLng: order.pointA.latlng!,
+                          endLatLng: order.pointB.latlng!,
+                          driverLocation: order.driverLocation!,
+                        ),
+                      );
+                    }
+                    return Container(
+                      width: MediaQuery.sizeOf(context).width * 1.0,
+                      height: double.infinity,
+                      child: custom_widgets.PolylineMap(
+                        width: MediaQuery.sizeOf(context).width * 1.0,
+                        height: double.infinity,
+                        googleApiKey:
+                            'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
                         startLatLng: order.pointA.latlng!,
                         endLatLng: order.pointB.latlng!,
-                        driverLocation: order.driverLocation,
-                        showDriver: order.status == StatusOrder.at_work &&
-                            order.hasDriverLocation(),
+                        isStatic: false,
                       ),
                     );
                   },

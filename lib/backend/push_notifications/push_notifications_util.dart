@@ -25,12 +25,18 @@ Stream<UserTokenInfo> getFcmTokenStream(String userPath) =>
     Stream.value(!kIsWeb && (Platform.isIOS || Platform.isAndroid))
         .where((shouldGetToken) => shouldGetToken)
         .asyncMap<String?>(
-            (_) => FirebaseMessaging.instance.requestPermission().then(
-                  (settings) => settings.authorizationStatus ==
-                          AuthorizationStatus.authorized
-                      ? FirebaseMessaging.instance.getToken()
-                      : null,
-                ))
+          (_) async {
+            try {
+              final settings =
+                  await FirebaseMessaging.instance.requestPermission();
+              if (settings.authorizationStatus ==
+                  AuthorizationStatus.authorized) {
+                return await FirebaseMessaging.instance.getToken();
+              }
+            } catch (_) {}
+            return null;
+          },
+        )
         .switchMap((fcmToken) => Stream.value(fcmToken)
             .merge(FirebaseMessaging.instance.onTokenRefresh))
         .where((fcmToken) => fcmToken != null && fcmToken.isNotEmpty)

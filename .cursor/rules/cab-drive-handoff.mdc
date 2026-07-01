@@ -1,0 +1,35 @@
+---
+description: Cab Drive — не отдавать «готово» без verify_handoff и без чтения логов пользователя
+alwaysApply: true
+---
+
+# Cab Drive: сдача задачи (handoff)
+
+## Запрещено писать пользователю
+
+- «Должно работать» / «перезапусти и проверь» **без** своей проверки в этом же turn.
+
+## Обязательно перед «готово»
+
+1. **`scripts/verify_handoff.ps1`** — агент запускает сам (`powershell -File scripts/verify_handoff.ps1`).
+2. Если менялись **карты / плагины / нативка** — чеклист отката/замены:
+   - `pubspec.yaml` (зависимость удалена?)
+   - `android/app/build.gradle`, `MainActivity.kt`, `ios/Runner/AppDelegate.swift`
+   - `grep` по `yandex_mapkit`, `MapKit`, `YandexMaps`
+3. Если пользователь прислал **лог** — сначала строка с **первым `E/` / `Exception` / `AssertionError`**, потом правки. Не гадать про OTP/онбординг, если в логе уже есть stack trace.
+4. Критический путь после правок логина/карт: **логин → load → mainDriver/mainUser** — при сомнении `AppLog.trace` с `tag: 'Auth'` / `'Nav'` (см. `feature-trace-logs.mdc`), вычистить после подтверждения пользователя.
+
+## Замена карты (Google ↔ Yandex)
+
+Одна атомарная операция, не «только виджеты»:
+
+| Слой | Действие |
+|------|----------|
+| UI | `PolylineMap` / `DriverTrackingMap` / `FlutterFlowGoogleMap` |
+| pubspec | убрать/добавить `yandex_mapkit` |
+| Android/iOS | MapKit SDK, ключи, `MainActivity` |
+| main.dart | инициализация MapKit только если плагин в pubspec |
+
+## Пользователь не тестер
+
+Не просить «запусти и скажи» как единственную проверку. Сначала `verify_handoff` + analyze/build; ручной прогон на устройстве — только если нет эмулятора/девайса в CI и после автоматических проверок.

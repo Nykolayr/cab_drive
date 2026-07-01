@@ -1,41 +1,37 @@
 # Cab Drive — сборка APK по запросу «сделай апк»
 
-> Для агента. Проект: `cab_drive`, ветка по умолчанию для фич — `feat/yandex-maps-1.0.14` (или текущая рабочая).
+> Правило для агента: `.cursor/rules/cab-drive-apk-workflow.mdc` (alwaysApply).
 
-## Когда пользователь пишет «сделай апк» (или аналог)
+## Когда пользователь пишет «сделай апк»
 
 Выполнить **по порядку**, без лишних вопросов:
 
-1. **Повысить версию** в `pubspec.yaml`: увеличить **build number** после `+` на 1 (и при необходимости patch в `x.y.z`, чтобы совпадало с договорённостями; обычно `1.0.{build}+{build}`).
-2. **Собрать release APK** из корня `D:\Projects\cab_drive\cab_drive`:
+1. **Повысить версию** в `pubspec.yaml`: build после `+` на 1 (обычно `1.0.{build}+{build}`).
+2. **Собрать release APK**:
    ```powershell
-   flutter build apk --release `
-     --dart-define=ORS_API_KEY=<из local/joy_pick> `
-     --dart-define=YANDEX_MAPKIT_KEY=<из local.properties / kurort>
+   cd D:\Projects\cab_drive\cab_drive
+   flutter build apk --release
    ```
-   MapKit на Android также читает `yandex.maps.api.key` из `android/local.properties`.
-3. **Скопировать** артефакт в `D:\Temp\` с именем:
-   ```text
-   cabdrive_{buildNumber}.apk
+   Опционально (если ключ есть локально, не в git):
+   `--dart-define=ORS_API_KEY=...`
+3. **Скопировать** в `D:\Temp\`:
+   ```powershell
+   $build = 15   # число после + в pubspec
+   New-Item -ItemType Directory -Force -Path "D:\Temp" | Out-Null
+   Copy-Item -Force "build\app\outputs\flutter-apk\app-release.apk" "D:\Temp\cabdrive_$build.apk"
+   Get-Item "D:\Temp\cabdrive_$build.apk"
    ```
-   где `{buildNumber}` — число после `+` в `pubspec.yaml` (например `+15` → `cabdrive_15.apk`).
-4. **Git:** закоммитить bump версии (и только то, что нужно для сборки, если менялось), **push** в текущую рабочую ветку.
+4. **Git:** commit + **push** текущей ветки.
 
-## Имя файла (фиксировано для Cab Drive)
+## Имя файла (только Cab Drive)
 
 | Шаблон | Пример |
 |--------|--------|
-| `D:\Temp\cabdrive_{buildNumber}.apk` | `D:\Temp\cabdrive_14.apk` при `version: 1.0.14+14` |
+| `D:\Temp\cabdrive_{buildNumber}.apk` | `cabdrive_15.apk` при `1.0.15+15` |
 
-Не использовать шаблон `{slug}_1_{n}` из общего `android_release.md` для этого продукта — здесь только **`cabdrive_{build}`**.
-
-## Проверка после сборки
-
-```powershell
-Get-Item "D:\Temp\cabdrive_*.apk" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-```
+Не использовать `{slug}_1_{n}` из общего `android_release.md`.
 
 ## Заметки
 
-- Release сейчас подписан **debug keystore** в `build.gradle` — для RuStore/Play позже нужен release keystore.
-- `minSdk 26` (Yandex MapKit).
+- Release сейчас подписан debug keystore в `build.gradle` — для стора позже release keystore.
+- `verify_handoff.ps1` — отдельная проверка перед «готово», не заменяет этот сценарий.

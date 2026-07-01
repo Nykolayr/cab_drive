@@ -42,7 +42,7 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
   late MainDriverModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  LatLng? currentUserLocationValue;
+  LatLng currentUserLocationValue = LatLng(0.0, 0.0);
 
   @override
   void initState() {
@@ -109,7 +109,14 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
     });
 
     getCurrentUserLocation(defaultLocation: LatLng(0.0, 0.0), cached: true)
-        .then((loc) => safeSetState(() => currentUserLocationValue = loc));
+        .timeout(
+          const Duration(seconds: 8),
+          onTimeout: () => LatLng(0.0, 0.0),
+        )
+        .then((loc) {
+          if (!mounted) return;
+          safeSetState(() => currentUserLocationValue = loc);
+        });
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
 
@@ -123,22 +130,6 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
-    if (currentUserLocationValue == null) {
-      return Container(
-        color: FlutterFlowTheme.of(context).primaryBackground,
-        child: Center(
-          child: SizedBox(
-            width: 50.0,
-            height: 50.0,
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                FlutterFlowTheme.of(context).primary,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
 
     return GestureDetector(
       onTap: () {

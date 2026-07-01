@@ -2,8 +2,8 @@ import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/custom_code/widgets/index.dart' as custom_widgets;
 import 'dart:ui';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'response_model.dart';
 export 'response_model.dart';
@@ -88,13 +88,11 @@ class _ResponseWidgetState extends State<ResponseWidget> {
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12.0),
-                          child: CachedNetworkImage(
-                            fadeInDuration: Duration(milliseconds: 5),
-                            fadeOutDuration: Duration(milliseconds: 5),
+                          child: custom_widgets.UserAvatarImage(
                             imageUrl: containerUsersRecord.photoUrl,
                             width: 50.0,
                             height: 65.0,
-                            fit: BoxFit.cover,
+                            borderRadius: BorderRadius.circular(12.0),
                           ),
                         ),
                       ),

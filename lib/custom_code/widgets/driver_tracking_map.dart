@@ -27,6 +27,7 @@ class DriverTrackingMap extends StatefulWidget {
     required this.endLatLng,
     required this.driverLocation,
     required this.googleApiKey,
+    this.isStatic = false,
   });
 
   final double? width;
@@ -35,13 +36,14 @@ class DriverTrackingMap extends StatefulWidget {
   final LatLng endLatLng;
   final LatLng driverLocation;
   final String googleApiKey;
+  final bool isStatic;
 
   @override
   State<DriverTrackingMap> createState() => _DriverTrackingMapState();
 }
 
 class _DriverTrackingMapState extends State<DriverTrackingMap> {
-  late google_maps.GoogleMapController mapController;
+  google_maps.GoogleMapController? mapController;
   Set<google_maps.Marker> markers = {};
   Set<google_maps.Polyline> polylines = {};
 
@@ -53,6 +55,15 @@ class _DriverTrackingMapState extends State<DriverTrackingMap> {
       'https://firebasestorage.googleapis.com/v0/b/ydrive-a35d2.firebasestorage.app/o/driver%201.png?alt=media&token=866b3567-60ea-4751-a7de-c0214fbb83e8';
 
   final cacheManager = DefaultCacheManager();
+
+  static const int _markerAbWidth = 200;
+  static const int _driverMarkerWidth = 158;
+  static const int _driverMarkerHeight = 90;
+  static const Color _driverTintColor = Color(0xFFE53935);
+
+  google_maps.BitmapDescriptor? _iconStart;
+  google_maps.BitmapDescriptor? _iconEnd;
+  google_maps.BitmapDescriptor? _iconDriver;
 
   // Флаг для ограничения частоты обновлений полилиний
   bool _isUpdatingPolyline = false;
@@ -81,6 +92,7 @@ class _DriverTrackingMapState extends State<DriverTrackingMap> {
     String url, {
     int? targetWidth,
     int? targetHeight,
+    Color? tintColor,
   }) async {
     try {
       final file = await cacheManager.getSingleFile(url);
@@ -91,7 +103,19 @@ class _DriverTrackingMapState extends State<DriverTrackingMap> {
         targetHeight: targetHeight,
       );
       final frame = await codec.getNextFrame();
-      final data = await frame.image.toByteData(
+      ui.Image image = frame.image;
+
+      if (tintColor != null) {
+        final recorder = ui.PictureRecorder();
+        final canvas = Canvas(recorder);
+        final paint = Paint()
+          ..colorFilter = ColorFilter.mode(tintColor, BlendMode.modulate);
+        canvas.drawImage(image, Offset.zero, paint);
+        final picture = recorder.endRecording();
+        image = await picture.toImage(image.width, image.height);
+      }
+
+      final data = await image.toByteData(
         format: ui.ImageByteFormat.png,
       );
 
@@ -107,61 +131,71 @@ class _DriverTrackingMapState extends State<DriverTrackingMap> {
     }
   }
 
+  Future<void> _ensureMarkerIcons() async {
+    if (_iconStart != null && _iconEnd != null && _iconDriver != null) {
+      return;
+    }
+
+    final results = await Future.wait([
+      _getBitmapDescriptorFromUrl(
+        markerAUrl,
+        targetWidth: _markerAbWidth,
+      ),
+      _getBitmapDescriptorFromUrl(
+        markerBUrl,
+        targetWidth: _markerAbWidth,
+      ),
+      _getBitmapDescriptorFromUrl(
+        driverMarkerUrl,
+        targetWidth: _driverMarkerWidth,
+        targetHeight: _driverMarkerHeight,
+        tintColor: _driverTintColor,
+      ),
+    ]);
+
+    _iconStart = results[0];
+    _iconEnd = results[1];
+    _iconDriver = results[2];
+  }
+
+  void _applyMarkersToState() {
+    final iconStart = _iconStart;
+    final iconEnd = _iconEnd;
+    final iconDriver = _iconDriver;
+    if (iconStart == null || iconEnd == null || iconDriver == null) {
+      return;
+    }
+
+    markers = {
+      google_maps.Marker(
+        markerId: const google_maps.MarkerId('start'),
+        position: _convertToGoogleLatLng(widget.startLatLng),
+        icon: iconStart,
+        anchor: const Offset(0.5, 1.0),
+      ),
+      google_maps.Marker(
+        markerId: const google_maps.MarkerId('end'),
+        position: _convertToGoogleLatLng(widget.endLatLng),
+        icon: iconEnd,
+        anchor: const Offset(0.5, 1.0),
+      ),
+      google_maps.Marker(
+        markerId: const google_maps.MarkerId('driver'),
+        position: _convertToGoogleLatLng(widget.driverLocation),
+        icon: iconDriver,
+        flat: true,
+        anchor: const Offset(0.5, 0.5),
+        rotation: _calculateBearing(),
+      ),
+    };
+  }
+
   Future<void> _setupMarkers() async {
     try {
-      final markerA = await _getBitmapDescriptorFromUrl(
-        markerAUrl,
-        targetWidth: 200,
-      );
-
-      final markerB = await _getBitmapDescriptorFromUrl(
-        markerBUrl,
-        targetWidth: 200,
-      );
-
-      final driverIcon = await _getBitmapDescriptorFromUrl(
-        driverMarkerUrl,
-        targetWidth: 158,
-        targetHeight: 90,
-      );
-
+      await _ensureMarkerIcons();
       if (!mounted) return;
 
-      setState(() {
-        markers.clear();
-
-        // Marker A
-        markers.add(
-          google_maps.Marker(
-            markerId: const google_maps.MarkerId('start'),
-            position: _convertToGoogleLatLng(widget.startLatLng),
-            icon: markerA,
-            anchor: const Offset(0.5, 1.0),
-          ),
-        );
-
-        // Marker B
-        markers.add(
-          google_maps.Marker(
-            markerId: const google_maps.MarkerId('end'),
-            position: _convertToGoogleLatLng(widget.endLatLng),
-            icon: markerB,
-            anchor: const Offset(0.5, 1.0),
-          ),
-        );
-
-        // Driver marker
-        markers.add(
-          google_maps.Marker(
-            markerId: const google_maps.MarkerId('driver'),
-            position: _convertToGoogleLatLng(widget.driverLocation),
-            icon: driverIcon,
-            flat: true,
-            anchor: const Offset(0.5, 0.5),
-            rotation: _calculateBearing(),
-          ),
-        );
-      });
+      setState(_applyMarkersToState);
     } catch (e) {
       print('Error setting up markers: $e');
     }
@@ -169,56 +203,11 @@ class _DriverTrackingMapState extends State<DriverTrackingMap> {
 
   Future<void> _updateMarkers() async {
     try {
-      final markerA = await _getBitmapDescriptorFromUrl(
-        markerAUrl,
-        targetWidth: 80,
-      );
-
-      final markerB = await _getBitmapDescriptorFromUrl(
-        markerBUrl,
-        targetWidth: 80,
-      );
-
-      final driverIcon = await _getBitmapDescriptorFromUrl(
-        driverMarkerUrl,
-        targetWidth: 79,
-        targetHeight: 45,
-      );
-
+      await _ensureMarkerIcons();
       if (!mounted) return;
 
-      setState(() {
-        markers.clear();
-
-        markers.add(
-          google_maps.Marker(
-            markerId: const google_maps.MarkerId('start'),
-            position: _convertToGoogleLatLng(widget.startLatLng),
-            icon: markerA,
-            anchor: const Offset(0.5, 1.0),
-          ),
-        );
-
-        markers.add(
-          google_maps.Marker(
-            markerId: const google_maps.MarkerId('end'),
-            position: _convertToGoogleLatLng(widget.endLatLng),
-            icon: markerB,
-            anchor: const Offset(0.5, 1.0),
-          ),
-        );
-
-        markers.add(
-          google_maps.Marker(
-            markerId: const google_maps.MarkerId('driver'),
-            position: _convertToGoogleLatLng(widget.driverLocation),
-            icon: driverIcon,
-            flat: true,
-            anchor: const Offset(0.5, 0.5),
-            rotation: _calculateBearing(),
-          ),
-        );
-      });
+      // Только позиция/поворот водителя — иконки не пересоздаём (размеры те же).
+      setState(_applyMarkersToState);
     } catch (e) {
       print('Error updating markers: $e');
     }
@@ -378,8 +367,10 @@ class _DriverTrackingMapState extends State<DriverTrackingMap> {
   }
 
   void _updateCamera() {
+    final controller = mapController;
+    if (controller == null) return;
     final bounds = _calculateBounds();
-    mapController.animateCamera(
+    controller.animateCamera(
       google_maps.CameraUpdate.newLatLngBounds(bounds, 50),
     );
   }
@@ -437,38 +428,40 @@ class _DriverTrackingMapState extends State<DriverTrackingMap> {
 
   @override
   void dispose() {
-    mapController.dispose();
+    mapController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final map = google_maps.GoogleMap(
+      initialCameraPosition: google_maps.CameraPosition(
+        target: _convertToGoogleLatLng(widget.driverLocation),
+        zoom: 12,
+      ),
+      onMapCreated: (google_maps.GoogleMapController controller) {
+        mapController = controller;
+        controller.setMapStyle(_mapStyle);
+        controller.animateCamera(
+          google_maps.CameraUpdate.newLatLngBounds(_calculateBounds(), 50),
+        );
+      },
+      markers: markers,
+      polylines: polylines,
+      zoomControlsEnabled: false,
+      zoomGesturesEnabled: !widget.isStatic,
+      rotateGesturesEnabled: !widget.isStatic,
+      scrollGesturesEnabled: !widget.isStatic,
+      tiltGesturesEnabled: !widget.isStatic,
+      myLocationEnabled: false,
+      myLocationButtonEnabled: false,
+      mapToolbarEnabled: false,
+    );
+
     return SizedBox(
       width: widget.width ?? double.infinity,
       height: widget.height ?? double.infinity,
-      child: google_maps.GoogleMap(
-        initialCameraPosition: google_maps.CameraPosition(
-          target: _convertToGoogleLatLng(widget.driverLocation),
-          zoom: 12,
-        ),
-        onMapCreated: (google_maps.GoogleMapController controller) {
-          mapController = controller;
-          controller.setMapStyle(_mapStyle);
-          controller.animateCamera(
-            google_maps.CameraUpdate.newLatLngBounds(_calculateBounds(), 50),
-          );
-        },
-        markers: markers,
-        polylines: polylines,
-        zoomControlsEnabled: false,
-        zoomGesturesEnabled: true,
-        rotateGesturesEnabled: true,
-        scrollGesturesEnabled: true,
-        tiltGesturesEnabled: true,
-        myLocationEnabled: false,
-        myLocationButtonEnabled: false,
-        mapToolbarEnabled: false,
-      ),
+      child: widget.isStatic ? IgnorePointer(child: map) : map,
     );
   }
 }

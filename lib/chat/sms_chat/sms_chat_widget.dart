@@ -3,8 +3,8 @@ import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'dart:ui';
+import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/index.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'sms_chat_model.dart';
 export 'sms_chat_model.dart';
@@ -116,13 +116,11 @@ class _SmsChatWidgetState extends State<SmsChatWidget> {
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12.0),
-                            child: CachedNetworkImage(
-                              fadeInDuration: Duration(milliseconds: 5),
-                              fadeOutDuration: Duration(milliseconds: 5),
+                            child: custom_widgets.UserAvatarImage(
                               imageUrl: containerUsersRecord.photoUrl,
                               width: 60.0,
                               height: 80.0,
-                              fit: BoxFit.cover,
+                              borderRadius: BorderRadius.circular(12.0),
                             ),
                           ),
                         ),

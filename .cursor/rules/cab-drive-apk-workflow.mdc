@@ -1,0 +1,41 @@
+---
+description: Cab Drive — по запросу «сделай апк» выполнять фиксированный сценарий без уточнений
+alwaysApply: true
+---
+
+# «Сделай апк» — обязательный сценарий (Cab Drive)
+
+Когда пользователь пишет **«сделай апк»** (или то же по смыслу) — **не** запускать только `flutter build apk`. Выполнить **все 4 шага по порядку**, без лишних вопросов.
+
+Подробности: `.cursor/cab_drive_apk_workflow.md`.
+
+## Шаги (строго по порядку)
+
+1. **Поднять версию** в `pubspec.yaml`: `+{build}` на 1 (обычно `1.0.{build}+{build}`).
+2. **Собрать release APK** из корня репо:
+   ```powershell
+   flutter build apk --release
+   ```
+   При наличии ключа локально: `--dart-define=ORS_API_KEY=...` (не коммитить ключ).
+3. **Скопировать** в `D:\Temp\`:
+   ```text
+   D:\Temp\cabdrive_{buildNumber}.apk
+   ```
+   Пример: `version: 1.0.15+15` → `D:\Temp\cabdrive_15.apk`.
+   **Не** использовать шаблон `{slug}_1_{n}` — только `cabdrive_{build}`.
+4. **Git:** закоммитить изменения (включая bump версии), **push** в текущую рабочую ветку.
+
+## Запрещено
+
+- Пропускать bump версии или push.
+- Спрашивать «собрать?» — пользователь уже попросил.
+- Класть APK не в `D:\Temp` или с другим именем.
+- Заменять сценарий на `verify_handoff.ps1` вместо release-сборки (handoff — отдельно, не вместо «сделай апк»).
+
+## После сборки
+
+```powershell
+Get-Item "D:\Temp\cabdrive_*.apk" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+```
+
+Сообщить пользователю: новая версия, путь к APK, ветка и факт push.

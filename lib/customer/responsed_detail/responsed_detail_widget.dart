@@ -10,6 +10,7 @@ import '/flutter_flow/flutter_flow_widgets.dart';
 import '/pages/bottom/ratting/ratting_widget.dart';
 import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
+import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/index.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -205,11 +206,13 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                             child: ClipRRect(
                                               borderRadius:
                                                   BorderRadius.circular(12.0),
-                                              child: Image.network(
-                                                containerUsersRecord.photoUrl,
+                                              child: custom_widgets.UserAvatarImage(
+                                                imageUrl: containerUsersRecord
+                                                    .photoUrl,
                                                 width: 60.0,
                                                 height: 80.0,
-                                                fit: BoxFit.cover,
+                                                borderRadius:
+                                                    BorderRadius.circular(12.0),
                                               ),
                                             ),
                                           ),

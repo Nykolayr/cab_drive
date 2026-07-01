@@ -1,9 +1,5 @@
-import 'dart:io' show Platform;
-
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
-import 'package:yandex_mapkit/yandex_mapkit.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -18,14 +14,9 @@ import 'flutter_flow/internationalization.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if (!kIsWeb && Platform.isAndroid) {
-    AndroidYandexMap.useAndroidViewSurface = true;
-  }
   GoRouter.optionURLReflectsImperativeAPIs = true;
   usePathUrlStrategy();
-
   await initFirebase();
-
   final appState = FFAppState(); // Initialize FFAppState
   await appState.initializePersistedState();
 

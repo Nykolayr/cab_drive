@@ -40,7 +40,7 @@ class PolylineMap extends StatefulWidget {
 }
 
 class _PolylineMapState extends State<PolylineMap> {
-  late google_maps.GoogleMapController mapController;
+  google_maps.GoogleMapController? mapController;
   Set<google_maps.Marker> markers = {};
   Set<google_maps.Polyline> polylines = {};
 
@@ -99,7 +99,7 @@ class _PolylineMapState extends State<PolylineMap> {
       _getPolyline();
 
       if (mapController != null) {
-        mapController.animateCamera(
+        mapController!.animateCamera(
           google_maps.CameraUpdate.newLatLngBounds(_getBounds(), 50),
         );
       }
@@ -297,39 +297,41 @@ class _PolylineMapState extends State<PolylineMap> {
 
   @override
   void dispose() {
-    mapController.dispose();
+    mapController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final map = google_maps.GoogleMap(
+      initialCameraPosition: google_maps.CameraPosition(
+        target: _convertToGoogleLatLng(widget.startLatLng),
+        zoom: 12,
+      ),
+      onMapCreated: (google_maps.GoogleMapController controller) {
+        mapController = controller;
+        controller.setMapStyle(_mapStyle);
+        controller.animateCamera(
+          google_maps.CameraUpdate.newLatLngBounds(_getBounds(), 50),
+        );
+      },
+      markers: markers,
+      polylines: polylines,
+      zoomControlsEnabled: false,
+      zoomGesturesEnabled: !widget.isStatic,
+      rotateGesturesEnabled: !widget.isStatic,
+      scrollGesturesEnabled: !widget.isStatic,
+      tiltGesturesEnabled: !widget.isStatic,
+      myLocationEnabled: false,
+      myLocationButtonEnabled: false,
+      mapToolbarEnabled: false,
+    );
+
     return ClipRRect(
       child: SizedBox(
         width: widget.width ?? double.infinity,
         height: widget.height ?? double.infinity,
-        child: google_maps.GoogleMap(
-          initialCameraPosition: google_maps.CameraPosition(
-            target: _convertToGoogleLatLng(widget.startLatLng),
-            zoom: 12,
-          ),
-          onMapCreated: (google_maps.GoogleMapController controller) {
-            mapController = controller;
-            controller.setMapStyle(_mapStyle);
-            controller.animateCamera(
-              google_maps.CameraUpdate.newLatLngBounds(_getBounds(), 50),
-            );
-          },
-          markers: markers,
-          polylines: polylines,
-          zoomControlsEnabled: false,
-          zoomGesturesEnabled: !widget.isStatic,
-          rotateGesturesEnabled: !widget.isStatic,
-          scrollGesturesEnabled: !widget.isStatic,
-          tiltGesturesEnabled: !widget.isStatic,
-          myLocationEnabled: false,
-          myLocationButtonEnabled: false,
-          mapToolbarEnabled: false,
-        ),
+        child: widget.isStatic ? IgnorePointer(child: map) : map,
       ),
     );
   }

@@ -3,6 +3,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
@@ -47,15 +48,6 @@ class _LoadWidgetState extends State<LoadWidget> {
       } else {
         if (valueOrDefault<bool>(currentUserDocument?.loginComplete, false)) {
           if (valueOrDefault<bool>(currentUserDocument?.isDriver, false)) {
-            if (currentUserDocument?.currentOrder?.orderDocRef != null) {
-              await actions.toggleRouteTracking(
-                'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
-                true,
-                currentUserDocument!.currentOrder.orderDocRef!,
-                currentUserDocument!.currentOrder.pointB!,
-              );
-            }
-
             context.goNamed(
               MainDriverWidget.routeName,
               extra: <String, dynamic>{
@@ -69,6 +61,18 @@ class _LoadWidgetState extends State<LoadWidget> {
 
             FFAppState().driver = true;
             FFAppState().update(() {});
+
+            final order = currentUserDocument?.currentOrder;
+            if (order?.orderDocRef != null && order?.pointB != null) {
+              unawaited(
+                actions.toggleRouteTracking(
+                  'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
+                  true,
+                  order!.orderDocRef!,
+                  order.pointB!,
+                ).catchError((_) {}),
+              );
+            }
             return;
           } else {
             context.goNamed(

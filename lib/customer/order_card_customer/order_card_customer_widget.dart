@@ -8,6 +8,7 @@ import '/flutter_flow/flutter_flow_widgets.dart';
 import '/pages/bottom/create_rewievs/create_rewievs_widget.dart';
 import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
+import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/index.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -529,11 +530,13 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                       child: ClipRRect(
                                         borderRadius:
                                             BorderRadius.circular(8.0),
-                                        child: Image.network(
-                                          containerUsersRecord.photoUrl,
+                                        child: custom_widgets.UserAvatarImage(
+                                          imageUrl:
+                                              containerUsersRecord.photoUrl,
                                           width: 37.0,
                                           height: 48.0,
-                                          fit: BoxFit.cover,
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
                                         ),
                                       ),
                                     ),
@@ -547,6 +550,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                         Text(
                                           containerUsersRecord.displayName,
                                           maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                           style: FlutterFlowTheme.of(context)
                                               .bodyMedium
                                               .override(
@@ -557,6 +561,8 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                         ),
                                         Text(
                                           '${containerUsersRecord.car.mark?.name} - ${containerUsersRecord.car.nomer}',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                           style: FlutterFlowTheme.of(context)
                                               .bodyMedium
                                               .override(
