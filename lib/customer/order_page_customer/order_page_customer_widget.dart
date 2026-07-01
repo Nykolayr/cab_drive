@@ -2533,17 +2533,24 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                             child: Container(
                                               width: double.infinity,
                                               height: 150.0,
-                                              child: custom_widgets.PolylineMap(
+                                              child: custom_widgets.YandexOrderMap(
                                                 width: double.infinity,
                                                 height: 150.0,
-                                                googleApiKey:
-                                                    'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
                                                 startLatLng:
                                                     orderPageCustomerOrderRecord
                                                         .pointA.latlng!,
                                                 endLatLng:
                                                     orderPageCustomerOrderRecord
                                                         .pointB.latlng!,
+                                                driverLocation:
+                                                    orderPageCustomerOrderRecord
+                                                        .driverLocation,
+                                                showDriver:
+                                                    orderPageCustomerOrderRecord
+                                                            .status ==
+                                                        StatusOrder.at_work &&
+                                                    orderPageCustomerOrderRecord
+                                                        .hasDriverLocation(),
                                                 isStatic: true,
                                               ),
                                             ),

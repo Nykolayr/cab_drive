@@ -2463,17 +2463,25 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                   width: double.infinity,
                                                   height: 150.0,
                                                   child: custom_widgets
-                                                      .PolylineMap(
+                                                      .YandexOrderMap(
                                                     width: double.infinity,
                                                     height: 150.0,
-                                                    googleApiKey:
-                                                        'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
                                                     startLatLng:
                                                         orderPageDriverOrderRecord
                                                             .pointA.latlng!,
                                                     endLatLng:
                                                         orderPageDriverOrderRecord
                                                             .pointB.latlng!,
+                                                    driverLocation:
+                                                        orderPageDriverOrderRecord
+                                                            .driverLocation,
+                                                    showDriver:
+                                                        orderPageDriverOrderRecord
+                                                                .status ==
+                                                            StatusOrder
+                                                                .at_work &&
+                                                        orderPageDriverOrderRecord
+                                                            .hasDriverLocation(),
                                                     isStatic: true,
                                                   ),
                                                 ),

@@ -54,7 +54,9 @@
 	<true/>
 
 	<key>NSLocationWhenInUseUsageDescription</key>
-    <string>Приложению требуется постоянный доступ к вашему местоположению, чтобы отслеживать движение водителя в режиме реального времени, обеспечивать своевременное обновление статуса заказа и повышать безопасность перевозок.</string>
+    <string>Приложению требуется доступ к геолокации, чтобы отслеживать движение водителя и показывать маршрут доставки.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>Приложению требуется доступ к геолокации в фоне, чтобы заказчик видел положение водителя во время активного заказа.</string>
 	<key>NSCameraUsageDescription</key>
     <string>Приложению требуется доступ к камере, чтобы вы могли фотографировать груз при создании заказа, прикреплять фото в чате, менять аватар, а также загружать документы для верификации водителя.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
@@ -65,7 +67,12 @@
     <array>
         <string>fetch</string>
         <string>remote-notification</string>
+        <string>location</string>
     </array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>yandexmaps</string>
+	</array>
 
 
 
