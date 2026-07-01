@@ -334,6 +334,7 @@ In-memory (сессия заказа):
 
 ## 16. Правила для агента при работе с этим репо
 
+0. **План до кода** — см. `.cursor/rules/plan-first.mdc`: вопросы → feasibility (если интеграция) → план → **утверждение** → только потом правки.
 1. **Не навязывать** digitalsquare (BLoC/GetIt/Clean Architecture) — проект FlutterFlow.
 2. **Новые экраны** — по паттерну `*_widget.dart` + `*_model.dart`, регистрация в `nav.dart` и `index.dart`.
 3. **Данные** — в первую очередь Firestore records в `backend/schema/`, не выдумывать REST-слой.

@@ -80,7 +80,7 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
     return Container(
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).secondaryBackground,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(18.0),
           topRight: Radius.circular(18.0),
         ),
@@ -106,7 +106,7 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
               borderColor: Colors.transparent,
               borderRadius: 8.0,
               buttonSize: 43.0,
-              icon: Icon(
+              icon: const Icon(
                 FFIcons.kcameraPlus,
                 color: Color(0xFF969EAB),
                 size: 24.0,
@@ -167,7 +167,7 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
                         return WebViewAware(
                           child: Padding(
                             padding: MediaQuery.viewInsetsOf(context),
-                            child: ErrorPopupWidget(
+                            child: const ErrorPopupWidget(
                               title: 'Что-то пошло не так',
                               text: 'Максимальное количество изображений - 10!',
                             ),
@@ -201,7 +201,8 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
             ),
             Expanded(
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 0.0, 0.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 0.0, 0.0),
                 child: Container(
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).primaryBackground,
@@ -212,9 +213,9 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
                     children: [
                       if (_model.images.isNotEmpty)
                         Align(
-                          alignment: AlignmentDirectional(-1.0, 0.0),
+                          alignment: const AlignmentDirectional(-1.0, 0.0),
                           child: Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 8.0, 0.0, 0.0),
                             child: Builder(
                               builder: (context) {
@@ -224,12 +225,12 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
                                   scrollDirection: Axis.horizontal,
                                   child: Row(
                                     mainAxisSize: MainAxisSize.max,
-                                    children:
-                                        List.generate(im.length, (imIndex) {
+                                    children: List.generate(im.length,
+                                            (imIndex) {
                                       final imItem = im[imIndex];
                                       return Stack(
-                                        alignment:
-                                            AlignmentDirectional(1.0, -1.0),
+                                        alignment: const AlignmentDirectional(
+                                            1.0, -1.0),
                                         children: [
                                           ClipRRect(
                                             borderRadius:
@@ -246,7 +247,7 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
                                             borderColor: Colors.transparent,
                                             borderRadius: 12.0,
                                             buttonSize: 50.0,
-                                            fillColor: Color(0x69161616),
+                                            fillColor: const Color(0x69161616),
                                             icon: Icon(
                                               FFIcons.kkrestStroke,
                                               color:
@@ -262,9 +263,9 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
                                         ],
                                       );
                                     })
-                                            .divide(SizedBox(width: 8.0))
-                                            .addToStart(SizedBox(width: 20.0))
-                                            .addToEnd(SizedBox(width: 20.0)),
+                                        .divide(const SizedBox(width: 8.0))
+                                        .addToStart(const SizedBox(width: 20.0))
+                                        .addToEnd(const SizedBox(width: 20.0)),
                                   ),
                                 );
                               },
@@ -288,7 +289,7 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
                                   focusNode: _model.textFocusNode,
                                   onChanged: (_) => EasyDebounce.debounce(
                                     '_model.textTextController',
-                                    Duration(milliseconds: 0),
+                                    const Duration(milliseconds: 0),
                                     () => safeSetState(() {}),
                                   ),
                                   autofocus: false,
@@ -312,7 +313,7 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
                                                     .labelMedium
                                                     .fontStyle,
                                           ),
-                                          color: Color(0xFF969EAB),
+                                          color: const Color(0xFF969EAB),
                                           fontSize: 16.0,
                                           letterSpacing: 0.0,
                                           fontWeight:
@@ -329,7 +330,7 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
                                     errorBorder: InputBorder.none,
                                     focusedErrorBorder: InputBorder.none,
                                     contentPadding:
-                                        EdgeInsetsDirectional.fromSTEB(
+                                        const EdgeInsetsDirectional.fromSTEB(
                                             20.0, 16.0, 0.0, 16.0),
                                   ),
                                   style: FlutterFlowTheme.of(context)
@@ -443,7 +444,7 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
                                         sender: currentUserReference,
                                         dateCreated: getCurrentTimestamp,
                                         read: false,
-                                        chatRef: widget!.chat,
+                                        chatRef: widget.chat,
                                       ),
                                       ...mapToFirestore(
                                         {
@@ -459,7 +460,7 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
                                         sender: currentUserReference,
                                         dateCreated: getCurrentTimestamp,
                                         read: false,
-                                        chatRef: widget!.chat,
+                                        chatRef: widget.chat,
                                       ),
                                       ...mapToFirestore(
                                         {
@@ -470,7 +471,7 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
                                     }, messagesRecordReference1);
                                     unawaited(
                                       () async {
-                                        await widget!.chat!
+                                        await widget.chat!
                                             .update(createChatsRecordData(
                                           lastMessage: _model.newmess2?.text !=
                                                       null &&
@@ -502,10 +503,10 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
                                               : 'Фотография'),
                                       notificationImageUrl: currentUserPhoto,
                                       notificationSound: 'default',
-                                      userRefs: [widget!.user!],
+                                      userRefs: [widget.user!],
                                       initialPageName: 'Chat',
                                       parameterData: {
-                                        'chat': widget!.chat,
+                                        'chat': widget.chat,
                                         'name':
                                             '${currentUserDisplayName} ${valueOrDefault(currentUserDocument?.surname, '')}',
                                       },
@@ -536,7 +537,7 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
                                       sender: currentUserReference,
                                       dateCreated: getCurrentTimestamp,
                                       read: false,
-                                      chatRef: widget!.chat,
+                                      chatRef: widget.chat,
                                     ));
                                     _model.newmess =
                                         MessagesRecord.getDocumentFromData(
@@ -546,12 +547,12 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
                                               sender: currentUserReference,
                                               dateCreated: getCurrentTimestamp,
                                               read: false,
-                                              chatRef: widget!.chat,
+                                              chatRef: widget.chat,
                                             ),
                                             messagesRecordReference2);
                                     unawaited(
                                       () async {
-                                        await widget!.chat!
+                                        await widget.chat!
                                             .update(createChatsRecordData(
                                           lastMessage: _model.newmess?.text,
                                           dateCreated:
@@ -568,10 +569,10 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
                                       notificationText: _model.newmess!.text,
                                       notificationImageUrl: currentUserPhoto,
                                       notificationSound: 'default',
-                                      userRefs: [widget!.user!],
+                                      userRefs: [widget.user!],
                                       initialPageName: 'Chat',
                                       parameterData: {
-                                        'chat': widget!.chat,
+                                        'chat': widget.chat,
                                         'name':
                                             '${currentUserDisplayName} ${valueOrDefault(currentUserDocument?.surname, '')}',
                                       },
@@ -581,7 +582,7 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
                                   safeSetState(() {});
                                 },
                               ),
-                          ].divide(SizedBox(width: 12.0)),
+                          ].divide(const SizedBox(width: 12.0)),
                         ),
                       ),
                     ],

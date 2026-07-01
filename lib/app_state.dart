@@ -22,7 +22,7 @@ class FFAppState extends ChangeNotifier {
   }
 
   Future initializePersistedState() async {
-    secureStorage = FlutterSecureStorage();
+    secureStorage = const FlutterSecureStorage();
     await _safeInitAsync(() async {
       _phone = await secureStorage.getString('ff_phone') ?? _phone;
     });
@@ -127,7 +127,7 @@ class FFAppState extends ChangeNotifier {
     _selfi = value;
   }
 
-  LatLng? _mskGeo = LatLng(55.755826, 37.6173);
+  LatLng? _mskGeo = const LatLng(55.755826, 37.6173);
   LatLng? get mskGeo => _mskGeo;
   set mskGeo(LatLng? value) {
     _mskGeo = value;
@@ -302,12 +302,13 @@ extension FlutterSecureStorageExtensions on FlutterSecureStorage {
         if (result == null || result.isEmpty) {
           return null;
         }
-        return CsvToListConverter()
+        return const CsvToListConverter()
             .convert(result)
             .first
             .map((e) => e.toString())
             .toList();
       });
   Future<void> setStringList(String key, List<String> value) async =>
-      await writeSync(key: key, value: ListToCsvConverter().convert([value]));
+      await writeSync(
+          key: key, value: const ListToCsvConverter().convert([value]));
 }

@@ -58,7 +58,7 @@ class _DetaliZayavkiAdminWidgetState extends State<DetaliZayavkiAdminWidget> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<RequestVereficationRecord>(
-      stream: RequestVereficationRecord.getDocument(widget!.docref!),
+      stream: RequestVereficationRecord.getDocument(widget.docref!),
       builder: (context, snapshot) {
         // Customize what your widget looks like when it's loading.
         if (!snapshot.hasData) {
@@ -749,7 +749,7 @@ class _DetaliZayavkiAdminWidgetState extends State<DetaliZayavkiAdminWidget> {
                                                       user:
                                                           detaliZayavkiAdminRequestVereficationRecord
                                                               .user!,
-                                                      verif: widget!.docref!,
+                                                      verif: widget.docref!,
                                                     ),
                                                   ),
                                                 ),
@@ -850,7 +850,7 @@ class _DetaliZayavkiAdminWidgetState extends State<DetaliZayavkiAdminWidget> {
                                 StatusVerif.onVerif)
                               FFButtonWidget(
                                 onPressed: () async {
-                                  await widget!.docref!.update(
+                                  await widget.docref!.update(
                                       createRequestVereficationRecordData(
                                     status: StatusVerif.Completed,
                                   ));

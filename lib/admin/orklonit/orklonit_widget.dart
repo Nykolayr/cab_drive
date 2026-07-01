@@ -50,17 +50,17 @@ class _OrklonitWidgetState extends State<OrklonitWidget> {
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: AlignmentDirectional(0.0, 1.0),
+      alignment: const AlignmentDirectional(0.0, 1.0),
       child: Container(
         constraints: BoxConstraints(
           maxHeight: MediaQuery.sizeOf(context).height * 0.9,
         ),
-        decoration: BoxDecoration(),
+        decoration: const BoxDecoration(),
         child: Container(
           width: double.infinity,
           decoration: BoxDecoration(
             color: FlutterFlowTheme.of(context).primaryBackground,
-            borderRadius: BorderRadius.only(
+            borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(22.0),
               topRight: Radius.circular(22.0),
             ),
@@ -74,7 +74,7 @@ class _OrklonitWidgetState extends State<OrklonitWidget> {
                 height: 64.0,
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).secondaryBackground,
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(22.0),
                     topRight: Radius.circular(22.0),
                     bottomLeft: Radius.circular(5.0),
@@ -82,7 +82,8 @@ class _OrklonitWidgetState extends State<OrklonitWidget> {
                   ),
                 ),
                 child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(
+                      24.0, 0.0, 24.0, 0.0),
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -103,11 +104,11 @@ class _OrklonitWidgetState extends State<OrklonitWidget> {
                         borderRadius: 54.0,
                         borderWidth: 0.0,
                         buttonSize: 32.0,
-                        fillColor: Color(0xFFF4F5F8),
+                        fillColor: const Color(0xFFF4F5F8),
                         hoverColor: FlutterFlowTheme.of(context).primary,
                         hoverIconColor:
                             FlutterFlowTheme.of(context).primaryText,
-                        icon: Icon(
+                        icon: const Icon(
                           FFIcons.kkrestStroke,
                           color: Color(0xFF21201F),
                           size: 8.0,
@@ -123,23 +124,24 @@ class _OrklonitWidgetState extends State<OrklonitWidget> {
               Container(
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).secondary,
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(5.0),
                     topRight: Radius.circular(5.0),
                   ),
                 ),
                 child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 34.0),
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 34.0),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       FFButtonWidget(
                         onPressed: () async {
-                          await widget!.user!.update(createUsersRecordData(
+                          await widget.user!.update(createUsersRecordData(
                             verifNeProidena: true,
                           ));
 
-                          await widget!.verif!
+                          await widget.verif!
                               .update(createRequestVereficationRecordData(
                             status: StatusVerif.otklonena,
                           ));
@@ -148,7 +150,7 @@ class _OrklonitWidgetState extends State<OrklonitWidget> {
                             notificationText:
                                 'Свяжитесь с поддержкой для получения доп. информации',
                             notificationSound: 'default',
-                            userRefs: [widget!.user!],
+                            userRefs: [widget.user!],
                             initialPageName: 'LOAD',
                             parameterData: {},
                           );
@@ -158,15 +160,15 @@ class _OrklonitWidgetState extends State<OrklonitWidget> {
                         options: FFButtonOptions(
                           width: double.infinity,
                           height: 56.0,
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 0.0),
-                          iconPadding: EdgeInsetsDirectional.fromSTEB(
+                          iconPadding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 0.0),
-                          color: Color(0xFFF4F5F8),
+                          color: const Color(0xFFF4F5F8),
                           textStyle:
                               FlutterFlowTheme.of(context).titleSmall.override(
                                     fontFamily: 'SF',
-                                    color: Color(0xFFFF0004),
+                                    color: const Color(0xFFFF0004),
                                     letterSpacing: 0.0,
                                   ),
                           elevation: 0.0,
@@ -182,9 +184,9 @@ class _OrklonitWidgetState extends State<OrklonitWidget> {
                         options: FFButtonOptions(
                           width: double.infinity,
                           height: 56.0,
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 0.0),
-                          iconPadding: EdgeInsetsDirectional.fromSTEB(
+                          iconPadding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 0.0),
                           color: FlutterFlowTheme.of(context).tertiary,
                           textStyle:
@@ -199,11 +201,11 @@ class _OrklonitWidgetState extends State<OrklonitWidget> {
                         ),
                         showLoadingIndicator: false,
                       ),
-                    ].divide(SizedBox(height: 10.0)),
+                    ].divide(const SizedBox(height: 10.0)),
                   ),
                 ),
               ),
-            ].divide(SizedBox(height: 5.0)),
+            ].divide(const SizedBox(height: 5.0)),
           ),
         ),
       ),

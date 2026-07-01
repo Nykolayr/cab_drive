@@ -30,10 +30,30 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
+def dartDefines = [:]
+if (project.hasProperty('dart-defines')) {
+    project.property('dart-defines').split(',').each { entry ->
+        def decoded = new String(entry.decodeBase64(), 'UTF-8')
+        def pair = decoded.split('=', 2)
+        if (pair.length == 2) {
+            dartDefines[pair[0]] = pair[1]
+        }
+    }
+}
+
+def yandexMapsApiKey = dartDefines['YANDEX_MAPKIT_KEY']
+if (yandexMapsApiKey == null) {
+    yandexMapsApiKey = localProperties.getProperty('yandex.maps.api.key', '')
+}
+
 android {
     namespace "com.appwawe.YDrive"
     compileSdkVersion 35
     ndkVersion "28.2.13676358"
+
+    buildFeatures {
+        buildConfig = true
+    }
 
     compileOptions {
         coreLibraryDesugaringEnabled true
@@ -61,6 +81,7 @@ android {
         targetSdkVersion 35
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        buildConfigField "String", "YANDEX_MAPS_API_KEY", "\"${yandexMapsApiKey}\""
     }
 
    signingConfigs {
@@ -89,4 +110,5 @@ flutter {
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.1.0"
+    implementation 'com.yandex.android:maps.mobile:4.22.0-full'
 }

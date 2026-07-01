@@ -63,12 +63,12 @@ class _ChatWidgetState extends State<ChatWidget> {
               model: _model.appBarModel,
               updateCallback: () => safeSetState(() {}),
               child: AppBarWidget(
-                text: widget!.name!,
+                text: widget.name!,
               ),
             ),
             Expanded(
               child: StreamBuilder<ChatsRecord>(
-                stream: ChatsRecord.getDocument(widget!.chat!),
+                stream: ChatsRecord.getDocument(widget.chat!),
                 builder: (context, snapshot) {
                   // Customize what your widget looks like when it's loading.
                   if (!snapshot.hasData) {
@@ -88,7 +88,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                   final containerChatsRecord = snapshot.data!;
 
                   return Container(
-                    decoration: BoxDecoration(),
+                    decoration: const BoxDecoration(),
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       children: [
@@ -109,7 +109,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                       messagesRecord
                                           .where(
                                             'chatRef',
-                                            isEqualTo: widget!.chat,
+                                            isEqualTo: widget.chat,
                                           )
                                           .orderBy('date_created',
                                               descending: true),
@@ -145,7 +145,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                   }
 
                                   return ListView.separated(
-                                    padding: EdgeInsets.fromLTRB(
+                                    padding: const EdgeInsets.fromLTRB(
                                       0,
                                       18.0,
                                       0,
@@ -156,7 +156,7 @@ class _ChatWidgetState extends State<ChatWidget> {
                                     itemCount:
                                         listViewMessagesRecordList.length,
                                     separatorBuilder: (_, __) =>
-                                        SizedBox(height: 12.0),
+                                        const SizedBox(height: 12.0),
                                     itemBuilder: (context, listViewIndex) {
                                       final listViewMessagesRecord =
                                           listViewMessagesRecordList[
@@ -188,20 +188,20 @@ class _ChatWidgetState extends State<ChatWidget> {
                           model: _model.chatBarModel,
                           updateCallback: () => safeSetState(() {}),
                           child: ChatBarWidget(
-                            chat: widget!.chat!,
+                            chat: widget.chat!,
                             user: containerChatsRecord.users
                                 .where((e) => e.id != currentUserReference?.id)
                                 .toList()
                                 .firstOrNull!,
                           ),
                         ),
-                      ].divide(SizedBox(height: 5.0)),
+                      ].divide(const SizedBox(height: 5.0)),
                     ),
                   );
                 },
               ),
             ),
-          ].divide(SizedBox(height: 5.0)),
+          ].divide(const SizedBox(height: 5.0)),
         ),
       ),
     );

@@ -20,9 +20,9 @@ class ApSmsCall {
     final ffApiRequestBody = '''
 {
   "title": "send_sms",
-  "sender": "${sender}",
-  "receiver": "${receiver}",
-  "msgdata": "${msgdata}"
+  "sender": "$sender",
+  "receiver": "$receiver",
+  "msgdata": "$msgdata"
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'AP SMS',
@@ -30,7 +30,7 @@ class ApSmsCall {
       callType: ApiCallType.POST,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${token}',
+        'Authorization': 'Bearer $token',
         'Accept': 'application/json',
       },
       params: {},
@@ -239,7 +239,7 @@ class DistanceMatrixCall {
     return ApiManager.instance.makeApiCall(
       callName: 'DistanceMatrix',
       apiUrl:
-          'https://maps.googleapis.com/maps/api/distancematrix/json?destinations=${destination}&origins=${origin}&language=ru',
+          'https://maps.googleapis.com/maps/api/distancematrix/json?destinations=$destination&origins=$origin&language=ru',
       callType: ApiCallType.GET,
       headers: {},
       params: {
@@ -273,7 +273,7 @@ class InitPaymentCall {
   }) async {
     final ffApiRequestBody = '''
 {
-  "amount": ${amount},
+  "amount": $amount,
   "description": "${escapeStringForJson(description)}",
   "orderId": "${escapeStringForJson(orderId)}",
   "customerKey": "${escapeStringForJson(customerKey)}"
@@ -317,7 +317,7 @@ class InitRecurrentPaymentCall {
   }) async {
     final ffApiRequestBody = '''
 {
-  "amount": ${amount},
+  "amount": $amount,
   "description": "${escapeStringForJson(description)}",
   "orderId": "${escapeStringForJson(orderId)}",
   "customerKey": "${escapeStringForJson(customerKey)}"
@@ -415,7 +415,7 @@ class PrepareRecurrentPaymentCall {
   }) async {
     final ffApiRequestBody = '''
 {
-  "amount": ${amount},
+  "amount": $amount,
   "description": "${escapeStringForJson(description)}",
   "orderId": "${escapeStringForJson(orderId)}"
 }''';
@@ -507,7 +507,7 @@ class CreateClientAndPayoutCall {
     "type_id": 8,
     "account_number": "${escapeStringForJson(accountNumber)}"
   },
-  "amount": ${amount}
+  "amount": $amount
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'Create Client And Payout',
@@ -564,8 +564,8 @@ class PayoutCall {
     "type_id": 8,
     "account_number": "${escapeStringForJson(accountNumber)}"
   },
-  "contractor_id": ${contractorId},
-  "amount": ${amount}
+  "contractor_id": $contractorId,
+  "amount": $amount
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'Payout',
