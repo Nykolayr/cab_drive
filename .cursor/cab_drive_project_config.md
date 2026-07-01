@@ -353,3 +353,4 @@ In-memory (сессия заказа):
 | `flutter_upgrade_checklist.md` | обновление Flutter/Dart |
 | `android_release.md` | сборка AAB/APK |
 | **этот файл** | карта cab_drive |
+| `cab_drive_apk_workflow.md` | по запросу «сделай apk»: bump версии → `D:\Temp\cabdrive_{build}.apk` → push |
