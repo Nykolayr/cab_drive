@@ -1,0 +1,21 @@
+---
+description: UI — только готовые компоненты, без AlertDialog и самодельных модалок
+alwaysApply: true
+---
+
+# UI: только готовые компоненты проекта
+
+## Правило
+
+**Не изобретать** стили диалогов и кнопок. Использовать виджеты и паттерны проекта.
+
+- **Кнопки** — `FFButtonWidget` / `RequestActionButton`
+- **Подтверждение** — `showConfirmActionSheet` (или аналог в продукте)
+- **Bottom sheet** — как `stripe_incomplete_bottom_sheet` / integrity sheet: скругление 20, `FlutterFlowTheme`
+
+## Запрещено
+
+- `AlertDialog` для подтверждений и офферов
+- Одноразовые модалки вместо существующих компонентов
+
+Канон: `D:\Projects\_my_template\digitalsquare` — дочерние проекты наследуют `.cursor/rules/`.

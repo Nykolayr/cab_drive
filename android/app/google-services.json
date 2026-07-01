@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1070996805603",
+    "project_id": "ydrive-a35d2",
+    "storage_bucket": "ydrive-a35d2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1070996805603:android:3af35eaed947ffdfebb2d6",
+        "android_client_info": {
+          "package_name": "com.appwawe.YDrive"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLyIswhJ0Gxb3Y8NNAkb3L8Ssj5ffQHtQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
