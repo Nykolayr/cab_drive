@@ -71,7 +71,7 @@ class _CreateVerifReqWidgetState extends State<CreateVerifReqWidget> {
         var selectedMedia = <SelectedFile>[];
         var downloadUrls = <String>[];
         try {
-          selectedUploadedFiles = widget!.photoCar!;
+          selectedUploadedFiles = widget.photoCar!;
           selectedMedia = selectedFilesFromUploadedFiles(
             selectedUploadedFiles,
             isMultiData: true,
@@ -105,72 +105,72 @@ class _CreateVerifReqWidgetState extends State<CreateVerifReqWidget> {
           RequestVereficationRecord.collection.doc();
       await requestVereficationRecordReference.set({
         ...createRequestVereficationRecordData(
-          city: widget!.city,
-          name: widget!.name,
-          surname: widget!.surnme,
-          numberAvto: widget!.nomer,
+          city: widget.city,
+          name: widget.name,
+          surname: widget.surnme,
+          numberAvto: widget.nomer,
           phoneNumber: currentPhoneNumber,
-          dfb: widget!.dtb,
+          dfb: widget.dtb,
           user: currentUserReference,
           status: StatusVerif.onVerif,
           dateCreated: functions.toUtc(),
           numberId: (_model.count!) + 1,
-          email: widget!.mail,
+          email: widget.mail,
           avatar: currentUserPhoto,
-          marka: widget!.marka,
+          marka: widget.marka,
         ),
         ...mapToFirestore(
           {
-            'photo_doc': widget!.photoDoc,
+            'photo_doc': widget.photoDoc,
             'photo_avto': _model.uploadedFileUrls_uploadData1tw,
           },
         ),
       });
       _model.verif = RequestVereficationRecord.getDocumentFromData({
         ...createRequestVereficationRecordData(
-          city: widget!.city,
-          name: widget!.name,
-          surname: widget!.surnme,
-          numberAvto: widget!.nomer,
+          city: widget.city,
+          name: widget.name,
+          surname: widget.surnme,
+          numberAvto: widget.nomer,
           phoneNumber: currentPhoneNumber,
-          dfb: widget!.dtb,
+          dfb: widget.dtb,
           user: currentUserReference,
           status: StatusVerif.onVerif,
           dateCreated: functions.toUtc(),
           numberId: (_model.count!) + 1,
-          email: widget!.mail,
+          email: widget.mail,
           avatar: currentUserPhoto,
-          marka: widget!.marka,
+          marka: widget.marka,
         ),
         ...mapToFirestore(
           {
-            'photo_doc': widget!.photoDoc,
+            'photo_doc': widget.photoDoc,
             'photo_avto': _model.uploadedFileUrls_uploadData1tw,
           },
         ),
       }, requestVereficationRecordReference);
 
       await currentUserReference!.update(createUsersRecordData(
-        displayName: widget!.name,
+        displayName: widget.name,
         loginComplete: true,
         isDriver: true,
         admin: false,
-        surname: widget!.surnme,
-        city: widget!.city,
-        dfb: widget!.dtb,
+        surname: widget.surnme,
+        city: widget.city,
+        dfb: widget.dtb,
         verifCompl: false,
         onVerifNow: true,
         car: updateCarStruct(
           CarStruct(
-            nomer: widget!.nomer,
+            nomer: widget.nomer,
             images: _model.uploadedFileUrls_uploadData1tw,
-            mark: widget!.marka,
+            mark: widget.marka,
           ),
           clearUnsetFields: false,
         ),
         verifNeProidena: false,
         verifId: _model.verif?.numberId,
-        emailUser: widget!.mail,
+        emailUser: widget.mail,
       ));
       _model.admin = await queryUsersRecordOnce(
         queryBuilder: (usersRecord) => usersRecord.where(
@@ -212,13 +212,13 @@ class _CreateVerifReqWidgetState extends State<CreateVerifReqWidget> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).secondaryBackground,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(32.0),
           topRight: Radius.circular(32.0),
         ),
       ),
       child: Padding(
-        padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 36.0),
+        padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 36.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.start,
@@ -235,8 +235,8 @@ class _CreateVerifReqWidgetState extends State<CreateVerifReqWidget> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 32.0, 0.0, 0.0),
+                        padding: const EdgeInsetsDirectional.fromSTEB(
+                            0.0, 32.0, 0.0, 0.0),
                         child: AutoSizeText(
                           'Создание заявки на верификацию',
                           style:
@@ -261,7 +261,8 @@ class _CreateVerifReqWidgetState extends State<CreateVerifReqWidget> {
               ],
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 24.0, 0.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 24.0, 0.0),
               child: Text(
                 'Создаем вашу заявку на верификацию. Это может занять несколько секунд. Пожалуйста, подождите.',
                 textAlign: TextAlign.start,

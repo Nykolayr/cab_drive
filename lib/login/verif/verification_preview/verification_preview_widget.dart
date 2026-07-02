@@ -44,7 +44,7 @@ class _VerificationPreviewWidgetState extends State<VerificationPreviewWidget> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).primaryBackground,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(22.0),
           topRight: Radius.circular(22.0),
         ),
@@ -58,7 +58,7 @@ class _VerificationPreviewWidgetState extends State<VerificationPreviewWidget> {
             height: 64.0,
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).secondaryBackground,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(22.0),
                 topRight: Radius.circular(22.0),
                 bottomLeft: Radius.circular(5.0),
@@ -66,7 +66,8 @@ class _VerificationPreviewWidgetState extends State<VerificationPreviewWidget> {
               ),
             ),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -109,7 +110,7 @@ class _VerificationPreviewWidgetState extends State<VerificationPreviewWidget> {
               color: FlutterFlowTheme.of(context).secondaryBackground,
             ),
             child: Padding(
-              padding: EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(24.0),
               child: Text(
                 'Укажите свои контактные данные и выберите категории заданий, в которых вы хотите работать',
                 textAlign: TextAlign.start,
@@ -124,13 +125,14 @@ class _VerificationPreviewWidgetState extends State<VerificationPreviewWidget> {
           Container(
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).secondary,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(5.0),
                 topRight: Radius.circular(5.0),
               ),
             ),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 35.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 35.0),
               child: FFButtonWidget(
                 onPressed: () async {
                   Navigator.pop(context);
@@ -149,9 +151,10 @@ class _VerificationPreviewWidgetState extends State<VerificationPreviewWidget> {
                 options: FFButtonOptions(
                   width: double.infinity,
                   height: 56.0,
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                   iconPadding:
-                      EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                   color: FlutterFlowTheme.of(context).tertiary,
                   textStyle: FlutterFlowTheme.of(context).titleSmall.override(
                         fontFamily: 'SF',
@@ -165,7 +168,7 @@ class _VerificationPreviewWidgetState extends State<VerificationPreviewWidget> {
               ),
             ),
           ),
-        ].divide(SizedBox(height: 5.0)),
+        ].divide(const SizedBox(height: 5.0)),
       ),
     );
   }

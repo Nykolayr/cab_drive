@@ -69,7 +69,7 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).primaryBackground,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(22.0),
           topRight: Radius.circular(22.0),
         ),
@@ -83,7 +83,7 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
             height: 64.0,
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).secondaryBackground,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(22.0),
                 topRight: Radius.circular(22.0),
                 bottomLeft: Radius.circular(5.0),
@@ -91,7 +91,7 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
               ),
             ),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+              padding: const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -112,10 +112,10 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                     borderRadius: 54.0,
                     borderWidth: 0.0,
                     buttonSize: 32.0,
-                    fillColor: Color(0xFFF4F5F8),
+                    fillColor: const Color(0xFFF4F5F8),
                     hoverColor: FlutterFlowTheme.of(context).primary,
                     hoverIconColor: FlutterFlowTheme.of(context).primaryText,
-                    icon: Icon(
+                    icon: const Icon(
                       FFIcons.kkrestStroke,
                       color: Color(0xFF21201F),
                       size: 8.0,
@@ -136,14 +136,14 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                 borderRadius: BorderRadius.circular(5.0),
               ),
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 24.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 24.0),
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.all(8.0),
                         child: Container(
                           width: double.infinity,
                           decoration: BoxDecoration(
@@ -152,7 +152,7 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                           child: Padding(
-                            padding: EdgeInsets.all(12.0),
+                            padding: const EdgeInsets.all(12.0),
                             child: Column(
                               mainAxisSize: MainAxisSize.max,
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,7 +177,7 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0.0, 8.0, 0.0, 0.0),
                                   child: AuthUserStreamWidget(
                                     builder: (context) => Text(
@@ -207,7 +207,7 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                       ),
                       Padding(
                         padding:
-                            EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 0.0),
+                            const EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 0.0),
                         child: Container(
                           width: double.infinity,
                           decoration: BoxDecoration(
@@ -216,7 +216,7 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                           child: Padding(
-                            padding: EdgeInsets.all(12.0),
+                            padding: const EdgeInsets.all(12.0),
                             child: Column(
                               mainAxisSize: MainAxisSize.max,
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,7 +254,7 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                       ),
                       Padding(
                         padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+                            const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
                         child: StreamBuilder<List<SavedCardsRecord>>(
                           stream: querySavedCardsRecord(
                             parent: currentUserReference,
@@ -325,7 +325,7 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
                             16.0, 0.0, 16.0, 0.0),
                         child: FFButtonWidget(
                           onPressed: () async {
@@ -337,7 +337,7 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                                 return WebViewAware(
                                   child: Padding(
                                     padding: MediaQuery.viewInsetsOf(context),
-                                    child: NewCardWidget(),
+                                    child: const NewCardWidget(),
                                   ),
                                 );
                               },
@@ -347,9 +347,9 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                           options: FFButtonOptions(
                             width: double.infinity,
                             height: 45.8,
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 16.0, 0.0, 16.0, 0.0),
-                            iconPadding: EdgeInsetsDirectional.fromSTEB(
+                            iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 0.0),
                             color:
                                 FlutterFlowTheme.of(context).primaryBackground,
@@ -375,7 +375,7 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
           Container(
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).secondary,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(5.0),
                 topRight: Radius.circular(5.0),
               ),
@@ -425,7 +425,7 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                                 color: FlutterFlowTheme.of(context).primaryText,
                               ),
                             ),
-                            duration: Duration(milliseconds: 4000),
+                            duration: const Duration(milliseconds: 4000),
                             backgroundColor:
                                 FlutterFlowTheme.of(context).secondary,
                           ),
@@ -454,7 +454,7 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                               color: FlutterFlowTheme.of(context).primaryText,
                             ),
                           ),
-                          duration: Duration(milliseconds: 4000),
+                          duration: const Duration(milliseconds: 4000),
                           backgroundColor:
                               FlutterFlowTheme.of(context).secondary,
                         ),
@@ -493,7 +493,7 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                                 color: FlutterFlowTheme.of(context).primaryText,
                               ),
                             ),
-                            duration: Duration(milliseconds: 4000),
+                            duration: const Duration(milliseconds: 4000),
                             backgroundColor:
                                 FlutterFlowTheme.of(context).secondary,
                           ),
@@ -528,7 +528,7 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                               color: FlutterFlowTheme.of(context).primaryText,
                             ),
                           ),
-                          duration: Duration(milliseconds: 4000),
+                          duration: const Duration(milliseconds: 4000),
                           backgroundColor:
                               FlutterFlowTheme.of(context).secondary,
                         ),
@@ -547,7 +547,7 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                       return WebViewAware(
                         child: Padding(
                           padding: MediaQuery.viewInsetsOf(context),
-                          child: SuccWidget(),
+                          child: const SuccWidget(),
                         ),
                       );
                     },
@@ -559,9 +559,9 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                 options: FFButtonOptions(
                   width: double.infinity,
                   height: 56.0,
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                   iconPadding:
-                      EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                   color: FlutterFlowTheme.of(context).tertiary,
                   textStyle: FlutterFlowTheme.of(context).titleSmall.override(
                         fontFamily: 'SF',
@@ -574,7 +574,7 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
               ),
             ),
           ),
-        ].divide(SizedBox(height: 5.0)),
+        ].divide(const SizedBox(height: 5.0)),
       ),
     );
   }

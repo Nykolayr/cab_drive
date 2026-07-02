@@ -75,7 +75,7 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
             delay: 0.0.ms,
             duration: 150.0.ms,
             hz: 5,
-            offset: Offset(10.0, 0.0),
+            offset: const Offset(10.0, 0.0),
             rotation: 0,
           ),
         ],
@@ -120,7 +120,7 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                 wrapWithModel(
                   model: _model.appBarModel,
                   updateCallback: () => safeSetState(() {}),
-                  child: AppBarWidget(
+                  child: const AppBarWidget(
                     text: 'Подтверждение',
                   ),
                 ),
@@ -131,14 +131,14 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                     borderRadius: BorderRadius.circular(18.0),
                   ),
                   child: Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(8.0, 32.0, 8.0, 8.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        8.0, 32.0, 8.0, 8.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               16.0, 0.0, 16.0, 20.0),
                           child: AutoSizeText(
                             'Введите код',
@@ -163,7 +163,7 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               16.0, 0.0, 16.0, 32.0),
                           child: RichText(
                             textScaler: MediaQuery.of(context).textScaler,
@@ -175,14 +175,14 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                                       .bodyMedium
                                       .override(
                                         fontFamily: 'SF',
-                                        color: Color(0xFFA4A6B2),
+                                        color: const Color(0xFFA4A6B2),
                                         fontSize: 16.0,
                                         letterSpacing: 0.0,
                                         lineHeight: 1.467,
                                       ),
                                 ),
                                 TextSpan(
-                                  text: widget!.phone!,
+                                  text: widget.phone!,
                                   style: TextStyle(
                                     color: FlutterFlowTheme.of(context)
                                         .primaryText,
@@ -194,7 +194,7 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                                   .bodyMedium
                                   .override(
                                     fontFamily: 'SF',
-                                    color: Color(0xFFA4A6B2),
+                                    color: const Color(0xFFA4A6B2),
                                     fontSize: 16.0,
                                     letterSpacing: 0.0,
                                     lineHeight: 1.467,
@@ -203,7 +203,7 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               8.0, 0.0, 8.0, 20.0),
                           child: PinCodeTextField(
                             autoDisposeControllers: false,
@@ -233,7 +233,7 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                               fieldHeight: 70.0,
                               fieldWidth: 40.0,
                               borderWidth: 0.0,
-                              borderRadius: BorderRadius.only(
+                              borderRadius: const BorderRadius.only(
                                 bottomLeft: Radius.circular(1.0),
                                 bottomRight: Radius.circular(1.0),
                                 topLeft: Radius.circular(1.0),
@@ -349,16 +349,14 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                               if (_shouldSetState) safeSetState(() {});
                               return;
                             }
-
-                            if (_shouldSetState) safeSetState(() {});
                           },
                           text: 'Подтвердить',
                           options: FFButtonOptions(
                             width: double.infinity,
                             height: 56.0,
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 24.0, 0.0, 24.0, 0.0),
-                            iconPadding: EdgeInsetsDirectional.fromSTEB(
+                            iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 0.0),
                             color: FlutterFlowTheme.of(context).tertiary,
                             textStyle: FlutterFlowTheme.of(context)
@@ -375,10 +373,10 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 8.0, 0.0, 0.0),
                           child: Stack(
-                            alignment: AlignmentDirectional(0.0, 0.0),
+                            alignment: const AlignmentDirectional(0.0, 0.0),
                             children: [
                               Material(
                                 color: Colors.transparent,
@@ -415,8 +413,9 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                                   ),
                                   if (_model.timerMilliseconds != 0)
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          4.0, 0.0, 0.0, 0.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              4.0, 0.0, 0.0, 0.0),
                                       child: FlutterFlowTimer(
                                         initialTime: _model.timerInitialTimeMs,
                                         getDisplayTime: (value) =>
@@ -427,7 +426,7 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                                         ),
                                         controller: _model.timerController,
                                         updateStateInterval:
-                                            Duration(milliseconds: 1000),
+                                            const Duration(milliseconds: 1000),
                                         onChanged:
                                             (value, displayTime, shouldUpdate) {
                                           _model.timerMilliseconds = value;
@@ -454,7 +453,7 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                                 ],
                               ),
                               Align(
-                                alignment: AlignmentDirectional(0.0, 0.0),
+                                alignment: const AlignmentDirectional(0.0, 0.0),
                                 child: FFButtonWidget(
                                   onPressed: (_model.timerMilliseconds != 0)
                                       ? null
@@ -500,7 +499,8 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                                                       padding: MediaQuery
                                                           .viewInsetsOf(
                                                               context),
-                                                      child: ErrorPopupWidget(
+                                                      child:
+                                                          const ErrorPopupWidget(
                                                         title:
                                                             'Что-то пошло не так',
                                                         text:
@@ -525,10 +525,12 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                                   options: FFButtonOptions(
                                     width: double.infinity,
                                     height: 56.0,
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        24.0, 0.0, 24.0, 0.0),
-                                    iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 0.0),
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            24.0, 0.0, 24.0, 0.0),
+                                    iconPadding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            0.0, 0.0, 0.0, 0.0),
                                     color: Colors.transparent,
                                     textStyle: FlutterFlowTheme.of(context)
                                         .titleSmall
@@ -550,7 +552,7 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
-              ].divide(SizedBox(height: 5.0)),
+              ].divide(const SizedBox(height: 5.0)),
             ),
           ],
         ),

@@ -41,12 +41,12 @@ class _GeoWidgetState extends State<GeoWidget> {
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       await requestPermission(locationPermission);
       _model.instantTimer = InstantTimer.periodic(
-        duration: Duration(milliseconds: 1000),
+        duration: const Duration(milliseconds: 1000),
         callback: (timer) async {
           if (await getPermissionStatus(locationPermission)) {
             _model.instantTimer?.cancel();
             if (await getPermissionStatus(locationPermission)) {
-              if (widget!.home == 1) {
+              if (widget.home == 1) {
                 context.goNamed(MainUserWidget.routeName);
 
                 return;
@@ -94,7 +94,7 @@ class _GeoWidgetState extends State<GeoWidget> {
               height: 120.0,
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondaryBackground,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(18.0),
                   bottomRight: Radius.circular(18.0),
                 ),
@@ -120,7 +120,8 @@ class _GeoWidgetState extends State<GeoWidget> {
                 borderRadius: BorderRadius.circular(18.0),
               ),
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 16.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 16.0),
                 child: Image.asset(
                   'assets/images/_2.png',
                   width: double.infinity,
@@ -136,14 +137,15 @@ class _GeoWidgetState extends State<GeoWidget> {
                   borderRadius: BorderRadius.circular(18.0),
                 ),
                 child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(
+                      24.0, 0.0, 24.0, 0.0),
                   child: SingleChildScrollView(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 16.0),
                           child: AutoSizeText(
                             'Включите геолокацию',
@@ -180,8 +182,8 @@ class _GeoWidgetState extends State<GeoWidget> {
                               ),
                         ),
                       ]
-                          .addToStart(SizedBox(height: 32.0))
-                          .addToEnd(SizedBox(height: 32.0)),
+                          .addToStart(const SizedBox(height: 32.0))
+                          .addToEnd(const SizedBox(height: 32.0)),
                     ),
                   ),
                 ),
@@ -190,7 +192,7 @@ class _GeoWidgetState extends State<GeoWidget> {
             Container(
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondary,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(18.0),
                   topRight: Radius.circular(18.0),
                 ),
@@ -199,7 +201,7 @@ class _GeoWidgetState extends State<GeoWidget> {
                 mainAxisSize: MainAxisSize.max,
                 children: [
                   Padding(
-                    padding: EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.all(8.0),
                     child: FFButtonWidget(
                       onPressed: () async {
                         await requestPermission(locationPermission);
@@ -208,10 +210,10 @@ class _GeoWidgetState extends State<GeoWidget> {
                       options: FFButtonOptions(
                         width: double.infinity,
                         height: 56.0,
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                        iconPadding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                        padding: const EdgeInsetsDirectional.fromSTEB(
+                            0.0, 0.0, 0.0, 0.0),
+                        iconPadding: const EdgeInsetsDirectional.fromSTEB(
+                            0.0, 0.0, 0.0, 0.0),
                         color: FlutterFlowTheme.of(context).tertiary,
                         textStyle:
                             FlutterFlowTheme.of(context).titleSmall.override(
@@ -227,15 +229,15 @@ class _GeoWidgetState extends State<GeoWidget> {
                     ),
                   ),
                   Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 34.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        8.0, 0.0, 8.0, 34.0),
                     child: FFButtonWidget(
                       onPressed: () async {
-                        if (widget!.home == 1) {
+                        if (widget.home == 1) {
                           context.goNamed(MainUserWidget.routeName);
 
                           return;
-                        } else if (widget!.home == 11) {
+                        } else if (widget.home == 11) {
                           context.goNamed(MainDriverWidget.routeName);
 
                           return;
@@ -249,10 +251,10 @@ class _GeoWidgetState extends State<GeoWidget> {
                       options: FFButtonOptions(
                         width: double.infinity,
                         height: 56.0,
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                        iconPadding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                        padding: const EdgeInsetsDirectional.fromSTEB(
+                            0.0, 0.0, 0.0, 0.0),
+                        iconPadding: const EdgeInsetsDirectional.fromSTEB(
+                            0.0, 0.0, 0.0, 0.0),
                         color: FlutterFlowTheme.of(context).alternate,
                         textStyle:
                             FlutterFlowTheme.of(context).titleSmall.override(
@@ -269,7 +271,7 @@ class _GeoWidgetState extends State<GeoWidget> {
                 ],
               ),
             ),
-          ].divide(SizedBox(height: 5.0)),
+          ].divide(const SizedBox(height: 5.0)),
         ),
       ),
     );

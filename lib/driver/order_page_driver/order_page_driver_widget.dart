@@ -70,7 +70,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<OrderRecord>(
-      stream: OrderRecord.getDocument(widget!.order!),
+      stream: OrderRecord.getDocument(widget.order!),
       builder: (context, snapshot) {
         // Customize what your widget looks like when it's loading.
         if (!snapshot.hasData) {
@@ -108,7 +108,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                 wrapWithModel(
                   model: _model.appBarModel,
                   updateCallback: () => safeSetState(() {}),
-                  child: AppBarWidget(
+                  child: const AppBarWidget(
                     text: 'Детали заказа',
                   ),
                 ),
@@ -145,9 +145,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                     .status ==
                                                 StatusOrder.at_work)) {
                                           return Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    24.0, 16.0, 24.0, 16.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(
+                                                24.0, 16.0, 24.0, 16.0),
                                             child: Column(
                                               mainAxisSize: MainAxisSize.max,
                                               crossAxisAlignment:
@@ -191,8 +191,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                   ],
                                                 ),
                                                 Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
                                                           0.0, 5.0, 0.0, 0.0),
                                                   child: Row(
                                                     mainAxisSize:
@@ -207,12 +208,12 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                       Flexible(
                                                         child: Padding(
                                                           padding:
-                                                              EdgeInsetsDirectional
+                                                              const EdgeInsetsDirectional
                                                                   .fromSTEB(
-                                                                      0.0,
-                                                                      8.0,
-                                                                      0.0,
-                                                                      0.0),
+                                                                  0.0,
+                                                                  8.0,
+                                                                  0.0,
+                                                                  0.0),
                                                           child: Text(
                                                             'Перед тем как завершить заказ, сфотографируйте груз на месте доставки. \nЭто нужно для подтверждения, что всё доставлено.',
                                                             style: FlutterFlowTheme
@@ -241,9 +242,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                         false))
                                                   Padding(
                                                     padding:
-                                                        EdgeInsetsDirectional
+                                                        const EdgeInsetsDirectional
                                                             .fromSTEB(0.0, 16.0,
-                                                                0.0, 0.0),
+                                                            0.0, 0.0),
                                                     child: Column(
                                                       mainAxisSize:
                                                           MainAxisSize.max,
@@ -267,12 +268,12 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                         ),
                                                         Padding(
                                                           padding:
-                                                              EdgeInsetsDirectional
+                                                              const EdgeInsetsDirectional
                                                                   .fromSTEB(
-                                                                      0.0,
-                                                                      12.0,
-                                                                      0.0,
-                                                                      0.0),
+                                                                  0.0,
+                                                                  12.0,
+                                                                  0.0,
+                                                                  0.0),
                                                           child: FFButtonWidget(
                                                             onPressed:
                                                                 () async {
@@ -333,13 +334,11 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                 }
                                                               }
 
-                                                              if (_model.uploadedLocalFile_uploadDataG2983 !=
-                                                                      null &&
-                                                                  (_model
-                                                                          .uploadedLocalFile_uploadDataG2983
-                                                                          .bytes
-                                                                          ?.isNotEmpty ??
-                                                                      false)) {
+                                                              if ((_model
+                                                                      .uploadedLocalFile_uploadDataG2983
+                                                                      .bytes
+                                                                      ?.isNotEmpty ??
+                                                                  false)) {
                                                                 _model.image =
                                                                     _model
                                                                         .uploadedLocalFile_uploadDataG2983;
@@ -373,7 +372,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                           padding:
                                                                               MediaQuery.viewInsetsOf(context),
                                                                           child:
-                                                                              ErrorPopupWidget(
+                                                                              const ErrorPopupWidget(
                                                                             title:
                                                                                 'Что-то пошло не так',
                                                                             text:
@@ -397,19 +396,19 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                   .infinity,
                                                               height: 45.83,
                                                               padding:
-                                                                  EdgeInsetsDirectional
+                                                                  const EdgeInsetsDirectional
                                                                       .fromSTEB(
-                                                                          16.0,
-                                                                          0.0,
-                                                                          16.0,
-                                                                          0.0),
+                                                                      16.0,
+                                                                      0.0,
+                                                                      16.0,
+                                                                      0.0),
                                                               iconPadding:
-                                                                  EdgeInsetsDirectional
+                                                                  const EdgeInsetsDirectional
                                                                       .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0),
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0),
                                                               color: FlutterFlowTheme
                                                                       .of(context)
                                                                   .tertiary,
@@ -448,9 +447,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                     .status ==
                                                 StatusOrder.on_confirmation)) {
                                           return Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    24.0, 16.0, 24.0, 16.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(
+                                                24.0, 16.0, 24.0, 16.0),
                                             child: Column(
                                               mainAxisSize: MainAxisSize.max,
                                               crossAxisAlignment:
@@ -470,8 +469,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                       ),
                                                 ),
                                                 Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
                                                           0.0, 8.0, 0.0, 0.0),
                                                   child: Text(
                                                     orderPageDriverOrderRecord
@@ -498,9 +498,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                         .customerReviewed)
                                                   Padding(
                                                     padding:
-                                                        EdgeInsetsDirectional
+                                                        const EdgeInsetsDirectional
                                                             .fromSTEB(0.0, 24.0,
-                                                                0.0, 0.0),
+                                                            0.0, 0.0),
                                                     child: Container(
                                                       width: double.infinity,
                                                       decoration: BoxDecoration(
@@ -508,7 +508,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                 .of(context)
                                                             .secondaryBackground,
                                                         boxShadow: [
-                                                          BoxShadow(
+                                                          const BoxShadow(
                                                             blurRadius: 4.0,
                                                             color: Color(
                                                                 0x19000000),
@@ -524,12 +524,12 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                       ),
                                                       child: Padding(
                                                         padding:
-                                                            EdgeInsetsDirectional
+                                                            const EdgeInsetsDirectional
                                                                 .fromSTEB(
-                                                                    0.0,
-                                                                    24.0,
-                                                                    0.0,
-                                                                    24.0),
+                                                                0.0,
+                                                                24.0,
+                                                                0.0,
+                                                                24.0),
                                                         child: Column(
                                                           mainAxisSize:
                                                               MainAxisSize.max,
@@ -555,7 +555,8 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                       55.0,
                                                                   hoverColor: Colors
                                                                       .transparent,
-                                                                  icon: Icon(
+                                                                  icon:
+                                                                      const Icon(
                                                                     FFIcons
                                                                         .kantDesignStarFilled,
                                                                     color: Color(
@@ -587,7 +588,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                               padding: MediaQuery.viewInsetsOf(context),
                                                                               child: CreateRewievsWidget(
                                                                                 user: orderPageDriverOrderRecord.userCustomer!,
-                                                                                order: widget!.order!,
+                                                                                order: widget.order!,
                                                                                 rait: 1,
                                                                               ),
                                                                             ),
@@ -609,7 +610,8 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                       55.0,
                                                                   hoverColor: Colors
                                                                       .transparent,
-                                                                  icon: Icon(
+                                                                  icon:
+                                                                      const Icon(
                                                                     FFIcons
                                                                         .kantDesignStarFilled,
                                                                     color: Color(
@@ -641,7 +643,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                               padding: MediaQuery.viewInsetsOf(context),
                                                                               child: CreateRewievsWidget(
                                                                                 user: orderPageDriverOrderRecord.userCustomer!,
-                                                                                order: widget!.order!,
+                                                                                order: widget.order!,
                                                                                 rait: 2,
                                                                               ),
                                                                             ),
@@ -663,7 +665,8 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                       55.0,
                                                                   hoverColor: Colors
                                                                       .transparent,
-                                                                  icon: Icon(
+                                                                  icon:
+                                                                      const Icon(
                                                                     FFIcons
                                                                         .kantDesignStarFilled,
                                                                     color: Color(
@@ -695,7 +698,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                               padding: MediaQuery.viewInsetsOf(context),
                                                                               child: CreateRewievsWidget(
                                                                                 user: orderPageDriverOrderRecord.userCustomer!,
-                                                                                order: widget!.order!,
+                                                                                order: widget.order!,
                                                                                 rait: 3,
                                                                               ),
                                                                             ),
@@ -717,7 +720,8 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                       55.0,
                                                                   hoverColor: Colors
                                                                       .transparent,
-                                                                  icon: Icon(
+                                                                  icon:
+                                                                      const Icon(
                                                                     FFIcons
                                                                         .kantDesignStarFilled,
                                                                     color: Color(
@@ -749,7 +753,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                               padding: MediaQuery.viewInsetsOf(context),
                                                                               child: CreateRewievsWidget(
                                                                                 user: orderPageDriverOrderRecord.userCustomer!,
-                                                                                order: widget!.order!,
+                                                                                order: widget.order!,
                                                                                 rait: 4,
                                                                               ),
                                                                             ),
@@ -771,7 +775,8 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                       55.0,
                                                                   hoverColor: Colors
                                                                       .transparent,
-                                                                  icon: Icon(
+                                                                  icon:
+                                                                      const Icon(
                                                                     FFIcons
                                                                         .kantDesignStarFilled,
                                                                     color: Color(
@@ -803,7 +808,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                               padding: MediaQuery.viewInsetsOf(context),
                                                                               child: CreateRewievsWidget(
                                                                                 user: orderPageDriverOrderRecord.userCustomer!,
-                                                                                order: widget!.order!,
+                                                                                order: widget.order!,
                                                                                 rait: 5,
                                                                               ),
                                                                             ),
@@ -832,9 +837,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                     .status ==
                                                 StatusOrder.completed)) {
                                           return Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    24.0, 16.0, 24.0, 16.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(
+                                                24.0, 16.0, 24.0, 16.0),
                                             child: Column(
                                               mainAxisSize: MainAxisSize.max,
                                               crossAxisAlignment:
@@ -854,8 +859,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                       ),
                                                 ),
                                                 Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
                                                           0.0, 8.0, 0.0, 0.0),
                                                   child: Text(
                                                     (orderPageDriverOrderRecord
@@ -884,9 +890,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                         .customerReviewed)
                                                   Padding(
                                                     padding:
-                                                        EdgeInsetsDirectional
+                                                        const EdgeInsetsDirectional
                                                             .fromSTEB(0.0, 24.0,
-                                                                0.0, 0.0),
+                                                            0.0, 0.0),
                                                     child: Container(
                                                       width: double.infinity,
                                                       decoration: BoxDecoration(
@@ -894,7 +900,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                 .of(context)
                                                             .secondaryBackground,
                                                         boxShadow: [
-                                                          BoxShadow(
+                                                          const BoxShadow(
                                                             blurRadius: 4.0,
                                                             color: Color(
                                                                 0x19000000),
@@ -910,12 +916,12 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                       ),
                                                       child: Padding(
                                                         padding:
-                                                            EdgeInsetsDirectional
+                                                            const EdgeInsetsDirectional
                                                                 .fromSTEB(
-                                                                    0.0,
-                                                                    24.0,
-                                                                    0.0,
-                                                                    24.0),
+                                                                0.0,
+                                                                24.0,
+                                                                0.0,
+                                                                24.0),
                                                         child: Column(
                                                           mainAxisSize:
                                                               MainAxisSize.max,
@@ -941,7 +947,8 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                       55.0,
                                                                   hoverColor: Colors
                                                                       .transparent,
-                                                                  icon: Icon(
+                                                                  icon:
+                                                                      const Icon(
                                                                     FFIcons
                                                                         .kantDesignStarFilled,
                                                                     color: Color(
@@ -973,7 +980,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                               padding: MediaQuery.viewInsetsOf(context),
                                                                               child: CreateRewievsWidget(
                                                                                 user: orderPageDriverOrderRecord.userCustomer!,
-                                                                                order: widget!.order!,
+                                                                                order: widget.order!,
                                                                                 rait: 1,
                                                                               ),
                                                                             ),
@@ -995,7 +1002,8 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                       55.0,
                                                                   hoverColor: Colors
                                                                       .transparent,
-                                                                  icon: Icon(
+                                                                  icon:
+                                                                      const Icon(
                                                                     FFIcons
                                                                         .kantDesignStarFilled,
                                                                     color: Color(
@@ -1027,7 +1035,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                               padding: MediaQuery.viewInsetsOf(context),
                                                                               child: CreateRewievsWidget(
                                                                                 user: orderPageDriverOrderRecord.userCustomer!,
-                                                                                order: widget!.order!,
+                                                                                order: widget.order!,
                                                                                 rait: 2,
                                                                               ),
                                                                             ),
@@ -1049,7 +1057,8 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                       55.0,
                                                                   hoverColor: Colors
                                                                       .transparent,
-                                                                  icon: Icon(
+                                                                  icon:
+                                                                      const Icon(
                                                                     FFIcons
                                                                         .kantDesignStarFilled,
                                                                     color: Color(
@@ -1081,7 +1090,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                               padding: MediaQuery.viewInsetsOf(context),
                                                                               child: CreateRewievsWidget(
                                                                                 user: orderPageDriverOrderRecord.userCustomer!,
-                                                                                order: widget!.order!,
+                                                                                order: widget.order!,
                                                                                 rait: 3,
                                                                               ),
                                                                             ),
@@ -1103,7 +1112,8 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                       55.0,
                                                                   hoverColor: Colors
                                                                       .transparent,
-                                                                  icon: Icon(
+                                                                  icon:
+                                                                      const Icon(
                                                                     FFIcons
                                                                         .kantDesignStarFilled,
                                                                     color: Color(
@@ -1135,7 +1145,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                               padding: MediaQuery.viewInsetsOf(context),
                                                                               child: CreateRewievsWidget(
                                                                                 user: orderPageDriverOrderRecord.userCustomer!,
-                                                                                order: widget!.order!,
+                                                                                order: widget.order!,
                                                                                 rait: 4,
                                                                               ),
                                                                             ),
@@ -1157,7 +1167,8 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                       55.0,
                                                                   hoverColor: Colors
                                                                       .transparent,
-                                                                  icon: Icon(
+                                                                  icon:
+                                                                      const Icon(
                                                                     FFIcons
                                                                         .kantDesignStarFilled,
                                                                     color: Color(
@@ -1189,7 +1200,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                               padding: MediaQuery.viewInsetsOf(context),
                                                                               child: CreateRewievsWidget(
                                                                                 user: orderPageDriverOrderRecord.userCustomer!,
-                                                                                order: widget!.order!,
+                                                                                order: widget.order!,
                                                                                 rait: 5,
                                                                               ),
                                                                             ),
@@ -1218,9 +1229,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                     .status ==
                                                 StatusOrder.spec_set)) {
                                           return Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    24.0, 16.0, 24.0, 16.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(
+                                                24.0, 16.0, 24.0, 16.0),
                                             child: Column(
                                               mainAxisSize: MainAxisSize.max,
                                               crossAxisAlignment:
@@ -1240,8 +1251,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                       ),
                                                 ),
                                                 Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
                                                           0.0, 8.0, 0.0, 0.0),
                                                   child: Text(
                                                     orderPageDriverOrderRecord
@@ -1268,7 +1280,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                           return FutureBuilder<
                                               List<ResponsesRecord>>(
                                             future: queryResponsesRecordOnce(
-                                              parent: widget!.order,
+                                              parent: widget.order,
                                               queryBuilder: (responsesRecord) =>
                                                   responsesRecord.where(
                                                 'user_driver',
@@ -1311,10 +1323,12 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                       : null;
 
                                               return Container(
-                                                decoration: BoxDecoration(),
+                                                decoration:
+                                                    const BoxDecoration(),
                                                 child: Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(24.0, 16.0,
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(24.0, 16.0,
                                                           24.0, 16.0),
                                                   child: Column(
                                                     mainAxisSize:
@@ -1340,12 +1354,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                       ),
                                                       Padding(
                                                         padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    0.0,
-                                                                    8.0,
-                                                                    0.0,
-                                                                    0.0),
+                                                            const EdgeInsetsDirectional
+                                                                .fromSTEB(0.0,
+                                                                8.0, 0.0, 0.0),
                                                         child: Text(
                                                           'Вы откликнулись на заказ.\nКлиент ещё не выбрал исполнителя — вы можете отменить отклик, пока заказ не принят.',
                                                           style: FlutterFlowTheme
@@ -1365,12 +1376,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                       ),
                                                       Padding(
                                                         padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    0.0,
-                                                                    12.0,
-                                                                    0.0,
-                                                                    0.0),
+                                                            const EdgeInsetsDirectional
+                                                                .fromSTEB(0.0,
+                                                                12.0, 0.0, 0.0),
                                                         child: wrapWithModel(
                                                           model: _model
                                                               .textInfoModel1,
@@ -1389,12 +1397,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                       ),
                                                       Padding(
                                                         padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    0.0,
-                                                                    12.0,
-                                                                    0.0,
-                                                                    0.0),
+                                                            const EdgeInsetsDirectional
+                                                                .fromSTEB(0.0,
+                                                                12.0, 0.0, 0.0),
                                                         child: wrapWithModel(
                                                           model: _model
                                                               .textInfoModel2,
@@ -1415,12 +1420,12 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                           StatusOrder.newOrder)
                                                         Padding(
                                                           padding:
-                                                              EdgeInsetsDirectional
+                                                              const EdgeInsetsDirectional
                                                                   .fromSTEB(
-                                                                      0.0,
-                                                                      12.0,
-                                                                      0.0,
-                                                                      0.0),
+                                                                  0.0,
+                                                                  12.0,
+                                                                  0.0,
+                                                                  0.0),
                                                           child: FFButtonWidget(
                                                             onPressed:
                                                                 () async {
@@ -1473,19 +1478,19 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                   .infinity,
                                                               height: 45.0,
                                                               padding:
-                                                                  EdgeInsetsDirectional
+                                                                  const EdgeInsetsDirectional
                                                                       .fromSTEB(
-                                                                          40.0,
-                                                                          0.0,
-                                                                          40.0,
-                                                                          0.0),
+                                                                      40.0,
+                                                                      0.0,
+                                                                      40.0,
+                                                                      0.0),
                                                               iconPadding:
-                                                                  EdgeInsetsDirectional
+                                                                  const EdgeInsetsDirectional
                                                                       .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0),
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0),
                                                               color: FlutterFlowTheme
                                                                       .of(context)
                                                                   .primaryBackground,
@@ -1520,12 +1525,12 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                               .customerReviewed)
                                                         Padding(
                                                           padding:
-                                                              EdgeInsetsDirectional
+                                                              const EdgeInsetsDirectional
                                                                   .fromSTEB(
-                                                                      0.0,
-                                                                      24.0,
-                                                                      0.0,
-                                                                      0.0),
+                                                                  0.0,
+                                                                  24.0,
+                                                                  0.0,
+                                                                  0.0),
                                                           child: Container(
                                                             width:
                                                                 double.infinity,
@@ -1535,7 +1540,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                       .of(context)
                                                                   .secondaryBackground,
                                                               boxShadow: [
-                                                                BoxShadow(
+                                                                const BoxShadow(
                                                                   blurRadius:
                                                                       4.0,
                                                                   color: Color(
@@ -1554,12 +1559,12 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                             ),
                                                             child: Padding(
                                                               padding:
-                                                                  EdgeInsetsDirectional
+                                                                  const EdgeInsetsDirectional
                                                                       .fromSTEB(
-                                                                          0.0,
-                                                                          24.0,
-                                                                          0.0,
-                                                                          24.0),
+                                                                      0.0,
+                                                                      24.0,
+                                                                      0.0,
+                                                                      24.0),
                                                               child: Column(
                                                                 mainAxisSize:
                                                                     MainAxisSize
@@ -1586,7 +1591,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                         hoverColor:
                                                                             Colors.transparent,
                                                                         icon:
-                                                                            Icon(
+                                                                            const Icon(
                                                                           FFIcons
                                                                               .kantDesignStarFilled,
                                                                           color:
@@ -1615,7 +1620,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                                     padding: MediaQuery.viewInsetsOf(context),
                                                                                     child: CreateRewievsWidget(
                                                                                       user: orderPageDriverOrderRecord.userCustomer!,
-                                                                                      order: widget!.order!,
+                                                                                      order: widget.order!,
                                                                                       rait: 1,
                                                                                     ),
                                                                                   ),
@@ -1636,7 +1641,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                         hoverColor:
                                                                             Colors.transparent,
                                                                         icon:
-                                                                            Icon(
+                                                                            const Icon(
                                                                           FFIcons
                                                                               .kantDesignStarFilled,
                                                                           color:
@@ -1665,7 +1670,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                                     padding: MediaQuery.viewInsetsOf(context),
                                                                                     child: CreateRewievsWidget(
                                                                                       user: orderPageDriverOrderRecord.userCustomer!,
-                                                                                      order: widget!.order!,
+                                                                                      order: widget.order!,
                                                                                       rait: 2,
                                                                                     ),
                                                                                   ),
@@ -1686,7 +1691,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                         hoverColor:
                                                                             Colors.transparent,
                                                                         icon:
-                                                                            Icon(
+                                                                            const Icon(
                                                                           FFIcons
                                                                               .kantDesignStarFilled,
                                                                           color:
@@ -1715,7 +1720,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                                     padding: MediaQuery.viewInsetsOf(context),
                                                                                     child: CreateRewievsWidget(
                                                                                       user: orderPageDriverOrderRecord.userCustomer!,
-                                                                                      order: widget!.order!,
+                                                                                      order: widget.order!,
                                                                                       rait: 3,
                                                                                     ),
                                                                                   ),
@@ -1736,7 +1741,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                         hoverColor:
                                                                             Colors.transparent,
                                                                         icon:
-                                                                            Icon(
+                                                                            const Icon(
                                                                           FFIcons
                                                                               .kantDesignStarFilled,
                                                                           color:
@@ -1765,7 +1770,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                                     padding: MediaQuery.viewInsetsOf(context),
                                                                                     child: CreateRewievsWidget(
                                                                                       user: orderPageDriverOrderRecord.userCustomer!,
-                                                                                      order: widget!.order!,
+                                                                                      order: widget.order!,
                                                                                       rait: 4,
                                                                                     ),
                                                                                   ),
@@ -1786,7 +1791,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                         hoverColor:
                                                                             Colors.transparent,
                                                                         icon:
-                                                                            Icon(
+                                                                            const Icon(
                                                                           FFIcons
                                                                               .kantDesignStarFilled,
                                                                           color:
@@ -1815,7 +1820,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                                     padding: MediaQuery.viewInsetsOf(context),
                                                                                     child: CreateRewievsWidget(
                                                                                       user: orderPageDriverOrderRecord.userCustomer!,
-                                                                                      order: widget!.order!,
+                                                                                      order: widget.order!,
                                                                                       rait: 5,
                                                                                     ),
                                                                                   ),
@@ -1881,11 +1886,10 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                           snapshot.data!;
 
                                       return Container(
-                                        decoration: BoxDecoration(),
+                                        decoration: const BoxDecoration(),
                                         child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  24.0, 16.0, 24.0, 16.0),
+                                          padding: const EdgeInsetsDirectional
+                                              .fromSTEB(24.0, 16.0, 24.0, 16.0),
                                           child: Column(
                                             mainAxisSize: MainAxisSize.max,
                                             crossAxisAlignment:
@@ -1905,8 +1909,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                         ),
                                               ),
                                               Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
+                                                padding:
+                                                    const EdgeInsetsDirectional
+                                                        .fromSTEB(
                                                         0.0, 12.0, 0.0, 0.0),
                                                 child: InkWell(
                                                   splashColor:
@@ -1959,12 +1964,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                     children: [
                                                       Padding(
                                                         padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    0.0,
-                                                                    0.0,
-                                                                    11.0,
-                                                                    0.0),
+                                                            const EdgeInsetsDirectional
+                                                                .fromSTEB(0.0,
+                                                                0.0, 11.0, 0.0),
                                                         child: Container(
                                                           decoration:
                                                               BoxDecoration(
@@ -1976,7 +1978,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                     .circular(
                                                                         8.0),
                                                             border: Border.all(
-                                                              color: Color(
+                                                              color: const Color(
                                                                   0x27A4A6B2),
                                                             ),
                                                           ),
@@ -2047,7 +2049,8 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                         ),
                                                                         child:
                                                                             Padding(
-                                                                          padding: EdgeInsetsDirectional.fromSTEB(
+                                                                          padding: const EdgeInsetsDirectional
+                                                                              .fromSTEB(
                                                                               10.0,
                                                                               4.0,
                                                                               10.0,
@@ -2072,12 +2075,12 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                                 ),
                                                                                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                       fontFamily: 'SF',
-                                                                                      color: Color(0xFFA4A6B2),
+                                                                                      color: const Color(0xFFA4A6B2),
                                                                                       letterSpacing: 0.0,
                                                                                       fontWeight: FontWeight.w500,
                                                                                     ),
                                                                               ),
-                                                                            ].divide(SizedBox(width: 6.0)),
+                                                                            ].divide(const SizedBox(width: 6.0)),
                                                                           ),
                                                                         ),
                                                                       ),
@@ -2093,7 +2096,8 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                         ),
                                                                         child:
                                                                             Padding(
-                                                                          padding: EdgeInsetsDirectional.fromSTEB(
+                                                                          padding: const EdgeInsetsDirectional
+                                                                              .fromSTEB(
                                                                               10.0,
                                                                               4.0,
                                                                               10.0,
@@ -2113,16 +2117,16 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                                 containerUsersRecord.numberOfReviews.toString(),
                                                                                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                       fontFamily: 'SF',
-                                                                                      color: Color(0xFFA4A6B2),
+                                                                                      color: const Color(0xFFA4A6B2),
                                                                                       letterSpacing: 0.0,
                                                                                       fontWeight: FontWeight.w500,
                                                                                     ),
                                                                               ),
-                                                                            ].divide(SizedBox(width: 6.0)),
+                                                                            ].divide(const SizedBox(width: 6.0)),
                                                                           ),
                                                                         ),
                                                                       ),
-                                                                    ].divide(SizedBox(
+                                                                    ].divide(const SizedBox(
                                                                         width:
                                                                             4.0)),
                                                                   );
@@ -2141,7 +2145,8 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                     ),
                                                                     child:
                                                                         Padding(
-                                                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                                                      padding: const EdgeInsetsDirectional
+                                                                          .fromSTEB(
                                                                           10.0,
                                                                           4.0,
                                                                           10.0,
@@ -2163,20 +2168,21 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                             'Нет отзывов',
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   fontFamily: 'SF',
-                                                                                  color: Color(0xFFA4A6B2),
+                                                                                  color: const Color(0xFFA4A6B2),
                                                                                   letterSpacing: 0.0,
                                                                                   fontWeight: FontWeight.w500,
                                                                                 ),
                                                                           ),
-                                                                        ].divide(SizedBox(width: 6.0)),
+                                                                        ].divide(const SizedBox(width: 6.0)),
                                                                       ),
                                                                     ),
                                                                   );
                                                                 }
                                                               },
                                                             ),
-                                                          ].divide(SizedBox(
-                                                              height: 9.0)),
+                                                          ].divide(
+                                                              const SizedBox(
+                                                                  height: 9.0)),
                                                         ),
                                                       ),
                                                     ],
@@ -2187,8 +2193,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                       .selectedDriver ==
                                                   currentUserReference)
                                                 Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
                                                           0.0, 8.0, 0.0, 0.0),
                                                   child: Row(
                                                     mainAxisSize:
@@ -2331,19 +2338,19 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                               FFButtonOptions(
                                                             height: 45.0,
                                                             padding:
-                                                                EdgeInsetsDirectional
+                                                                const EdgeInsetsDirectional
                                                                     .fromSTEB(
-                                                                        40.0,
-                                                                        0.0,
-                                                                        40.0,
-                                                                        0.0),
+                                                                    40.0,
+                                                                    0.0,
+                                                                    40.0,
+                                                                    0.0),
                                                             iconPadding:
-                                                                EdgeInsetsDirectional
+                                                                const EdgeInsetsDirectional
                                                                     .fromSTEB(
-                                                                        0.0,
-                                                                        0.0,
-                                                                        0.0,
-                                                                        0.0),
+                                                                    0.0,
+                                                                    0.0,
+                                                                    0.0,
+                                                                    0.0),
                                                             color: FlutterFlowTheme
                                                                     .of(context)
                                                                 .primaryBackground,
@@ -2386,19 +2393,19 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                               FFButtonOptions(
                                                             height: 45.0,
                                                             padding:
-                                                                EdgeInsetsDirectional
+                                                                const EdgeInsetsDirectional
                                                                     .fromSTEB(
-                                                                        40.0,
-                                                                        0.0,
-                                                                        40.0,
-                                                                        0.0),
+                                                                    40.0,
+                                                                    0.0,
+                                                                    40.0,
+                                                                    0.0),
                                                             iconPadding:
-                                                                EdgeInsetsDirectional
+                                                                const EdgeInsetsDirectional
                                                                     .fromSTEB(
-                                                                        0.0,
-                                                                        0.0,
-                                                                        0.0,
-                                                                        0.0),
+                                                                    0.0,
+                                                                    0.0,
+                                                                    0.0,
+                                                                    0.0),
                                                             color: FlutterFlowTheme
                                                                     .of(context)
                                                                 .primaryBackground,
@@ -2427,8 +2434,8 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                               false,
                                                         ),
                                                       ),
-                                                    ].divide(
-                                                        SizedBox(width: 7.0)),
+                                                    ].divide(const SizedBox(
+                                                        width: 7.0)),
                                                   ),
                                                 ),
                                             ],
@@ -2446,13 +2453,13 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                     borderRadius: BorderRadius.circular(18.0),
                                   ),
                                   child: Padding(
-                                    padding: EdgeInsets.all(16.0),
+                                    padding: const EdgeInsets.all(16.0),
                                     child: Column(
                                       mainAxisSize: MainAxisSize.max,
                                       children: [
                                         Stack(
-                                          alignment:
-                                              AlignmentDirectional(0.0, 1.0),
+                                          alignment: const AlignmentDirectional(
+                                              0.0, 1.0),
                                           children: [
                                             ClipRRect(
                                               borderRadius:
@@ -2463,28 +2470,43 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                       BorderRadius.circular(
                                                           12.0),
                                                 ),
-                                                child: Container(
+                                                child: SizedBox(
                                                   width: double.infinity,
-                                                  height: 150.0,
-                                                  child: custom_widgets
-                                                      .PolylineMap(
-                                                    width: double.infinity,
-                                                    height: 150.0,
-                                                    googleApiKey:
-                                                        'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
-                                                    startLatLng:
-                                                        orderPageDriverOrderRecord
+                                                  height: 300.0,
+                                                  child: Builder(
+                                                    builder: (context) {
+                                                      final order =
+                                                          orderPageDriverOrderRecord;
+                                                      final showDriver = (order
+                                                                      .status ==
+                                                                  StatusOrder
+                                                                      .at_work ||
+                                                              order.status ==
+                                                                  StatusOrder
+                                                                      .spec_set) &&
+                                                          order
+                                                              .hasDriverLocation();
+                                                      return custom_widgets
+                                                          .YandexOrderMap(
+                                                        width: double.infinity,
+                                                        height: 300.0,
+                                                        startLatLng: order
                                                             .pointA.latlng!,
-                                                    endLatLng:
-                                                        orderPageDriverOrderRecord
+                                                        endLatLng: order
                                                             .pointB.latlng!,
-                                                    isStatic: true,
+                                                        driverLocation: order
+                                                            .driverLocation,
+                                                        showDriver: showDriver,
+                                                        isStatic: true,
+                                                      );
+                                                    },
                                                   ),
                                                 ),
                                               ),
                                             ),
                                             Padding(
-                                              padding: EdgeInsets.all(4.0),
+                                              padding:
+                                                  const EdgeInsets.all(4.0),
                                               child: FFButtonWidget(
                                                 onPressed: () async {
                                                   context.pushNamed(
@@ -2492,7 +2514,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                         .routeName,
                                                     queryParameters: {
                                                       'order': serializeParam(
-                                                        widget!.order,
+                                                        widget.order,
                                                         ParamType
                                                             .DocumentReference,
                                                       ),
@@ -2503,14 +2525,16 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                 options: FFButtonOptions(
                                                   width: double.infinity,
                                                   height: 35.0,
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
                                                           16.0, 0.0, 16.0, 0.0),
                                                   iconPadding:
-                                                      EdgeInsetsDirectional
-                                                          .fromSTEB(0.0, 0.0,
-                                                              0.0, 0.0),
-                                                  color: Color(0xD8F4F5F8),
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
+                                                          0.0, 0.0, 0.0, 0.0),
+                                                  color:
+                                                      const Color(0xD8F4F5F8),
                                                   textStyle: FlutterFlowTheme
                                                           .of(context)
                                                       .titleSmall
@@ -2543,9 +2567,8 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                           desktop: false,
                                         ))
                                           Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 12.0, 0.0, 0.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(0.0, 12.0, 0.0, 0.0),
                                             child: Row(
                                               mainAxisSize: MainAxisSize.max,
                                               children: [
@@ -2565,20 +2588,15 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                       width: 222.0,
                                                       height: 45.0,
                                                       padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  0.0,
-                                                                  0.0,
-                                                                  0.0,
-                                                                  0.0),
+                                                          const EdgeInsetsDirectional
+                                                              .fromSTEB(0.0,
+                                                              0.0, 0.0, 0.0),
                                                       iconPadding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  0.0,
-                                                                  0.0,
-                                                                  0.0,
-                                                                  0.0),
-                                                      color: Color(0xD8F4F5F8),
+                                                          const EdgeInsetsDirectional
+                                                              .fromSTEB(0.0,
+                                                              0.0, 0.0, 0.0),
+                                                      color: const Color(
+                                                          0xD8F4F5F8),
                                                       textStyle:
                                                           FlutterFlowTheme.of(
                                                                   context)
@@ -2620,20 +2638,15 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                       width: double.infinity,
                                                       height: 45.0,
                                                       padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  0.0,
-                                                                  0.0,
-                                                                  0.0,
-                                                                  0.0),
+                                                          const EdgeInsetsDirectional
+                                                              .fromSTEB(0.0,
+                                                              0.0, 0.0, 0.0),
                                                       iconPadding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  0.0,
-                                                                  0.0,
-                                                                  0.0,
-                                                                  0.0),
-                                                      color: Color(0xD8F4F5F8),
+                                                          const EdgeInsetsDirectional
+                                                              .fromSTEB(0.0,
+                                                              0.0, 0.0, 0.0),
+                                                      color: const Color(
+                                                          0xD8F4F5F8),
                                                       textStyle:
                                                           FlutterFlowTheme.of(
                                                                   context)
@@ -2659,7 +2672,8 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                     showLoadingIndicator: false,
                                                   ),
                                                 ),
-                                              ].divide(SizedBox(width: 8.0)),
+                                              ].divide(
+                                                  const SizedBox(width: 8.0)),
                                             ),
                                           ),
                                       ],
@@ -2687,8 +2701,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                   BorderRadius.circular(18.0),
                                             ),
                                             child: Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
+                                              padding:
+                                                  const EdgeInsetsDirectional
+                                                      .fromSTEB(
                                                       24.0, 16.0, 24.0, 16.0),
                                               child: Column(
                                                 mainAxisSize: MainAxisSize.max,
@@ -2717,7 +2732,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                     children: [
                                                       Stack(
                                                         alignment:
-                                                            AlignmentDirectional(
+                                                            const AlignmentDirectional(
                                                                 0.0, 0.0),
                                                         children: [
                                                           wrapWithModel(
@@ -2728,8 +2743,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                     () {}),
                                                             child:
                                                                 TextInfoWidget(
-                                                              tittle:
-                                                                  'Откуда',
+                                                              tittle: 'Откуда',
                                                               pole:
                                                                   orderPageDriverOrderRecord
                                                                       .pointA
@@ -2738,12 +2752,11 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                           ),
                                                           Align(
                                                             alignment:
-                                                                AlignmentDirectional(
+                                                                const AlignmentDirectional(
                                                                     1.0, 0.0),
                                                             child:
                                                                 FlutterFlowIconButton(
-                                                              buttonSize:
-                                                                  50.0,
+                                                              buttonSize: 50.0,
                                                               icon: Icon(
                                                                 Icons
                                                                     .content_copy_outlined,
@@ -2756,10 +2769,11 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                                   () async {
                                                                 HapticFeedback
                                                                     .heavyImpact();
-                                                                await Clipboard.setData(ClipboardData(
-                                                                    text: orderPageDriverOrderRecord
-                                                                        .pointA
-                                                                        .fullAddress));
+                                                                await Clipboard.setData(
+                                                                    ClipboardData(
+                                                                        text: orderPageDriverOrderRecord
+                                                                            .pointA
+                                                                            .fullAddress));
                                                               },
                                                             ),
                                                           ),
@@ -2930,13 +2944,8 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                         ],
                                                       ),
                                                       if (orderPageDriverOrderRecord
-                                                                  .pointA
-                                                                  .comment !=
-                                                              null &&
-                                                          orderPageDriverOrderRecord
-                                                                  .pointA
-                                                                  .comment !=
-                                                              '')
+                                                              .pointA.comment !=
+                                                          '')
                                                         wrapWithModel(
                                                           model: _model
                                                               .textInfoModel8,
@@ -2980,8 +2989,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                   BorderRadius.circular(18.0),
                                             ),
                                             child: Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
+                                              padding:
+                                                  const EdgeInsetsDirectional
+                                                      .fromSTEB(
                                                       24.0, 16.0, 24.0, 16.0),
                                               child: Column(
                                                 mainAxisSize: MainAxisSize.max,
@@ -2990,7 +3000,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                 children: [
                                                   Stack(
                                                     alignment:
-                                                        AlignmentDirectional(
+                                                        const AlignmentDirectional(
                                                             0.0, 0.0),
                                                     children: [
                                                       wrapWithModel(
@@ -3008,7 +3018,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                       ),
                                                       Align(
                                                         alignment:
-                                                            AlignmentDirectional(
+                                                            const AlignmentDirectional(
                                                                 1.0, 0.0),
                                                         child:
                                                             FlutterFlowIconButton(
@@ -3201,11 +3211,8 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                     ],
                                                   ),
                                                   if (orderPageDriverOrderRecord
-                                                              .pointB.comment !=
-                                                          null &&
-                                                      orderPageDriverOrderRecord
-                                                              .pointB.comment !=
-                                                          '')
+                                                          .pointB.comment !=
+                                                      '')
                                                     wrapWithModel(
                                                       model: _model
                                                           .textInfoModel15,
@@ -3235,7 +3242,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                               ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(height: 5.0)),
+                                        ].divide(const SizedBox(height: 5.0)),
                                       );
                                     } else {
                                       return Container(
@@ -3247,9 +3254,8 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                               BorderRadius.circular(18.0),
                                         ),
                                         child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  24.0, 16.0, 24.0, 16.0),
+                                          padding: const EdgeInsetsDirectional
+                                              .fromSTEB(24.0, 16.0, 24.0, 16.0),
                                           child: Column(
                                             mainAxisSize: MainAxisSize.max,
                                             crossAxisAlignment:
@@ -3273,7 +3279,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                 children: [
                                                   Stack(
                                                     alignment:
-                                                        AlignmentDirectional(
+                                                        const AlignmentDirectional(
                                                             0.0, 0.0),
                                                     children: [
                                                       wrapWithModel(
@@ -3291,7 +3297,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                       ),
                                                       Align(
                                                         alignment:
-                                                            AlignmentDirectional(
+                                                            const AlignmentDirectional(
                                                                 1.0, 0.0),
                                                         child:
                                                             FlutterFlowIconButton(
@@ -3319,7 +3325,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                   ),
                                                   Stack(
                                                     alignment:
-                                                        AlignmentDirectional(
+                                                        const AlignmentDirectional(
                                                             0.0, 0.0),
                                                     children: [
                                                       wrapWithModel(
@@ -3337,7 +3343,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                       ),
                                                       Align(
                                                         alignment:
-                                                            AlignmentDirectional(
+                                                            const AlignmentDirectional(
                                                                 1.0, 0.0),
                                                         child:
                                                             FlutterFlowIconButton(
@@ -3380,8 +3386,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                     borderRadius: BorderRadius.circular(18.0),
                                   ),
                                   child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        24.0, 16.0, 24.0, 0.0),
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            24.0, 16.0, 24.0, 0.0),
                                     child: Column(
                                       mainAxisSize: MainAxisSize.max,
                                       crossAxisAlignment:
@@ -3510,9 +3517,8 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                         if (orderPageDriverOrderRecord
                                             .images.isNotEmpty)
                                           Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 16.0, 0.0, 0.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(0.0, 16.0, 0.0, 0.0),
                                             child: Column(
                                               mainAxisSize: MainAxisSize.max,
                                               crossAxisAlignment:
@@ -3536,8 +3542,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                       ),
                                                 ),
                                                 Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
                                                           0.0, 12.0, 0.0, 0.0),
                                                   child: Builder(
                                                     builder: (context) {
@@ -3550,7 +3557,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                                         padding:
                                                             EdgeInsets.zero,
                                                         gridDelegate:
-                                                            SliverGridDelegateWithFixedCrossAxisCount(
+                                                            const SliverGridDelegateWithFixedCrossAxisCount(
                                                           crossAxisCount: 5,
                                                           crossAxisSpacing: 6.0,
                                                           mainAxisSpacing: 6.0,
@@ -3643,11 +3650,11 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                               ],
                                             ),
                                           ),
-                                      ].addToEnd(SizedBox(height: 120.0)),
+                                      ].addToEnd(const SizedBox(height: 120.0)),
                                     ),
                                   ),
                                 ),
-                              ].divide(SizedBox(height: 5.0)),
+                              ].divide(const SizedBox(height: 5.0)),
                             ),
                           ),
                         ],
@@ -3659,7 +3666,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                   width: double.infinity,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).secondary,
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(18.0),
                       topRight: Radius.circular(18.0),
                     ),
@@ -3671,7 +3678,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                           !orderPageDriverOrderRecord.userWhoResponced
                               .contains(currentUserReference)) {
                         return Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               8.0, 8.0, 8.0, 34.0),
                           child: FFButtonWidget(
                             onPressed: () async {
@@ -3720,7 +3727,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                           child: Padding(
                                             padding: MediaQuery.viewInsetsOf(
                                                 context),
-                                            child: VklGeoWidget(),
+                                            child: const VklGeoWidget(),
                                           ),
                                         ),
                                       );
@@ -3769,7 +3776,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                         child: Padding(
                                           padding:
                                               MediaQuery.viewInsetsOf(context),
-                                          child: ErrorPopupWidget(
+                                          child: const ErrorPopupWidget(
                                             title: 'Аккаунт на модерации!',
                                             text:
                                                 'Мы проверим ваш аккаунт в течении 24 часов, и откроем вам доступ ко всему приложению.',
@@ -3787,9 +3794,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                             options: FFButtonOptions(
                               width: double.infinity,
                               height: 56.0,
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
+                              iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
                               color: FlutterFlowTheme.of(context).tertiary,
                               textStyle: FlutterFlowTheme.of(context)
@@ -3813,16 +3820,16 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                           (currentUserDocument?.currentOrder?.orderDocRef ==
                               null)) {
                         return Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               8.0, 8.0, 8.0, 34.0),
                           child: FFButtonWidget(
                             onPressed: () async {
                               currentUserLocationValue =
                                   await getCurrentUserLocation(
-                                      defaultLocation: LatLng(0.0, 0.0));
+                                      defaultLocation: const LatLng(0.0, 0.0));
                               if (await getPermissionStatus(
                                   locationPermission)) {
-                                await widget!.order!
+                                await widget.order!
                                     .update(createOrderRecordData(
                                   status: StatusOrder.at_work,
                                   driverLocation: currentUserLocationValue,
@@ -3843,7 +3850,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                 await actions.toggleRouteTracking(
                                   'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
                                   true,
-                                  widget!.order!,
+                                  widget.order!,
                                   orderPageDriverOrderRecord.pointB.latlng!,
                                 );
                                 triggerPushNotification(
@@ -3858,7 +3865,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                   initialPageName: 'order_Page_Customer',
                                   parameterData: {
                                     'index': 1,
-                                    'order': widget!.order,
+                                    'order': widget.order,
                                   },
                                 );
                               } else {
@@ -3877,7 +3884,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                         child: Padding(
                                           padding:
                                               MediaQuery.viewInsetsOf(context),
-                                          child: VklGeoWidget(),
+                                          child: const VklGeoWidget(),
                                         ),
                                       ),
                                     );
@@ -3891,9 +3898,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                             options: FFButtonOptions(
                               width: double.infinity,
                               height: 56.0,
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
+                              iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
                               color: FlutterFlowTheme.of(context).tertiary,
                               textStyle: FlutterFlowTheme.of(context)
@@ -3917,7 +3924,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                           (_model.image == null ||
                               (_model.image?.bytes?.isEmpty ?? true))) {
                         return Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               8.0, 8.0, 8.0, 35.0),
                           child: FFButtonWidget(
                             onPressed: () async {
@@ -3966,11 +3973,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                 }
                               }
 
-                              if (_model.uploadedLocalFile_uploadDataG298 !=
-                                      null &&
-                                  (_model.uploadedLocalFile_uploadDataG298.bytes
-                                          ?.isNotEmpty ??
-                                      false)) {
+                              if ((_model.uploadedLocalFile_uploadDataG298.bytes
+                                      ?.isNotEmpty ??
+                                  false)) {
                                 _model.image =
                                     _model.uploadedLocalFile_uploadDataG298;
                                 safeSetState(() {});
@@ -3990,7 +3995,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                         child: Padding(
                                           padding:
                                               MediaQuery.viewInsetsOf(context),
-                                          child: ErrorPopupWidget(
+                                          child: const ErrorPopupWidget(
                                             title: 'Что-то пошло не так',
                                             text: 'Давайте попробуем позже.',
                                           ),
@@ -4007,9 +4012,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                             options: FFButtonOptions(
                               width: double.infinity,
                               height: 56.0,
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
+                              iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
                               color: FlutterFlowTheme.of(context).tertiary,
                               textStyle: FlutterFlowTheme.of(context)
@@ -4032,7 +4037,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                           (_model.image != null &&
                               (_model.image?.bytes?.isNotEmpty ?? false))) {
                         return Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               8.0, 8.0, 8.0, 35.0),
                           child: FFButtonWidget(
                             onPressed: () async {
@@ -4079,7 +4084,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                 }
                               }
 
-                              await widget!.order!.update(createOrderRecordData(
+                              await widget.order!.update(createOrderRecordData(
                                 status: StatusOrder.on_confirmation,
                                 imageCompl:
                                     _model.uploadedFileUrl_uploadDataSk6,
@@ -4094,7 +4099,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                               await actions.toggleRouteTracking(
                                 'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
                                 false,
-                                widget!.order!,
+                                widget.order!,
                                 orderPageDriverOrderRecord.pointB.latlng!,
                               );
                               triggerPushNotification(
@@ -4109,7 +4114,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                 initialPageName: 'order_Page_Customer',
                                 parameterData: {
                                   'index': 1,
-                                  'order': widget!.order,
+                                  'order': widget.order,
                                 },
                               );
                             },
@@ -4117,9 +4122,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                             options: FFButtonOptions(
                               width: double.infinity,
                               height: 56.0,
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
+                              iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
                               color: FlutterFlowTheme.of(context).tertiary,
                               textStyle: FlutterFlowTheme.of(context)
@@ -4146,7 +4151,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                     },
                   ),
                 ),
-              ].divide(SizedBox(height: 5.0)),
+              ].divide(const SizedBox(height: 5.0)),
             ),
           ),
         );

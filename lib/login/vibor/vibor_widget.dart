@@ -58,7 +58,7 @@ class _ViborWidgetState extends State<ViborWidget> {
               height: 120.0,
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondaryBackground,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(18.0),
                   bottomRight: Radius.circular(18.0),
                 ),
@@ -98,14 +98,14 @@ class _ViborWidgetState extends State<ViborWidget> {
                 ),
                 child: Padding(
                   padding:
-                      EdgeInsetsDirectional.fromSTEB(24.0, 32.0, 24.0, 0.0),
+                      const EdgeInsetsDirectional.fromSTEB(24.0, 32.0, 24.0, 0.0),
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
                         padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
+                            const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
                         child: Text(
                           'Вы клиент или водитель?',
                           style:
@@ -144,13 +144,13 @@ class _ViborWidgetState extends State<ViborWidget> {
             Container(
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondary,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(18.0),
                   topRight: Radius.circular(18.0),
                 ),
               ),
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 34.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 34.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -186,14 +186,14 @@ class _ViborWidgetState extends State<ViborWidget> {
                         width: double.infinity,
                         height: 56.0,
                         padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                            const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                         iconPadding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                        color: Color(0xFFF4F5F8),
+                            const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                        color: const Color(0xFFF4F5F8),
                         textStyle:
                             FlutterFlowTheme.of(context).titleSmall.override(
                                   fontFamily: 'SF',
-                                  color: Color(0xFF007AFF),
+                                  color: const Color(0xFF007AFF),
                                   letterSpacing: 0.0,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -204,7 +204,7 @@ class _ViborWidgetState extends State<ViborWidget> {
                     ),
                     Padding(
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 0.0),
+                          const EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 0.0),
                       child: FFButtonWidget(
                         onPressed: () async {
                           FFAppState().driver = false;
@@ -216,9 +216,9 @@ class _ViborWidgetState extends State<ViborWidget> {
                         options: FFButtonOptions(
                           width: double.infinity,
                           height: 56.0,
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 0.0),
-                          iconPadding: EdgeInsetsDirectional.fromSTEB(
+                          iconPadding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 0.0),
                           color: FlutterFlowTheme.of(context).tertiary,
                           textStyle:
@@ -239,7 +239,7 @@ class _ViborWidgetState extends State<ViborWidget> {
                 ),
               ),
             ),
-          ].divide(SizedBox(height: 5.0)),
+          ].divide(const SizedBox(height: 5.0)),
         ),
       ),
     );

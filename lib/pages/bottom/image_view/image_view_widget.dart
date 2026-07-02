@@ -55,16 +55,16 @@ class _ImageViewWidgetState extends State<ImageViewWidget> {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.black,
       ),
       child: Stack(
         children: [
           Builder(
             builder: (context) {
-              final imags = widget!.alllistImage!.toList();
+              final imags = widget.alllistImage!.toList();
 
-              return Container(
+              return SizedBox(
                 width: double.infinity,
                 height: double.infinity,
                 child: PageView.builder(
@@ -73,7 +73,7 @@ class _ImageViewWidgetState extends State<ImageViewWidget> {
                           0,
                           min(
                               valueOrDefault<int>(
-                                widget!.indexCurrent,
+                                widget.indexCurrent,
                                 0,
                               ),
                               imags.length - 1))),
@@ -92,8 +92,8 @@ class _ImageViewWidgetState extends State<ImageViewWidget> {
                         safeSetState(() {});
                       },
                       child: CachedNetworkImage(
-                        fadeInDuration: Duration(milliseconds: 5),
-                        fadeOutDuration: Duration(milliseconds: 5),
+                        fadeInDuration: const Duration(milliseconds: 5),
+                        fadeOutDuration: const Duration(milliseconds: 5),
                         imageUrl: imagsItem,
                         width: double.infinity,
                         height: double.infinity,
@@ -109,19 +109,19 @@ class _ImageViewWidgetState extends State<ImageViewWidget> {
             Container(
               width: double.infinity,
               height: 100.0,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Color(0xA1000000),
               ),
               child: Align(
-                alignment: AlignmentDirectional(0.0, 1.0),
-                child: Container(
+                alignment: const AlignmentDirectional(0.0, 1.0),
+                child: SizedBox(
                   width: double.infinity,
                   height: 48.0,
                   child: Stack(
-                    alignment: AlignmentDirectional(0.0, 0.0),
+                    alignment: const AlignmentDirectional(0.0, 0.0),
                     children: [
                       Align(
-                        alignment: AlignmentDirectional(-1.0, 0.0),
+                        alignment: const AlignmentDirectional(-1.0, 0.0),
                         child: InkWell(
                           splashColor: Colors.transparent,
                           focusColor: Colors.transparent,
@@ -132,9 +132,9 @@ class _ImageViewWidgetState extends State<ImageViewWidget> {
                           },
                           child: Container(
                             height: 48.0,
-                            decoration: BoxDecoration(),
+                            decoration: const BoxDecoration(),
                             child: Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   14.0, 0.0, 16.0, 0.0),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -146,8 +146,9 @@ class _ImageViewWidgetState extends State<ImageViewWidget> {
                                     size: 14.0,
                                   ),
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        6.0, 0.0, 0.0, 0.0),
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            6.0, 0.0, 0.0, 0.0),
                                     child: Text(
                                       'Назад',
                                       style: FlutterFlowTheme.of(context)
@@ -168,7 +169,7 @@ class _ImageViewWidgetState extends State<ImageViewWidget> {
                         ),
                       ),
                       Text(
-                        '${(_model.pageViewCurrentIndex + 1).toString()} из ${widget!.alllistImage?.length?.toString()}',
+                        '${(_model.pageViewCurrentIndex + 1).toString()} из ${widget.alllistImage?.length?.toString()}',
                         style: FlutterFlowTheme.of(context).bodyMedium.override(
                               font: GoogleFonts.inter(
                                 fontWeight: FontWeight.w500,

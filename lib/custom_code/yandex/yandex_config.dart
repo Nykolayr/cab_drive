@@ -1,20 +1,15 @@
-/// Ключ Yandex MapKit — `--dart-define` или `android/local.properties`.
-///
-/// ```
-/// flutter run \
-///   --dart-define=YANDEX_MAPKIT_KEY=your-mapkit-key \
-///   --dart-define=ORS_API_KEY=your-ors-key
-/// ```
-///
-/// Android: `yandex.maps.api.key=...` в `android/local.properties`.
-/// iOS: `YandexMapsAPIKey` в `ios/Runner/Info.plist` (локально).
+import '/core/config/app_env.dart';
+
+/// Ключи Yandex — из `.env` (см. `.env.example`).
 class YandexConfig {
   YandexConfig._();
 
-  static const String mapkitKey = String.fromEnvironment('YANDEX_MAPKIT_KEY');
+  static String get mapkitKey => AppEnv.get('YANDEX_MAPKIT_KEY');
 
-  static const String geocoderKey =
-      String.fromEnvironment('YANDEX_GEOCODER_KEY');
+  static String get geocoderKey => AppEnv.get('YANDEX_GEOCODER_KEY');
 
   static bool get hasMapkitKey => mapkitKey.isNotEmpty;
+
+  static bool get hasGeocoderKey =>
+      geocoderKey.isNotEmpty || mapkitKey.isNotEmpty;
 }

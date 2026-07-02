@@ -50,12 +50,12 @@ class _RattingWidgetState extends State<RattingWidget> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(0.0, 50.0, 0.0, 0.0),
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 50.0, 0.0, 0.0),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).primaryBackground,
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(22.0),
             topRight: Radius.circular(22.0),
           ),
@@ -69,7 +69,7 @@ class _RattingWidgetState extends State<RattingWidget> {
               height: 64.0,
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondaryBackground,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(22.0),
                   topRight: Radius.circular(22.0),
                   bottomLeft: Radius.circular(5.0),
@@ -77,16 +77,17 @@ class _RattingWidgetState extends State<RattingWidget> {
                 ),
               ),
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
                 child: Row(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       () {
-                        if (widget!.index == 1) {
+                        if (widget.index == 1) {
                           return 'Мой рейтинг';
-                        } else if (widget!.index == 2) {
+                        } else if (widget.index == 2) {
                           return 'Рейтинг заказчика';
                         } else {
                           return 'Рейтинг водителя';
@@ -128,7 +129,7 @@ class _RattingWidgetState extends State<RattingWidget> {
                 stream: queryReviewsRecord(
                   queryBuilder: (reviewsRecord) => reviewsRecord.where(
                     'user_who_was_reviewed',
-                    isEqualTo: widget!.user,
+                    isEqualTo: widget.user,
                   ),
                 ),
                 builder: (context, snapshot) {
@@ -151,7 +152,7 @@ class _RattingWidgetState extends State<RattingWidget> {
 
                   return ClipRRect(
                     child: Container(
-                      decoration: BoxDecoration(),
+                      decoration: const BoxDecoration(),
                       child: SingleChildScrollView(
                         primary: false,
                         child: Column(
@@ -165,13 +166,13 @@ class _RattingWidgetState extends State<RattingWidget> {
                                 borderRadius: BorderRadius.circular(5.0),
                               ),
                               child: Padding(
-                                padding: EdgeInsets.all(24.0),
+                                padding: const EdgeInsets.all(24.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Container(
-                                      decoration: BoxDecoration(),
+                                      decoration: const BoxDecoration(),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         crossAxisAlignment:
@@ -184,16 +185,17 @@ class _RattingWidgetState extends State<RattingWidget> {
                                             children: [
                                               RatingBarIndicator(
                                                 itemBuilder: (context, index) =>
-                                                    Icon(
+                                                    const Icon(
                                                   Icons.star_rounded,
                                                   color: Color(0xFFFFB800),
                                                 ),
                                                 direction: Axis.horizontal,
                                                 rating: 5.0,
-                                                unratedColor: Color(0xFFE7E7E7),
+                                                unratedColor:
+                                                    const Color(0xFFE7E7E7),
                                                 itemCount: 5,
                                                 itemPadding:
-                                                    EdgeInsets.fromLTRB(
+                                                    const EdgeInsets.fromLTRB(
                                                         1.0, 0.0, 1.0, 0.0),
                                                 itemSize: 14.0,
                                               ),
@@ -223,16 +225,17 @@ class _RattingWidgetState extends State<RattingWidget> {
                                             children: [
                                               RatingBarIndicator(
                                                 itemBuilder: (context, index) =>
-                                                    Icon(
+                                                    const Icon(
                                                   Icons.star_rounded,
                                                   color: Color(0xFFF68512),
                                                 ),
                                                 direction: Axis.horizontal,
                                                 rating: 4.0,
-                                                unratedColor: Color(0xFFE7E7E7),
+                                                unratedColor:
+                                                    const Color(0xFFE7E7E7),
                                                 itemCount: 5,
                                                 itemPadding:
-                                                    EdgeInsets.fromLTRB(
+                                                    const EdgeInsets.fromLTRB(
                                                         1.0, 0.0, 1.0, 0.0),
                                                 itemSize: 14.0,
                                               ),
@@ -266,16 +269,17 @@ class _RattingWidgetState extends State<RattingWidget> {
                                             children: [
                                               RatingBarIndicator(
                                                 itemBuilder: (context, index) =>
-                                                    Icon(
+                                                    const Icon(
                                                   Icons.star_rounded,
                                                   color: Color(0xFFF0671C),
                                                 ),
                                                 direction: Axis.horizontal,
                                                 rating: 3.0,
-                                                unratedColor: Color(0xFFE7E7E7),
+                                                unratedColor:
+                                                    const Color(0xFFE7E7E7),
                                                 itemCount: 5,
                                                 itemPadding:
-                                                    EdgeInsets.fromLTRB(
+                                                    const EdgeInsets.fromLTRB(
                                                         1.0, 0.0, 1.0, 0.0),
                                                 itemSize: 14.0,
                                               ),
@@ -309,16 +313,17 @@ class _RattingWidgetState extends State<RattingWidget> {
                                             children: [
                                               RatingBarIndicator(
                                                 itemBuilder: (context, index) =>
-                                                    Icon(
+                                                    const Icon(
                                                   Icons.star_rounded,
                                                   color: Color(0xFFE94627),
                                                 ),
                                                 direction: Axis.horizontal,
                                                 rating: 2.0,
-                                                unratedColor: Color(0xFFE7E7E7),
+                                                unratedColor:
+                                                    const Color(0xFFE7E7E7),
                                                 itemCount: 5,
                                                 itemPadding:
-                                                    EdgeInsets.fromLTRB(
+                                                    const EdgeInsets.fromLTRB(
                                                         1.0, 0.0, 1.0, 0.0),
                                                 itemSize: 14.0,
                                               ),
@@ -352,16 +357,17 @@ class _RattingWidgetState extends State<RattingWidget> {
                                             children: [
                                               RatingBarIndicator(
                                                 itemBuilder: (context, index) =>
-                                                    Icon(
+                                                    const Icon(
                                                   Icons.star_rounded,
                                                   color: Color(0xFFE01935),
                                                 ),
                                                 direction: Axis.horizontal,
                                                 rating: 1.0,
-                                                unratedColor: Color(0xFFE7E7E7),
+                                                unratedColor:
+                                                    const Color(0xFFE7E7E7),
                                                 itemCount: 5,
                                                 itemPadding:
-                                                    EdgeInsets.fromLTRB(
+                                                    const EdgeInsets.fromLTRB(
                                                         1.0, 0.0, 1.0, 0.0),
                                                 itemSize: 14.0,
                                               ),
@@ -388,10 +394,10 @@ class _RattingWidgetState extends State<RattingWidget> {
                                               ),
                                             ],
                                           ),
-                                        ].divide(SizedBox(height: 10.0)),
+                                        ].divide(const SizedBox(height: 10.0)),
                                       ),
                                     ),
-                                  ].divide(SizedBox(height: 12.0)),
+                                  ].divide(const SizedBox(height: 12.0)),
                                 ),
                               ),
                             ),
@@ -400,8 +406,8 @@ class _RattingWidgetState extends State<RattingWidget> {
                                 final rews =
                                     containerReviewsRecordList.toList();
                                 if (rews.isEmpty) {
-                                  return Center(
-                                    child: Container(
+                                  return const Center(
+                                    child: SizedBox(
                                       height: 650.0,
                                       child: RewEmptWidget(),
                                     ),
@@ -415,7 +421,7 @@ class _RattingWidgetState extends State<RattingWidget> {
                                   scrollDirection: Axis.vertical,
                                   itemCount: rews.length,
                                   separatorBuilder: (_, __) =>
-                                      SizedBox(height: 5.0),
+                                      const SizedBox(height: 5.0),
                                   itemBuilder: (context, rewsIndex) {
                                     final rewsItem = rews[rewsIndex];
                                     return OtzivWidget(
@@ -427,7 +433,7 @@ class _RattingWidgetState extends State<RattingWidget> {
                                 );
                               },
                             ),
-                          ].divide(SizedBox(height: 5.0)),
+                          ].divide(const SizedBox(height: 5.0)),
                         ),
                       ),
                     ),
@@ -435,7 +441,7 @@ class _RattingWidgetState extends State<RattingWidget> {
                 },
               ),
             ),
-          ].divide(SizedBox(height: 5.0)),
+          ].divide(const SizedBox(height: 5.0)),
         ),
       ),
     );

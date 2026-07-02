@@ -36,7 +36,7 @@ class _LoadWidgetState extends State<LoadWidget> {
         context.goNamed(
           VerifAdminWidget.routeName,
           extra: <String, dynamic>{
-            '__transition_info__': TransitionInfo(
+            '__transition_info__': const TransitionInfo(
               hasTransition: true,
               transitionType: PageTransitionType.fade,
               duration: Duration(milliseconds: 0),
@@ -51,7 +51,7 @@ class _LoadWidgetState extends State<LoadWidget> {
             context.goNamed(
               MainDriverWidget.routeName,
               extra: <String, dynamic>{
-                '__transition_info__': TransitionInfo(
+                '__transition_info__': const TransitionInfo(
                   hasTransition: true,
                   transitionType: PageTransitionType.fade,
                   duration: Duration(milliseconds: 0),
@@ -65,12 +65,14 @@ class _LoadWidgetState extends State<LoadWidget> {
             final order = currentUserDocument?.currentOrder;
             if (order?.orderDocRef != null && order?.pointB != null) {
               unawaited(
-                actions.toggleRouteTracking(
-                  'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
-                  true,
-                  order!.orderDocRef!,
-                  order.pointB!,
-                ).catchError((_) {}),
+                actions
+                    .toggleRouteTracking(
+                      'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
+                      true,
+                      order!.orderDocRef!,
+                      order.pointB!,
+                    )
+                    .catchError((_) {}),
               );
             }
             return;
@@ -78,7 +80,7 @@ class _LoadWidgetState extends State<LoadWidget> {
             context.goNamed(
               MainUserWidget.routeName,
               extra: <String, dynamic>{
-                '__transition_info__': TransitionInfo(
+                '__transition_info__': const TransitionInfo(
                   hasTransition: true,
                   transitionType: PageTransitionType.fade,
                   duration: Duration(milliseconds: 0),
@@ -100,7 +102,7 @@ class _LoadWidgetState extends State<LoadWidget> {
               ),
             }.withoutNulls,
             extra: <String, dynamic>{
-              '__transition_info__': TransitionInfo(
+              '__transition_info__': const TransitionInfo(
                 hasTransition: true,
                 transitionType: PageTransitionType.fade,
                 duration: Duration(milliseconds: 0),

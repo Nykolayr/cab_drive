@@ -57,15 +57,16 @@ class _ChatsWidgetState extends State<ChatsWidget> {
               height: 120.0,
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondaryBackground,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(18.0),
                   bottomRight: Radius.circular(18.0),
                 ),
               ),
               child: Align(
-                alignment: AlignmentDirectional(-1.0, 1.0),
+                alignment: const AlignmentDirectional(-1.0, 1.0),
                 child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 0.0, 18.0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(
+                      24.0, 0.0, 0.0, 18.0),
                   child: Text(
                     'Чаты',
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -121,7 +122,7 @@ class _ChatsWidgetState extends State<ChatsWidget> {
                       List<ChatsRecord> listViewChatsRecordList =
                           snapshot.data!;
                       if (listViewChatsRecordList.isEmpty) {
-                        return NetChatovWidget();
+                        return const NetChatovWidget();
                       }
 
                       return ListView.builder(
@@ -146,11 +147,11 @@ class _ChatsWidgetState extends State<ChatsWidget> {
             wrapWithModel(
               model: _model.navbarModel,
               updateCallback: () => safeSetState(() {}),
-              child: NavbarWidget(
+              child: const NavbarWidget(
                 index: 1,
               ),
             ),
-          ].divide(SizedBox(height: 5.0)),
+          ].divide(const SizedBox(height: 5.0)),
         ),
       ),
     );

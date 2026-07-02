@@ -50,13 +50,13 @@ class _CityWidgetState extends State<CityWidget> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(0.0, 45.0, 0.0, 0.0),
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 45.0, 0.0, 0.0),
       child: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).primaryBackground,
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(18.0),
             topRight: Radius.circular(18.0),
           ),
@@ -72,7 +72,7 @@ class _CityWidgetState extends State<CityWidget> {
                   height: 64.0,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).secondaryBackground,
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(22.0),
                       topRight: Radius.circular(22.0),
                       bottomLeft: Radius.circular(5.0),
@@ -80,8 +80,8 @@ class _CityWidgetState extends State<CityWidget> {
                     ),
                   ),
                   child: Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        24.0, 0.0, 24.0, 0.0),
                     child: Row(
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -97,7 +97,7 @@ class _CityWidgetState extends State<CityWidget> {
                                   ),
                         ),
                         Align(
-                          alignment: AlignmentDirectional(1.0, 0.0),
+                          alignment: const AlignmentDirectional(1.0, 0.0),
                           child: FlutterFlowIconButton(
                             borderRadius: 54.0,
                             borderWidth: 0.0,
@@ -129,14 +129,14 @@ class _CityWidgetState extends State<CityWidget> {
                       borderRadius: BorderRadius.circular(5.0),
                     ),
                     child: Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                          0.0, 12.0, 0.0, 0.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 8.0, 0.0, 8.0, 0.0),
                             child: Container(
                               width: double.infinity,
@@ -145,7 +145,7 @@ class _CityWidgetState extends State<CityWidget> {
                                 focusNode: _model.textFieldFocusNode,
                                 onChanged: (_) => EasyDebounce.debounce(
                                   '_model.textController',
-                                  Duration(milliseconds: 0),
+                                  const Duration(milliseconds: 0),
                                   () async {
                                     _model.apiResult5zb =
                                         await AutocompleteCall.call(
@@ -172,14 +172,14 @@ class _CityWidgetState extends State<CityWidget> {
                                         letterSpacing: 0.0,
                                       ),
                                   enabledBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
+                                    borderSide: const BorderSide(
                                       color: Color(0x00000000),
                                       width: 1.0,
                                     ),
                                     borderRadius: BorderRadius.circular(16.0),
                                   ),
                                   focusedBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
+                                    borderSide: const BorderSide(
                                       color: Color(0x00000000),
                                       width: 1.0,
                                     ),
@@ -203,7 +203,7 @@ class _CityWidgetState extends State<CityWidget> {
                                   fillColor:
                                       FlutterFlowTheme.of(context).primary,
                                   contentPadding:
-                                      EdgeInsetsDirectional.fromSTEB(
+                                      const EdgeInsetsDirectional.fromSTEB(
                                           16.0, 24.0, 16.0, 24.0),
                                   suffixIcon: Icon(
                                     Icons.search_sharp,
@@ -246,7 +246,7 @@ class _CityWidgetState extends State<CityWidget> {
                                     .toList();
 
                                 return ListView.builder(
-                                  padding: EdgeInsets.fromLTRB(
+                                  padding: const EdgeInsets.fromLTRB(
                                     0,
                                     8.0,
                                     0,
@@ -279,11 +279,10 @@ class _CityWidgetState extends State<CityWidget> {
                                         Navigator.pop(context);
                                       },
                                       child: Container(
-                                        decoration: BoxDecoration(),
+                                        decoration: const BoxDecoration(),
                                         child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  24.0, 12.0, 24.0, 12.0),
+                                          padding: const EdgeInsetsDirectional
+                                              .fromSTEB(24.0, 12.0, 24.0, 12.0),
                                           child: Column(
                                             mainAxisSize: MainAxisSize.max,
                                             crossAxisAlignment:
@@ -296,8 +295,8 @@ class _CityWidgetState extends State<CityWidget> {
                                                         .bodyMedium
                                                         .override(
                                                           fontFamily: 'SF',
-                                                          color:
-                                                              Color(0xFF201F1E),
+                                                          color: const Color(
+                                                              0xFF201F1E),
                                                           fontSize: 16.0,
                                                           letterSpacing: 0.0,
                                                         ),
@@ -317,13 +316,14 @@ class _CityWidgetState extends State<CityWidget> {
                                                         .bodyMedium
                                                         .override(
                                                           fontFamily: 'SF',
-                                                          color:
-                                                              Color(0xFFA4A6B2),
+                                                          color: const Color(
+                                                              0xFFA4A6B2),
                                                           fontSize: 13.0,
                                                           letterSpacing: 0.0,
                                                         ),
                                               ),
-                                            ].divide(SizedBox(height: 5.0)),
+                                            ].divide(
+                                                const SizedBox(height: 5.0)),
                                           ),
                                         ),
                                       ),
@@ -338,7 +338,7 @@ class _CityWidgetState extends State<CityWidget> {
                     ),
                   ),
                 ),
-              ].divide(SizedBox(height: 5.0)),
+              ].divide(const SizedBox(height: 5.0)),
             ),
           ],
         ),

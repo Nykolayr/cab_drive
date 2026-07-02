@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../auth_manager.dart';
-import '../base_auth_user_provider.dart';
 
 import '/backend/backend.dart';
 import 'anonymous_auth.dart';
@@ -50,9 +49,9 @@ class FirebaseAuthManager extends AuthManager
         GithubSignInManager,
         PhoneSignInManager {
   // Set when using phone verification (after phone number is provided).
-  String? _phoneAuthVerificationCode;
+  String? phoneAuthVerificationCode;
   // Set when using phone sign in in web mode (ignored otherwise).
-  ConfirmationResult? _webPhoneAuthConfirmationResult;
+  ConfirmationResult? webPhoneAuthConfirmationResult;
   FirebasePhoneAuthManager phoneAuthManager = FirebasePhoneAuthManager();
 
   @override
@@ -104,7 +103,6 @@ class FirebaseAuthManager extends AuthManager
     }
   }
 
-  @override
   Future updatePassword({
     required String newPassword,
     required BuildContext context,
@@ -132,7 +130,7 @@ class FirebaseAuthManager extends AuthManager
   }) async {
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseAuthException {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Ошибка')),
@@ -204,7 +202,7 @@ class FirebaseAuthManager extends AuthManager
         phoneAuthManager
             .update(() => phoneAuthManager.triggerOnCodeSent = false);
       } else if (phoneAuthManager.phoneAuthError != null) {
-        final e = phoneAuthManager.phoneAuthError!;
+        phoneAuthManager.phoneAuthError!;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Ошибка'),
         ));

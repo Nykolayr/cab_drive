@@ -46,18 +46,19 @@ class _NetZakazovVodilaWidgetState extends State<NetZakazovVodilaWidget> {
         borderRadius: BorderRadius.circular(22.0),
       ),
       child: Padding(
-        padding: EdgeInsetsDirectional.fromSTEB(38.0, 0.0, 38.0, 0.0),
+        padding: const EdgeInsetsDirectional.fromSTEB(38.0, 0.0, 38.0, 0.0),
         child: Column(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 32.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 32.0),
               child: Text(
                 'Заказов в работе пока нет',
                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                       fontFamily: 'SF',
-                      color: Color(0xFFA4A6B2),
+                      color: const Color(0xFFA4A6B2),
                       fontSize: 18.0,
                       letterSpacing: 0.0,
                       fontWeight: FontWeight.w500,
@@ -69,7 +70,7 @@ class _NetZakazovVodilaWidgetState extends State<NetZakazovVodilaWidget> {
                 context.pushNamed(
                   MainDriverWidget.routeName,
                   extra: <String, dynamic>{
-                    '__transition_info__': TransitionInfo(
+                    '__transition_info__': const TransitionInfo(
                       hasTransition: true,
                       transitionType: PageTransitionType.fade,
                       duration: Duration(milliseconds: 0),
@@ -81,8 +82,10 @@ class _NetZakazovVodilaWidgetState extends State<NetZakazovVodilaWidget> {
               options: FFButtonOptions(
                 width: double.infinity,
                 height: 56.0,
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                iconPadding:
+                    const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                 color: FlutterFlowTheme.of(context).tertiary,
                 textStyle: FlutterFlowTheme.of(context).titleSmall.override(
                       fontFamily: 'SF',

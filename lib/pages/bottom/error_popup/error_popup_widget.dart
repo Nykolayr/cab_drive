@@ -44,7 +44,7 @@ class _ErrorPopupWidgetState extends State<ErrorPopupWidget> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 45.0),
+      padding: const EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 45.0),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
@@ -52,13 +52,14 @@ class _ErrorPopupWidgetState extends State<ErrorPopupWidget> {
           borderRadius: BorderRadius.circular(18.0),
         ),
         child: Padding(
-          padding: EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
+          padding: const EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 21.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 21.0),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(0.0),
                   child: Image.asset(
@@ -70,10 +71,11 @@ class _ErrorPopupWidgetState extends State<ErrorPopupWidget> {
                 ),
               ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 12.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 12.0),
                 child: Text(
                   valueOrDefault<String>(
-                    widget!.title,
+                    widget.title,
                     'Что-то пошло не так',
                   ),
                   style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -86,10 +88,11 @@ class _ErrorPopupWidgetState extends State<ErrorPopupWidget> {
                 ),
               ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 28.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 28.0),
                 child: Text(
                   valueOrDefault<String>(
-                    widget!.text,
+                    widget.text,
                     'Давайте попробуем позже.',
                   ),
                   textAlign: TextAlign.center,
@@ -100,7 +103,7 @@ class _ErrorPopupWidgetState extends State<ErrorPopupWidget> {
                       ),
                 ),
               ),
-              Divider(
+              const Divider(
                 height: 0.3,
                 thickness: 0.3,
                 color: Color(0xFFD0CFCE),
@@ -115,21 +118,21 @@ class _ErrorPopupWidgetState extends State<ErrorPopupWidget> {
                 },
                 child: Container(
                   width: double.infinity,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(18.0),
                       bottomRight: Radius.circular(18.0),
                     ),
                   ),
                   child: Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 21.0, 0.0, 21.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 21.0, 0.0, 21.0),
                     child: Text(
                       'ОК',
                       textAlign: TextAlign.center,
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             fontFamily: 'SF',
-                            color: Color(0xFF007AFF),
+                            color: const Color(0xFF007AFF),
                             fontSize: 16.0,
                             letterSpacing: 0.0,
                             fontWeight: FontWeight.w500,

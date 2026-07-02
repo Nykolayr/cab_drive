@@ -66,26 +66,15 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
         safeSetState(() {
           _model.pointATextController?.text = FFAppState().pointA.address;
         });
-        if (FFAppState().pointB != null) {
-          safeSetState(() {
-            _model.pointBTextController?.text = FFAppState().pointB.address;
-            _model.pointBFocusNode?.requestFocus();
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _model.pointBTextController?.selection = TextSelection.collapsed(
-                offset: _model.pointBTextController!.text.length,
-              );
-            });
+        safeSetState(() {
+          _model.pointBTextController?.text = FFAppState().pointB.address;
+          _model.pointBFocusNode?.requestFocus();
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _model.pointBTextController?.selection = TextSelection.collapsed(
+              offset: _model.pointBTextController!.text.length,
+            );
           });
-        } else {
-          safeSetState(() {
-            _model.pointBTextController?.text = '';
-            _model.pointBFocusNode?.requestFocus();
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _model.pointBTextController?.selection =
-                  const TextSelection.collapsed(offset: 0);
-            });
-          });
-        }
+        });
 
         _model.currentPoint = 2;
         safeSetState(() {});
@@ -122,13 +111,13 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
     context.watch<FFAppState>();
 
     return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(0.0, 50.0, 0.0, 0.0),
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 50.0, 0.0, 0.0),
       child: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).secondaryBackground,
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
               blurRadius: 4.0,
               color: Colors.black,
@@ -139,7 +128,7 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
               spreadRadius: 0.0,
             )
           ],
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(14.0),
             topRight: Radius.circular(14.0),
           ),
@@ -149,23 +138,23 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 8.0),
+              padding: const EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 8.0),
               child: Container(
                 width: 39.0,
                 height: 5.0,
                 decoration: BoxDecoration(
-                  color: Color(0xFFD9D9D9),
+                  color: const Color(0xFFD9D9D9),
                   borderRadius: BorderRadius.circular(28.0),
                 ),
               ),
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 0.0),
+              padding: const EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 0.0),
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).secondaryBackground,
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                       blurRadius: 30.0,
                       color: Color(0x1E090909),
@@ -179,7 +168,8 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                   borderRadius: BorderRadius.circular(17.0),
                 ),
                 child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(12.0, 4.0, 0.0, 4.0),
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(12.0, 4.0, 0.0, 4.0),
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -205,7 +195,7 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                         .secondaryBackground,
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: Color(0xFFA4A6B2),
+                                      color: const Color(0xFFA4A6B2),
                                       width: 3.0,
                                     ),
                                   ),
@@ -215,21 +205,21 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                           ),
                           Expanded(
                             child: Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   8.0, 0.0, 0.0, 0.0),
-                              child: Container(
+                              child: SizedBox(
                                 width: double.infinity,
                                 child: TextFormField(
                                   controller: _model.pointATextController,
                                   focusNode: _model.pointAFocusNode,
                                   onChanged: (_) => EasyDebounce.debounce(
                                     '_model.pointATextController',
-                                    Duration(milliseconds: 0),
+                                    const Duration(milliseconds: 0),
                                     () async {
                                       currentUserLocationValue =
                                           await getCurrentUserLocation(
                                               defaultLocation:
-                                                  LatLng(0.0, 0.0));
+                                                  const LatLng(0.0, 0.0));
                                       _model.apiResult1veA =
                                           await AutocompleteCall.call(
                                         input: _model.pointATextController.text,
@@ -290,7 +280,7 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                       borderRadius: BorderRadius.circular(0.0),
                                     ),
                                     contentPadding:
-                                        EdgeInsetsDirectional.fromSTEB(
+                                        const EdgeInsetsDirectional.fromSTEB(
                                             0.0, 15.0, 0.0, 15.0),
                                     hoverColor: Colors.transparent,
                                     suffixIcon: _model.pointATextController!
@@ -302,7 +292,8 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                               currentUserLocationValue =
                                                   await getCurrentUserLocation(
                                                       defaultLocation:
-                                                          LatLng(0.0, 0.0));
+                                                          const LatLng(
+                                                              0.0, 0.0));
                                               _model.apiResult1veA =
                                                   await AutocompleteCall.call(
                                                 input: _model
@@ -315,7 +306,7 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                               safeSetState(() {});
                                               safeSetState(() {});
                                             },
-                                            child: Icon(
+                                            child: const Icon(
                                               Icons.clear,
                                               size: 24.0,
                                             ),
@@ -330,13 +321,9 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                           (_model.pointBFocusNode?.hasFocus ??
                                                       false) &&
                                                   (FFAppState()
-                                                              .pointA
-                                                              .address ==
-                                                          null ||
-                                                      FFAppState()
-                                                              .pointA
-                                                              .address ==
-                                                          '')
+                                                          .pointA
+                                                          .address ==
+                                                      '')
                                               ? FlutterFlowTheme.of(context)
                                                   .error
                                               : FlutterFlowTheme.of(context)
@@ -389,7 +376,7 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                         .secondaryBackground,
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: Color(0xFFA4A6B2),
+                                      color: const Color(0xFFA4A6B2),
                                       width: 3.0,
                                     ),
                                   ),
@@ -399,21 +386,21 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                           ),
                           Expanded(
                             child: Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   8.0, 0.0, 0.0, 0.0),
-                              child: Container(
+                              child: SizedBox(
                                 width: double.infinity,
                                 child: TextFormField(
                                   controller: _model.pointBTextController,
                                   focusNode: _model.pointBFocusNode,
                                   onChanged: (_) => EasyDebounce.debounce(
                                     '_model.pointBTextController',
-                                    Duration(milliseconds: 0),
+                                    const Duration(milliseconds: 0),
                                     () async {
                                       currentUserLocationValue =
                                           await getCurrentUserLocation(
                                               defaultLocation:
-                                                  LatLng(0.0, 0.0));
+                                                  const LatLng(0.0, 0.0));
                                       _model.apiResult1veB =
                                           await AutocompleteCall.call(
                                         input: _model.pointBTextController.text,
@@ -446,7 +433,7 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                     errorBorder: InputBorder.none,
                                     focusedErrorBorder: InputBorder.none,
                                     contentPadding:
-                                        EdgeInsetsDirectional.fromSTEB(
+                                        const EdgeInsetsDirectional.fromSTEB(
                                             0.0, 15.0, 0.0, 15.0),
                                     hoverColor: Colors.transparent,
                                   ),
@@ -458,13 +445,9 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                           (_model.pointAFocusNode?.hasFocus ??
                                                       false) &&
                                                   (FFAppState()
-                                                              .pointB
-                                                              .address ==
-                                                          null ||
-                                                      FFAppState()
-                                                              .pointB
-                                                              .address ==
-                                                          '')
+                                                          .pointB
+                                                          .address ==
+                                                      '')
                                               ? FlutterFlowTheme.of(context)
                                                   .error
                                               : FlutterFlowTheme.of(context)
@@ -495,8 +478,7 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                               ),
                             ),
                           ),
-                          if (_model.pointBTextController.text != null &&
-                              _model.pointBTextController.text != '')
+                          if (_model.pointBTextController.text != '')
                             FlutterFlowIconButton(
                               borderRadius: 8.0,
                               buttonSize: 40.0,
@@ -529,22 +511,20 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                             ),
                         ],
                       ),
-                    ].divide(SizedBox(height: 4.0)),
+                    ].divide(const SizedBox(height: 4.0)),
                   ),
                 ),
               ),
             ),
             Expanded(
-              child: Container(
+              child: SizedBox(
                 height: 100.0,
                 child: Stack(
                   children: [
                     if (((_model.currentPoint == 1) &&
-                            (_model.pointATextController.text != null &&
-                                _model.pointATextController.text != '')) ||
+                            (_model.pointATextController.text != '')) ||
                         ((_model.currentPoint == 2) &&
-                            (_model.pointBTextController.text != null &&
-                                _model.pointBTextController.text != '')))
+                            (_model.pointBTextController.text != '')))
                       Builder(
                         builder: (context) {
                           if (_model.currentPoint == 1) {
@@ -556,7 +536,7 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                     [];
 
                                 return ListView.builder(
-                                  padding: EdgeInsets.fromLTRB(
+                                  padding: const EdgeInsets.fromLTRB(
                                     0,
                                     12.0,
                                     0,
@@ -650,12 +630,9 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                             safeSetState(() {});
                                           return;
                                         } else {
-                                          if (_model.pointBTextController
-                                                      .text !=
-                                                  null &&
-                                              _model.pointBTextController
-                                                      .text !=
-                                                  '') {
+                                          if (_model
+                                                  .pointBTextController.text !=
+                                              '') {
                                             FFAppState().pointA = PointStruct(
                                               latlng: functions
                                                   .convertLatLngFromStrings(
@@ -891,11 +868,10 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                           safeSetState(() {});
                                       },
                                       child: Container(
-                                        decoration: BoxDecoration(),
+                                        decoration: const BoxDecoration(),
                                         child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  24.0, 14.0, 24.0, 14.0),
+                                          padding: const EdgeInsetsDirectional
+                                              .fromSTEB(24.0, 14.0, 24.0, 14.0),
                                           child: Column(
                                             mainAxisSize: MainAxisSize.max,
                                             crossAxisAlignment:
@@ -949,8 +925,9 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                                           aAAListIndex)) !=
                                                       '')
                                                 Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
                                                           0.0, 6.0, 0.0, 0.0),
                                                   child: Text(
                                                     (AutocompleteCall.region(
@@ -1013,7 +990,7 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                     [];
 
                                 return ListView.builder(
-                                  padding: EdgeInsets.fromLTRB(
+                                  padding: const EdgeInsets.fromLTRB(
                                     0,
                                     12.0,
                                     0,
@@ -1229,11 +1206,10 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                         safeSetState(() {});
                                       },
                                       child: Container(
-                                        decoration: BoxDecoration(),
+                                        decoration: const BoxDecoration(),
                                         child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  24.0, 14.0, 24.0, 14.0),
+                                          padding: const EdgeInsetsDirectional
+                                              .fromSTEB(24.0, 14.0, 24.0, 14.0),
                                           child: Column(
                                             mainAxisSize: MainAxisSize.max,
                                             crossAxisAlignment:
@@ -1287,8 +1263,9 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                                           bBBListIndex)) !=
                                                       '')
                                                 Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
                                                           0.0, 6.0, 0.0, 0.0),
                                                   child: Text(
                                                     (AutocompleteCall.region(
@@ -1346,11 +1323,9 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                         },
                       ),
                     if (((_model.currentPoint == 1) &&
-                            (_model.pointATextController.text == null ||
-                                _model.pointATextController.text == '')) ||
+                            (_model.pointATextController.text == '')) ||
                         ((_model.currentPoint == 2) &&
-                            (_model.pointBTextController.text == null ||
-                                _model.pointBTextController.text == '')))
+                            (_model.pointBTextController.text == '')))
                       AuthUserStreamWidget(
                         builder: (context) => Builder(
                           builder: (context) {
@@ -1359,7 +1334,7 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                     .toList();
 
                             return ListView.builder(
-                              padding: EdgeInsets.fromLTRB(
+                              padding: const EdgeInsets.fromLTRB(
                                 0,
                                 12.0,
                                 0,
@@ -1380,9 +1355,7 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                     var _shouldSetState = false;
                                     if (_model.currentPoint == 1) {
                                       if (_model.pointBTextController.text !=
-                                              null &&
-                                          _model.pointBTextController.text !=
-                                              '') {
+                                          '') {
                                         FFAppState().pointA = addressItem;
                                         FFAppState().update(() {});
                                         Navigator.pop(context);
@@ -1510,10 +1483,11 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                     if (_shouldSetState) safeSetState(() {});
                                   },
                                   child: Container(
-                                    decoration: BoxDecoration(),
+                                    decoration: const BoxDecoration(),
                                     child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          24.0, 14.0, 24.0, 14.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              24.0, 14.0, 24.0, 14.0),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.max,
                                         crossAxisAlignment:
@@ -1551,9 +1525,8 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                                 ),
                                           ),
                                           Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 6.0, 0.0, 0.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(0.0, 6.0, 0.0, 0.0),
                                             child: Text(
                                               addressItem.city,
                                               style:

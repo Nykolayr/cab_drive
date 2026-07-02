@@ -1,7 +1,6 @@
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'o_prilozhen_model.dart';
 export 'o_prilozhen_model.dart';
@@ -41,7 +40,7 @@ class _OPrilozhenWidgetState extends State<OPrilozhenWidget> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).primaryBackground,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(22.0),
           topRight: Radius.circular(22.0),
         ),
@@ -55,7 +54,7 @@ class _OPrilozhenWidgetState extends State<OPrilozhenWidget> {
             height: 64.0,
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).secondaryBackground,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(22.0),
                 topRight: Radius.circular(22.0),
                 bottomLeft: Radius.circular(5.0),
@@ -63,7 +62,8 @@ class _OPrilozhenWidgetState extends State<OPrilozhenWidget> {
               ),
             ),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -121,7 +121,8 @@ class _OPrilozhenWidgetState extends State<OPrilozhenWidget> {
                 borderRadius: BorderRadius.circular(5.0),
               ),
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 35.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 35.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -136,9 +137,9 @@ class _OPrilozhenWidgetState extends State<OPrilozhenWidget> {
                         await launchURL(getRemoteConfigString('poll'));
                       },
                       child: Container(
-                        decoration: BoxDecoration(),
+                        decoration: const BoxDecoration(),
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               16.0, 17.0, 16.0, 17.0),
                           child: Row(
                             mainAxisSize: MainAxisSize.max,
@@ -154,7 +155,7 @@ class _OPrilozhenWidgetState extends State<OPrilozhenWidget> {
                                       letterSpacing: 0.0,
                                     ),
                               ),
-                              Icon(
+                              const Icon(
                                 FFIcons.kiconrightStroke,
                                 color: Color(0xFFC0C0C0),
                                 size: 16.0,
@@ -164,7 +165,7 @@ class _OPrilozhenWidgetState extends State<OPrilozhenWidget> {
                         ),
                       ),
                     ),
-                    Divider(
+                    const Divider(
                       height: 0.3,
                       thickness: 0.3,
                       color: Color(0xFFD0CFCE),
@@ -178,9 +179,9 @@ class _OPrilozhenWidgetState extends State<OPrilozhenWidget> {
                         await launchURL(getRemoteConfigString('usl'));
                       },
                       child: Container(
-                        decoration: BoxDecoration(),
+                        decoration: const BoxDecoration(),
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               16.0, 17.0, 16.0, 17.0),
                           child: Row(
                             mainAxisSize: MainAxisSize.max,
@@ -196,7 +197,7 @@ class _OPrilozhenWidgetState extends State<OPrilozhenWidget> {
                                       letterSpacing: 0.0,
                                     ),
                               ),
-                              Icon(
+                              const Icon(
                                 FFIcons.kiconrightStroke,
                                 color: Color(0xFFC0C0C0),
                                 size: 16.0,
@@ -206,31 +207,31 @@ class _OPrilozhenWidgetState extends State<OPrilozhenWidget> {
                         ),
                       ),
                     ),
-                    Divider(
+                    const Divider(
                       height: 0.3,
                       thickness: 0.3,
                       color: Color(0xFFD0CFCE),
                     ),
                     Padding(
-                      padding: EdgeInsetsDirectional.fromSTEB(
+                      padding: const EdgeInsetsDirectional.fromSTEB(
                           16.0, 120.0, 16.0, 0.0),
                       child: Text(
                         'Cab Drive, 2025',
                         style: FlutterFlowTheme.of(context).bodyMedium.override(
                               fontFamily: 'SF',
-                              color: Color(0xFF86888F),
+                              color: const Color(0xFF86888F),
                               letterSpacing: 0.0,
                             ),
                       ),
                     ),
                     Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(16.0, 5.0, 16.0, 0.0),
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                          16.0, 5.0, 16.0, 0.0),
                       child: Text(
                         'Версия 1.0.0',
                         style: FlutterFlowTheme.of(context).bodyMedium.override(
                               fontFamily: 'SF',
-                              color: Color(0xFF86888F),
+                              color: const Color(0xFF86888F),
                               letterSpacing: 0.0,
                             ),
                       ),
@@ -240,7 +241,7 @@ class _OPrilozhenWidgetState extends State<OPrilozhenWidget> {
               ),
             ),
           ),
-        ].divide(SizedBox(height: 5.0)),
+        ].divide(const SizedBox(height: 5.0)),
       ),
     );
   }

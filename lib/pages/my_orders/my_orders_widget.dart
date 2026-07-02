@@ -8,7 +8,6 @@ import '/driver/order_card_driver/order_card_driver_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/pages/bottom/navbar/navbar_widget.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -79,13 +78,13 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                               decoration: BoxDecoration(
                                 color: FlutterFlowTheme.of(context)
                                     .secondaryBackground,
-                                borderRadius: BorderRadius.only(
+                                borderRadius: const BorderRadius.only(
                                   bottomLeft: Radius.circular(18.0),
                                   bottomRight: Radius.circular(18.0),
                                 ),
                               ),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     16.0, 0.0, 0.0, 16.0),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
@@ -121,9 +120,8 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                               BorderRadius.circular(12.0),
                                         ),
                                         child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  18.0, 9.0, 18.0, 9.0),
+                                          padding: const EdgeInsetsDirectional
+                                              .fromSTEB(18.0, 9.0, 18.0, 9.0),
                                           child: Text(
                                             'Активные',
                                             style: FlutterFlowTheme.of(context)
@@ -177,9 +175,8 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                               BorderRadius.circular(12.0),
                                         ),
                                         child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  18.0, 9.0, 18.0, 9.0),
+                                          padding: const EdgeInsetsDirectional
+                                              .fromSTEB(18.0, 9.0, 18.0, 9.0),
                                           child: Text(
                                             'Архив',
                                             style: FlutterFlowTheme.of(context)
@@ -203,7 +200,7 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                         ),
                                       ),
                                     ),
-                                  ].divide(SizedBox(width: 8.0)),
+                                  ].divide(const SizedBox(width: 8.0)),
                                 ),
                               ),
                             ),
@@ -268,7 +265,7 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                                               .completed)))
                                               .toList();
                                           if (containerVar.isEmpty) {
-                                            return Container(
+                                            return const SizedBox(
                                               height: double.infinity,
                                               child: NetZakazovKlientWidget(),
                                             );
@@ -281,7 +278,7 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                             scrollDirection: Axis.vertical,
                                             itemCount: containerVar.length,
                                             separatorBuilder: (_, __) =>
-                                                SizedBox(height: 5.0),
+                                                const SizedBox(height: 5.0),
                                             itemBuilder:
                                                 (context, containerVarIndex) {
                                               final containerVarItem =
@@ -326,7 +323,7 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                 },
                               ),
                             ),
-                          ].divide(SizedBox(height: 5.0)),
+                          ].divide(const SizedBox(height: 5.0)),
                         );
                       } else {
                         return Column(
@@ -339,13 +336,13 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                               decoration: BoxDecoration(
                                 color: FlutterFlowTheme.of(context)
                                     .secondaryBackground,
-                                borderRadius: BorderRadius.only(
+                                borderRadius: const BorderRadius.only(
                                   bottomLeft: Radius.circular(18.0),
                                   bottomRight: Radius.circular(18.0),
                                 ),
                               ),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     16.0, 0.0, 0.0, 16.0),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
@@ -381,9 +378,8 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                               BorderRadius.circular(12.0),
                                         ),
                                         child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  18.0, 9.0, 18.0, 9.0),
+                                          padding: const EdgeInsetsDirectional
+                                              .fromSTEB(18.0, 9.0, 18.0, 9.0),
                                           child: Text(
                                             'Активные',
                                             style: FlutterFlowTheme.of(context)
@@ -437,9 +433,8 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                               BorderRadius.circular(12.0),
                                         ),
                                         child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  18.0, 9.0, 18.0, 9.0),
+                                          padding: const EdgeInsetsDirectional
+                                              .fromSTEB(18.0, 9.0, 18.0, 9.0),
                                           child: Text(
                                             'Отклики',
                                             style: FlutterFlowTheme.of(context)
@@ -493,9 +488,8 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                               BorderRadius.circular(12.0),
                                         ),
                                         child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  18.0, 9.0, 18.0, 9.0),
+                                          padding: const EdgeInsetsDirectional
+                                              .fromSTEB(18.0, 9.0, 18.0, 9.0),
                                           child: Text(
                                             'Архив',
                                             style: FlutterFlowTheme.of(context)
@@ -519,7 +513,7 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                         ),
                                       ),
                                     ),
-                                  ].divide(SizedBox(width: 8.0)),
+                                  ].divide(const SizedBox(width: 8.0)),
                                 ),
                               ),
                             ),
@@ -589,7 +583,7 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                                   }())
                                               .toList();
                                           if (pol.isEmpty) {
-                                            return Container(
+                                            return const SizedBox(
                                               height: double.infinity,
                                               child: NetZakazovVodilaWidget(),
                                             );
@@ -602,7 +596,7 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                             scrollDirection: Axis.vertical,
                                             itemCount: pol.length,
                                             separatorBuilder: (_, __) =>
-                                                SizedBox(height: 5.0),
+                                                const SizedBox(height: 5.0),
                                             itemBuilder: (context, polIndex) {
                                               final polItem = pol[polIndex];
                                               return OrderCardDriverWidget(
@@ -619,7 +613,7 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                 },
                               ),
                             ),
-                          ].divide(SizedBox(height: 5.0)),
+                          ].divide(const SizedBox(height: 5.0)),
                         );
                       }
                     },
@@ -630,11 +624,11 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
             wrapWithModel(
               model: _model.navbarModel,
               updateCallback: () => safeSetState(() {}),
-              child: NavbarWidget(
+              child: const NavbarWidget(
                 index: 2,
               ),
             ),
-          ].divide(SizedBox(height: 5.0)),
+          ].divide(const SizedBox(height: 5.0)),
         ),
       ),
     );

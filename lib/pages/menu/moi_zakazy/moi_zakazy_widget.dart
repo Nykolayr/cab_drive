@@ -5,7 +5,6 @@ import '/driver/order_card_driver/order_card_driver_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'moi_zakazy_model.dart';
@@ -43,13 +42,13 @@ class _MoiZakazyWidgetState extends State<MoiZakazyWidget> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(0.0, 50.0, 0.0, 0.0),
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 50.0, 0.0, 0.0),
       child: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).primaryBackground,
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(22.0),
             topRight: Radius.circular(22.0),
           ),
@@ -63,7 +62,7 @@ class _MoiZakazyWidgetState extends State<MoiZakazyWidget> {
               height: 64.0,
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondaryBackground,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(22.0),
                   topRight: Radius.circular(22.0),
                   bottomLeft: Radius.circular(5.0),
@@ -71,7 +70,8 @@ class _MoiZakazyWidgetState extends State<MoiZakazyWidget> {
                 ),
               ),
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
                 child: Row(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -141,7 +141,7 @@ class _MoiZakazyWidgetState extends State<MoiZakazyWidget> {
                             snapshot.data!;
 
                         return ListView.separated(
-                          padding: EdgeInsets.fromLTRB(
+                          padding: const EdgeInsets.fromLTRB(
                             0,
                             0,
                             0,
@@ -150,7 +150,8 @@ class _MoiZakazyWidgetState extends State<MoiZakazyWidget> {
                           shrinkWrap: true,
                           scrollDirection: Axis.vertical,
                           itemCount: listViewOrderRecordList.length,
-                          separatorBuilder: (_, __) => SizedBox(height: 5.0),
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 5.0),
                           itemBuilder: (context, listViewIndex) {
                             final listViewOrderRecord =
                                 listViewOrderRecordList[listViewIndex];
@@ -209,7 +210,7 @@ class _MoiZakazyWidgetState extends State<MoiZakazyWidget> {
                             snapshot.data!;
 
                         return ListView.separated(
-                          padding: EdgeInsets.fromLTRB(
+                          padding: const EdgeInsets.fromLTRB(
                             0,
                             0,
                             0,
@@ -218,7 +219,8 @@ class _MoiZakazyWidgetState extends State<MoiZakazyWidget> {
                           shrinkWrap: true,
                           scrollDirection: Axis.vertical,
                           itemCount: listViewOrderRecordList.length,
-                          separatorBuilder: (_, __) => SizedBox(height: 5.0),
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 5.0),
                           itemBuilder: (context, listViewIndex) {
                             final listViewOrderRecord =
                                 listViewOrderRecordList[listViewIndex];
@@ -256,7 +258,7 @@ class _MoiZakazyWidgetState extends State<MoiZakazyWidget> {
                 },
               ),
             ),
-          ].divide(SizedBox(height: 5.0)),
+          ].divide(const SizedBox(height: 5.0)),
         ),
       ),
     );

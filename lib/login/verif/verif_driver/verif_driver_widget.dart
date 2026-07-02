@@ -114,25 +114,25 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
               height: 120.0,
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondaryBackground,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(18.0),
                   bottomRight: Radius.circular(18.0),
                 ),
               ),
               child: Align(
-                alignment: AlignmentDirectional(0.0, 1.0),
+                alignment: const AlignmentDirectional(0.0, 1.0),
                 child: Padding(
-                  padding:
-                      EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 12.0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(
+                      12.0, 0.0, 12.0, 12.0),
                   child: Container(
                     width: double.infinity,
                     height: 56.0,
                     decoration: BoxDecoration(
-                      color: Color(0xFFF4F5F8),
+                      color: const Color(0xFFF4F5F8),
                       borderRadius: BorderRadius.circular(88.0),
                     ),
                     child: Padding(
-                      padding: EdgeInsets.all(4.0),
+                      padding: const EdgeInsets.all(4.0),
                       child: Row(
                         mainAxisSize: MainAxisSize.max,
                         children: [
@@ -140,7 +140,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                               ? (_model.pageViewCurrentIndex != 0)
                               : true)
                             Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 8.0, 0.0),
                               child: FlutterFlowIconButton(
                                 borderColor: Colors.transparent,
@@ -161,7 +161,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                   } else {
                                     await _model.pageViewController
                                         ?.previousPage(
-                                      duration: Duration(milliseconds: 300),
+                                      duration:
+                                          const Duration(milliseconds: 300),
                                       curve: Curves.ease,
                                     );
                                     return;
@@ -182,7 +183,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Align(
-                                    alignment: AlignmentDirectional(0.0, 0.0),
+                                    alignment:
+                                        const AlignmentDirectional(0.0, 0.0),
                                     child: Text(
                                       'Верефикация',
                                       style: FlutterFlowTheme.of(context)
@@ -196,14 +198,15 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                     ),
                                   ),
                                   Align(
-                                    alignment: AlignmentDirectional(0.0, 0.0),
+                                    alignment:
+                                        const AlignmentDirectional(0.0, 0.0),
                                     child: Text(
                                       'Шаг ${(_model.pageViewCurrentIndex + 1).toString()} из 3',
                                       style: FlutterFlowTheme.of(context)
                                           .bodyMedium
                                           .override(
                                             fontFamily: 'SF',
-                                            color: Color(0xFFA4A6B2),
+                                            color: const Color(0xFFA4A6B2),
                                             fontSize: 13.0,
                                             letterSpacing: 0.0,
                                             fontWeight: FontWeight.w600,
@@ -228,7 +231,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18.0),
                   ),
-                  child: Container(
+                  child: SizedBox(
                     width: double.infinity,
                     height: 22.0,
                     child: PageView(
@@ -239,7 +242,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                       scrollDirection: Axis.horizontal,
                       children: [
                         ClipRRect(
-                          borderRadius: BorderRadius.only(
+                          borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(18.0),
                             topRight: Radius.circular(18.0),
                           ),
@@ -248,13 +251,13 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                             decoration: BoxDecoration(
                               color: FlutterFlowTheme.of(context)
                                   .secondaryBackground,
-                              borderRadius: BorderRadius.only(
+                              borderRadius: const BorderRadius.only(
                                 topLeft: Radius.circular(18.0),
                                 topRight: Radius.circular(18.0),
                               ),
                             ),
                             child: Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   24.0, 0.0, 24.0, 0.0),
                               child: SingleChildScrollView(
                                 child: Column(
@@ -274,8 +277,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                           ),
                                     ),
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 8.0, 0.0, 0.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              0.0, 8.0, 0.0, 0.0),
                                       child: Text(
                                         'Чтобы заказчики доверяли вам, укажите достоверную информацию',
                                         style: FlutterFlowTheme.of(context)
@@ -293,10 +297,11 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                       ),
                                     ),
                                     Align(
-                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      alignment:
+                                          const AlignmentDirectional(0.0, 0.0),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 24.0, 0.0, 0.0),
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(0.0, 24.0, 0.0, 0.0),
                                         child: InkWell(
                                           splashColor: Colors.transparent,
                                           focusColor: Colors.transparent,
@@ -401,7 +406,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                               borderRadius:
                                                   BorderRadius.circular(18.0),
                                               border: Border.all(
-                                                color: Color(0xFFD0CFCE),
+                                                color: const Color(0xFFD0CFCE),
                                               ),
                                             ),
                                             child: AuthUserStreamWidget(
@@ -410,9 +415,11 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                     BorderRadius.circular(18.0),
                                                 child: CachedNetworkImage(
                                                   fadeInDuration:
-                                                      Duration(milliseconds: 5),
+                                                      const Duration(
+                                                          milliseconds: 5),
                                                   fadeOutDuration:
-                                                      Duration(milliseconds: 5),
+                                                      const Duration(
+                                                          milliseconds: 5),
                                                   imageUrl: currentUserPhoto,
                                                   width: 80.0,
                                                   height: 115.0,
@@ -425,8 +432,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                       ),
                                     ),
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 16.0, 0.0, 0.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              0.0, 16.0, 0.0, 0.0),
                                       child: Form(
                                         key: _model.formKey2,
                                         autovalidateMode:
@@ -434,7 +442,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                         child: Column(
                                           mainAxisSize: MainAxisSize.max,
                                           children: [
-                                            Container(
+                                            SizedBox(
                                               width: double.infinity,
                                               child: TextFormField(
                                                 controller: _model
@@ -444,7 +452,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                 onChanged: (_) =>
                                                     EasyDebounce.debounce(
                                                   '_model.nameInputTextController',
-                                                  Duration(milliseconds: 0),
+                                                  const Duration(
+                                                      milliseconds: 0),
                                                   () => safeSetState(() {}),
                                                 ),
                                                 autofocus: false,
@@ -457,19 +466,21 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                 decoration: InputDecoration(
                                                   isDense: false,
                                                   labelText: 'Имя',
-                                                  labelStyle: FlutterFlowTheme
-                                                          .of(context)
-                                                      .labelMedium
-                                                      .override(
-                                                        fontFamily: 'SF',
-                                                        color:
-                                                            Color(0xFF8F8F8E),
-                                                        fontSize: 16.0,
-                                                        letterSpacing: 0.0,
-                                                      ),
+                                                  labelStyle:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .labelMedium
+                                                          .override(
+                                                            fontFamily: 'SF',
+                                                            color: const Color(
+                                                                0xFF8F8F8E),
+                                                            fontSize: 16.0,
+                                                            letterSpacing: 0.0,
+                                                          ),
                                                   enabledBorder:
                                                       UnderlineInputBorder(
-                                                    borderSide: BorderSide(
+                                                    borderSide:
+                                                        const BorderSide(
                                                       color: Color(0xFFD0CFCE),
                                                       width: 0.3,
                                                     ),
@@ -479,7 +490,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                   ),
                                                   focusedBorder:
                                                       UnderlineInputBorder(
-                                                    borderSide: BorderSide(
+                                                    borderSide:
+                                                        const BorderSide(
                                                       color: Color(0xFFD0CFCE),
                                                       width: 0.3,
                                                     ),
@@ -514,9 +526,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                             0.0),
                                                   ),
                                                   contentPadding:
-                                                      EdgeInsetsDirectional
-                                                          .fromSTEB(0.0, 16.0,
-                                                              0.0, 16.0),
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
+                                                          0.0, 16.0, 0.0, 16.0),
                                                   hoverColor:
                                                       Colors.transparent,
                                                 ),
@@ -551,7 +563,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                 ],
                                               ),
                                             ),
-                                            Container(
+                                            SizedBox(
                                               width: double.infinity,
                                               child: TextFormField(
                                                 controller: _model
@@ -561,7 +573,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                 onChanged: (_) =>
                                                     EasyDebounce.debounce(
                                                   '_model.lastNameInputTextController',
-                                                  Duration(milliseconds: 0),
+                                                  const Duration(
+                                                      milliseconds: 0),
                                                   () => safeSetState(() {}),
                                                 ),
                                                 autofocus: false,
@@ -585,7 +598,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                           ),
                                                   enabledBorder:
                                                       UnderlineInputBorder(
-                                                    borderSide: BorderSide(
+                                                    borderSide:
+                                                        const BorderSide(
                                                       color: Color(0xFFD0CFCE),
                                                       width: 0.3,
                                                     ),
@@ -595,7 +609,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                   ),
                                                   focusedBorder:
                                                       UnderlineInputBorder(
-                                                    borderSide: BorderSide(
+                                                    borderSide:
+                                                        const BorderSide(
                                                       color: Color(0xFFD0CFCE),
                                                       width: 0.3,
                                                     ),
@@ -630,9 +645,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                             0.0),
                                                   ),
                                                   contentPadding:
-                                                      EdgeInsetsDirectional
-                                                          .fromSTEB(0.0, 16.0,
-                                                              0.0, 16.0),
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
+                                                          0.0, 16.0, 0.0, 16.0),
                                                   hoverColor:
                                                       Colors.transparent,
                                                 ),
@@ -743,9 +758,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                                     DateTime
                                                                         .now()),
                                                             maximumDate:
-                                                                (getCurrentTimestamp ??
-                                                                    DateTime(
-                                                                        2050)),
+                                                                (getCurrentTimestamp),
                                                             backgroundColor:
                                                                 FlutterFlowTheme.of(
                                                                         context)
@@ -775,7 +788,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                               },
                                               child: Stack(
                                                 children: [
-                                                  Container(
+                                                  SizedBox(
                                                     width: double.infinity,
                                                     child: TextFormField(
                                                       controller: _model
@@ -785,7 +798,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                       onChanged: (_) =>
                                                           EasyDebounce.debounce(
                                                         '_model.dtbInputTextController',
-                                                        Duration(
+                                                        const Duration(
                                                             milliseconds: 0),
                                                         () =>
                                                             safeSetState(() {}),
@@ -818,7 +831,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                         enabledBorder:
                                                             UnderlineInputBorder(
                                                           borderSide:
-                                                              BorderSide(
+                                                              const BorderSide(
                                                             color: Color(
                                                                 0xFFD0CFCE),
                                                             width: 0.3,
@@ -831,7 +844,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                         focusedBorder:
                                                             UnderlineInputBorder(
                                                           borderSide:
-                                                              BorderSide(
+                                                              const BorderSide(
                                                             color: Color(
                                                                 0xFFD0CFCE),
                                                             width: 0.3,
@@ -870,12 +883,12 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                                       0.0),
                                                         ),
                                                         contentPadding:
-                                                            EdgeInsetsDirectional
+                                                            const EdgeInsetsDirectional
                                                                 .fromSTEB(
-                                                                    0.0,
-                                                                    16.0,
-                                                                    0.0,
-                                                                    16.0),
+                                                                0.0,
+                                                                16.0,
+                                                                0.0,
+                                                                16.0),
                                                         hoverColor:
                                                             Colors.transparent,
                                                       ),
@@ -917,12 +930,13 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                   Container(
                                                     width: double.infinity,
                                                     height: 58.0,
-                                                    decoration: BoxDecoration(),
+                                                    decoration:
+                                                        const BoxDecoration(),
                                                   ),
                                                 ],
                                               ),
                                             ),
-                                            Container(
+                                            SizedBox(
                                               width: double.infinity,
                                               child: TextFormField(
                                                 controller: _model
@@ -932,7 +946,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                 onChanged: (_) =>
                                                     EasyDebounce.debounce(
                                                   '_model.emailInputTextController',
-                                                  Duration(milliseconds: 0),
+                                                  const Duration(
+                                                      milliseconds: 0),
                                                   () => safeSetState(() {}),
                                                 ),
                                                 autofocus: false,
@@ -954,19 +969,21 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                             fontSize: 16.0,
                                                             letterSpacing: 0.0,
                                                           ),
-                                                  hintStyle: FlutterFlowTheme
-                                                          .of(context)
-                                                      .labelMedium
-                                                      .override(
-                                                        fontFamily: 'SF',
-                                                        color:
-                                                            Color(0xFFA4A6B2),
-                                                        fontSize: 16.0,
-                                                        letterSpacing: 0.0,
-                                                      ),
+                                                  hintStyle:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .labelMedium
+                                                          .override(
+                                                            fontFamily: 'SF',
+                                                            color: const Color(
+                                                                0xFFA4A6B2),
+                                                            fontSize: 16.0,
+                                                            letterSpacing: 0.0,
+                                                          ),
                                                   enabledBorder:
                                                       UnderlineInputBorder(
-                                                    borderSide: BorderSide(
+                                                    borderSide:
+                                                        const BorderSide(
                                                       color: Color(0xFFD0CFCE),
                                                       width: 0.3,
                                                     ),
@@ -976,7 +993,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                   ),
                                                   focusedBorder:
                                                       UnderlineInputBorder(
-                                                    borderSide: BorderSide(
+                                                    borderSide:
+                                                        const BorderSide(
                                                       color: Color(0xFFD0CFCE),
                                                       width: 0.3,
                                                     ),
@@ -1011,9 +1029,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                             0.0),
                                                   ),
                                                   contentPadding:
-                                                      EdgeInsetsDirectional
-                                                          .fromSTEB(0.0, 16.0,
-                                                              0.0, 16.0),
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
+                                                          0.0, 16.0, 0.0, 16.0),
                                                   hoverColor:
                                                       Colors.transparent,
                                                 ),
@@ -1100,7 +1118,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                               },
                                               child: Stack(
                                                 children: [
-                                                  Container(
+                                                  SizedBox(
                                                     width: double.infinity,
                                                     child: TextFormField(
                                                       controller: _model
@@ -1110,7 +1128,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                       onChanged: (_) =>
                                                           EasyDebounce.debounce(
                                                         '_model.cityInputTextController',
-                                                        Duration(
+                                                        const Duration(
                                                             milliseconds: 0),
                                                         () =>
                                                             safeSetState(() {}),
@@ -1146,7 +1164,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                                 .override(
                                                                   fontFamily:
                                                                       'SF',
-                                                                  color: Color(
+                                                                  color: const Color(
                                                                       0xFFA4A6B2),
                                                                   fontSize:
                                                                       16.0,
@@ -1156,7 +1174,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                         enabledBorder:
                                                             UnderlineInputBorder(
                                                           borderSide:
-                                                              BorderSide(
+                                                              const BorderSide(
                                                             color: Color(
                                                                 0xFFD0CFCE),
                                                             width: 0.3,
@@ -1169,7 +1187,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                         focusedBorder:
                                                             UnderlineInputBorder(
                                                           borderSide:
-                                                              BorderSide(
+                                                              const BorderSide(
                                                             color: Color(
                                                                 0xFFD0CFCE),
                                                             width: 0.3,
@@ -1208,12 +1226,12 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                                       0.0),
                                                         ),
                                                         contentPadding:
-                                                            EdgeInsetsDirectional
+                                                            const EdgeInsetsDirectional
                                                                 .fromSTEB(
-                                                                    0.0,
-                                                                    16.0,
-                                                                    0.0,
-                                                                    16.0),
+                                                                0.0,
+                                                                16.0,
+                                                                0.0,
+                                                                16.0),
                                                       ),
                                                       style: FlutterFlowTheme
                                                               .of(context)
@@ -1249,7 +1267,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                   Container(
                                                     width: double.infinity,
                                                     height: 57.0,
-                                                    decoration: BoxDecoration(),
+                                                    decoration:
+                                                        const BoxDecoration(),
                                                   ),
                                                 ],
                                               ),
@@ -1259,15 +1278,15 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                       ),
                                     ),
                                   ]
-                                      .addToStart(SizedBox(height: 32.0))
-                                      .addToEnd(SizedBox(height: 150.0)),
+                                      .addToStart(const SizedBox(height: 32.0))
+                                      .addToEnd(const SizedBox(height: 150.0)),
                                 ),
                               ),
                             ),
                           ),
                         ),
                         ClipRRect(
-                          borderRadius: BorderRadius.only(
+                          borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(18.0),
                             topRight: Radius.circular(18.0),
                           ),
@@ -1276,13 +1295,13 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                             decoration: BoxDecoration(
                               color: FlutterFlowTheme.of(context)
                                   .secondaryBackground,
-                              borderRadius: BorderRadius.only(
+                              borderRadius: const BorderRadius.only(
                                 topLeft: Radius.circular(18.0),
                                 topRight: Radius.circular(18.0),
                               ),
                             ),
                             child: Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   24.0, 0.0, 24.0, 0.0),
                               child: SingleChildScrollView(
                                 child: Column(
@@ -1290,8 +1309,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 0.0, 0.0, 30.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              0.0, 0.0, 0.0, 30.0),
                                       child: Text(
                                         'Фото\nдокументов',
                                         textAlign: TextAlign.start,
@@ -1313,7 +1333,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                         Container(
                                           width: double.infinity,
                                           decoration: BoxDecoration(
-                                            color: Color(0xFFF4F5F8),
+                                            color: const Color(0xFFF4F5F8),
                                             borderRadius:
                                                 BorderRadius.circular(18.0),
                                           ),
@@ -1372,15 +1392,13 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Container(
-                                                    decoration: BoxDecoration(),
+                                                    decoration:
+                                                        const BoxDecoration(),
                                                     child: Padding(
                                                       padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  20.0,
-                                                                  26.0,
-                                                                  20.0,
-                                                                  26.0),
+                                                          const EdgeInsetsDirectional
+                                                              .fromSTEB(20.0,
+                                                              26.0, 20.0, 26.0),
                                                       child: Row(
                                                         mainAxisSize:
                                                             MainAxisSize.max,
@@ -1394,7 +1412,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                                   .override(
                                                                     fontFamily:
                                                                         'SF',
-                                                                    color: Color(
+                                                                    color: const Color(
                                                                         0xFFA4A6B2),
                                                                     fontSize:
                                                                         16.0,
@@ -1406,7 +1424,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                                   ),
                                                             ),
                                                           ),
-                                                          Icon(
+                                                          const Icon(
                                                             Icons.add,
                                                             color: Color(
                                                                 0xFFA4A6B2),
@@ -1419,8 +1437,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                 );
                                               } else {
                                                 return Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
                                                           8.0, 16.0, 8.0, 8.0),
                                                   child: Column(
                                                     mainAxisSize:
@@ -1428,12 +1447,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                     children: [
                                                       Padding(
                                                         padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    8.0,
-                                                                    0.0,
-                                                                    8.0,
-                                                                    12.0),
+                                                            const EdgeInsetsDirectional
+                                                                .fromSTEB(8.0,
+                                                                0.0, 8.0, 12.0),
                                                         child: Row(
                                                           mainAxisSize:
                                                               MainAxisSize.max,
@@ -1502,7 +1518,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                       ),
                                                       ClipRRect(
                                                         borderRadius:
-                                                            BorderRadius.only(
+                                                            const BorderRadius
+                                                                .only(
                                                           topLeft:
                                                               Radius.circular(
                                                                   6.0),
@@ -1518,8 +1535,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                         ),
                                                         child: OctoImage(
                                                           placeholderBuilder:
-                                                              (_) => SizedBox
-                                                                  .expand(
+                                                              (_) =>
+                                                                  const SizedBox
+                                                                      .expand(
                                                             child: Image(
                                                               image: BlurHashImage(
                                                                   'LMG[~DR54To#~XofRjbH9[ozxHay'),
@@ -1545,7 +1563,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                         Container(
                                           width: double.infinity,
                                           decoration: BoxDecoration(
-                                            color: Color(0xFFF4F5F8),
+                                            color: const Color(0xFFF4F5F8),
                                             borderRadius:
                                                 BorderRadius.circular(18.0),
                                           ),
@@ -1604,15 +1622,13 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Container(
-                                                    decoration: BoxDecoration(),
+                                                    decoration:
+                                                        const BoxDecoration(),
                                                     child: Padding(
                                                       padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  20.0,
-                                                                  26.0,
-                                                                  20.0,
-                                                                  26.0),
+                                                          const EdgeInsetsDirectional
+                                                              .fromSTEB(20.0,
+                                                              26.0, 20.0, 26.0),
                                                       child: Row(
                                                         mainAxisSize:
                                                             MainAxisSize.max,
@@ -1626,7 +1642,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                                   .override(
                                                                     fontFamily:
                                                                         'SF',
-                                                                    color: Color(
+                                                                    color: const Color(
                                                                         0xFFA4A6B2),
                                                                     fontSize:
                                                                         16.0,
@@ -1638,7 +1654,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                                   ),
                                                             ),
                                                           ),
-                                                          Icon(
+                                                          const Icon(
                                                             Icons.add,
                                                             color: Color(
                                                                 0xFFA4A6B2),
@@ -1651,8 +1667,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                 );
                                               } else {
                                                 return Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
                                                           8.0, 16.0, 8.0, 8.0),
                                                   child: Column(
                                                     mainAxisSize:
@@ -1660,12 +1677,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                     children: [
                                                       Padding(
                                                         padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    8.0,
-                                                                    0.0,
-                                                                    8.0,
-                                                                    12.0),
+                                                            const EdgeInsetsDirectional
+                                                                .fromSTEB(8.0,
+                                                                0.0, 8.0, 12.0),
                                                         child: Row(
                                                           mainAxisSize:
                                                               MainAxisSize.max,
@@ -1695,7 +1709,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                             ),
                                                             Align(
                                                               alignment:
-                                                                  AlignmentDirectional(
+                                                                  const AlignmentDirectional(
                                                                       1.0, 0.0),
                                                               child:
                                                                   FlutterFlowIconButton(
@@ -1741,7 +1755,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                       ),
                                                       ClipRRect(
                                                         borderRadius:
-                                                            BorderRadius.only(
+                                                            const BorderRadius
+                                                                .only(
                                                           topLeft:
                                                               Radius.circular(
                                                                   6.0),
@@ -1757,8 +1772,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                         ),
                                                         child: OctoImage(
                                                           placeholderBuilder:
-                                                              (_) => SizedBox
-                                                                  .expand(
+                                                              (_) =>
+                                                                  const SizedBox
+                                                                      .expand(
                                                             child: Image(
                                                               image: BlurHashImage(
                                                                   'LMG[~DR54To#~XofRjbH9[ozxHay'),
@@ -1784,7 +1800,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                         Container(
                                           width: double.infinity,
                                           decoration: BoxDecoration(
-                                            color: Color(0xFFF4F5F8),
+                                            color: const Color(0xFFF4F5F8),
                                             borderRadius:
                                                 BorderRadius.circular(18.0),
                                           ),
@@ -1843,15 +1859,13 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Container(
-                                                    decoration: BoxDecoration(),
+                                                    decoration:
+                                                        const BoxDecoration(),
                                                     child: Padding(
                                                       padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  20.0,
-                                                                  26.0,
-                                                                  20.0,
-                                                                  26.0),
+                                                          const EdgeInsetsDirectional
+                                                              .fromSTEB(20.0,
+                                                              26.0, 20.0, 26.0),
                                                       child: Row(
                                                         mainAxisSize:
                                                             MainAxisSize.max,
@@ -1865,7 +1879,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                                   .override(
                                                                     fontFamily:
                                                                         'SF',
-                                                                    color: Color(
+                                                                    color: const Color(
                                                                         0xFFA4A6B2),
                                                                     fontSize:
                                                                         16.0,
@@ -1877,7 +1891,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                                   ),
                                                             ),
                                                           ),
-                                                          Icon(
+                                                          const Icon(
                                                             Icons.add,
                                                             color: Color(
                                                                 0xFFA4A6B2),
@@ -1890,8 +1904,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                 );
                                               } else {
                                                 return Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
                                                           8.0, 16.0, 8.0, 8.0),
                                                   child: Column(
                                                     mainAxisSize:
@@ -1899,15 +1914,12 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                     children: [
                                                       Padding(
                                                         padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    7.0,
-                                                                    0.0,
-                                                                    7.0,
-                                                                    16.0),
+                                                            const EdgeInsetsDirectional
+                                                                .fromSTEB(7.0,
+                                                                0.0, 7.0, 16.0),
                                                         child: Stack(
                                                           alignment:
-                                                              AlignmentDirectional(
+                                                              const AlignmentDirectional(
                                                                   -1.0, 0.0),
                                                           children: [
                                                             Text(
@@ -1932,7 +1944,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                             ),
                                                             Align(
                                                               alignment:
-                                                                  AlignmentDirectional(
+                                                                  const AlignmentDirectional(
                                                                       1.0, 0.0),
                                                               child:
                                                                   FlutterFlowIconButton(
@@ -1949,7 +1961,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                                 fillColor: FlutterFlowTheme.of(
                                                                         context)
                                                                     .secondaryBackground,
-                                                                icon: Icon(
+                                                                icon:
+                                                                    const Icon(
                                                                   FFIcons
                                                                       .kkrestStroke,
                                                                   color: Color(
@@ -1970,7 +1983,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                       ),
                                                       ClipRRect(
                                                         borderRadius:
-                                                            BorderRadius.only(
+                                                            const BorderRadius
+                                                                .only(
                                                           topLeft:
                                                               Radius.circular(
                                                                   6.0),
@@ -1986,8 +2000,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                         ),
                                                         child: OctoImage(
                                                           placeholderBuilder:
-                                                              (_) => SizedBox
-                                                                  .expand(
+                                                              (_) =>
+                                                                  const SizedBox
+                                                                      .expand(
                                                             child: Image(
                                                               image: BlurHashImage(
                                                                   'LMG[~DR54To#~XofRjbH9[ozxHay'),
@@ -2013,7 +2028,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                         Container(
                                           width: double.infinity,
                                           decoration: BoxDecoration(
-                                            color: Color(0xFFF4F5F8),
+                                            color: const Color(0xFFF4F5F8),
                                             borderRadius:
                                                 BorderRadius.circular(18.0),
                                           ),
@@ -2072,15 +2087,13 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Container(
-                                                    decoration: BoxDecoration(),
+                                                    decoration:
+                                                        const BoxDecoration(),
                                                     child: Padding(
                                                       padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  20.0,
-                                                                  26.0,
-                                                                  20.0,
-                                                                  26.0),
+                                                          const EdgeInsetsDirectional
+                                                              .fromSTEB(20.0,
+                                                              26.0, 20.0, 26.0),
                                                       child: Row(
                                                         mainAxisSize:
                                                             MainAxisSize.max,
@@ -2094,7 +2107,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                                   .override(
                                                                     fontFamily:
                                                                         'SF',
-                                                                    color: Color(
+                                                                    color: const Color(
                                                                         0xFFA4A6B2),
                                                                     fontSize:
                                                                         16.0,
@@ -2106,7 +2119,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                                   ),
                                                             ),
                                                           ),
-                                                          Icon(
+                                                          const Icon(
                                                             Icons.add,
                                                             color: Color(
                                                                 0xFFA4A6B2),
@@ -2119,8 +2132,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                 );
                                               } else {
                                                 return Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
                                                           8.0, 16.0, 8.0, 8.0),
                                                   child: Column(
                                                     mainAxisSize:
@@ -2128,15 +2142,12 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                     children: [
                                                       Padding(
                                                         padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    7.0,
-                                                                    0.0,
-                                                                    7.0,
-                                                                    16.0),
+                                                            const EdgeInsetsDirectional
+                                                                .fromSTEB(7.0,
+                                                                0.0, 7.0, 16.0),
                                                         child: Stack(
                                                           alignment:
-                                                              AlignmentDirectional(
+                                                              const AlignmentDirectional(
                                                                   -1.0, 0.0),
                                                           children: [
                                                             Text(
@@ -2161,7 +2172,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                             ),
                                                             Align(
                                                               alignment:
-                                                                  AlignmentDirectional(
+                                                                  const AlignmentDirectional(
                                                                       1.0, 0.0),
                                                               child:
                                                                   FlutterFlowIconButton(
@@ -2178,7 +2189,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                                 fillColor: FlutterFlowTheme.of(
                                                                         context)
                                                                     .secondaryBackground,
-                                                                icon: Icon(
+                                                                icon:
+                                                                    const Icon(
                                                                   FFIcons
                                                                       .kkrestStroke,
                                                                   color: Color(
@@ -2199,7 +2211,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                       ),
                                                       ClipRRect(
                                                         borderRadius:
-                                                            BorderRadius.only(
+                                                            const BorderRadius
+                                                                .only(
                                                           topLeft:
                                                               Radius.circular(
                                                                   6.0),
@@ -2215,8 +2228,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                         ),
                                                         child: OctoImage(
                                                           placeholderBuilder:
-                                                              (_) => SizedBox
-                                                                  .expand(
+                                                              (_) =>
+                                                                  const SizedBox
+                                                                      .expand(
                                                             child: Image(
                                                               image: BlurHashImage(
                                                                   'LMG[~DR54To#~XofRjbH9[ozxHay'),
@@ -2242,7 +2256,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                         Container(
                                           width: double.infinity,
                                           decoration: BoxDecoration(
-                                            color: Color(0xFFF4F5F8),
+                                            color: const Color(0xFFF4F5F8),
                                             borderRadius:
                                                 BorderRadius.circular(18.0),
                                           ),
@@ -2301,15 +2315,13 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Container(
-                                                    decoration: BoxDecoration(),
+                                                    decoration:
+                                                        const BoxDecoration(),
                                                     child: Padding(
                                                       padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  20.0,
-                                                                  26.0,
-                                                                  20.0,
-                                                                  26.0),
+                                                          const EdgeInsetsDirectional
+                                                              .fromSTEB(20.0,
+                                                              26.0, 20.0, 26.0),
                                                       child: Row(
                                                         mainAxisSize:
                                                             MainAxisSize.max,
@@ -2323,7 +2335,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                                   .override(
                                                                     fontFamily:
                                                                         'SF',
-                                                                    color: Color(
+                                                                    color: const Color(
                                                                         0xFFA4A6B2),
                                                                     fontSize:
                                                                         16.0,
@@ -2335,7 +2347,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                                   ),
                                                             ),
                                                           ),
-                                                          Icon(
+                                                          const Icon(
                                                             Icons.add,
                                                             color: Color(
                                                                 0xFFA4A6B2),
@@ -2348,8 +2360,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                 );
                                               } else {
                                                 return Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
                                                           8.0, 16.0, 8.0, 8.0),
                                                   child: Column(
                                                     mainAxisSize:
@@ -2357,15 +2370,12 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                     children: [
                                                       Padding(
                                                         padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    7.0,
-                                                                    0.0,
-                                                                    7.0,
-                                                                    16.0),
+                                                            const EdgeInsetsDirectional
+                                                                .fromSTEB(7.0,
+                                                                0.0, 7.0, 16.0),
                                                         child: Stack(
                                                           alignment:
-                                                              AlignmentDirectional(
+                                                              const AlignmentDirectional(
                                                                   -1.0, 0.0),
                                                           children: [
                                                             Text(
@@ -2390,7 +2400,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                             ),
                                                             Align(
                                                               alignment:
-                                                                  AlignmentDirectional(
+                                                                  const AlignmentDirectional(
                                                                       1.0, 0.0),
                                                               child:
                                                                   FlutterFlowIconButton(
@@ -2407,7 +2417,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                                 fillColor: FlutterFlowTheme.of(
                                                                         context)
                                                                     .secondaryBackground,
-                                                                icon: Icon(
+                                                                icon:
+                                                                    const Icon(
                                                                   FFIcons
                                                                       .kkrestStroke,
                                                                   color: Color(
@@ -2428,7 +2439,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                       ),
                                                       ClipRRect(
                                                         borderRadius:
-                                                            BorderRadius.only(
+                                                            const BorderRadius
+                                                                .only(
                                                           topLeft:
                                                               Radius.circular(
                                                                   6.0),
@@ -2444,8 +2456,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                         ),
                                                         child: OctoImage(
                                                           placeholderBuilder:
-                                                              (_) => SizedBox
-                                                                  .expand(
+                                                              (_) =>
+                                                                  const SizedBox
+                                                                      .expand(
                                                             child: Image(
                                                               image: BlurHashImage(
                                                                   'LMG[~DR54To#~XofRjbH9[ozxHay'),
@@ -2468,11 +2481,11 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                             },
                                           ),
                                         ),
-                                      ].divide(SizedBox(height: 12.0)),
+                                      ].divide(const SizedBox(height: 12.0)),
                                     ),
                                   ]
-                                      .addToStart(SizedBox(height: 32.0))
-                                      .addToEnd(SizedBox(height: 120.0)),
+                                      .addToStart(const SizedBox(height: 32.0))
+                                      .addToEnd(const SizedBox(height: 120.0)),
                                 ),
                               ),
                             ),
@@ -2494,8 +2507,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        24.0, 0.0, 0.0, 0.0),
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            24.0, 0.0, 0.0, 0.0),
                                     child: Text(
                                       'Данные о\nтранспорте',
                                       textAlign: TextAlign.start,
@@ -2510,8 +2524,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                     ),
                                   ),
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 12.0, 0.0, 0.0),
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            0.0, 12.0, 0.0, 0.0),
                                     child: Form(
                                       key: _model.formKey1,
                                       autovalidateMode:
@@ -2522,9 +2537,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    24.0, 0.0, 24.0, 12.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(
+                                                24.0, 0.0, 24.0, 12.0),
                                             child: Text(
                                               'Выберите тип автомобиля, который соответствует размерам вашего авто',
                                               style:
@@ -2544,7 +2559,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                             ),
                                           ),
                                           Padding(
-                                            padding: EdgeInsets.all(8.0),
+                                            padding: const EdgeInsets.all(8.0),
                                             child: InkWell(
                                               splashColor: Colors.transparent,
                                               focusColor: Colors.transparent,
@@ -2574,12 +2589,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                   children: [
                                                     Padding(
                                                       padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  16.0,
-                                                                  12.0,
-                                                                  16.0,
-                                                                  12.0),
+                                                          const EdgeInsetsDirectional
+                                                              .fromSTEB(16.0,
+                                                              12.0, 16.0, 12.0),
                                                       child: Row(
                                                         mainAxisSize:
                                                             MainAxisSize.max,
@@ -2642,12 +2654,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                         Car.largus)
                                                       Padding(
                                                         padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    0.0,
-                                                                    0.0,
-                                                                    0.0,
-                                                                    24.0),
+                                                            const EdgeInsetsDirectional
+                                                                .fromSTEB(0.0,
+                                                                0.0, 0.0, 24.0),
                                                         child: ClipRRect(
                                                           borderRadius:
                                                               BorderRadius
@@ -2667,7 +2676,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                             ),
                                           ),
                                           Padding(
-                                            padding: EdgeInsets.all(8.0),
+                                            padding: const EdgeInsets.all(8.0),
                                             child: InkWell(
                                               splashColor: Colors.transparent,
                                               focusColor: Colors.transparent,
@@ -2697,12 +2706,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                   children: [
                                                     Padding(
                                                       padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  16.0,
-                                                                  12.0,
-                                                                  16.0,
-                                                                  12.0),
+                                                          const EdgeInsetsDirectional
+                                                              .fromSTEB(16.0,
+                                                              12.0, 16.0, 12.0),
                                                       child: Row(
                                                         mainAxisSize:
                                                             MainAxisSize.max,
@@ -2765,12 +2771,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                         Car.largusTermo)
                                                       Padding(
                                                         padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    0.0,
-                                                                    0.0,
-                                                                    0.0,
-                                                                    24.0),
+                                                            const EdgeInsetsDirectional
+                                                                .fromSTEB(0.0,
+                                                                0.0, 0.0, 24.0),
                                                         child: ClipRRect(
                                                           borderRadius:
                                                               BorderRadius
@@ -2790,7 +2793,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                             ),
                                           ),
                                           Padding(
-                                            padding: EdgeInsets.all(8.0),
+                                            padding: const EdgeInsets.all(8.0),
                                             child: InkWell(
                                               splashColor: Colors.transparent,
                                               focusColor: Colors.transparent,
@@ -2819,12 +2822,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                   children: [
                                                     Padding(
                                                       padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  16.0,
-                                                                  12.0,
-                                                                  16.0,
-                                                                  12.0),
+                                                          const EdgeInsetsDirectional
+                                                              .fromSTEB(16.0,
+                                                              12.0, 16.0, 12.0),
                                                       child: Row(
                                                         mainAxisSize:
                                                             MainAxisSize.max,
@@ -2886,12 +2886,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                     if (_model.mark == Car.fiat)
                                                       Padding(
                                                         padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    0.0,
-                                                                    0.0,
-                                                                    0.0,
-                                                                    24.0),
+                                                            const EdgeInsetsDirectional
+                                                                .fromSTEB(0.0,
+                                                                0.0, 0.0, 24.0),
                                                         child: ClipRRect(
                                                           borderRadius:
                                                               BorderRadius
@@ -2911,10 +2908,10 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                             ),
                                           ),
                                           Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    24.0, 12.0, 24.0, 0.0),
-                                            child: Container(
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(
+                                                24.0, 12.0, 24.0, 0.0),
+                                            child: SizedBox(
                                               width: double.infinity,
                                               child: TextFormField(
                                                 controller:
@@ -2924,7 +2921,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                 onChanged: (_) =>
                                                     EasyDebounce.debounce(
                                                   '_model.numberTextController',
-                                                  Duration(milliseconds: 0),
+                                                  const Duration(
+                                                      milliseconds: 0),
                                                   () => safeSetState(() {}),
                                                 ),
                                                 autofocus: false,
@@ -2946,19 +2944,21 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                             fontSize: 16.0,
                                                             letterSpacing: 0.0,
                                                           ),
-                                                  hintStyle: FlutterFlowTheme
-                                                          .of(context)
-                                                      .labelMedium
-                                                      .override(
-                                                        fontFamily: 'SF',
-                                                        color:
-                                                            Color(0xFFA4A6B2),
-                                                        fontSize: 16.0,
-                                                        letterSpacing: 0.0,
-                                                      ),
+                                                  hintStyle:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .labelMedium
+                                                          .override(
+                                                            fontFamily: 'SF',
+                                                            color: const Color(
+                                                                0xFFA4A6B2),
+                                                            fontSize: 16.0,
+                                                            letterSpacing: 0.0,
+                                                          ),
                                                   enabledBorder:
                                                       UnderlineInputBorder(
-                                                    borderSide: BorderSide(
+                                                    borderSide:
+                                                        const BorderSide(
                                                       color: Color(0xFFD0CFCE),
                                                       width: 0.3,
                                                     ),
@@ -2968,7 +2968,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                   ),
                                                   focusedBorder:
                                                       UnderlineInputBorder(
-                                                    borderSide: BorderSide(
+                                                    borderSide:
+                                                        const BorderSide(
                                                       color: Color(0xFFD0CFCE),
                                                       width: 0.3,
                                                     ),
@@ -3003,9 +3004,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                             0.0),
                                                   ),
                                                   contentPadding:
-                                                      EdgeInsetsDirectional
-                                                          .fromSTEB(0.0, 16.0,
-                                                              0.0, 16.0),
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
+                                                          0.0, 16.0, 0.0, 16.0),
                                                   hoverColor:
                                                       Colors.transparent,
                                                 ),
@@ -3046,8 +3047,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                     ),
                                   ),
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        24.0, 32.0, 24.0, 0.0),
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            24.0, 32.0, 24.0, 0.0),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
                                       mainAxisAlignment:
@@ -3074,8 +3076,10 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                       ),
                                             ),
                                             Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(0.0, 4.0, 0.0, 0.0),
+                                              padding:
+                                                  const EdgeInsetsDirectional
+                                                      .fromSTEB(
+                                                      0.0, 4.0, 0.0, 0.0),
                                               child: Text(
                                                 'Максимум 10 фото',
                                                 style:
@@ -3201,7 +3205,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                                     .viewInsetsOf(
                                                                         context),
                                                                 child:
-                                                                    ErrorPopupWidget(
+                                                                    const ErrorPopupWidget(
                                                                   title:
                                                                       'Что-то пошло не так',
                                                                   text:
@@ -3247,11 +3251,11 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                           text: 'Добавить',
                                           options: FFButtonOptions(
                                             height: 35.0,
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    16.0, 0.0, 16.0, 0.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(16.0, 0.0, 16.0, 0.0),
                                             iconPadding:
-                                                EdgeInsetsDirectional.fromSTEB(
+                                                const EdgeInsetsDirectional
+                                                    .fromSTEB(
                                                     0.0, 0.0, 0.0, 0.0),
                                             color: FlutterFlowTheme.of(context)
                                                 .primary,
@@ -3280,8 +3284,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                     ),
                                   ),
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        24.0, 12.0, 24.0, 0.0),
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            24.0, 12.0, 24.0, 0.0),
                                     child: Builder(
                                       builder: (context) {
                                         final carImages = _model.car.toList();
@@ -3289,7 +3294,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                         return GridView.builder(
                                           padding: EdgeInsets.zero,
                                           gridDelegate:
-                                              SliverGridDelegateWithFixedCrossAxisCount(
+                                              const SliverGridDelegateWithFixedCrossAxisCount(
                                             crossAxisCount: 5,
                                             crossAxisSpacing: 8.0,
                                             mainAxisSpacing: 8.0,
@@ -3304,8 +3309,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                             final carImagesItem =
                                                 carImages[carImagesIndex];
                                             return Stack(
-                                              alignment: AlignmentDirectional(
-                                                  1.0, -1.0),
+                                              alignment:
+                                                  const AlignmentDirectional(
+                                                      1.0, -1.0),
                                               children: [
                                                 ClipRRect(
                                                   borderRadius:
@@ -3324,7 +3330,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                       Colors.transparent,
                                                   borderRadius: 12.0,
                                                   buttonSize: 40.0,
-                                                  fillColor: Color(0x69161616),
+                                                  fillColor:
+                                                      const Color(0x69161616),
                                                   icon: Icon(
                                                     FFIcons.kkrestStroke,
                                                     color: FlutterFlowTheme.of(
@@ -3346,8 +3353,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                     ),
                                   ),
                                 ]
-                                    .addToStart(SizedBox(height: 32.0))
-                                    .addToEnd(SizedBox(height: 120.0)),
+                                    .addToStart(const SizedBox(height: 32.0))
+                                    .addToEnd(const SizedBox(height: 120.0)),
                               ),
                             ),
                           ),
@@ -3362,7 +3369,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
               width: double.infinity,
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondary,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(18.0),
                   topRight: Radius.circular(18.0),
                 ),
@@ -3468,7 +3475,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                           }
 
                           await _model.pageViewController?.nextPage(
-                            duration: Duration(milliseconds: 300),
+                            duration: const Duration(milliseconds: 300),
                             curve: Curves.ease,
                           );
                         },
@@ -3476,9 +3483,10 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                   options: FFButtonOptions(
                     width: double.infinity,
                     height: 56.0,
-                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                    iconPadding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 0.0, 0.0, 0.0),
+                    iconPadding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 0.0, 0.0, 0.0),
                     color: FlutterFlowTheme.of(context).tertiary,
                     textStyle: FlutterFlowTheme.of(context).titleSmall.override(
                           fontFamily: 'SF',
@@ -3487,13 +3495,13 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                         ),
                     elevation: 0.0,
                     borderRadius: BorderRadius.circular(16.0),
-                    disabledColor: Color(0xFFEEEEEE),
-                    disabledTextColor: Color(0xFF8B8B8B),
+                    disabledColor: const Color(0xFFEEEEEE),
+                    disabledTextColor: const Color(0xFF8B8B8B),
                   ),
                 ),
               ),
             ),
-          ].divide(SizedBox(height: 5.0)),
+          ].divide(const SizedBox(height: 5.0)),
         ),
       ),
     );

@@ -131,7 +131,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                 wrapWithModel(
                   model: _model.appBarModel,
                   updateCallback: () => safeSetState(() {}),
-                  child: AppBarWidget(
+                  child: const AppBarWidget(
                     text: 'Детали заказа',
                   ),
                 ),
@@ -156,7 +156,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                 borderRadius: BorderRadius.circular(18.0),
                               ),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     24.0, 16.0, 24.0, 0.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
@@ -164,9 +164,9 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                   children: [
                                     Text(
                                       'Кузов  - ${() {
-                                        if (widget!.car == Car.largus) {
+                                        if (widget.car == Car.largus) {
                                           return 'Мини/S';
-                                        } else if (widget!.car ==
+                                        } else if (widget.car ==
                                             Car.largusTermo) {
                                           return 'Термобудка/S-M';
                                         } else {
@@ -182,24 +182,24 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                             fontWeight: FontWeight.w600,
                                           ),
                                     ),
-                                    if (widget!.car == Car.fiat)
+                                    if (widget.car == Car.fiat)
                                       Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 4.0, 0.0, 0.0),
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(0.0, 4.0, 0.0, 0.0),
                                         child: Text(
                                           'Fiat Doblò/Citroën Berlingo/PEUGEOT PARTNER ',
                                           style: FlutterFlowTheme.of(context)
                                               .bodyMedium
                                               .override(
                                                 fontFamily: 'SF',
-                                                color: Color(0xFF8F8F8E),
+                                                color: const Color(0xFF8F8F8E),
                                                 letterSpacing: 0.0,
                                               ),
                                         ),
                                       ),
                                     Stack(
                                       children: [
-                                        if (widget!.car == Car.largus)
+                                        if (widget.car == Car.largus)
                                           ClipRRect(
                                             borderRadius:
                                                 BorderRadius.circular(0.0),
@@ -208,10 +208,11 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                               width: double.infinity,
                                               height: 185.0,
                                               fit: BoxFit.cover,
-                                              alignment: Alignment(0.0, 1.0),
+                                              alignment:
+                                                  const Alignment(0.0, 1.0),
                                             ),
                                           ),
-                                        if (widget!.car == Car.largusTermo)
+                                        if (widget.car == Car.largusTermo)
                                           ClipRRect(
                                             borderRadius:
                                                 BorderRadius.circular(0.0),
@@ -220,10 +221,11 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                               width: double.infinity,
                                               height: 185.0,
                                               fit: BoxFit.cover,
-                                              alignment: Alignment(0.0, 1.0),
+                                              alignment:
+                                                  const Alignment(0.0, 1.0),
                                             ),
                                           ),
-                                        if (widget!.car == Car.fiat)
+                                        if (widget.car == Car.fiat)
                                           ClipRRect(
                                             borderRadius:
                                                 BorderRadius.circular(0.0),
@@ -232,19 +234,21 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                               width: double.infinity,
                                               height: 185.0,
                                               fit: BoxFit.cover,
-                                              alignment: Alignment(0.0, 1.0),
+                                              alignment:
+                                                  const Alignment(0.0, 1.0),
                                             ),
                                           ),
                                       ],
                                     ),
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 12.0, 0.0, 20.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              0.0, 12.0, 0.0, 20.0),
                                       child: Text(
                                         () {
-                                          if (widget!.car == Car.largus) {
+                                          if (widget.car == Car.largus) {
                                             return 'Подойдет для нескольких коробок. Максимум 300 кг';
-                                          } else if (widget!.car ==
+                                          } else if (widget.car ==
                                               Car.largusTermo) {
                                             return 'Можно перевозить замороженные продукты. Грузоподъёмность 850-1500 кг';
                                           } else {
@@ -255,27 +259,28 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                             .bodyMedium
                                             .override(
                                               fontFamily: 'SF',
-                                              color: Color(0xFF8F8F8E),
+                                              color: const Color(0xFF8F8F8E),
                                               letterSpacing: 0.0,
                                             ),
                                       ),
                                     ),
-                                    Divider(
+                                    const Divider(
                                       height: 0.3,
                                       thickness: 0.3,
                                       color: Color(0xFFD0CFCE),
                                     ),
-                                    Divider(
+                                    const Divider(
                                       height: 0.3,
                                       thickness: 0.3,
                                       color: Color(0xFFD0CFCE),
                                     ),
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 8.0, 0.0, 8.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              0.0, 8.0, 0.0, 8.0),
                                       child: Container(
                                         height: 57.0,
-                                        decoration: BoxDecoration(),
+                                        decoration: const BoxDecoration(),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.max,
                                           children: [
@@ -310,8 +315,8 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                         .bodyMedium
                                                         .override(
                                                           fontFamily: 'SF',
-                                                          color:
-                                                              Color(0xFF8F8F8E),
+                                                          color: const Color(
+                                                              0xFF8F8F8E),
                                                           letterSpacing: 0.0,
                                                           fontWeight:
                                                               FontWeight.normal,
@@ -330,7 +335,8 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                     BorderRadius.circular(12.0),
                                               ),
                                               child: Padding(
-                                                padding: EdgeInsets.all(2.0),
+                                                padding:
+                                                    const EdgeInsets.all(2.0),
                                                 child: Row(
                                                   mainAxisSize:
                                                       MainAxisSize.max,
@@ -351,7 +357,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                         safeSetState(() {});
                                                         HapticFeedback
                                                             .mediumImpact();
-                                                        if (widget!.car ==
+                                                        if (widget.car ==
                                                             Car.largus) {
                                                           FFAppState()
                                                                   .priceLargus =
@@ -370,8 +376,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                                   FFAppState()
                                                                       .distanceKm);
                                                           safeSetState(() {});
-                                                        } else if (widget!
-                                                                .car ==
+                                                        } else if (widget.car ==
                                                             Car.largusTermo) {
                                                           FFAppState()
                                                                   .priceTermo =
@@ -436,7 +441,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                         ),
                                                         child: Align(
                                                           alignment:
-                                                              AlignmentDirectional(
+                                                              const AlignmentDirectional(
                                                                   0.0, 0.0),
                                                           child: Text(
                                                             'Нет',
@@ -482,7 +487,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                         safeSetState(() {});
                                                         HapticFeedback
                                                             .mediumImpact();
-                                                        if (widget!.car ==
+                                                        if (widget.car ==
                                                             Car.largus) {
                                                           FFAppState()
                                                                   .priceLargus =
@@ -501,8 +506,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                                   FFAppState()
                                                                       .distanceKm);
                                                           safeSetState(() {});
-                                                        } else if (widget!
-                                                                .car ==
+                                                        } else if (widget.car ==
                                                             Car.largusTermo) {
                                                           FFAppState()
                                                                   .priceTermo =
@@ -565,7 +569,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                         ),
                                                         child: Align(
                                                           alignment:
-                                                              AlignmentDirectional(
+                                                              const AlignmentDirectional(
                                                                   0.0, 0.0),
                                                           child: Text(
                                                             '1',
@@ -611,7 +615,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                         safeSetState(() {});
                                                         HapticFeedback
                                                             .mediumImpact();
-                                                        if (widget!.car ==
+                                                        if (widget.car ==
                                                             Car.largus) {
                                                           FFAppState()
                                                                   .priceLargus =
@@ -630,8 +634,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                                   FFAppState()
                                                                       .distanceKm);
                                                           safeSetState(() {});
-                                                        } else if (widget!
-                                                                .car ==
+                                                        } else if (widget.car ==
                                                             Car.largusTermo) {
                                                           FFAppState()
                                                                   .priceTermo =
@@ -694,7 +697,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                         ),
                                                         child: Align(
                                                           alignment:
-                                                              AlignmentDirectional(
+                                                              const AlignmentDirectional(
                                                                   0.0, 0.0),
                                                           child: Text(
                                                             '2',
@@ -746,7 +749,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                 borderRadius: BorderRadius.circular(18.0),
                               ),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     24.0, 16.0, 24.0, 0.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
@@ -787,7 +790,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                   padding:
                                                       MediaQuery.viewInsetsOf(
                                                           context),
-                                                  child: KartaWidget(
+                                                  child: const KartaWidget(
                                                     point: 'A',
                                                   ),
                                                 ),
@@ -797,10 +800,10 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                         ).then((value) => safeSetState(() {}));
                                       },
                                       child: Container(
-                                        constraints: BoxConstraints(
+                                        constraints: const BoxConstraints(
                                           minHeight: 57.0,
                                         ),
-                                        decoration: BoxDecoration(),
+                                        decoration: const BoxDecoration(),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.max,
                                           mainAxisAlignment:
@@ -828,11 +831,11 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                       .primaryText,
                                               size: 12.0,
                                             ),
-                                          ].divide(SizedBox(width: 12.0)),
+                                          ].divide(const SizedBox(width: 12.0)),
                                         ),
                                       ),
                                     ),
-                                    Divider(
+                                    const Divider(
                                       height: 0.3,
                                       thickness: 0.3,
                                       color: Color(0xFFD0CFCE),
@@ -866,19 +869,19 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                             decoration: InputDecoration(
                                               isDense: false,
                                               labelText: 'Подъезд',
-                                              labelStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelMedium
-                                                      .override(
-                                                        fontFamily: 'SF',
-                                                        color:
-                                                            Color(0xFF8F8F8E),
-                                                        fontSize: 16.0,
-                                                        letterSpacing: 0.0,
-                                                      ),
+                                              labelStyle: FlutterFlowTheme.of(
+                                                      context)
+                                                  .labelMedium
+                                                  .override(
+                                                    fontFamily: 'SF',
+                                                    color:
+                                                        const Color(0xFF8F8F8E),
+                                                    fontSize: 16.0,
+                                                    letterSpacing: 0.0,
+                                                  ),
                                               enabledBorder:
                                                   UnderlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0xFFD0CFCE),
                                                   width: 0.3,
                                                 ),
@@ -887,7 +890,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                               ),
                                               focusedBorder:
                                                   UnderlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0xFFD0CFCE),
                                                   width: 0.3,
                                                 ),
@@ -916,9 +919,9 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                     BorderRadius.circular(0.0),
                                               ),
                                               contentPadding:
-                                                  EdgeInsetsDirectional
+                                                  const EdgeInsetsDirectional
                                                       .fromSTEB(
-                                                          0.0, 16.0, 0.0, 16.0),
+                                                      0.0, 16.0, 0.0, 16.0),
                                               hoverColor: Colors.transparent,
                                             ),
                                             style: FlutterFlowTheme.of(context)
@@ -962,19 +965,19 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                             decoration: InputDecoration(
                                               isDense: false,
                                               labelText: 'Кв./офис',
-                                              labelStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelMedium
-                                                      .override(
-                                                        fontFamily: 'SF',
-                                                        color:
-                                                            Color(0xFF8F8F8E),
-                                                        fontSize: 16.0,
-                                                        letterSpacing: 0.0,
-                                                      ),
+                                              labelStyle: FlutterFlowTheme.of(
+                                                      context)
+                                                  .labelMedium
+                                                  .override(
+                                                    fontFamily: 'SF',
+                                                    color:
+                                                        const Color(0xFF8F8F8E),
+                                                    fontSize: 16.0,
+                                                    letterSpacing: 0.0,
+                                                  ),
                                               enabledBorder:
                                                   UnderlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0xFFD0CFCE),
                                                   width: 0.3,
                                                 ),
@@ -983,7 +986,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                               ),
                                               focusedBorder:
                                                   UnderlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0xFFD0CFCE),
                                                   width: 0.3,
                                                 ),
@@ -1012,9 +1015,9 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                     BorderRadius.circular(0.0),
                                               ),
                                               contentPadding:
-                                                  EdgeInsetsDirectional
+                                                  const EdgeInsetsDirectional
                                                       .fromSTEB(
-                                                          0.0, 16.0, 0.0, 16.0),
+                                                      0.0, 16.0, 0.0, 16.0),
                                               hoverColor: Colors.transparent,
                                             ),
                                             style: FlutterFlowTheme.of(context)
@@ -1046,7 +1049,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                             ],
                                           ),
                                         ),
-                                      ].divide(SizedBox(width: 16.0)),
+                                      ].divide(const SizedBox(width: 16.0)),
                                     ),
                                     Row(
                                       mainAxisSize: MainAxisSize.max,
@@ -1076,19 +1079,19 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                             decoration: InputDecoration(
                                               isDense: false,
                                               labelText: 'Этаж',
-                                              labelStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelMedium
-                                                      .override(
-                                                        fontFamily: 'SF',
-                                                        color:
-                                                            Color(0xFF8F8F8E),
-                                                        fontSize: 16.0,
-                                                        letterSpacing: 0.0,
-                                                      ),
+                                              labelStyle: FlutterFlowTheme.of(
+                                                      context)
+                                                  .labelMedium
+                                                  .override(
+                                                    fontFamily: 'SF',
+                                                    color:
+                                                        const Color(0xFF8F8F8E),
+                                                    fontSize: 16.0,
+                                                    letterSpacing: 0.0,
+                                                  ),
                                               enabledBorder:
                                                   UnderlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0xFFD0CFCE),
                                                   width: 0.3,
                                                 ),
@@ -1097,7 +1100,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                               ),
                                               focusedBorder:
                                                   UnderlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0xFFD0CFCE),
                                                   width: 0.3,
                                                 ),
@@ -1126,9 +1129,9 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                     BorderRadius.circular(0.0),
                                               ),
                                               contentPadding:
-                                                  EdgeInsetsDirectional
+                                                  const EdgeInsetsDirectional
                                                       .fromSTEB(
-                                                          0.0, 16.0, 0.0, 16.0),
+                                                      0.0, 16.0, 0.0, 16.0),
                                               hoverColor: Colors.transparent,
                                             ),
                                             style: FlutterFlowTheme.of(context)
@@ -1174,19 +1177,19 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                             decoration: InputDecoration(
                                               isDense: false,
                                               labelText: 'Домофон',
-                                              labelStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelMedium
-                                                      .override(
-                                                        fontFamily: 'SF',
-                                                        color:
-                                                            Color(0xFF8F8F8E),
-                                                        fontSize: 16.0,
-                                                        letterSpacing: 0.0,
-                                                      ),
+                                              labelStyle: FlutterFlowTheme.of(
+                                                      context)
+                                                  .labelMedium
+                                                  .override(
+                                                    fontFamily: 'SF',
+                                                    color:
+                                                        const Color(0xFF8F8F8E),
+                                                    fontSize: 16.0,
+                                                    letterSpacing: 0.0,
+                                                  ),
                                               enabledBorder:
                                                   UnderlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0xFFD0CFCE),
                                                   width: 0.3,
                                                 ),
@@ -1195,7 +1198,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                               ),
                                               focusedBorder:
                                                   UnderlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0xFFD0CFCE),
                                                   width: 0.3,
                                                 ),
@@ -1224,9 +1227,9 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                     BorderRadius.circular(0.0),
                                               ),
                                               contentPadding:
-                                                  EdgeInsetsDirectional
+                                                  const EdgeInsetsDirectional
                                                       .fromSTEB(
-                                                          0.0, 16.0, 0.0, 16.0),
+                                                      0.0, 16.0, 0.0, 16.0),
                                               hoverColor: Colors.transparent,
                                             ),
                                             style: FlutterFlowTheme.of(context)
@@ -1258,9 +1261,9 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                             ],
                                           ),
                                         ),
-                                      ].divide(SizedBox(width: 16.0)),
+                                      ].divide(const SizedBox(width: 16.0)),
                                     ),
-                                    Container(
+                                    SizedBox(
                                       width: double.infinity,
                                       child: TextFormField(
                                         controller:
@@ -1268,7 +1271,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                         focusNode: _model.commentAFocusNode,
                                         onChanged: (_) => EasyDebounce.debounce(
                                           '_model.commentATextController',
-                                          Duration(milliseconds: 0),
+                                          const Duration(milliseconds: 0),
                                           () => safeSetState(() {}),
                                         ),
                                         onFieldSubmitted: (_) async {
@@ -1292,12 +1295,13 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                   .labelMedium
                                                   .override(
                                                     fontFamily: 'SF',
-                                                    color: Color(0xFF8F8F8E),
+                                                    color:
+                                                        const Color(0xFF8F8F8E),
                                                     fontSize: 16.0,
                                                     letterSpacing: 0.0,
                                                   ),
                                           enabledBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(
+                                            borderSide: const BorderSide(
                                               color: Color(0xFFD0CFCE),
                                               width: 0.3,
                                             ),
@@ -1305,7 +1309,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                 BorderRadius.circular(0.0),
                                           ),
                                           focusedBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(
+                                            borderSide: const BorderSide(
                                               color: Color(0xFFD0CFCE),
                                               width: 0.3,
                                             ),
@@ -1334,7 +1338,8 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                 BorderRadius.circular(0.0),
                                           ),
                                           contentPadding:
-                                              EdgeInsetsDirectional.fromSTEB(
+                                              const EdgeInsetsDirectional
+                                                  .fromSTEB(
                                                   0.0, 16.0, 0.0, 16.0),
                                           hoverColor: Colors.transparent,
                                         ),
@@ -1391,7 +1396,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                   padding:
                                                       MediaQuery.viewInsetsOf(
                                                           context),
-                                                  child: SenderWidget(),
+                                                  child: const SenderWidget(),
                                                 ),
                                               ),
                                             );
@@ -1401,7 +1406,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                       child: Container(
                                         width: double.infinity,
                                         height: 57.0,
-                                        decoration: BoxDecoration(),
+                                        decoration: const BoxDecoration(),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.max,
                                           mainAxisAlignment:
@@ -1428,44 +1433,40 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                               mainAxisAlignment:
                                                   MainAxisAlignment.end,
                                               children: [
-                                                if (FFAppState()
-                                                        .pointA
-                                                        .sender !=
-                                                    null)
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 0.0,
-                                                                8.0, 0.0),
-                                                    child: Text(
-                                                      valueOrDefault<String>(
-                                                        FFAppState()
-                                                                    .pointA
-                                                                    .sender !=
-                                                                null
-                                                            ? functions
-                                                                .formatPhoneNumber1(
-                                                                    FFAppState()
-                                                                        .pointA
-                                                                        .sender
-                                                                        .phone)
-                                                            : '  ',
-                                                        'Номер телефона',
-                                                      ),
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            fontFamily: 'SF',
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .secondaryText,
-                                                            fontSize: 14.0,
-                                                            letterSpacing: 0.0,
-                                                            lineHeight: 1.0,
-                                                          ),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
+                                                          0.0, 0.0, 8.0, 0.0),
+                                                  child: Text(
+                                                    valueOrDefault<String>(
+                                                      FFAppState()
+                                                                  .pointA
+                                                                  .sender !=
+                                                              null
+                                                          ? functions
+                                                              .formatPhoneNumber1(
+                                                                  FFAppState()
+                                                                      .pointA
+                                                                      .sender
+                                                                      .phone)
+                                                          : '  ',
+                                                      'Номер телефона',
                                                     ),
+                                                    style: FlutterFlowTheme.of(
+                                                            context)
+                                                        .bodyMedium
+                                                        .override(
+                                                          fontFamily: 'SF',
+                                                          color: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .secondaryText,
+                                                          fontSize: 14.0,
+                                                          letterSpacing: 0.0,
+                                                          lineHeight: 1.0,
+                                                        ),
                                                   ),
+                                                ),
                                                 Icon(
                                                   FFIcons.kiconrightStroke,
                                                   color: FlutterFlowTheme.of(
@@ -1491,7 +1492,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                 borderRadius: BorderRadius.circular(18.0),
                               ),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     24.0, 16.0, 24.0, 0.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
@@ -1532,7 +1533,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                   padding:
                                                       MediaQuery.viewInsetsOf(
                                                           context),
-                                                  child: KartaWidget(
+                                                  child: const KartaWidget(
                                                     point: 'B',
                                                   ),
                                                 ),
@@ -1542,10 +1543,10 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                         ).then((value) => safeSetState(() {}));
                                       },
                                       child: Container(
-                                        constraints: BoxConstraints(
+                                        constraints: const BoxConstraints(
                                           minHeight: 57.0,
                                         ),
-                                        decoration: BoxDecoration(),
+                                        decoration: const BoxDecoration(),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.max,
                                           mainAxisAlignment:
@@ -1573,11 +1574,11 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                       .primaryText,
                                               size: 12.0,
                                             ),
-                                          ].divide(SizedBox(width: 12.0)),
+                                          ].divide(const SizedBox(width: 12.0)),
                                         ),
                                       ),
                                     ),
-                                    Divider(
+                                    const Divider(
                                       height: 0.3,
                                       thickness: 0.3,
                                       color: Color(0xFFD0CFCE),
@@ -1611,19 +1612,19 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                             decoration: InputDecoration(
                                               isDense: false,
                                               labelText: 'Подъезд',
-                                              labelStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelMedium
-                                                      .override(
-                                                        fontFamily: 'SF',
-                                                        color:
-                                                            Color(0xFF8F8F8E),
-                                                        fontSize: 16.0,
-                                                        letterSpacing: 0.0,
-                                                      ),
+                                              labelStyle: FlutterFlowTheme.of(
+                                                      context)
+                                                  .labelMedium
+                                                  .override(
+                                                    fontFamily: 'SF',
+                                                    color:
+                                                        const Color(0xFF8F8F8E),
+                                                    fontSize: 16.0,
+                                                    letterSpacing: 0.0,
+                                                  ),
                                               enabledBorder:
                                                   UnderlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0xFFD0CFCE),
                                                   width: 0.3,
                                                 ),
@@ -1632,7 +1633,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                               ),
                                               focusedBorder:
                                                   UnderlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0xFFD0CFCE),
                                                   width: 0.3,
                                                 ),
@@ -1661,9 +1662,9 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                     BorderRadius.circular(0.0),
                                               ),
                                               contentPadding:
-                                                  EdgeInsetsDirectional
+                                                  const EdgeInsetsDirectional
                                                       .fromSTEB(
-                                                          0.0, 16.0, 0.0, 16.0),
+                                                      0.0, 16.0, 0.0, 16.0),
                                               hoverColor: Colors.transparent,
                                             ),
                                             style: FlutterFlowTheme.of(context)
@@ -1717,19 +1718,19 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                             decoration: InputDecoration(
                                               isDense: false,
                                               labelText: 'Кв./офис',
-                                              labelStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelMedium
-                                                      .override(
-                                                        fontFamily: 'SF',
-                                                        color:
-                                                            Color(0xFF8F8F8E),
-                                                        fontSize: 16.0,
-                                                        letterSpacing: 0.0,
-                                                      ),
+                                              labelStyle: FlutterFlowTheme.of(
+                                                      context)
+                                                  .labelMedium
+                                                  .override(
+                                                    fontFamily: 'SF',
+                                                    color:
+                                                        const Color(0xFF8F8F8E),
+                                                    fontSize: 16.0,
+                                                    letterSpacing: 0.0,
+                                                  ),
                                               enabledBorder:
                                                   UnderlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0xFFD0CFCE),
                                                   width: 0.3,
                                                 ),
@@ -1738,7 +1739,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                               ),
                                               focusedBorder:
                                                   UnderlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0xFFD0CFCE),
                                                   width: 0.3,
                                                 ),
@@ -1767,9 +1768,9 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                     BorderRadius.circular(0.0),
                                               ),
                                               contentPadding:
-                                                  EdgeInsetsDirectional
+                                                  const EdgeInsetsDirectional
                                                       .fromSTEB(
-                                                          0.0, 16.0, 0.0, 16.0),
+                                                      0.0, 16.0, 0.0, 16.0),
                                               hoverColor: Colors.transparent,
                                             ),
                                             style: FlutterFlowTheme.of(context)
@@ -1801,7 +1802,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                             ],
                                           ),
                                         ),
-                                      ].divide(SizedBox(width: 16.0)),
+                                      ].divide(const SizedBox(width: 16.0)),
                                     ),
                                     Row(
                                       mainAxisSize: MainAxisSize.max,
@@ -1831,19 +1832,19 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                             decoration: InputDecoration(
                                               isDense: false,
                                               labelText: 'Этаж',
-                                              labelStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelMedium
-                                                      .override(
-                                                        fontFamily: 'SF',
-                                                        color:
-                                                            Color(0xFF8F8F8E),
-                                                        fontSize: 16.0,
-                                                        letterSpacing: 0.0,
-                                                      ),
+                                              labelStyle: FlutterFlowTheme.of(
+                                                      context)
+                                                  .labelMedium
+                                                  .override(
+                                                    fontFamily: 'SF',
+                                                    color:
+                                                        const Color(0xFF8F8F8E),
+                                                    fontSize: 16.0,
+                                                    letterSpacing: 0.0,
+                                                  ),
                                               enabledBorder:
                                                   UnderlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0xFFD0CFCE),
                                                   width: 0.3,
                                                 ),
@@ -1852,7 +1853,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                               ),
                                               focusedBorder:
                                                   UnderlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0xFFD0CFCE),
                                                   width: 0.3,
                                                 ),
@@ -1881,9 +1882,9 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                     BorderRadius.circular(0.0),
                                               ),
                                               contentPadding:
-                                                  EdgeInsetsDirectional
+                                                  const EdgeInsetsDirectional
                                                       .fromSTEB(
-                                                          0.0, 16.0, 0.0, 16.0),
+                                                      0.0, 16.0, 0.0, 16.0),
                                               hoverColor: Colors.transparent,
                                             ),
                                             style: FlutterFlowTheme.of(context)
@@ -1939,19 +1940,19 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                             decoration: InputDecoration(
                                               isDense: false,
                                               labelText: 'Домофон',
-                                              labelStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .labelMedium
-                                                      .override(
-                                                        fontFamily: 'SF',
-                                                        color:
-                                                            Color(0xFF8F8F8E),
-                                                        fontSize: 16.0,
-                                                        letterSpacing: 0.0,
-                                                      ),
+                                              labelStyle: FlutterFlowTheme.of(
+                                                      context)
+                                                  .labelMedium
+                                                  .override(
+                                                    fontFamily: 'SF',
+                                                    color:
+                                                        const Color(0xFF8F8F8E),
+                                                    fontSize: 16.0,
+                                                    letterSpacing: 0.0,
+                                                  ),
                                               enabledBorder:
                                                   UnderlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0xFFD0CFCE),
                                                   width: 0.3,
                                                 ),
@@ -1960,7 +1961,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                               ),
                                               focusedBorder:
                                                   UnderlineInputBorder(
-                                                borderSide: BorderSide(
+                                                borderSide: const BorderSide(
                                                   color: Color(0xFFD0CFCE),
                                                   width: 0.3,
                                                 ),
@@ -1989,9 +1990,9 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                     BorderRadius.circular(0.0),
                                               ),
                                               contentPadding:
-                                                  EdgeInsetsDirectional
+                                                  const EdgeInsetsDirectional
                                                       .fromSTEB(
-                                                          0.0, 16.0, 0.0, 16.0),
+                                                      0.0, 16.0, 0.0, 16.0),
                                               hoverColor: Colors.transparent,
                                             ),
                                             style: FlutterFlowTheme.of(context)
@@ -2023,9 +2024,9 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                             ],
                                           ),
                                         ),
-                                      ].divide(SizedBox(width: 16.0)),
+                                      ].divide(const SizedBox(width: 16.0)),
                                     ),
-                                    Container(
+                                    SizedBox(
                                       width: double.infinity,
                                       child: TextFormField(
                                         controller:
@@ -2033,7 +2034,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                         focusNode: _model.commentBFocusNode,
                                         onChanged: (_) => EasyDebounce.debounce(
                                           '_model.commentBTextController',
-                                          Duration(milliseconds: 0),
+                                          const Duration(milliseconds: 0),
                                           () => safeSetState(() {}),
                                         ),
                                         onFieldSubmitted: (_) async {
@@ -2057,12 +2058,13 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                   .labelMedium
                                                   .override(
                                                     fontFamily: 'SF',
-                                                    color: Color(0xFF8F8F8E),
+                                                    color:
+                                                        const Color(0xFF8F8F8E),
                                                     fontSize: 16.0,
                                                     letterSpacing: 0.0,
                                                   ),
                                           enabledBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(
+                                            borderSide: const BorderSide(
                                               color: Color(0xFFD0CFCE),
                                               width: 0.3,
                                             ),
@@ -2070,7 +2072,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                 BorderRadius.circular(0.0),
                                           ),
                                           focusedBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(
+                                            borderSide: const BorderSide(
                                               color: Color(0xFFD0CFCE),
                                               width: 0.3,
                                             ),
@@ -2099,7 +2101,8 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                 BorderRadius.circular(0.0),
                                           ),
                                           contentPadding:
-                                              EdgeInsetsDirectional.fromSTEB(
+                                              const EdgeInsetsDirectional
+                                                  .fromSTEB(
                                                   0.0, 16.0, 0.0, 16.0),
                                           hoverColor: Colors.transparent,
                                         ),
@@ -2156,7 +2159,8 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                   padding:
                                                       MediaQuery.viewInsetsOf(
                                                           context),
-                                                  child: RecipientWidget(),
+                                                  child:
+                                                      const RecipientWidget(),
                                                 ),
                                               ),
                                             );
@@ -2166,7 +2170,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                       child: Container(
                                         width: double.infinity,
                                         height: 57.0,
-                                        decoration: BoxDecoration(),
+                                        decoration: const BoxDecoration(),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.max,
                                           mainAxisAlignment:
@@ -2193,44 +2197,40 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                               mainAxisAlignment:
                                                   MainAxisAlignment.end,
                                               children: [
-                                                if (FFAppState()
-                                                        .pointB
-                                                        .sender !=
-                                                    null)
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 0.0,
-                                                                8.0, 0.0),
-                                                    child: Text(
-                                                      valueOrDefault<String>(
-                                                        FFAppState()
-                                                                    .pointB
-                                                                    .sender !=
-                                                                null
-                                                            ? functions
-                                                                .formatPhoneNumber1(
-                                                                    FFAppState()
-                                                                        .pointB
-                                                                        .sender
-                                                                        .phone)
-                                                            : '  ',
-                                                        'Номер телефона',
-                                                      ),
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            fontFamily: 'SF',
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .secondaryText,
-                                                            fontSize: 14.0,
-                                                            letterSpacing: 0.0,
-                                                            lineHeight: 1.0,
-                                                          ),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
+                                                          0.0, 0.0, 8.0, 0.0),
+                                                  child: Text(
+                                                    valueOrDefault<String>(
+                                                      FFAppState()
+                                                                  .pointB
+                                                                  .sender !=
+                                                              null
+                                                          ? functions
+                                                              .formatPhoneNumber1(
+                                                                  FFAppState()
+                                                                      .pointB
+                                                                      .sender
+                                                                      .phone)
+                                                          : '  ',
+                                                      'Номер телефона',
                                                     ),
+                                                    style: FlutterFlowTheme.of(
+                                                            context)
+                                                        .bodyMedium
+                                                        .override(
+                                                          fontFamily: 'SF',
+                                                          color: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .secondaryText,
+                                                          fontSize: 14.0,
+                                                          letterSpacing: 0.0,
+                                                          lineHeight: 1.0,
+                                                        ),
                                                   ),
+                                                ),
                                                 Icon(
                                                   FFIcons.kiconrightStroke,
                                                   color: FlutterFlowTheme.of(
@@ -2256,15 +2256,16 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                 borderRadius: BorderRadius.circular(18.0),
                               ),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     24.0, 16.0, 24.0, 16.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 0.0, 0.0, 12.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              0.0, 0.0, 0.0, 12.0),
                                       child: Text(
                                         'Подача*',
                                         style: FlutterFlowTheme.of(context)
@@ -2277,7 +2278,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                             ),
                                       ),
                                     ),
-                                    Divider(
+                                    const Divider(
                                       height: 0.5,
                                       thickness: 0.5,
                                       color: Color(0xFFD0CFCE),
@@ -2294,11 +2295,10 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                       },
                                       child: Container(
                                         height: 57.0,
-                                        decoration: BoxDecoration(),
+                                        decoration: const BoxDecoration(),
                                         child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 12.0, 0.0, 12.0),
+                                          padding: const EdgeInsetsDirectional
+                                              .fromSTEB(0.0, 12.0, 0.0, 12.0),
                                           child: Row(
                                             mainAxisSize: MainAxisSize.max,
                                             children: [
@@ -2347,7 +2347,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                         ),
                                       ),
                                     ),
-                                    Divider(
+                                    const Divider(
                                       height: 0.3,
                                       thickness: 0.3,
                                       color: Color(0xFFD0CFCE),
@@ -2366,7 +2366,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                             await showModalBottomSheet<bool>(
                                                 context: context,
                                                 builder: (context) {
-                                                  return Container(
+                                                  return SizedBox(
                                                     height:
                                                         MediaQuery.of(context)
                                                                 .size
@@ -2391,8 +2391,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                               : getCurrentTimestamp) ??
                                                           DateTime.now()),
                                                       maximumDate: (functions
-                                                              .datetime24() ??
-                                                          DateTime(2050)),
+                                                          .datetime24()),
                                                       use24hFormat: false,
                                                       onDateTimeChanged:
                                                           (newDateTime) =>
@@ -2407,14 +2406,13 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                         );
                                       },
                                       child: Container(
-                                        constraints: BoxConstraints(
+                                        constraints: const BoxConstraints(
                                           minHeight: 57.0,
                                         ),
-                                        decoration: BoxDecoration(),
+                                        decoration: const BoxDecoration(),
                                         child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 12.0, 0.0, 12.0),
+                                          padding: const EdgeInsetsDirectional
+                                              .fromSTEB(0.0, 12.0, 0.0, 12.0),
                                           child: Row(
                                             mainAxisSize: MainAxisSize.max,
                                             children: [
@@ -2458,7 +2456,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                             .bodyMedium
                                                             .override(
                                                               fontFamily: 'SF',
-                                                              color: Color(
+                                                              color: const Color(
                                                                   0xFF8F8F8E),
                                                               letterSpacing:
                                                                   0.0,
@@ -2499,7 +2497,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                         ),
                                       ),
                                     ),
-                                    Divider(
+                                    const Divider(
                                       height: 0.3,
                                       thickness: 0.3,
                                       color: Color(0xFFD0CFCE),
@@ -2516,7 +2514,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                 borderRadius: BorderRadius.circular(18.0),
                               ),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     24.0, 16.0, 24.0, 16.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
@@ -2533,7 +2531,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                             fontWeight: FontWeight.w600,
                                           ),
                                     ),
-                                    Container(
+                                    SizedBox(
                                       width: double.infinity,
                                       child: TextFormField(
                                         controller:
@@ -2541,7 +2539,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                         focusNode: _model.descriptionFocusNode,
                                         onChanged: (_) => EasyDebounce.debounce(
                                           '_model.descriptionTextController',
-                                          Duration(milliseconds: 0),
+                                          const Duration(milliseconds: 0),
                                           () => safeSetState(() {}),
                                         ),
                                         autofocus: false,
@@ -2558,12 +2556,13 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                   .bodyMedium
                                                   .override(
                                                     fontFamily: 'SF',
-                                                    color: Color(0xFF8F8F8E),
+                                                    color:
+                                                        const Color(0xFF8F8F8E),
                                                     fontSize: 16.0,
                                                     letterSpacing: 0.0,
                                                   ),
                                           enabledBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(
+                                            borderSide: const BorderSide(
                                               color: Color(0xFFD0CFCE),
                                               width: 0.3,
                                             ),
@@ -2571,7 +2570,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                 BorderRadius.circular(0.0),
                                           ),
                                           focusedBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(
+                                            borderSide: const BorderSide(
                                               color: Color(0xFFD0CFCE),
                                               width: 0.3,
                                             ),
@@ -2600,7 +2599,8 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                 BorderRadius.circular(0.0),
                                           ),
                                           contentPadding:
-                                              EdgeInsetsDirectional.fromSTEB(
+                                              const EdgeInsetsDirectional
+                                                  .fromSTEB(
                                                   0.0, 24.0, 0.0, 24.0),
                                           hoverColor: Colors.transparent,
                                         ),
@@ -2647,7 +2647,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                 borderRadius: BorderRadius.circular(18.0),
                               ),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     24.0, 16.0, 24.0, 16.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
@@ -2777,7 +2777,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                                     .viewInsetsOf(
                                                                         context),
                                                                 child:
-                                                                    ErrorPopupWidget(
+                                                                    const ErrorPopupWidget(
                                                                   title:
                                                                       'Что-то пошло не так',
                                                                   text:
@@ -2831,11 +2831,11 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                           text: 'Добавить',
                                           options: FFButtonOptions(
                                             height: 35.0,
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    16.0, 0.0, 16.0, 0.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(16.0, 0.0, 16.0, 0.0),
                                             iconPadding:
-                                                EdgeInsetsDirectional.fromSTEB(
+                                                const EdgeInsetsDirectional
+                                                    .fromSTEB(
                                                     0.0, 0.0, 0.0, 0.0),
                                             color: FlutterFlowTheme.of(context)
                                                 .primary,
@@ -2864,8 +2864,8 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                     ),
                                     if (_model.images.isNotEmpty)
                                       Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 12.0, 0.0, 0.0),
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(0.0, 12.0, 0.0, 0.0),
                                         child: Builder(
                                           builder: (context) {
                                             final imagesCargo =
@@ -2874,7 +2874,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                             return GridView.builder(
                                               padding: EdgeInsets.zero,
                                               gridDelegate:
-                                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                                  const SliverGridDelegateWithFixedCrossAxisCount(
                                                 crossAxisCount: 5,
                                                 crossAxisSpacing: 6.0,
                                                 mainAxisSpacing: 6.0,
@@ -2891,7 +2891,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                         imagesCargoIndex];
                                                 return Stack(
                                                   alignment:
-                                                      AlignmentDirectional(
+                                                      const AlignmentDirectional(
                                                           1.0, -1.0),
                                                   children: [
                                                     ClipRRect(
@@ -2912,8 +2912,8 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                           Colors.transparent,
                                                       borderRadius: 10.0,
                                                       buttonSize: 40.0,
-                                                      fillColor:
-                                                          Color(0x69161616),
+                                                      fillColor: const Color(
+                                                          0x69161616),
                                                       icon: Icon(
                                                         FFIcons.kkrestStroke,
                                                         color: FlutterFlowTheme
@@ -2946,15 +2946,16 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                 borderRadius: BorderRadius.circular(18.0),
                               ),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     0.0, 16.0, 0.0, 16.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          24.0, 0.0, 24.0, 12.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              24.0, 0.0, 24.0, 12.0),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.max,
                                         mainAxisAlignment:
@@ -2978,12 +2979,12 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                               children: [
                                                 TextSpan(
                                                   text: () {
-                                                    if (widget!.car ==
+                                                    if (widget.car ==
                                                         Car.largus) {
                                                       return FFAppState()
                                                           .priceLargus
                                                           .toString();
-                                                    } else if (widget!.car ==
+                                                    } else if (widget.car ==
                                                         Car.largusTermo) {
                                                       return FFAppState()
                                                           .priceTermo
@@ -2994,12 +2995,12 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                           .toString();
                                                     }
                                                   }(),
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     fontWeight: FontWeight.w500,
                                                     fontSize: 24.0,
                                                   ),
                                                 ),
-                                                TextSpan(
+                                                const TextSpan(
                                                   text: ' ₽',
                                                   style: TextStyle(
                                                     fontSize: 18.0,
@@ -3023,7 +3024,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                         ],
                                       ),
                                     ),
-                                    Divider(
+                                    const Divider(
                                       height: 0.5,
                                       thickness: 0.5,
                                       indent: 24.0,
@@ -3045,7 +3046,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                         },
                                       ),
                                     ),
-                                    Divider(
+                                    const Divider(
                                       height: 0.3,
                                       thickness: 0.3,
                                       indent: 24.0,
@@ -3067,7 +3068,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                         },
                                       ),
                                     ),
-                                    Divider(
+                                    const Divider(
                                       height: 0.3,
                                       thickness: 0.3,
                                       indent: 24.0,
@@ -3078,7 +3079,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                 ),
                               ),
                             ),
-                          ].divide(SizedBox(height: 5.0)),
+                          ].divide(const SizedBox(height: 5.0)),
                         ),
                       ),
                     ),
@@ -3087,7 +3088,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                 Container(
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).secondary,
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(18.0),
                       topRight: Radius.circular(18.0),
                     ),
@@ -3110,17 +3111,12 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                       children: [
                         Builder(
                           builder: (context) {
-                            if ((FFAppState().pointA.sender.phone != null &&
-                                    FFAppState().pointA.sender.phone != '') &&
-                                (FFAppState().pointB.sender.phone != null &&
-                                    FFAppState().pointB.sender.phone != '') &&
+                            if ((FFAppState().pointA.sender.phone != '') &&
+                                (FFAppState().pointB.sender.phone != '') &&
                                 (_model.supply == 2
                                     ? (_model.datePicked != null)
                                     : true) &&
-                                (_model.descriptionTextController.text !=
-                                        null &&
-                                    _model.descriptionTextController.text !=
-                                        '') &&
+                                (_model.descriptionTextController.text != '') &&
                                 (_model.supply != null)) {
                               return FFButtonWidget(
                                 onPressed: () async {
@@ -3155,10 +3151,10 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                   .descriptionTextController
                                                   .text,
                                               budget: () {
-                                                if (widget!.car == Car.largus) {
+                                                if (widget.car == Car.largus) {
                                                   return FFAppState()
                                                       .priceLargus;
-                                                } else if (widget!.car ==
+                                                } else if (widget.car ==
                                                     Car.largusTermo) {
                                                   return FFAppState()
                                                       .priceTermo;
@@ -3166,7 +3162,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                                   return FFAppState().priceFiat;
                                                 }
                                               }(),
-                                              car: widget!.car!,
+                                              car: widget.car!,
                                             ),
                                           ),
                                         ),
@@ -3178,10 +3174,11 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                 options: FFButtonOptions(
                                   width: double.infinity,
                                   height: 56.0,
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0.0, 0.0, 0.0, 0.0),
-                                  iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, 0.0),
+                                  iconPadding:
+                                      const EdgeInsetsDirectional.fromSTEB(
+                                          0.0, 0.0, 0.0, 0.0),
                                   color: FlutterFlowTheme.of(context).tertiary,
                                   textStyle: FlutterFlowTheme.of(context)
                                       .titleSmall
@@ -3202,7 +3199,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                 width: double.infinity,
                                 height: 56.0,
                                 decoration: BoxDecoration(
-                                  color: Color(0xFFEEEEEE),
+                                  color: const Color(0xFFEEEEEE),
                                   borderRadius: BorderRadius.circular(16.0),
                                 ),
                                 child: Column(
@@ -3245,7 +3242,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                     ),
                   ),
                 ),
-              ].divide(SizedBox(height: 5.0)),
+              ].divide(const SizedBox(height: 5.0)),
             ),
           ],
         ),

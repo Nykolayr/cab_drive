@@ -42,7 +42,7 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
   late MainDriverModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  LatLng currentUserLocationValue = LatLng(0.0, 0.0);
+  LatLng currentUserLocationValue = const LatLng(0.0, 0.0);
 
   @override
   void initState() {
@@ -78,7 +78,7 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                 },
                 child: Padding(
                   padding: MediaQuery.viewInsetsOf(context),
-                  child: ErrorPopupWidget(
+                  child: const ErrorPopupWidget(
                     title: 'Начислен штраф 3000 ₽',
                     text:
                         'Вы не оплатили комиссию вовремя — к балансу добавлен штраф 3000 ₽.',
@@ -108,15 +108,16 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
       }
     });
 
-    getCurrentUserLocation(defaultLocation: LatLng(0.0, 0.0), cached: true)
+    getCurrentUserLocation(
+            defaultLocation: const LatLng(0.0, 0.0), cached: true)
         .timeout(
-          const Duration(seconds: 8),
-          onTimeout: () => LatLng(0.0, 0.0),
-        )
+      const Duration(seconds: 8),
+      onTimeout: () => const LatLng(0.0, 0.0),
+    )
         .then((loc) {
-          if (!mounted) return;
-          safeSetState(() => currentUserLocationValue = loc);
-        });
+      if (!mounted) return;
+      safeSetState(() => currentUserLocationValue = loc);
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
 
@@ -146,23 +147,24 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                 mainAxisSize: MainAxisSize.max,
                 children: [
                   Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 5.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 0.0, 0.0, 5.0),
                     child: Container(
                       width: double.infinity,
-                      constraints: BoxConstraints(
+                      constraints: const BoxConstraints(
                         minHeight: 120.0,
                       ),
                       decoration: BoxDecoration(
                         color: FlutterFlowTheme.of(context).secondaryBackground,
-                        borderRadius: BorderRadius.only(
+                        borderRadius: const BorderRadius.only(
                           bottomLeft: Radius.circular(18.0),
                           bottomRight: Radius.circular(18.0),
                         ),
                       ),
                       child: Align(
-                        alignment: AlignmentDirectional(-1.0, 1.0),
+                        alignment: const AlignmentDirectional(-1.0, 1.0),
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               16.0, 50.0, 16.0, 16.0),
                           child: Wrap(
                             spacing: 8.0,
@@ -195,7 +197,7 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                           child: Padding(
                                             padding: MediaQuery.viewInsetsOf(
                                                 context),
-                                            child: FiltersWidget(),
+                                            child: const FiltersWidget(),
                                           ),
                                         ),
                                       );
@@ -209,15 +211,15 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                     borderRadius: BorderRadius.circular(12.0),
                                   ),
                                   child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        12.0, 0.0, 12.0, 0.0),
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            12.0, 0.0, 12.0, 0.0),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 0.0, 6.0, 0.0),
+                                          padding: const EdgeInsetsDirectional
+                                              .fromSTEB(0.0, 0.0, 6.0, 0.0),
                                           child: Text(
                                             'Фильтры ',
                                             style: FlutterFlowTheme.of(context)
@@ -241,9 +243,8 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                             (FFAppState().filter.supply != 0) ||
                                             (FFAppState().filter.radius != 0.0))
                                           Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    8.0, 0.0, 0.0, 0.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(8.0, 0.0, 0.0, 0.0),
                                             child: Container(
                                               width: 22.0,
                                               height: 22.0,
@@ -254,8 +255,9 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                                 shape: BoxShape.circle,
                                               ),
                                               child: Align(
-                                                alignment: AlignmentDirectional(
-                                                    0.0, 0.0),
+                                                alignment:
+                                                    const AlignmentDirectional(
+                                                        0.0, 0.0),
                                                 child: Text(
                                                   (valueOrDefault<int>(
                                                             FFAppState()
@@ -331,8 +333,9 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                       borderRadius: BorderRadius.circular(12.0),
                                     ),
                                     child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          12.0, 0.0, 12.0, 0.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              12.0, 0.0, 12.0, 0.0),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
@@ -354,13 +357,12 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                                 ),
                                           ),
                                           Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    8.0, 0.0, 0.0, 0.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(8.0, 0.0, 0.0, 0.0),
                                             child: Container(
                                               width: 19.0,
                                               height: 19.0,
-                                              decoration: BoxDecoration(
+                                              decoration: const BoxDecoration(
                                                 color: Color(0x32FFFFFF),
                                                 shape: BoxShape.circle,
                                               ),
@@ -398,8 +400,9 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                       borderRadius: BorderRadius.circular(12.0),
                                     ),
                                     child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          12.0, 0.0, 12.0, 0.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              12.0, 0.0, 12.0, 0.0),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
@@ -421,13 +424,12 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                                 ),
                                           ),
                                           Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    8.0, 0.0, 0.0, 0.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(8.0, 0.0, 0.0, 0.0),
                                             child: Container(
                                               width: 19.0,
                                               height: 19.0,
-                                              decoration: BoxDecoration(
+                                              decoration: const BoxDecoration(
                                                 color: Color(0x32FFFFFF),
                                                 shape: BoxShape.circle,
                                               ),
@@ -465,8 +467,9 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                       borderRadius: BorderRadius.circular(12.0),
                                     ),
                                     child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          12.0, 0.0, 12.0, 0.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              12.0, 0.0, 12.0, 0.0),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
@@ -485,13 +488,12 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                                 ),
                                           ),
                                           Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    8.0, 0.0, 0.0, 0.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(8.0, 0.0, 0.0, 0.0),
                                             child: Container(
                                               width: 19.0,
                                               height: 19.0,
-                                              decoration: BoxDecoration(
+                                              decoration: const BoxDecoration(
                                                 color: Color(0x32FFFFFF),
                                                 shape: BoxShape.circle,
                                               ),
@@ -529,8 +531,9 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                       borderRadius: BorderRadius.circular(12.0),
                                     ),
                                     child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          12.0, 0.0, 12.0, 0.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              12.0, 0.0, 12.0, 0.0),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
@@ -552,13 +555,12 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                                 ),
                                           ),
                                           Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    8.0, 0.0, 0.0, 0.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(8.0, 0.0, 0.0, 0.0),
                                             child: Container(
                                               width: 19.0,
                                               height: 19.0,
-                                              decoration: BoxDecoration(
+                                              decoration: const BoxDecoration(
                                                 color: Color(0x32FFFFFF),
                                                 shape: BoxShape.circle,
                                               ),
@@ -583,7 +585,8 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 5.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 0.0, 0.0, 5.0),
                     child: Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
@@ -591,7 +594,7 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                         borderRadius: BorderRadius.circular(18.0),
                       ),
                       child: Padding(
-                        padding: EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.all(8.0),
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -604,14 +607,15 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                               desktop: false,
                             ))
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     0.0, 8.0, 0.0, 0.0),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          8.0, 0.0, 0.0, 0.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              8.0, 0.0, 0.0, 0.0),
                                       child: Text(
                                         'До окончания смены: ',
                                         style: FlutterFlowTheme.of(context)
@@ -633,7 +637,7 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                               milliSecond: false),
                                       controller: _model.timerController,
                                       updateStateInterval:
-                                          Duration(milliseconds: 1000),
+                                          const Duration(milliseconds: 1000),
                                       onChanged:
                                           (value, displayTime, shouldUpdate) {
                                         _model.timerMilliseconds = value;
@@ -703,7 +707,8 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                           child: Padding(
                                             padding: MediaQuery.viewInsetsOf(
                                                 context),
-                                            child: ZaChtoPlataCopyWidget(),
+                                            child:
+                                                const ZaChtoPlataCopyWidget(),
                                           ),
                                         ),
                                       );
@@ -721,10 +726,11 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                               options: FFButtonOptions(
                                 width: double.infinity,
                                 height: 50.0,
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     16.0, 0.0, 16.0, 0.0),
-                                iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 0.0),
+                                iconPadding:
+                                    const EdgeInsetsDirectional.fromSTEB(
+                                        0.0, 0.0, 0.0, 0.0),
                                 color: FlutterFlowTheme.of(context).error,
                                 textStyle: FlutterFlowTheme.of(context)
                                     .titleSmall
@@ -788,7 +794,7 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                       snapshot.data!;
 
                                   return Container(
-                                    decoration: BoxDecoration(),
+                                    decoration: const BoxDecoration(),
                                     child: Builder(
                                       builder: (context) {
                                         final orders = functions
@@ -813,7 +819,7 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                                     ?.car?.mark?.name)
                                             .toList();
                                         if (orders.isEmpty) {
-                                          return Container(
+                                          return const SizedBox(
                                             height: 700.0,
                                             child: NetPoiskaWidget(),
                                           );
@@ -847,11 +853,12 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 0.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 5.0, 0.0, 0.0),
                     child: wrapWithModel(
                       model: _model.navbarModel1,
                       updateCallback: () => safeSetState(() {}),
-                      child: NavbarWidget(
+                      child: const NavbarWidget(
                         index: 3,
                       ),
                     ),
@@ -881,7 +888,7 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                       .secondaryBackground,
                                 ),
                                 child: Padding(
-                                  padding: EdgeInsets.all(8.0),
+                                  padding: const EdgeInsets.all(8.0),
                                   child: Column(
                                     mainAxisSize: MainAxisSize.max,
                                     mainAxisAlignment: MainAxisAlignment.center,
@@ -897,8 +904,8 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                         ),
                                       ),
                                       Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 12.0, 0.0, 0.0),
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(0.0, 12.0, 0.0, 0.0),
                                         child: Text(
                                           'Начните смену, \nчтобы видеть заказы',
                                           textAlign: TextAlign.center,
@@ -916,8 +923,8 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                         ),
                                       ),
                                       Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 24.0, 0.0, 0.0),
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(0.0, 24.0, 0.0, 0.0),
                                         child: FFButtonWidget(
                                           onPressed: () async {
                                             if (valueOrDefault(
@@ -962,7 +969,7 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                                               .viewInsetsOf(
                                                                   context),
                                                           child:
-                                                              VklGeoCopyWidget(),
+                                                              const VklGeoCopyWidget(),
                                                         ),
                                                       ),
                                                     );
@@ -991,7 +998,7 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                                             .viewInsetsOf(
                                                                 context),
                                                         child:
-                                                            ZaChtoPlataCopyWidget(),
+                                                            const ZaChtoPlataCopyWidget(),
                                                       ),
                                                     ),
                                                   );
@@ -1006,11 +1013,11 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                           options: FFButtonOptions(
                                             width: double.infinity,
                                             height: 48.3,
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    16.0, 0.0, 16.0, 0.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(16.0, 0.0, 16.0, 0.0),
                                             iconPadding:
-                                                EdgeInsetsDirectional.fromSTEB(
+                                                const EdgeInsetsDirectional
+                                                    .fromSTEB(
                                                     0.0, 0.0, 0.0, 0.0),
                                             color: FlutterFlowTheme.of(context)
                                                 .tertiary,
@@ -1044,8 +1051,9 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                           currentUserDocument?.verifNeProidena,
                                           false))
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 0.0, 0.0, 5.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              0.0, 0.0, 0.0, 5.0),
                                       child: AuthUserStreamWidget(
                                         builder: (context) => Container(
                                           width: double.infinity,
@@ -1056,7 +1064,7 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                                 BorderRadius.circular(18.0),
                                           ),
                                           child: Padding(
-                                            padding: EdgeInsets.all(16.0),
+                                            padding: const EdgeInsets.all(16.0),
                                             child: Column(
                                               mainAxisSize: MainAxisSize.max,
                                               crossAxisAlignment:
@@ -1076,12 +1084,9 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                                     ),
                                                     Padding(
                                                       padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  6.0,
-                                                                  0.0,
-                                                                  0.0,
-                                                                  0.0),
+                                                          const EdgeInsetsDirectional
+                                                              .fromSTEB(6.0,
+                                                              0.0, 0.0, 0.0),
                                                       child: Text(
                                                         'Аккаунт на модерации!',
                                                         style: FlutterFlowTheme
@@ -1105,8 +1110,9 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                                   ],
                                                 ),
                                                 Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
                                                           0.0, 5.0, 0.0, 0.0),
                                                   child: Text(
                                                     'Мы проверим ваш аккаунт в течении 24 часов, \nи откроем вам доступ ко всему приложению.',
@@ -1115,8 +1121,8 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                                         .bodyMedium
                                                         .override(
                                                           fontFamily: 'SF',
-                                                          color:
-                                                              Color(0xFF4B4B4B),
+                                                          color: const Color(
+                                                              0xFF4B4B4B),
                                                           letterSpacing: 0.0,
                                                           fontWeight:
                                                               FontWeight.normal,
@@ -1142,7 +1148,7 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                               BorderRadius.circular(18.0),
                                         ),
                                         child: Padding(
-                                          padding: EdgeInsets.all(16.0),
+                                          padding: const EdgeInsets.all(16.0),
                                           child: Column(
                                             mainAxisSize: MainAxisSize.max,
                                             crossAxisAlignment:
@@ -1160,9 +1166,9 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                                   ),
                                                   Padding(
                                                     padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(6.0, 0.0,
-                                                                0.0, 0.0),
+                                                        const EdgeInsetsDirectional
+                                                            .fromSTEB(
+                                                            6.0, 0.0, 0.0, 0.0),
                                                     child: Text(
                                                       'Верификация не пройдена!',
                                                       style: FlutterFlowTheme
@@ -1184,8 +1190,9 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                                 ],
                                               ),
                                               Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
+                                                padding:
+                                                    const EdgeInsetsDirectional
+                                                        .fromSTEB(
                                                         0.0, 5.0, 0.0, 0.0),
                                                 child: Text(
                                                   'Администратор отклонил вашу заявку на верификацию № ${valueOrDefault(currentUserDocument?.verifId, 0).toString()},свяжитесь с поддержкой для получения доп инфы ',
@@ -1194,8 +1201,8 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                                       .bodyMedium
                                                       .override(
                                                         fontFamily: 'SF',
-                                                        color:
-                                                            Color(0xFF4B4B4B),
+                                                        color: const Color(
+                                                            0xFF4B4B4B),
                                                         letterSpacing: 0.0,
                                                         fontWeight:
                                                             FontWeight.normal,
@@ -1203,8 +1210,9 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                                 ),
                                               ),
                                               Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
+                                                padding:
+                                                    const EdgeInsetsDirectional
+                                                        .fromSTEB(
                                                         0.0, 12.0, 0.0, 0.0),
                                                 child: FFButtonWidget(
                                                   onPressed: () async {
@@ -1229,13 +1237,13 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                                     width: double.infinity,
                                                     height: 45.0,
                                                     padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 0.0,
-                                                                0.0, 0.0),
+                                                        const EdgeInsetsDirectional
+                                                            .fromSTEB(
+                                                            0.0, 0.0, 0.0, 0.0),
                                                     iconPadding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 0.0,
-                                                                0.0, 0.0),
+                                                        const EdgeInsetsDirectional
+                                                            .fromSTEB(
+                                                            0.0, 0.0, 0.0, 0.0),
                                                     color: FlutterFlowTheme.of(
                                                             context)
                                                         .primaryBackground,
@@ -1274,11 +1282,12 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 0.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 5.0, 0.0, 0.0),
                     child: wrapWithModel(
                       model: _model.navbarModel2,
                       updateCallback: () => safeSetState(() {}),
-                      child: NavbarWidget(
+                      child: const NavbarWidget(
                         index: 3,
                       ),
                     ),

@@ -58,14 +58,14 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
 
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      if (widget!.images != null && (widget!.images)!.isNotEmpty) {
+      if (widget.images != null && (widget.images)!.isNotEmpty) {
         {
           safeSetState(() => _model.isDataUploading_uploadDataGw5 = true);
           var selectedUploadedFiles = <FFUploadedFile>[];
           var selectedMedia = <SelectedFile>[];
           var downloadUrls = <String>[];
           try {
-            selectedUploadedFiles = widget!.images!;
+            selectedUploadedFiles = widget.images!;
             selectedMedia = selectedFilesFromUploadedFiles(
               selectedUploadedFiles,
               isMultiData: true,
@@ -97,8 +97,8 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
         await orderRecordReference1.set({
           ...createOrderRecordData(
             userCustomer: currentUserReference,
-            supply: widget!.supply,
-            dateTime: widget!.dateTime,
+            supply: widget.supply,
+            dateTime: widget.dateTime,
             pointA: updatePointStruct(
               FFAppState().pointA,
               clearUnsetFields: false,
@@ -109,9 +109,9 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
               clearUnsetFields: false,
               create: true,
             ),
-            movers: widget!.movers,
-            description: widget!.description,
-            budget: widget!.budget,
+            movers: widget.movers,
+            description: widget.description,
+            budget: widget.budget,
             dateTimeCreated: functions.toUtc(),
             status: StatusOrder.newOrder,
             driverReviewed: false,
@@ -119,7 +119,7 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
             dateUpd: getCurrentTimestamp,
             distance: FFAppState().distanceKm,
             time: FFAppState().distanceTime,
-            car: widget!.car,
+            car: widget.car,
             payMethod: FFAppState().payMethod,
           ),
           ...mapToFirestore(
@@ -131,8 +131,8 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
         _model.neworderImage = OrderRecord.getDocumentFromData({
           ...createOrderRecordData(
             userCustomer: currentUserReference,
-            supply: widget!.supply,
-            dateTime: widget!.dateTime,
+            supply: widget.supply,
+            dateTime: widget.dateTime,
             pointA: updatePointStruct(
               FFAppState().pointA,
               clearUnsetFields: false,
@@ -143,9 +143,9 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
               clearUnsetFields: false,
               create: true,
             ),
-            movers: widget!.movers,
-            description: widget!.description,
-            budget: widget!.budget,
+            movers: widget.movers,
+            description: widget.description,
+            budget: widget.budget,
             dateTimeCreated: functions.toUtc(),
             status: StatusOrder.newOrder,
             driverReviewed: false,
@@ -153,7 +153,7 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
             dateUpd: getCurrentTimestamp,
             distance: FFAppState().distanceKm,
             time: FFAppState().distanceTime,
-            car: widget!.car,
+            car: widget.car,
             payMethod: FFAppState().payMethod,
           ),
           ...mapToFirestore(
@@ -180,7 +180,7 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
               )
               .where(
                 'city',
-                isEqualTo: _model.neworderImage?.pointA?.city,
+                isEqualTo: _model.neworderImage?.pointA.city,
               ),
         );
         triggerPushNotification(
@@ -197,8 +197,8 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
         var orderRecordReference2 = OrderRecord.collection.doc();
         await orderRecordReference2.set(createOrderRecordData(
           userCustomer: currentUserReference,
-          supply: widget!.supply,
-          dateTime: widget!.dateTime,
+          supply: widget.supply,
+          dateTime: widget.dateTime,
           pointA: updatePointStruct(
             FFAppState().pointA,
             clearUnsetFields: false,
@@ -209,9 +209,9 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
             clearUnsetFields: false,
             create: true,
           ),
-          movers: widget!.movers,
-          description: widget!.description,
-          budget: widget!.budget,
+          movers: widget.movers,
+          description: widget.description,
+          budget: widget.budget,
           dateTimeCreated: functions.toUtc(),
           status: StatusOrder.newOrder,
           driverReviewed: false,
@@ -219,14 +219,14 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
           dateUpd: getCurrentTimestamp,
           distance: FFAppState().distanceKm,
           time: FFAppState().distanceTime,
-          car: widget!.car,
+          car: widget.car,
           payMethod: FFAppState().payMethod,
         ));
         _model.neworder = OrderRecord.getDocumentFromData(
             createOrderRecordData(
               userCustomer: currentUserReference,
-              supply: widget!.supply,
-              dateTime: widget!.dateTime,
+              supply: widget.supply,
+              dateTime: widget.dateTime,
               pointA: updatePointStruct(
                 FFAppState().pointA,
                 clearUnsetFields: false,
@@ -237,9 +237,9 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
                 clearUnsetFields: false,
                 create: true,
               ),
-              movers: widget!.movers,
-              description: widget!.description,
-              budget: widget!.budget,
+              movers: widget.movers,
+              description: widget.description,
+              budget: widget.budget,
               dateTimeCreated: functions.toUtc(),
               status: StatusOrder.newOrder,
               driverReviewed: false,
@@ -247,7 +247,7 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
               dateUpd: getCurrentTimestamp,
               distance: FFAppState().distanceKm,
               time: FFAppState().distanceTime,
-              car: widget!.car,
+              car: widget.car,
               payMethod: FFAppState().payMethod,
             ),
             orderRecordReference2);
@@ -263,7 +263,7 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
               )
               .where(
                 'city',
-                isEqualTo: _model.neworder?.pointA?.city,
+                isEqualTo: _model.neworder?.pointA.city,
               ),
         );
         triggerPushNotification(
@@ -278,7 +278,7 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
         );
       }
 
-      if (!((currentUserDocument?.addresses?.toList() ?? [])
+      if (!((currentUserDocument?.addresses.toList() ?? [])
           .where((e) =>
               (e.placeID == FFAppState().pointA.placeID) ||
               (e.address == FFAppState().pointA.address) ||
@@ -301,7 +301,7 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
           ),
         });
       }
-      if (!((currentUserDocument?.addresses?.toList() ?? [])
+      if (!((currentUserDocument?.addresses.toList() ?? [])
           .where((e) =>
               (e.placeID == FFAppState().pointB.placeID) ||
               (e.address == FFAppState().pointB.address) ||
@@ -351,7 +351,7 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).primaryBackground,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(22.0),
           topRight: Radius.circular(22.0),
         ),
@@ -365,7 +365,7 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
             height: 64.0,
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).secondaryBackground,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(22.0),
                 topRight: Radius.circular(22.0),
                 bottomLeft: Radius.circular(5.0),
@@ -373,7 +373,8 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
               ),
             ),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 0.0, 0.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 0.0, 0.0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -407,7 +408,8 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
                 borderRadius: BorderRadius.circular(5.0),
               ),
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(24.0, 24.0, 24.0, 50.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(
+                    24.0, 24.0, 24.0, 50.0),
                 child: Text(
                   'Скоро его увидят водители',
                   style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -420,7 +422,7 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
               ),
             ),
           ),
-        ].divide(SizedBox(height: 5.0)),
+        ].divide(const SizedBox(height: 5.0)),
       ),
     );
   }

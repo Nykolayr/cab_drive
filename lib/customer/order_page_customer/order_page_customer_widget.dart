@@ -66,7 +66,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<OrderRecord>(
-      stream: OrderRecord.getDocument(widget!.order!),
+      stream: OrderRecord.getDocument(widget.order!),
       builder: (context, snapshot) {
         // Customize what your widget looks like when it's loading.
         if (!snapshot.hasData) {
@@ -106,25 +106,25 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                   height: 120.0,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).secondaryBackground,
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(18.0),
                       bottomRight: Radius.circular(18.0),
                     ),
                   ),
                   child: Align(
-                    alignment: AlignmentDirectional(0.0, 1.0),
+                    alignment: const AlignmentDirectional(0.0, 1.0),
                     child: Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 12.0),
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                          12.0, 0.0, 12.0, 12.0),
                       child: Container(
                         width: double.infinity,
                         height: 56.0,
                         decoration: BoxDecoration(
-                          color: Color(0xFFF4F5F8),
+                          color: const Color(0xFFF4F5F8),
                           borderRadius: BorderRadius.circular(88.0),
                         ),
                         child: Padding(
-                          padding: EdgeInsets.all(4.0),
+                          padding: const EdgeInsets.all(4.0),
                           child: Row(
                             mainAxisSize: MainAxisSize.max,
                             children: [
@@ -140,7 +140,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                   size: 12.0,
                                 ),
                                 onPressed: () async {
-                                  if (widget!.index == 1) {
+                                  if (widget.index == 1) {
                                     context.pushNamed(MyOrdersWidget.routeName);
 
                                     return;
@@ -152,7 +152,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                               ),
                               Flexible(
                                 child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       8.0, 0.0, 0.0, 0.0),
                                   child: Container(
                                     width: double.infinity,
@@ -163,7 +163,8 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                       borderRadius: BorderRadius.circular(88.0),
                                     ),
                                     child: Align(
-                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      alignment:
+                                          const AlignmentDirectional(0.0, 0.0),
                                       child: Text(
                                         valueOrDefault<String>(
                                           () {
@@ -215,8 +216,9 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                       StatusOrder.hidden))
                                 Builder(
                                   builder: (context) => Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        8.0, 0.0, 0.0, 0.0),
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            8.0, 0.0, 0.0, 0.0),
                                     child: FlutterFlowIconButton(
                                       borderColor: Colors.transparent,
                                       borderRadius: 88.0,
@@ -234,14 +236,16 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                           context: context,
                                           isGlobal: false,
                                           avoidOverflow: true,
-                                          targetAnchor: AlignmentDirectional(
-                                                  -1.0, 1.0)
-                                              .resolve(
-                                                  Directionality.of(context)),
-                                          followerAnchor: AlignmentDirectional(
-                                                  0.0, 0.0)
-                                              .resolve(
-                                                  Directionality.of(context)),
+                                          targetAnchor:
+                                              const AlignmentDirectional(
+                                                      -1.0, 1.0)
+                                                  .resolve(Directionality.of(
+                                                      context)),
+                                          followerAnchor:
+                                              const AlignmentDirectional(
+                                                      0.0, 0.0)
+                                                  .resolve(Directionality.of(
+                                                      context)),
                                           builder: (dialogContext) {
                                             return Material(
                                               color: Colors.transparent,
@@ -276,12 +280,12 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                 ),
                 Flexible(
                   child: ClipRRect(
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(18.0),
                       topRight: Radius.circular(18.0),
                     ),
                     child: Container(
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(18.0),
                           topRight: Radius.circular(18.0),
@@ -304,8 +308,9 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                   if (orderPageCustomerOrderRecord.countResp ==
                                       0) {
                                     return Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          16.0, 24.0, 16.0, 24.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              16.0, 24.0, 16.0, 24.0),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.max,
                                         crossAxisAlignment:
@@ -352,17 +357,17 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                       (orderPageCustomerOrderRecord.status ==
                                           StatusOrder.completed)) {
                                     return Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          16.0, 24.0, 16.0, 12.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              16.0, 24.0, 16.0, 12.0),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.max,
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
                                           Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    8.0, 0.0, 0.0, 24.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(8.0, 0.0, 0.0, 24.0),
                                             child: Text(
                                               () {
                                                 if (orderPageCustomerOrderRecord
@@ -422,19 +427,17 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                   snapshot.data!;
 
                                               return Container(
-                                                decoration: BoxDecoration(),
+                                                decoration:
+                                                    const BoxDecoration(),
                                                 child: Column(
                                                   mainAxisSize:
                                                       MainAxisSize.max,
                                                   children: [
                                                     Padding(
                                                       padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  8.0,
-                                                                  0.0,
-                                                                  8.0,
-                                                                  14.0),
+                                                          const EdgeInsetsDirectional
+                                                              .fromSTEB(8.0,
+                                                              0.0, 8.0, 14.0),
                                                       child: Row(
                                                         mainAxisSize:
                                                             MainAxisSize.max,
@@ -451,7 +454,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                           12.0),
                                                               border:
                                                                   Border.all(
-                                                                color: Color(
+                                                                color: const Color(
                                                                     0x26A4A6B2),
                                                                 width: 0.5,
                                                               ),
@@ -461,9 +464,8 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                   BorderRadius
                                                                       .circular(
                                                                           12.0),
-                                                              child:
-                                                                  custom_widgets
-                                                                      .UserAvatarImage(
+                                                              child: custom_widgets
+                                                                  .UserAvatarImage(
                                                                 imageUrl:
                                                                     containerUsersRecord
                                                                         .photoUrl,
@@ -479,12 +481,12 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                           Flexible(
                                                             child: Padding(
                                                               padding:
-                                                                  EdgeInsetsDirectional
+                                                                  const EdgeInsetsDirectional
                                                                       .fromSTEB(
-                                                                          14.0,
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0),
+                                                                      14.0,
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0),
                                                               child: Column(
                                                                 mainAxisSize:
                                                                     MainAxisSize
@@ -497,12 +499,12 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                         .start,
                                                                 children: [
                                                                   Padding(
-                                                                    padding: EdgeInsetsDirectional
+                                                                    padding: const EdgeInsetsDirectional
                                                                         .fromSTEB(
-                                                                            0.0,
-                                                                            0.0,
-                                                                            0.0,
-                                                                            2.0),
+                                                                        0.0,
+                                                                        0.0,
+                                                                        0.0,
+                                                                        2.0),
                                                                     child: Text(
                                                                       containerUsersRecord
                                                                           .displayName,
@@ -546,7 +548,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                           fontFamily:
                                                                               'SF',
                                                                           color:
-                                                                              Color(0xFFA4A6B2),
+                                                                              const Color(0xFFA4A6B2),
                                                                           fontSize:
                                                                               14.0,
                                                                           letterSpacing:
@@ -554,12 +556,12 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                         ),
                                                                   ),
                                                                   Padding(
-                                                                    padding: EdgeInsetsDirectional
+                                                                    padding: const EdgeInsetsDirectional
                                                                         .fromSTEB(
-                                                                            0.0,
-                                                                            8.0,
-                                                                            0.0,
-                                                                            0.0),
+                                                                        0.0,
+                                                                        8.0,
+                                                                        0.0,
+                                                                        0.0),
                                                                     child: Wrap(
                                                                       spacing:
                                                                           4.0,
@@ -614,7 +616,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                                     borderRadius: BorderRadius.circular(8.0),
                                                                                   ),
                                                                                   child: Padding(
-                                                                                    padding: EdgeInsetsDirectional.fromSTEB(10.0, 4.0, 10.0, 4.0),
+                                                                                    padding: const EdgeInsetsDirectional.fromSTEB(10.0, 4.0, 10.0, 4.0),
                                                                                     child: Row(
                                                                                       mainAxisSize: MainAxisSize.max,
                                                                                       children: [
@@ -632,12 +634,12 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                                           ),
                                                                                           style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                 fontFamily: 'SF',
-                                                                                                color: Color(0xFFA4A6B2),
+                                                                                                color: const Color(0xFFA4A6B2),
                                                                                                 letterSpacing: 0.0,
                                                                                                 fontWeight: FontWeight.w500,
                                                                                               ),
                                                                                         ),
-                                                                                      ].divide(SizedBox(width: 6.0)),
+                                                                                      ].divide(const SizedBox(width: 6.0)),
                                                                                     ),
                                                                                   ),
                                                                                 ),
@@ -648,7 +650,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                                     borderRadius: BorderRadius.circular(8.0),
                                                                                   ),
                                                                                   child: Padding(
-                                                                                    padding: EdgeInsetsDirectional.fromSTEB(10.0, 4.0, 10.0, 4.0),
+                                                                                    padding: const EdgeInsetsDirectional.fromSTEB(10.0, 4.0, 10.0, 4.0),
                                                                                     child: Row(
                                                                                       mainAxisSize: MainAxisSize.max,
                                                                                       children: [
@@ -661,16 +663,16 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                                           containerUsersRecord.numberOfReviews.toString(),
                                                                                           style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                 fontFamily: 'SF',
-                                                                                                color: Color(0xFFA4A6B2),
+                                                                                                color: const Color(0xFFA4A6B2),
                                                                                                 letterSpacing: 0.0,
                                                                                                 fontWeight: FontWeight.w500,
                                                                                               ),
                                                                                         ),
-                                                                                      ].divide(SizedBox(width: 6.0)),
+                                                                                      ].divide(const SizedBox(width: 6.0)),
                                                                                     ),
                                                                                   ),
                                                                                 ),
-                                                                              ].divide(SizedBox(width: 4.0)),
+                                                                              ].divide(const SizedBox(width: 4.0)),
                                                                             ),
                                                                           ),
                                                                         Container(
@@ -685,7 +687,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                           ),
                                                                           child:
                                                                               Padding(
-                                                                            padding: EdgeInsetsDirectional.fromSTEB(
+                                                                            padding: const EdgeInsetsDirectional.fromSTEB(
                                                                                 10.0,
                                                                                 4.0,
                                                                                 10.0,
@@ -705,16 +707,16 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                                   overflow: TextOverflow.ellipsis,
                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                         fontFamily: 'SF',
-                                                                                        color: Color(0xFFA4A6B2),
+                                                                                        color: const Color(0xFFA4A6B2),
                                                                                         letterSpacing: 0.0,
                                                                                         fontWeight: FontWeight.w500,
                                                                                       ),
                                                                                 ),
-                                                                              ].divide(SizedBox(width: 6.0)),
+                                                                              ].divide(const SizedBox(width: 6.0)),
                                                                             ),
                                                                           ),
                                                                         ),
-                                                                      ].divide(SizedBox(
+                                                                      ].divide(const SizedBox(
                                                                               width: 4.0)),
                                                                     ),
                                                                   ),
@@ -870,19 +872,19 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                 FFButtonOptions(
                                                               height: 45.0,
                                                               padding:
-                                                                  EdgeInsetsDirectional
+                                                                  const EdgeInsetsDirectional
                                                                       .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0),
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0),
                                                               iconPadding:
-                                                                  EdgeInsetsDirectional
+                                                                  const EdgeInsetsDirectional
                                                                       .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0),
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0),
                                                               color: FlutterFlowTheme
                                                                       .of(context)
                                                                   .primaryBackground,
@@ -926,19 +928,19 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                 FFButtonOptions(
                                                               height: 45.0,
                                                               padding:
-                                                                  EdgeInsetsDirectional
+                                                                  const EdgeInsetsDirectional
                                                                       .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0),
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0),
                                                               iconPadding:
-                                                                  EdgeInsetsDirectional
+                                                                  const EdgeInsetsDirectional
                                                                       .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0),
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0),
                                                               color: FlutterFlowTheme
                                                                       .of(context)
                                                                   .primaryBackground,
@@ -966,8 +968,8 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                 false,
                                                           ),
                                                         ),
-                                                      ].divide(
-                                                          SizedBox(width: 7.0)),
+                                                      ].divide(const SizedBox(
+                                                          width: 7.0)),
                                                     ),
                                                   ],
                                                 ),
@@ -977,8 +979,9 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                           if (!orderPageCustomerOrderRecord
                                               .driverReviewed)
                                             Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
+                                              padding:
+                                                  const EdgeInsetsDirectional
+                                                      .fromSTEB(
                                                       0.0, 24.0, 0.0, 0.0),
                                               child: Container(
                                                 width: double.infinity,
@@ -987,7 +990,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                           context)
                                                       .secondaryBackground,
                                                   boxShadow: [
-                                                    BoxShadow(
+                                                    const BoxShadow(
                                                       blurRadius: 4.0,
                                                       color: Color(0x19000000),
                                                       offset: Offset(
@@ -1001,8 +1004,9 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                           16.0),
                                                 ),
                                                 child: Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
                                                           0.0, 24.0, 0.0, 24.0),
                                                   child: Column(
                                                     mainAxisSize:
@@ -1025,7 +1029,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                             buttonSize: 55.0,
                                                             hoverColor: Colors
                                                                 .transparent,
-                                                            icon: Icon(
+                                                            icon: const Icon(
                                                               FFIcons
                                                                   .kantDesignStarFilled,
                                                               color: Color(
@@ -1065,7 +1069,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                           user:
                                                                               orderPageCustomerOrderRecord.selectedDriver!,
                                                                           order:
-                                                                              widget!.order!,
+                                                                              widget.order!,
                                                                           rait:
                                                                               1,
                                                                         ),
@@ -1085,7 +1089,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                             buttonSize: 55.0,
                                                             hoverColor: Colors
                                                                 .transparent,
-                                                            icon: Icon(
+                                                            icon: const Icon(
                                                               FFIcons
                                                                   .kantDesignStarFilled,
                                                               color: Color(
@@ -1125,7 +1129,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                           user:
                                                                               orderPageCustomerOrderRecord.selectedDriver!,
                                                                           order:
-                                                                              widget!.order!,
+                                                                              widget.order!,
                                                                           rait:
                                                                               2,
                                                                         ),
@@ -1145,7 +1149,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                             buttonSize: 55.0,
                                                             hoverColor: Colors
                                                                 .transparent,
-                                                            icon: Icon(
+                                                            icon: const Icon(
                                                               FFIcons
                                                                   .kantDesignStarFilled,
                                                               color: Color(
@@ -1185,7 +1189,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                           user:
                                                                               orderPageCustomerOrderRecord.selectedDriver!,
                                                                           order:
-                                                                              widget!.order!,
+                                                                              widget.order!,
                                                                           rait:
                                                                               3,
                                                                         ),
@@ -1205,7 +1209,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                             buttonSize: 55.0,
                                                             hoverColor: Colors
                                                                 .transparent,
-                                                            icon: Icon(
+                                                            icon: const Icon(
                                                               FFIcons
                                                                   .kantDesignStarFilled,
                                                               color: Color(
@@ -1245,7 +1249,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                           user:
                                                                               orderPageCustomerOrderRecord.selectedDriver!,
                                                                           order:
-                                                                              widget!.order!,
+                                                                              widget.order!,
                                                                           rait:
                                                                               4,
                                                                         ),
@@ -1265,7 +1269,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                             buttonSize: 55.0,
                                                             hoverColor: Colors
                                                                 .transparent,
-                                                            icon: Icon(
+                                                            icon: const Icon(
                                                               FFIcons
                                                                   .kantDesignStarFilled,
                                                               color: Color(
@@ -1305,7 +1309,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                           user:
                                                                               orderPageCustomerOrderRecord.selectedDriver!,
                                                                           order:
-                                                                              widget!.order!,
+                                                                              widget.order!,
                                                                           rait:
                                                                               5,
                                                                         ),
@@ -1332,17 +1336,17 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                           .status ==
                                       StatusOrder.on_confirmation) {
                                     return Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          16.0, 24.0, 16.0, 12.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              16.0, 24.0, 16.0, 12.0),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.max,
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
                                           Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 0.0, 0.0, 24.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(0.0, 0.0, 0.0, 24.0),
                                             child: Text(
                                               'Подтвердите вручение в течение 12 часов',
                                               style:
@@ -1386,19 +1390,17 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                   snapshot.data!;
 
                                               return Container(
-                                                decoration: BoxDecoration(),
+                                                decoration:
+                                                    const BoxDecoration(),
                                                 child: Column(
                                                   mainAxisSize:
                                                       MainAxisSize.max,
                                                   children: [
                                                     Padding(
                                                       padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  8.0,
-                                                                  0.0,
-                                                                  8.0,
-                                                                  14.0),
+                                                          const EdgeInsetsDirectional
+                                                              .fromSTEB(8.0,
+                                                              0.0, 8.0, 14.0),
                                                       child: Row(
                                                         mainAxisSize:
                                                             MainAxisSize.max,
@@ -1415,7 +1417,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                           12.0),
                                                               border:
                                                                   Border.all(
-                                                                color: Color(
+                                                                color: const Color(
                                                                     0x26A4A6B2),
                                                                 width: 0.5,
                                                               ),
@@ -1425,9 +1427,8 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                   BorderRadius
                                                                       .circular(
                                                                           12.0),
-                                                              child:
-                                                                  custom_widgets
-                                                                      .UserAvatarImage(
+                                                              child: custom_widgets
+                                                                  .UserAvatarImage(
                                                                 imageUrl:
                                                                     containerUsersRecord
                                                                         .photoUrl,
@@ -1443,12 +1444,12 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                           Flexible(
                                                             child: Padding(
                                                               padding:
-                                                                  EdgeInsetsDirectional
+                                                                  const EdgeInsetsDirectional
                                                                       .fromSTEB(
-                                                                          14.0,
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0),
+                                                                      14.0,
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0),
                                                               child: Column(
                                                                 mainAxisSize:
                                                                     MainAxisSize
@@ -1461,12 +1462,12 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                         .start,
                                                                 children: [
                                                                   Padding(
-                                                                    padding: EdgeInsetsDirectional
+                                                                    padding: const EdgeInsetsDirectional
                                                                         .fromSTEB(
-                                                                            0.0,
-                                                                            0.0,
-                                                                            0.0,
-                                                                            2.0),
+                                                                        0.0,
+                                                                        0.0,
+                                                                        0.0,
+                                                                        2.0),
                                                                     child: Text(
                                                                       containerUsersRecord
                                                                           .displayName,
@@ -1510,7 +1511,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                           fontFamily:
                                                                               'SF',
                                                                           color:
-                                                                              Color(0xFFA4A6B2),
+                                                                              const Color(0xFFA4A6B2),
                                                                           fontSize:
                                                                               14.0,
                                                                           letterSpacing:
@@ -1518,12 +1519,12 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                         ),
                                                                   ),
                                                                   Padding(
-                                                                    padding: EdgeInsetsDirectional
+                                                                    padding: const EdgeInsetsDirectional
                                                                         .fromSTEB(
-                                                                            0.0,
-                                                                            8.0,
-                                                                            0.0,
-                                                                            0.0),
+                                                                        0.0,
+                                                                        8.0,
+                                                                        0.0,
+                                                                        0.0),
                                                                     child: Wrap(
                                                                       spacing:
                                                                           4.0,
@@ -1578,7 +1579,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                                     borderRadius: BorderRadius.circular(8.0),
                                                                                   ),
                                                                                   child: Padding(
-                                                                                    padding: EdgeInsetsDirectional.fromSTEB(10.0, 4.0, 10.0, 4.0),
+                                                                                    padding: const EdgeInsetsDirectional.fromSTEB(10.0, 4.0, 10.0, 4.0),
                                                                                     child: Row(
                                                                                       mainAxisSize: MainAxisSize.max,
                                                                                       children: [
@@ -1596,12 +1597,12 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                                           ),
                                                                                           style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                 fontFamily: 'SF',
-                                                                                                color: Color(0xFFA4A6B2),
+                                                                                                color: const Color(0xFFA4A6B2),
                                                                                                 letterSpacing: 0.0,
                                                                                                 fontWeight: FontWeight.w500,
                                                                                               ),
                                                                                         ),
-                                                                                      ].divide(SizedBox(width: 6.0)),
+                                                                                      ].divide(const SizedBox(width: 6.0)),
                                                                                     ),
                                                                                   ),
                                                                                 ),
@@ -1612,7 +1613,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                                     borderRadius: BorderRadius.circular(8.0),
                                                                                   ),
                                                                                   child: Padding(
-                                                                                    padding: EdgeInsetsDirectional.fromSTEB(10.0, 4.0, 10.0, 4.0),
+                                                                                    padding: const EdgeInsetsDirectional.fromSTEB(10.0, 4.0, 10.0, 4.0),
                                                                                     child: Row(
                                                                                       mainAxisSize: MainAxisSize.max,
                                                                                       children: [
@@ -1625,16 +1626,16 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                                           containerUsersRecord.numberOfReviews.toString(),
                                                                                           style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                 fontFamily: 'SF',
-                                                                                                color: Color(0xFFA4A6B2),
+                                                                                                color: const Color(0xFFA4A6B2),
                                                                                                 letterSpacing: 0.0,
                                                                                                 fontWeight: FontWeight.w500,
                                                                                               ),
                                                                                         ),
-                                                                                      ].divide(SizedBox(width: 6.0)),
+                                                                                      ].divide(const SizedBox(width: 6.0)),
                                                                                     ),
                                                                                   ),
                                                                                 ),
-                                                                              ].divide(SizedBox(width: 4.0)),
+                                                                              ].divide(const SizedBox(width: 4.0)),
                                                                             ),
                                                                           ),
                                                                         Container(
@@ -1649,7 +1650,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                           ),
                                                                           child:
                                                                               Padding(
-                                                                            padding: EdgeInsetsDirectional.fromSTEB(
+                                                                            padding: const EdgeInsetsDirectional.fromSTEB(
                                                                                 10.0,
                                                                                 4.0,
                                                                                 10.0,
@@ -1669,16 +1670,16 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                                   overflow: TextOverflow.ellipsis,
                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                         fontFamily: 'SF',
-                                                                                        color: Color(0xFFA4A6B2),
+                                                                                        color: const Color(0xFFA4A6B2),
                                                                                         letterSpacing: 0.0,
                                                                                         fontWeight: FontWeight.w500,
                                                                                       ),
                                                                                 ),
-                                                                              ].divide(SizedBox(width: 6.0)),
+                                                                              ].divide(const SizedBox(width: 6.0)),
                                                                             ),
                                                                           ),
                                                                         ),
-                                                                      ].divide(SizedBox(
+                                                                      ].divide(const SizedBox(
                                                                               width: 4.0)),
                                                                     ),
                                                                   ),
@@ -1834,19 +1835,19 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                 FFButtonOptions(
                                                               height: 45.0,
                                                               padding:
-                                                                  EdgeInsetsDirectional
+                                                                  const EdgeInsetsDirectional
                                                                       .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0),
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0),
                                                               iconPadding:
-                                                                  EdgeInsetsDirectional
+                                                                  const EdgeInsetsDirectional
                                                                       .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0),
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0),
                                                               color: FlutterFlowTheme
                                                                       .of(context)
                                                                   .primaryBackground,
@@ -1890,19 +1891,19 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                 FFButtonOptions(
                                                               height: 45.0,
                                                               padding:
-                                                                  EdgeInsetsDirectional
+                                                                  const EdgeInsetsDirectional
                                                                       .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0),
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0),
                                                               iconPadding:
-                                                                  EdgeInsetsDirectional
+                                                                  const EdgeInsetsDirectional
                                                                       .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0,
-                                                                          0.0),
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0),
                                                               color: FlutterFlowTheme
                                                                       .of(context)
                                                                   .primaryBackground,
@@ -1930,8 +1931,8 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                 false,
                                                           ),
                                                         ),
-                                                      ].divide(
-                                                          SizedBox(width: 7.0)),
+                                                      ].divide(const SizedBox(
+                                                          width: 7.0)),
                                                     ),
                                                   ],
                                                 ),
@@ -1939,9 +1940,8 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                             },
                                           ),
                                           Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 12.0, 0.0, 0.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(0.0, 12.0, 0.0, 0.0),
                                             child: InkWell(
                                               splashColor: Colors.transparent,
                                               focusColor: Colors.transparent,
@@ -1993,8 +1993,9 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                           if (!orderPageCustomerOrderRecord
                                               .driverReviewed)
                                             Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
+                                              padding:
+                                                  const EdgeInsetsDirectional
+                                                      .fromSTEB(
                                                       0.0, 24.0, 0.0, 0.0),
                                               child: Container(
                                                 width: double.infinity,
@@ -2003,7 +2004,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                           context)
                                                       .secondaryBackground,
                                                   boxShadow: [
-                                                    BoxShadow(
+                                                    const BoxShadow(
                                                       blurRadius: 4.0,
                                                       color: Color(0x19000000),
                                                       offset: Offset(
@@ -2017,8 +2018,9 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                           16.0),
                                                 ),
                                                 child: Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
                                                           0.0, 24.0, 0.0, 24.0),
                                                   child: Column(
                                                     mainAxisSize:
@@ -2041,7 +2043,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                             buttonSize: 55.0,
                                                             hoverColor: Colors
                                                                 .transparent,
-                                                            icon: Icon(
+                                                            icon: const Icon(
                                                               FFIcons
                                                                   .kantDesignStarFilled,
                                                               color: Color(
@@ -2081,7 +2083,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                           user:
                                                                               orderPageCustomerOrderRecord.selectedDriver!,
                                                                           order:
-                                                                              widget!.order!,
+                                                                              widget.order!,
                                                                           rait:
                                                                               1,
                                                                         ),
@@ -2101,7 +2103,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                             buttonSize: 55.0,
                                                             hoverColor: Colors
                                                                 .transparent,
-                                                            icon: Icon(
+                                                            icon: const Icon(
                                                               FFIcons
                                                                   .kantDesignStarFilled,
                                                               color: Color(
@@ -2141,7 +2143,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                           user:
                                                                               orderPageCustomerOrderRecord.selectedDriver!,
                                                                           order:
-                                                                              widget!.order!,
+                                                                              widget.order!,
                                                                           rait:
                                                                               2,
                                                                         ),
@@ -2161,7 +2163,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                             buttonSize: 55.0,
                                                             hoverColor: Colors
                                                                 .transparent,
-                                                            icon: Icon(
+                                                            icon: const Icon(
                                                               FFIcons
                                                                   .kantDesignStarFilled,
                                                               color: Color(
@@ -2201,7 +2203,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                           user:
                                                                               orderPageCustomerOrderRecord.selectedDriver!,
                                                                           order:
-                                                                              widget!.order!,
+                                                                              widget.order!,
                                                                           rait:
                                                                               3,
                                                                         ),
@@ -2221,7 +2223,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                             buttonSize: 55.0,
                                                             hoverColor: Colors
                                                                 .transparent,
-                                                            icon: Icon(
+                                                            icon: const Icon(
                                                               FFIcons
                                                                   .kantDesignStarFilled,
                                                               color: Color(
@@ -2261,7 +2263,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                           user:
                                                                               orderPageCustomerOrderRecord.selectedDriver!,
                                                                           order:
-                                                                              widget!.order!,
+                                                                              widget.order!,
                                                                           rait:
                                                                               4,
                                                                         ),
@@ -2281,7 +2283,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                             buttonSize: 55.0,
                                                             hoverColor: Colors
                                                                 .transparent,
-                                                            icon: Icon(
+                                                            icon: const Icon(
                                                               FFIcons
                                                                   .kantDesignStarFilled,
                                                               color: Color(
@@ -2321,7 +2323,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                           user:
                                                                               orderPageCustomerOrderRecord.selectedDriver!,
                                                                           order:
-                                                                              widget!.order!,
+                                                                              widget.order!,
                                                                           rait:
                                                                               5,
                                                                         ),
@@ -2346,8 +2348,9 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                     );
                                   } else {
                                     return Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          24.0, 16.0, 24.0, 16.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              24.0, 16.0, 24.0, 16.0),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.max,
                                         crossAxisAlignment:
@@ -2411,13 +2414,12 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                             ],
                                           ),
                                           Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 24.0, 0.0, 0.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(0.0, 24.0, 0.0, 0.0),
                                             child: StreamBuilder<
                                                 List<ResponsesRecord>>(
                                               stream: queryResponsesRecord(
-                                                parent: widget!.order,
+                                                parent: widget.order,
                                               ),
                                               builder: (context, snapshot) {
                                                 // Customize what your widget looks like when it's loading.
@@ -2453,7 +2455,8 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                       listViewResponsesRecordList
                                                           .length,
                                                   separatorBuilder: (_, __) =>
-                                                      SizedBox(height: 16.0),
+                                                      const SizedBox(
+                                                          height: 16.0),
                                                   itemBuilder:
                                                       (context, listViewIndex) {
                                                     final listViewResponsesRecord =
@@ -2535,12 +2538,13 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                 borderRadius: BorderRadius.circular(18.0),
                               ),
                               child: Padding(
-                                padding: EdgeInsets.all(16.0),
+                                padding: const EdgeInsets.all(16.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Stack(
-                                      alignment: AlignmentDirectional(0.0, 1.0),
+                                      alignment:
+                                          const AlignmentDirectional(0.0, 1.0),
                                       children: [
                                         ClipRRect(
                                           borderRadius:
@@ -2565,33 +2569,18 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                               StatusOrder
                                                                   .spec_set) &&
                                                       order.hasDriverLocation();
-                                                  const apiKey =
-                                                      'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY';
 
-                                                  if (showDriver) {
-                                                    return custom_widgets
-                                                        .DriverTrackingMap(
-                                                      width: double.infinity,
-                                                      height: 300.0,
-                                                      googleApiKey: apiKey,
-                                                      startLatLng:
-                                                          order.pointA.latlng!,
-                                                      endLatLng:
-                                                          order.pointB.latlng!,
-                                                      driverLocation:
-                                                          order.driverLocation!,
-                                                      isStatic: true,
-                                                    );
-                                                  }
                                                   return custom_widgets
-                                                      .PolylineMap(
+                                                      .YandexOrderMap(
                                                     width: double.infinity,
                                                     height: 300.0,
-                                                    googleApiKey: apiKey,
                                                     startLatLng:
                                                         order.pointA.latlng!,
                                                     endLatLng:
                                                         order.pointB.latlng!,
+                                                    driverLocation:
+                                                        order.driverLocation,
+                                                    showDriver: showDriver,
                                                     isStatic: true,
                                                   );
                                                 },
@@ -2600,14 +2589,14 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                           ),
                                         ),
                                         Padding(
-                                          padding: EdgeInsets.all(4.0),
+                                          padding: const EdgeInsets.all(4.0),
                                           child: FFButtonWidget(
                                             onPressed: () async {
                                               context.pushNamed(
                                                 ZakazNaKarteWidget.routeName,
                                                 queryParameters: {
                                                   'order': serializeParam(
-                                                    widget!.order,
+                                                    widget.order,
                                                     ParamType.DocumentReference,
                                                   ),
                                                 }.withoutNulls,
@@ -2624,12 +2613,15 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                             options: FFButtonOptions(
                                               width: double.infinity,
                                               height: 35.0,
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
+                                              padding:
+                                                  const EdgeInsetsDirectional
+                                                      .fromSTEB(
                                                       16.0, 0.0, 16.0, 0.0),
-                                              iconPadding: EdgeInsetsDirectional
-                                                  .fromSTEB(0.0, 0.0, 0.0, 0.0),
-                                              color: Color(0xD8F4F5F8),
+                                              iconPadding:
+                                                  const EdgeInsetsDirectional
+                                                      .fromSTEB(
+                                                      0.0, 0.0, 0.0, 0.0),
+                                              color: const Color(0xD8F4F5F8),
                                               textStyle:
                                                   FlutterFlowTheme.of(context)
                                                       .titleSmall
@@ -2665,7 +2657,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                 borderRadius: BorderRadius.circular(18.0),
                               ),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     24.0, 16.0, 24.0, 16.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
@@ -2683,8 +2675,9 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                           ),
                                     ),
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 12.0, 0.0, 0.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              0.0, 12.0, 0.0, 0.0),
                                       child: wrapWithModel(
                                         model: _model.textInfoModel1,
                                         updateCallback: () =>
@@ -2712,13 +2705,9 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                       0.0,
                                                       valueOrDefault<double>(
                                                         orderPageCustomerOrderRecord
-                                                                        .pointA
-                                                                        .flat !=
-                                                                    null &&
-                                                                orderPageCustomerOrderRecord
-                                                                        .pointA
-                                                                        .flat !=
-                                                                    ''
+                                                                    .pointA
+                                                                    .flat !=
+                                                                ''
                                                             ? 7.0
                                                             : 0.0,
                                                         0.0,
@@ -2739,11 +2728,8 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                             ),
                                           ),
                                         if (orderPageCustomerOrderRecord
-                                                    .pointA.flat !=
-                                                null &&
-                                            orderPageCustomerOrderRecord
-                                                    .pointA.flat !=
-                                                '')
+                                                .pointA.flat !=
+                                            '')
                                           Expanded(
                                             child: Padding(
                                               padding: EdgeInsetsDirectional
@@ -2791,13 +2777,9 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                       0.0,
                                                       valueOrDefault<double>(
                                                         orderPageCustomerOrderRecord
-                                                                        .pointA
-                                                                        .intercom !=
-                                                                    null &&
-                                                                orderPageCustomerOrderRecord
-                                                                        .pointA
-                                                                        .intercom !=
-                                                                    ''
+                                                                    .pointA
+                                                                    .intercom !=
+                                                                ''
                                                             ? 7.0
                                                             : 0.0,
                                                         0.0,
@@ -2818,11 +2800,8 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                             ),
                                           ),
                                         if (orderPageCustomerOrderRecord
-                                                    .pointA.intercom !=
-                                                null &&
-                                            orderPageCustomerOrderRecord
-                                                    .pointA.intercom !=
-                                                '')
+                                                .pointA.intercom !=
+                                            '')
                                           Expanded(
                                             child: Padding(
                                               padding: EdgeInsetsDirectional
@@ -2855,11 +2834,8 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                       ],
                                     ),
                                     if (orderPageCustomerOrderRecord
-                                                .pointA.comment !=
-                                            null &&
-                                        orderPageCustomerOrderRecord
-                                                .pointA.comment !=
-                                            '')
+                                            .pointA.comment !=
+                                        '')
                                       wrapWithModel(
                                         model: _model.textInfoModel6,
                                         updateCallback: () =>
@@ -2891,7 +2867,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                 borderRadius: BorderRadius.circular(18.0),
                               ),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     24.0, 16.0, 24.0, 16.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
@@ -2922,13 +2898,9 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                       0.0,
                                                       valueOrDefault<double>(
                                                         orderPageCustomerOrderRecord
-                                                                        .pointB
-                                                                        .flat !=
-                                                                    null &&
-                                                                orderPageCustomerOrderRecord
-                                                                        .pointB
-                                                                        .flat !=
-                                                                    ''
+                                                                    .pointB
+                                                                    .flat !=
+                                                                ''
                                                             ? 7.0
                                                             : 0.0,
                                                         0.0,
@@ -2949,11 +2921,8 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                             ),
                                           ),
                                         if (orderPageCustomerOrderRecord
-                                                    .pointB.flat !=
-                                                null &&
-                                            orderPageCustomerOrderRecord
-                                                    .pointB.flat !=
-                                                '')
+                                                .pointB.flat !=
+                                            '')
                                           Expanded(
                                             child: Padding(
                                               padding: EdgeInsetsDirectional
@@ -3001,13 +2970,9 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                       0.0,
                                                       valueOrDefault<double>(
                                                         orderPageCustomerOrderRecord
-                                                                        .pointB
-                                                                        .intercom !=
-                                                                    null &&
-                                                                orderPageCustomerOrderRecord
-                                                                        .pointB
-                                                                        .intercom !=
-                                                                    ''
+                                                                    .pointB
+                                                                    .intercom !=
+                                                                ''
                                                             ? 7.0
                                                             : 0.0,
                                                         0.0,
@@ -3028,11 +2993,8 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                             ),
                                           ),
                                         if (orderPageCustomerOrderRecord
-                                                    .pointB.intercom !=
-                                                null &&
-                                            orderPageCustomerOrderRecord
-                                                    .pointB.intercom !=
-                                                '')
+                                                .pointB.intercom !=
+                                            '')
                                           Expanded(
                                             child: Padding(
                                               padding: EdgeInsetsDirectional
@@ -3065,11 +3027,8 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                       ],
                                     ),
                                     if (orderPageCustomerOrderRecord
-                                                .pointB.comment !=
-                                            null &&
-                                        orderPageCustomerOrderRecord
-                                                .pointB.comment !=
-                                            '')
+                                            .pointB.comment !=
+                                        '')
                                       wrapWithModel(
                                         model: _model.textInfoModel13,
                                         updateCallback: () =>
@@ -3098,13 +3057,13 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                               decoration: BoxDecoration(
                                 color: FlutterFlowTheme.of(context)
                                     .secondaryBackground,
-                                borderRadius: BorderRadius.only(
+                                borderRadius: const BorderRadius.only(
                                   topLeft: Radius.circular(18.0),
                                   topRight: Radius.circular(18.0),
                                 ),
                               ),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     24.0, 16.0, 24.0, 0.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
@@ -3232,8 +3191,8 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                     if (orderPageCustomerOrderRecord
                                         .images.isNotEmpty)
                                       Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 16.0, 0.0, 0.0),
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(0.0, 16.0, 0.0, 0.0),
                                         child: Column(
                                           mainAxisSize: MainAxisSize.max,
                                           crossAxisAlignment:
@@ -3255,8 +3214,9 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                   ),
                                             ),
                                             Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
+                                              padding:
+                                                  const EdgeInsetsDirectional
+                                                      .fromSTEB(
                                                       0.0, 12.0, 0.0, 0.0),
                                               child: Builder(
                                                 builder: (context) {
@@ -3268,7 +3228,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                   return GridView.builder(
                                                     padding: EdgeInsets.zero,
                                                     gridDelegate:
-                                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                                        const SliverGridDelegateWithFixedCrossAxisCount(
                                                       crossAxisCount: 5,
                                                       crossAxisSpacing: 6.0,
                                                       mainAxisSpacing: 6.0,
@@ -3358,11 +3318,11 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                           ],
                                         ),
                                       ),
-                                  ].addToEnd(SizedBox(height: 50.0)),
+                                  ].addToEnd(const SizedBox(height: 50.0)),
                                 ),
                               ),
                             ),
-                          ].divide(SizedBox(height: 5.0)),
+                          ].divide(const SizedBox(height: 5.0)),
                         ),
                       ),
                     ),
@@ -3374,17 +3334,17 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: FlutterFlowTheme.of(context).secondary,
-                      borderRadius: BorderRadius.only(
+                      borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(18.0),
                         topRight: Radius.circular(18.0),
                       ),
                     ),
                     child: Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 35.0),
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                          8.0, 8.0, 8.0, 35.0),
                       child: FFButtonWidget(
                         onPressed: () async {
-                          await widget!.order!.update(createOrderRecordData(
+                          await widget.order!.update(createOrderRecordData(
                             status: StatusOrder.completed,
                           ));
                           if (orderPageCustomerOrderRecord.payMethod ==
@@ -3414,9 +3374,9 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                         options: FFButtonOptions(
                           width: double.infinity,
                           height: 56.0,
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 0.0),
-                          iconPadding: EdgeInsetsDirectional.fromSTEB(
+                          iconPadding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 0.0),
                           color: FlutterFlowTheme.of(context).tertiary,
                           textStyle:
@@ -3432,7 +3392,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                       ),
                     ),
                   ),
-              ].divide(SizedBox(height: 5.0)),
+              ].divide(const SizedBox(height: 5.0)),
             ),
           ),
         );

@@ -1,11 +1,11 @@
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
-import '/flutter_flow/flutter_flow_google_map.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/pages/bottom/navbar/navbar_widget.dart';
 import '/index.dart';
 import 'main_user_widget.dart' show MainUserWidget;
 import 'package:flutter/material.dart';
+import 'package:yandex_mapkit/yandex_mapkit.dart';
 
 class MainUserModel extends FlutterFlowModel<MainUserWidget> {
   ///  Local state fields for this page.
@@ -14,9 +14,8 @@ class MainUserModel extends FlutterFlowModel<MainUserWidget> {
 
   ///  State fields for stateful widgets in this page.
 
-  // State field(s) for GoogleMap widget.
-  LatLng? googleMapsCenter;
-  final googleMapsController = Completer<GoogleMapController>();
+  LatLng? mapCenter;
+  YandexMapController? yandexMapController;
   // Model for navbar component.
   late NavbarModel navbarModel;
 

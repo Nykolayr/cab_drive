@@ -58,30 +58,30 @@ class _ProfilAdminWidgetState extends State<ProfilAdminWidget> {
               height: 120.0,
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondaryBackground,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(18.0),
                   bottomRight: Radius.circular(18.0),
                 ),
               ),
               child: Align(
-                alignment: AlignmentDirectional(0.0, 1.0),
+                alignment: const AlignmentDirectional(0.0, 1.0),
                 child: Padding(
-                  padding:
-                      EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 12.0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(
+                      16.0, 0.0, 16.0, 12.0),
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Padding(
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 11.0, 0.0),
+                        padding: const EdgeInsetsDirectional.fromSTEB(
+                            0.0, 0.0, 11.0, 0.0),
                         child: AuthUserStreamWidget(
                           builder: (context) => Container(
                             width: 40.0,
                             height: 40.0,
                             clipBehavior: Clip.antiAlias,
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               shape: BoxShape.circle,
                             ),
                             child: Image.network(
@@ -121,7 +121,7 @@ class _ProfilAdminWidgetState extends State<ProfilAdminWidget> {
                                     letterSpacing: 0.0,
                                   ),
                             ),
-                          ].divide(SizedBox(height: 2.0)),
+                          ].divide(const SizedBox(height: 2.0)),
                         ),
                       ),
                       FlutterFlowIconButton(
@@ -149,7 +149,7 @@ class _ProfilAdminWidgetState extends State<ProfilAdminWidget> {
                                   },
                                   child: Padding(
                                     padding: MediaQuery.viewInsetsOf(context),
-                                    child: ExitWidget(),
+                                    child: const ExitWidget(),
                                   ),
                                 ),
                               );
@@ -164,7 +164,7 @@ class _ProfilAdminWidgetState extends State<ProfilAdminWidget> {
             ),
             GridView(
               padding: EdgeInsets.zero,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 crossAxisSpacing: 5.0,
                 mainAxisSpacing: 5.0,
@@ -180,8 +180,8 @@ class _ProfilAdminWidgetState extends State<ProfilAdminWidget> {
                     borderRadius: BorderRadius.circular(18.0),
                   ),
                   child: Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(16.0, 14.0, 16.0, 17.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        16.0, 14.0, 16.0, 17.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -236,7 +236,7 @@ class _ProfilAdminWidgetState extends State<ProfilAdminWidget> {
                                 letterSpacing: 0.0,
                               ),
                         ),
-                      ].divide(SizedBox(height: 10.0)),
+                      ].divide(const SizedBox(height: 10.0)),
                     ),
                   ),
                 ),
@@ -246,8 +246,8 @@ class _ProfilAdminWidgetState extends State<ProfilAdminWidget> {
                     borderRadius: BorderRadius.circular(18.0),
                   ),
                   child: Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(16.0, 14.0, 16.0, 17.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        16.0, 14.0, 16.0, 17.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -302,7 +302,7 @@ class _ProfilAdminWidgetState extends State<ProfilAdminWidget> {
                                 letterSpacing: 0.0,
                               ),
                         ),
-                      ].divide(SizedBox(height: 10.0)),
+                      ].divide(const SizedBox(height: 10.0)),
                     ),
                   ),
                 ),
@@ -312,8 +312,8 @@ class _ProfilAdminWidgetState extends State<ProfilAdminWidget> {
                     borderRadius: BorderRadius.circular(18.0),
                   ),
                   child: Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(16.0, 14.0, 16.0, 17.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        16.0, 14.0, 16.0, 17.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -378,7 +378,7 @@ class _ProfilAdminWidgetState extends State<ProfilAdminWidget> {
                                 letterSpacing: 0.0,
                               ),
                         ),
-                      ].divide(SizedBox(height: 10.0)),
+                      ].divide(const SizedBox(height: 10.0)),
                     ),
                   ),
                 ),
@@ -388,8 +388,8 @@ class _ProfilAdminWidgetState extends State<ProfilAdminWidget> {
                     borderRadius: BorderRadius.circular(18.0),
                   ),
                   child: Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(16.0, 14.0, 16.0, 17.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        16.0, 14.0, 16.0, 17.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -447,7 +447,7 @@ class _ProfilAdminWidgetState extends State<ProfilAdminWidget> {
                                 letterSpacing: 0.0,
                               ),
                         ),
-                      ].divide(SizedBox(height: 10.0)),
+                      ].divide(const SizedBox(height: 10.0)),
                     ),
                   ),
                 ),
@@ -466,11 +466,11 @@ class _ProfilAdminWidgetState extends State<ProfilAdminWidget> {
             wrapWithModel(
               model: _model.navbarAdminModel,
               updateCallback: () => safeSetState(() {}),
-              child: NavbarAdminWidget(
+              child: const NavbarAdminWidget(
                 index: 3,
               ),
             ),
-          ].divide(SizedBox(height: 5.0)),
+          ].divide(const SizedBox(height: 5.0)),
         ),
       ),
     );

@@ -51,11 +51,11 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
 
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      if (widget!.respDT!.viewed) {
+      if (widget.respDT!.viewed) {
         return;
       }
 
-      await widget!.respDT!.reference.update(createResponsesRecordData(
+      await widget.respDT!.reference.update(createResponsesRecordData(
         viewed: true,
       ));
       return;
@@ -74,9 +74,9 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
     context.watch<FFAppState>();
 
     return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(0.0, 50.0, 0.0, 0.0),
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 50.0, 0.0, 0.0),
       child: FutureBuilder<UsersRecord>(
-        future: UsersRecord.getDocumentOnce(widget!.respDT!.userDriver!),
+        future: UsersRecord.getDocumentOnce(widget.respDT!.userDriver!),
         builder: (context, snapshot) {
           // Customize what your widget looks like when it's loading.
           if (!snapshot.hasData) {
@@ -99,7 +99,7 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
             width: double.infinity,
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).primaryBackground,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(22.0),
                 topRight: Radius.circular(22.0),
               ),
@@ -113,7 +113,7 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                   height: 64.0,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).secondaryBackground,
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(22.0),
                       topRight: Radius.circular(22.0),
                       bottomLeft: Radius.circular(5.0),
@@ -121,8 +121,8 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                     ),
                   ),
                   child: Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        24.0, 0.0, 24.0, 0.0),
                     child: Row(
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -144,11 +144,11 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                           borderRadius: 54.0,
                           borderWidth: 0.0,
                           buttonSize: 32.0,
-                          fillColor: Color(0xFFF4F5F8),
+                          fillColor: const Color(0xFFF4F5F8),
                           hoverColor: FlutterFlowTheme.of(context).primary,
                           hoverIconColor:
                               FlutterFlowTheme.of(context).primaryText,
-                          icon: Icon(
+                          icon: const Icon(
                             FFIcons.kkrestStroke,
                             color: Color(0xFF21201F),
                             size: 8.0,
@@ -180,15 +180,16 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                 borderRadius: BorderRadius.circular(5.0),
                               ),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     0.0, 24.0, 0.0, 24.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          24.0, 0.0, 24.0, 9.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              24.0, 0.0, 24.0, 9.0),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.max,
                                         crossAxisAlignment:
@@ -199,14 +200,15 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                               borderRadius:
                                                   BorderRadius.circular(12.0),
                                               border: Border.all(
-                                                color: Color(0x26A4A6B2),
+                                                color: const Color(0x26A4A6B2),
                                                 width: 0.5,
                                               ),
                                             ),
                                             child: ClipRRect(
                                               borderRadius:
                                                   BorderRadius.circular(12.0),
-                                              child: custom_widgets.UserAvatarImage(
+                                              child: custom_widgets
+                                                  .UserAvatarImage(
                                                 imageUrl: containerUsersRecord
                                                     .photoUrl,
                                                 width: 60.0,
@@ -218,8 +220,9 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                           ),
                                           Flexible(
                                             child: Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
+                                              padding:
+                                                  const EdgeInsetsDirectional
+                                                      .fromSTEB(
                                                       14.0, 0.0, 0.0, 0.0),
                                               child: Column(
                                                 mainAxisSize: MainAxisSize.min,
@@ -264,17 +267,17 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                                         .bodyMedium
                                                         .override(
                                                           fontFamily: 'SF',
-                                                          color:
-                                                              Color(0xFFA4A6B2),
+                                                          color: const Color(
+                                                              0xFFA4A6B2),
                                                           fontSize: 16.0,
                                                           letterSpacing: 0.0,
                                                         ),
                                                   ),
                                                   Padding(
                                                     padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 8.0,
-                                                                0.0, 0.0),
+                                                        const EdgeInsetsDirectional
+                                                            .fromSTEB(
+                                                            0.0, 8.0, 0.0, 0.0),
                                                     child: Container(
                                                       height: 30.0,
                                                       decoration: BoxDecoration(
@@ -287,12 +290,9 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                                       ),
                                                       child: Padding(
                                                         padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    10.0,
-                                                                    4.0,
-                                                                    10.0,
-                                                                    4.0),
+                                                            const EdgeInsetsDirectional
+                                                                .fromSTEB(10.0,
+                                                                4.0, 10.0, 4.0),
                                                         child: Row(
                                                           mainAxisSize:
                                                               MainAxisSize.min,
@@ -327,7 +327,7 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                                                   .override(
                                                                     fontFamily:
                                                                         'SF',
-                                                                    color: Color(
+                                                                    color: const Color(
                                                                         0xFFA4A6B2),
                                                                     letterSpacing:
                                                                         0.0,
@@ -336,8 +336,9 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                                                             .w500,
                                                                   ),
                                                             ),
-                                                          ].divide(SizedBox(
-                                                              width: 6.0)),
+                                                          ].divide(
+                                                              const SizedBox(
+                                                                  width: 6.0)),
                                                         ),
                                                       ),
                                                     ),
@@ -350,8 +351,9 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                       ),
                                     ),
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          24.0, 0.0, 24.0, 0.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              24.0, 0.0, 24.0, 0.0),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.max,
                                         mainAxisAlignment:
@@ -362,7 +364,7 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                           Expanded(
                                             child: Container(
                                               height: 89.0,
-                                              decoration: BoxDecoration(
+                                              decoration: const BoxDecoration(
                                                 color: Color(0xFFF4F5F8),
                                                 borderRadius: BorderRadius.only(
                                                   topLeft:
@@ -380,7 +382,7 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                                 mainAxisAlignment:
                                                     MainAxisAlignment.center,
                                                 children: [
-                                                  Icon(
+                                                  const Icon(
                                                     FFIcons.kcheckVerified03,
                                                     color: Color(0xFF31B100),
                                                     size: 20.0,
@@ -399,7 +401,8 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                                           letterSpacing: 0.0,
                                                         ),
                                                   ),
-                                                ].divide(SizedBox(height: 5.0)),
+                                                ].divide(const SizedBox(
+                                                    height: 5.0)),
                                               ),
                                             ),
                                           ),
@@ -437,7 +440,8 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                               child: Container(
                                                 height: 89.0,
                                                 decoration: BoxDecoration(
-                                                  color: Color(0xFFF4F5F8),
+                                                  color:
+                                                      const Color(0xFFF4F5F8),
                                                   borderRadius:
                                                       BorderRadius.circular(
                                                           4.0),
@@ -488,8 +492,8 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                                             letterSpacing: 0.0,
                                                           ),
                                                     ),
-                                                  ].divide(
-                                                      SizedBox(height: 5.0)),
+                                                  ].divide(const SizedBox(
+                                                      height: 5.0)),
                                                 ),
                                               ),
                                             ),
@@ -527,7 +531,7 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                               },
                                               child: Container(
                                                 height: 89.0,
-                                                decoration: BoxDecoration(
+                                                decoration: const BoxDecoration(
                                                   color: Color(0xFFF4F5F8),
                                                   borderRadius:
                                                       BorderRadius.only(
@@ -542,8 +546,9 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                                   ),
                                                 ),
                                                 child: Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
                                                           12.0, 0.0, 12.0, 0.0),
                                                   child: Column(
                                                     mainAxisSize:
@@ -592,14 +597,14 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                                                       0.0,
                                                                 ),
                                                       ),
-                                                    ].divide(
-                                                        SizedBox(height: 5.0)),
+                                                    ].divide(const SizedBox(
+                                                        height: 5.0)),
                                                   ),
                                                 ),
                                               ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 5.0)),
+                                        ].divide(const SizedBox(width: 5.0)),
                                       ),
                                     ),
                                   ],
@@ -614,14 +619,14 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                 borderRadius: BorderRadius.circular(5.0),
                               ),
                               child: Padding(
-                                padding: EdgeInsets.all(24.0),
+                                padding: const EdgeInsets.all(24.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Container(
                                       width: double.infinity,
-                                      decoration: BoxDecoration(
+                                      decoration: const BoxDecoration(
                                         color: Color(0xFFF4F5F8),
                                         borderRadius: BorderRadius.only(
                                           topLeft: Radius.circular(16.0),
@@ -631,18 +636,20 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                         ),
                                       ),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            16.0, 21.0, 15.0, 24.0),
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(16.0, 21.0, 15.0, 24.0),
                                         child: Column(
                                           mainAxisSize: MainAxisSize.max,
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
                                             Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(0.0, 0.0, 0.0, 4.0),
+                                              padding:
+                                                  const EdgeInsetsDirectional
+                                                      .fromSTEB(
+                                                      0.0, 0.0, 0.0, 4.0),
                                               child: Text(
-                                                'Стоимость ${widget!.respDT?.price?.toString()} ₽',
+                                                'Стоимость ${widget.respDT?.price?.toString()} ₽',
                                                 style:
                                                     FlutterFlowTheme.of(context)
                                                         .bodyMedium
@@ -656,11 +663,12 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                               ),
                                             ),
                                             Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
+                                              padding:
+                                                  const EdgeInsetsDirectional
+                                                      .fromSTEB(
                                                       0.0, 0.0, 0.0, 15.0),
                                               child: Text(
-                                                'Буду у вас через ~ ${widget!.respDT?.time}',
+                                                'Буду у вас через ~ ${widget.respDT?.time}',
                                                 style:
                                                     FlutterFlowTheme.of(context)
                                                         .bodyMedium
@@ -674,7 +682,7 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                               ),
                                             ),
                                             Text(
-                                              widget!.respDT!.text,
+                                              widget.respDT!.text,
                                               style:
                                                   FlutterFlowTheme.of(context)
                                                       .bodyMedium
@@ -690,8 +698,9 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                       ),
                                     ),
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 12.0, 0.0, 0.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              0.0, 12.0, 0.0, 0.0),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
@@ -807,13 +816,14 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                               text: 'Написать',
                                               options: FFButtonOptions(
                                                 height: 45.0,
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
+                                                padding:
+                                                    const EdgeInsetsDirectional
+                                                        .fromSTEB(
                                                         40.0, 0.0, 40.0, 0.0),
                                                 iconPadding:
-                                                    EdgeInsetsDirectional
+                                                    const EdgeInsetsDirectional
                                                         .fromSTEB(
-                                                            0.0, 0.0, 0.0, 0.0),
+                                                        0.0, 0.0, 0.0, 0.0),
                                                 color:
                                                     FlutterFlowTheme.of(context)
                                                         .primaryBackground,
@@ -847,13 +857,14 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                               text: 'Позвонить',
                                               options: FFButtonOptions(
                                                 height: 45.0,
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
+                                                padding:
+                                                    const EdgeInsetsDirectional
+                                                        .fromSTEB(
                                                         40.0, 0.0, 40.0, 0.0),
                                                 iconPadding:
-                                                    EdgeInsetsDirectional
+                                                    const EdgeInsetsDirectional
                                                         .fromSTEB(
-                                                            0.0, 0.0, 0.0, 0.0),
+                                                        0.0, 0.0, 0.0, 0.0),
                                                 color:
                                                     FlutterFlowTheme.of(context)
                                                         .primaryBackground,
@@ -875,39 +886,39 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                               showLoadingIndicator: false,
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 7.0)),
+                                        ].divide(const SizedBox(width: 7.0)),
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
                             ),
-                          ].divide(SizedBox(height: 5.0)),
+                          ].divide(const SizedBox(height: 5.0)),
                         ),
                       ),
                     ),
                   ),
                 ),
-                if (widget!.order?.status == StatusOrder.newOrder)
+                if (widget.order?.status == StatusOrder.newOrder)
                   Container(
                     decoration: BoxDecoration(
                       color: FlutterFlowTheme.of(context).secondary,
-                      borderRadius: BorderRadius.only(
+                      borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(5.0),
                         topRight: Radius.circular(5.0),
                       ),
                     ),
                     child: Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 35.0),
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                          8.0, 8.0, 8.0, 35.0),
                       child: FFButtonWidget(
                         onPressed: () async {
-                          if (widget!.order?.payMethod == PayMethod.cahs) {
-                            await widget!.order!.reference
+                          if (widget.order?.payMethod == PayMethod.cahs) {
+                            await widget.order!.reference
                                 .update(createOrderRecordData(
                               selectedDriver: containerUsersRecord.reference,
                               status: StatusOrder.spec_set,
-                              currentPrice: widget!.respDT?.price,
+                              currentPrice: widget.respDT?.price,
                             ));
                             Navigator.pop(context);
                           } else {
@@ -919,10 +930,10 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                   .millisecondsSinceEpoch
                                   .toString(),
                               isPaid: false,
-                              amountInCop: widget!.respDT!.price * 100,
+                              amountInCop: widget.respDT!.price * 100,
                               user: currentUserReference,
                               paymentType: PaymentType.regularCustomer,
-                              currentOrderDocRef: widget!.order?.reference,
+                              currentOrderDocRef: widget.order?.reference,
                               driver: containerUsersRecord.reference,
                             ));
                             _model.order = PayOrderRecord.getDocumentFromData(
@@ -931,10 +942,10 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                       .millisecondsSinceEpoch
                                       .toString(),
                                   isPaid: false,
-                                  amountInCop: widget!.respDT!.price * 100,
+                                  amountInCop: widget.respDT!.price * 100,
                                   user: currentUserReference,
                                   paymentType: PaymentType.regularCustomer,
-                                  currentOrderDocRef: widget!.order?.reference,
+                                  currentOrderDocRef: widget.order?.reference,
                                   driver: containerUsersRecord.reference,
                                 ),
                                 payOrderRecordReference);
@@ -948,8 +959,8 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                     padding: MediaQuery.viewInsetsOf(context),
                                     child: PayInitWidget(
                                       payOrderRef: _model.order!.reference,
-                                      amountRUB: widget!.respDT!.price,
-                                      currentprice: widget!.respDT!.price,
+                                      amountRUB: widget.respDT!.price,
+                                      currentprice: widget.respDT!.price,
                                       driver: containerUsersRecord.reference,
                                     ),
                                   ),
@@ -966,21 +977,21 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                             userRefs: [containerUsersRecord.reference],
                             initialPageName: 'order_Page_Driver',
                             parameterData: {
-                              'order': widget!.order?.reference,
+                              'order': widget.order?.reference,
                             },
                           );
 
                           safeSetState(() {});
                         },
-                        text: widget!.order?.payMethod == PayMethod.card
+                        text: widget.order?.payMethod == PayMethod.card
                             ? 'Выбрать специалиста и оплатить'
                             : 'Выбрать этого специалиста',
                         options: FFButtonOptions(
                           width: double.infinity,
                           height: 56.0,
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 0.0),
-                          iconPadding: EdgeInsetsDirectional.fromSTEB(
+                          iconPadding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 0.0),
                           color: FlutterFlowTheme.of(context).tertiary,
                           textStyle:
@@ -997,7 +1008,7 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                       ),
                     ),
                   ),
-              ].divide(SizedBox(height: 5.0)),
+              ].divide(const SizedBox(height: 5.0)),
             ),
           );
         },

@@ -29,7 +29,7 @@ String formatPhoneNumber(String phoneNumber) {
 
   // Если номер начинается с '8', заменяем его на '7'
   if (cleanedNumber.startsWith('8')) {
-    cleanedNumber = '7' + cleanedNumber.substring(1);
+    cleanedNumber = '7${cleanedNumber.substring(1)}';
   }
 
   return cleanedNumber;
@@ -189,7 +189,7 @@ List<OrderRecord> filterOrders(
 
   // Фильтрация по радиусу (или до 200 км если radius == null)
   final LatLng effectiveLocation =
-      currentLocation ?? LatLng(55.7558, 37.6173); // Центр Москвы
+      currentLocation ?? const LatLng(55.7558, 37.6173); // Центр Москвы
   final double effectiveRadius =
       (radius != null && radius > 0) ? radius : 200.0;
 
@@ -273,16 +273,7 @@ String? formatPhoneNumber1(String? phoneNumber) {
     return null;
   }
 
-  return '+' +
-      phoneNumber.substring(0, 1) +
-      ' (' +
-      phoneNumber.substring(1, 4) +
-      ') ' +
-      phoneNumber.substring(4, 7) +
-      ' ' +
-      phoneNumber.substring(7, 9) +
-      '-' +
-      phoneNumber.substring(9, 11);
+  return '+${phoneNumber.substring(0, 1)} (${phoneNumber.substring(1, 4)}) ${phoneNumber.substring(4, 7)} ${phoneNumber.substring(7, 9)}-${phoneNumber.substring(9, 11)}';
 }
 
 List<DocumentReference> combineUsers2(DocumentReference user) {
@@ -425,23 +416,23 @@ int newCustomFunction(
   if (tarif == Car.largus) {
     // Машина размера S.
     if (routeType == "moscow") {
-      if (loader == 0)
+      if (loader == 0) {
         baseFare = 797;
-      else if (loader == 1)
+      } else if (loader == 1)
         baseFare = 1391;
       else if (loader == 2) baseFare = 1985;
     } else if (routeType == "intercity") {
-      if (loader == 0)
+      if (loader == 0) {
         baseFare = 835;
-      else if (loader == 1)
+      } else if (loader == 1)
         baseFare = 1429;
       else if (loader == 2) baseFare = 2023;
     } else {
       // routeType == "mkaD"
       // Берём московский тариф как базовый.
-      if (loader == 0)
+      if (loader == 0) {
         baseFare = 797;
-      else if (loader == 1)
+      } else if (loader == 1)
         baseFare = 1391;
       else if (loader == 2) baseFare = 1985;
     }
@@ -460,22 +451,22 @@ int newCustomFunction(
   } else if (tarif == Car.fiat) {
     // Машина размера M.
     if (routeType == "moscow") {
-      if (loader == 0)
+      if (loader == 0) {
         baseFare = 1035;
-      else if (loader == 1)
+      } else if (loader == 1)
         baseFare = 1737;
       else if (loader == 2) baseFare = 2552;
     } else if (routeType == "intercity") {
-      if (loader == 0)
+      if (loader == 0) {
         baseFare = 1086;
-      else if (loader == 1)
+      } else if (loader == 1)
         baseFare = 1788;
       else if (loader == 2) baseFare = 2490;
     } else {
       // routeType == "mkaD"
-      if (loader == 0)
+      if (loader == 0) {
         baseFare = 1035;
-      else if (loader == 1)
+      } else if (loader == 1)
         baseFare = 1737;
       else if (loader == 2) baseFare = 2552;
     }
@@ -541,7 +532,7 @@ int newCustomFunction(
 
 DateTime datetime24() {
   DateTime now = DateTime.now();
-  return now.add(Duration(hours: 24));
+  return now.add(const Duration(hours: 24));
 }
 
 double proc(double balance) {
@@ -564,7 +555,7 @@ bool hours48(DateTime shiftcompletiondate) {
 
 int newCustomFunction2(DateTime datetimestart) {
   // Длительность смены — 12 часов
-  final shiftDuration = Duration(hours: 12);
+  const shiftDuration = Duration(hours: 12);
 
   // Конец смены = старт + 12 часов
   final shiftEnd = datetimestart.add(shiftDuration);

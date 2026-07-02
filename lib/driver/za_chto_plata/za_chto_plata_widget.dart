@@ -42,7 +42,7 @@ class _ZaChtoPlataWidgetState extends State<ZaChtoPlataWidget> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).primaryBackground,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(22.0),
           topRight: Radius.circular(22.0),
         ),
@@ -56,7 +56,7 @@ class _ZaChtoPlataWidgetState extends State<ZaChtoPlataWidget> {
             height: 64.0,
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).secondaryBackground,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(22.0),
                 topRight: Radius.circular(22.0),
                 bottomLeft: Radius.circular(5.0),
@@ -64,7 +64,8 @@ class _ZaChtoPlataWidgetState extends State<ZaChtoPlataWidget> {
               ),
             ),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -85,10 +86,10 @@ class _ZaChtoPlataWidgetState extends State<ZaChtoPlataWidget> {
                     borderRadius: 54.0,
                     borderWidth: 0.0,
                     buttonSize: 32.0,
-                    fillColor: Color(0xFFF4F5F8),
+                    fillColor: const Color(0xFFF4F5F8),
                     hoverColor: FlutterFlowTheme.of(context).primary,
                     hoverIconColor: FlutterFlowTheme.of(context).primaryText,
-                    icon: Icon(
+                    icon: const Icon(
                       FFIcons.kkrestStroke,
                       color: Color(0xFF21201F),
                       size: 8.0,
@@ -108,7 +109,7 @@ class _ZaChtoPlataWidgetState extends State<ZaChtoPlataWidget> {
               borderRadius: BorderRadius.circular(5.0),
             ),
             child: Padding(
-              padding: EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(24.0),
               child: Text(
                 '1. Если клиент платит картой:\nКомиссия удерживается автоматически, когда клиент подтверждает завершение заказа.\nВам зачисляется сумма уже за вычетом комиссии.\n\n\n2. Если оплата наличными:\nКомиссия добавляется в счёт комиссии за смену.\nОна списывается с баланса, когда вы завершаете смену. Убедитесь, что на балансе достаточно средств.',
                 style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -123,13 +124,14 @@ class _ZaChtoPlataWidgetState extends State<ZaChtoPlataWidget> {
           Container(
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).secondary,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(5.0),
                 topRight: Radius.circular(5.0),
               ),
             ),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 35.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 35.0),
               child: FFButtonWidget(
                 onPressed: () async {
                   Navigator.pop(context);
@@ -138,9 +140,10 @@ class _ZaChtoPlataWidgetState extends State<ZaChtoPlataWidget> {
                 options: FFButtonOptions(
                   width: double.infinity,
                   height: 56.0,
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                   iconPadding:
-                      EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                   color: FlutterFlowTheme.of(context).tertiary,
                   textStyle: FlutterFlowTheme.of(context).titleSmall.override(
                         fontFamily: 'SF',
@@ -154,7 +157,7 @@ class _ZaChtoPlataWidgetState extends State<ZaChtoPlataWidget> {
               ),
             ),
           ),
-        ].divide(SizedBox(height: 5.0)),
+        ].divide(const SizedBox(height: 5.0)),
       ),
     );
   }

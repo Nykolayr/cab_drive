@@ -32,9 +32,10 @@ build/
 .DS_Store
 Thumbs.db
 
-# Secrets (keep Firebase configs in repo for now — project was shipped with them)
+# Secrets
 .env
-.env.*
+.env.local
+!.env.example
 
 # Logs
 *.log

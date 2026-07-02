@@ -54,9 +54,9 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (widget!.messageDoc?.sender != currentUserReference)
+        if (widget.messageDoc?.sender != currentUserReference)
           Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(10.0, 0.0, 30.0, 0.0),
+            padding: const EdgeInsetsDirectional.fromSTEB(10.0, 0.0, 30.0, 0.0),
             child: Column(
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,9 +67,9 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                   child: custom_widgets.ReadMessage(
                     width: double.infinity,
                     height: 1.0,
-                    messageId: widget!.messageDoc!.reference.id,
+                    messageId: widget.messageDoc!.reference.id,
                     action: () async {
-                      await widget!.messageDoc!.reference
+                      await widget.messageDoc!.reference
                           .update(createMessagesRecordData(
                         read: true,
                       ));
@@ -77,14 +77,14 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                   ),
                 ),
                 Stack(
-                  alignment: AlignmentDirectional(0.0, 1.0),
+                  alignment: const AlignmentDirectional(0.0, 1.0),
                   children: [
                     Align(
-                      alignment: AlignmentDirectional(-1.0, 0.0),
+                      alignment: const AlignmentDirectional(-1.0, 0.0),
                       child: Container(
                         decoration: BoxDecoration(
                           color: FlutterFlowTheme.of(context).primaryBackground,
-                          borderRadius: BorderRadius.only(
+                          borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(18.0),
                             topRight: Radius.circular(18.0),
                             bottomLeft: Radius.circular(8.0),
@@ -95,15 +95,15 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (widget!.messageDoc?.listImages != null &&
-                                (widget!.messageDoc?.listImages)!.isNotEmpty)
+                            if (widget.messageDoc?.listImages != null &&
+                                (widget.messageDoc?.listImages)!.isNotEmpty)
                               Padding(
-                                padding: EdgeInsets.all(1.0),
+                                padding: const EdgeInsets.all(1.0),
                                 child: Stack(
-                                  alignment: AlignmentDirectional(1.0, 1.0),
+                                  alignment:
+                                      const AlignmentDirectional(1.0, 1.0),
                                   children: [
-                                    if (widget!
-                                            .messageDoc?.listImages?.length ==
+                                    if (widget.messageDoc?.listImages.length ==
                                         1)
                                       InkWell(
                                         splashColor: Colors.transparent,
@@ -123,7 +123,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                           context),
                                                   child: ImageViewWidget(
                                                     indexCurrent: 0,
-                                                    alllistImage: widget!
+                                                    alllistImage: widget
                                                         .messageDoc!.listImages,
                                                   ),
                                                 ),
@@ -133,11 +133,12 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                               (value) => safeSetState(() {}));
                                         },
                                         child: Hero(
-                                          tag: widget!.messageDoc!.listImages
+                                          tag: widget.messageDoc!.listImages
                                               .firstOrNull!,
                                           transitionOnUserGestures: true,
                                           child: ClipRRect(
-                                            borderRadius: BorderRadius.only(
+                                            borderRadius:
+                                                const BorderRadius.only(
                                               topLeft: Radius.circular(17.0),
                                               topRight: Radius.circular(17.0),
                                               bottomLeft: Radius.circular(7.0),
@@ -145,11 +146,11 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                   Radius.circular(17.0),
                                             ),
                                             child: CachedNetworkImage(
-                                              fadeInDuration:
-                                                  Duration(milliseconds: 5),
-                                              fadeOutDuration:
-                                                  Duration(milliseconds: 5),
-                                              imageUrl: widget!.messageDoc!
+                                              fadeInDuration: const Duration(
+                                                  milliseconds: 5),
+                                              fadeOutDuration: const Duration(
+                                                  milliseconds: 5),
+                                              imageUrl: widget.messageDoc!
                                                   .listImages.firstOrNull!,
                                               width: double.infinity,
                                               height: 300.0,
@@ -158,8 +159,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                           ),
                                         ),
                                       ),
-                                    if (widget!
-                                            .messageDoc?.listImages?.length ==
+                                    if (widget.messageDoc?.listImages.length ==
                                         2)
                                       Row(
                                         mainAxisSize: MainAxisSize.min,
@@ -185,7 +185,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 0,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -196,23 +196,25 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!.messageDoc!
+                                                tag: widget.messageDoc!
                                                     .listImages.firstOrNull!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     topLeft:
                                                         Radius.circular(17.0),
                                                     bottomLeft:
                                                         Radius.circular(7.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!
                                                         .listImages
                                                         .firstOrNull!,
@@ -245,7 +247,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 1,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -256,26 +258,26 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!.messageDoc!
+                                                tag: widget.messageDoc!
                                                     .listImages.lastOrNull!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     topRight:
                                                         Radius.circular(17.0),
                                                     bottomRight:
                                                         Radius.circular(17.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
-                                                        .messageDoc!
-                                                        .listImages
-                                                        .lastOrNull!,
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget.messageDoc!
+                                                        .listImages.lastOrNull!,
                                                     width: double.infinity,
                                                     height: 170.0,
                                                     fit: BoxFit.cover,
@@ -284,10 +286,9 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                               ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 1.0)),
+                                        ].divide(const SizedBox(width: 1.0)),
                                       ),
-                                    if (widget!
-                                            .messageDoc?.listImages?.length ==
+                                    if (widget.messageDoc?.listImages.length ==
                                         3)
                                       Row(
                                         mainAxisSize: MainAxisSize.min,
@@ -311,7 +312,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                               context),
                                                       child: ImageViewWidget(
                                                         indexCurrent: 0,
-                                                        alllistImage: widget!
+                                                        alllistImage: widget
                                                             .messageDoc!
                                                             .listImages,
                                                       ),
@@ -322,11 +323,12 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                   safeSetState(() {}));
                                             },
                                             child: Hero(
-                                              tag: widget!.messageDoc!
-                                                  .listImages.firstOrNull!,
+                                              tag: widget.messageDoc!.listImages
+                                                  .firstOrNull!,
                                               transitionOnUserGestures: true,
                                               child: ClipRRect(
-                                                borderRadius: BorderRadius.only(
+                                                borderRadius:
+                                                    const BorderRadius.only(
                                                   topLeft:
                                                       Radius.circular(17.0),
                                                   bottomLeft:
@@ -334,10 +336,12 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                 ),
                                                 child: CachedNetworkImage(
                                                   fadeInDuration:
-                                                      Duration(milliseconds: 5),
+                                                      const Duration(
+                                                          milliseconds: 5),
                                                   fadeOutDuration:
-                                                      Duration(milliseconds: 5),
-                                                  imageUrl: widget!.messageDoc!
+                                                      const Duration(
+                                                          milliseconds: 5),
+                                                  imageUrl: widget.messageDoc!
                                                       .listImages.firstOrNull!,
                                                   width: 260.0,
                                                   height: 300.0,
@@ -376,7 +380,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 1,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -387,28 +391,29 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(1)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         topRight:
                                                             Radius.circular(
                                                                 17.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -444,7 +449,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 2,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -455,27 +460,28 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!.messageDoc!
+                                                    tag: widget.messageDoc!
                                                         .listImages.lastOrNull!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         bottomRight:
                                                             Radius.circular(
                                                                 17.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .lastOrNull!,
@@ -486,13 +492,13 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     ),
                                                   ),
                                                 ),
-                                              ].divide(SizedBox(height: 1.0)),
+                                              ].divide(
+                                                  const SizedBox(height: 1.0)),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 1.0)),
+                                        ].divide(const SizedBox(width: 1.0)),
                                       ),
-                                    if (widget!
-                                            .messageDoc?.listImages?.length ==
+                                    if (widget.messageDoc?.listImages.length ==
                                         4)
                                       Row(
                                         mainAxisSize: MainAxisSize.min,
@@ -516,7 +522,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                               context),
                                                       child: ImageViewWidget(
                                                         indexCurrent: 0,
-                                                        alllistImage: widget!
+                                                        alllistImage: widget
                                                             .messageDoc!
                                                             .listImages,
                                                       ),
@@ -527,11 +533,12 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                   safeSetState(() {}));
                                             },
                                             child: Hero(
-                                              tag: widget!.messageDoc!
-                                                  .listImages.firstOrNull!,
+                                              tag: widget.messageDoc!.listImages
+                                                  .firstOrNull!,
                                               transitionOnUserGestures: true,
                                               child: ClipRRect(
-                                                borderRadius: BorderRadius.only(
+                                                borderRadius:
+                                                    const BorderRadius.only(
                                                   topLeft:
                                                       Radius.circular(17.0),
                                                   bottomLeft:
@@ -539,10 +546,12 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                 ),
                                                 child: CachedNetworkImage(
                                                   fadeInDuration:
-                                                      Duration(milliseconds: 5),
+                                                      const Duration(
+                                                          milliseconds: 5),
                                                   fadeOutDuration:
-                                                      Duration(milliseconds: 5),
-                                                  imageUrl: widget!.messageDoc!
+                                                      const Duration(
+                                                          milliseconds: 5),
+                                                  imageUrl: widget.messageDoc!
                                                       .listImages.firstOrNull!,
                                                   width: 260.0,
                                                   height: 300.0,
@@ -581,7 +590,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 1,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -592,28 +601,29 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(1)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         topRight:
                                                             Radius.circular(
                                                                 17.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -649,7 +659,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 2,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -660,24 +670,25 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(2)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(),
+                                                          const BorderRadius
+                                                              .only(),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -713,7 +724,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 3,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -724,27 +735,28 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!.messageDoc!
+                                                    tag: widget.messageDoc!
                                                         .listImages.lastOrNull!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         bottomRight:
                                                             Radius.circular(
                                                                 17.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .lastOrNull!,
@@ -755,13 +767,13 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     ),
                                                   ),
                                                 ),
-                                              ].divide(SizedBox(height: 1.0)),
+                                              ].divide(
+                                                  const SizedBox(height: 1.0)),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 1.0)),
+                                        ].divide(const SizedBox(width: 1.0)),
                                       ),
-                                    if (widget!
-                                            .messageDoc?.listImages?.length ==
+                                    if (widget.messageDoc?.listImages.length ==
                                         5)
                                       Column(
                                         mainAxisSize: MainAxisSize.min,
@@ -794,7 +806,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 0,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -805,7 +817,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!
                                                         .listImages
                                                         .firstOrNull!,
@@ -813,21 +825,22 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         topLeft:
                                                             Radius.circular(
                                                                 17.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .firstOrNull!,
@@ -864,7 +877,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 1,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -875,28 +888,29 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(1)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         topRight:
                                                             Radius.circular(
                                                                 17.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -909,7 +923,8 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                   ),
                                                 ),
                                               ),
-                                            ].divide(SizedBox(width: 1.0)),
+                                            ].divide(
+                                                const SizedBox(width: 1.0)),
                                           ),
                                           Row(
                                             mainAxisSize: MainAxisSize.min,
@@ -939,7 +954,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 2,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -950,28 +965,29 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(2)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         bottomLeft:
                                                             Radius.circular(
                                                                 7.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -1009,7 +1025,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 3,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -1020,17 +1036,19 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(3)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: CachedNetworkImage(
-                                                      fadeInDuration: Duration(
-                                                          milliseconds: 5),
-                                                      fadeOutDuration: Duration(
-                                                          milliseconds: 5),
-                                                      imageUrl: widget!
+                                                      fadeInDuration:
+                                                          const Duration(
+                                                              milliseconds: 5),
+                                                      fadeOutDuration:
+                                                          const Duration(
+                                                              milliseconds: 5),
+                                                      imageUrl: widget
                                                           .messageDoc!
                                                           .listImages
                                                           .elementAtOrNull(3)!,
@@ -1066,7 +1084,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 4,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -1077,27 +1095,28 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!.messageDoc!
+                                                    tag: widget.messageDoc!
                                                         .listImages.lastOrNull!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         bottomRight:
                                                             Radius.circular(
                                                                 17.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .lastOrNull!,
@@ -1109,12 +1128,12 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                   ),
                                                 ),
                                               ),
-                                            ].divide(SizedBox(width: 1.0)),
+                                            ].divide(
+                                                const SizedBox(width: 1.0)),
                                           ),
-                                        ].divide(SizedBox(height: 1.0)),
+                                        ].divide(const SizedBox(height: 1.0)),
                                       ),
-                                    if (widget!
-                                            .messageDoc?.listImages?.length ==
+                                    if (widget.messageDoc?.listImages.length ==
                                         6)
                                       Column(
                                         mainAxisSize: MainAxisSize.min,
@@ -1147,7 +1166,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 0,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -1158,7 +1177,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!
                                                         .listImages
                                                         .firstOrNull!,
@@ -1166,21 +1185,22 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         topLeft:
                                                             Radius.circular(
                                                                 17.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .firstOrNull!,
@@ -1217,7 +1237,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 1,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -1228,17 +1248,19 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(1)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: CachedNetworkImage(
-                                                      fadeInDuration: Duration(
-                                                          milliseconds: 5),
-                                                      fadeOutDuration: Duration(
-                                                          milliseconds: 5),
-                                                      imageUrl: widget!
+                                                      fadeInDuration:
+                                                          const Duration(
+                                                              milliseconds: 5),
+                                                      fadeOutDuration:
+                                                          const Duration(
+                                                              milliseconds: 5),
+                                                      imageUrl: widget
                                                           .messageDoc!
                                                           .listImages
                                                           .elementAtOrNull(1)!,
@@ -1274,7 +1296,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 2,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -1285,28 +1307,29 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(2)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         topRight:
                                                             Radius.circular(
                                                                 17.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -1319,7 +1342,8 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                   ),
                                                 ),
                                               ),
-                                            ].divide(SizedBox(width: 1.0)),
+                                            ].divide(
+                                                const SizedBox(width: 1.0)),
                                           ),
                                           Row(
                                             mainAxisSize: MainAxisSize.min,
@@ -1349,7 +1373,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 3,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -1360,28 +1384,29 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(3)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         bottomLeft:
                                                             Radius.circular(
                                                                 7.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -1419,7 +1444,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 4,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -1430,17 +1455,19 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(4)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: CachedNetworkImage(
-                                                      fadeInDuration: Duration(
-                                                          milliseconds: 5),
-                                                      fadeOutDuration: Duration(
-                                                          milliseconds: 5),
-                                                      imageUrl: widget!
+                                                      fadeInDuration:
+                                                          const Duration(
+                                                              milliseconds: 5),
+                                                      fadeOutDuration:
+                                                          const Duration(
+                                                              milliseconds: 5),
+                                                      imageUrl: widget
                                                           .messageDoc!
                                                           .listImages
                                                           .elementAtOrNull(4)!,
@@ -1476,7 +1503,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 5,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -1487,27 +1514,28 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!.messageDoc!
+                                                    tag: widget.messageDoc!
                                                         .listImages.lastOrNull!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         bottomRight:
                                                             Radius.circular(
                                                                 17.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .lastOrNull!,
@@ -1519,12 +1547,12 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                   ),
                                                 ),
                                               ),
-                                            ].divide(SizedBox(width: 1.0)),
+                                            ].divide(
+                                                const SizedBox(width: 1.0)),
                                           ),
-                                        ].divide(SizedBox(height: 1.0)),
+                                        ].divide(const SizedBox(height: 1.0)),
                                       ),
-                                    if (widget!
-                                            .messageDoc?.listImages?.length ==
+                                    if (widget.messageDoc?.listImages.length ==
                                         7)
                                       Column(
                                         mainAxisSize: MainAxisSize.min,
@@ -1557,7 +1585,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 0,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -1568,7 +1596,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!
                                                         .listImages
                                                         .firstOrNull!,
@@ -1576,21 +1604,22 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         topLeft:
                                                             Radius.circular(
                                                                 17.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .firstOrNull!,
@@ -1627,7 +1656,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 1,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -1638,28 +1667,29 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(1)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         topRight:
                                                             Radius.circular(
                                                                 17.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -1672,7 +1702,8 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                   ),
                                                 ),
                                               ),
-                                            ].divide(SizedBox(width: 1.0)),
+                                            ].divide(
+                                                const SizedBox(width: 1.0)),
                                           ),
                                           Row(
                                             mainAxisSize: MainAxisSize.min,
@@ -1702,7 +1733,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 2,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -1713,24 +1744,25 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(2)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(),
+                                                          const BorderRadius
+                                                              .only(),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -1768,7 +1800,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 3,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -1779,24 +1811,25 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(3)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(),
+                                                          const BorderRadius
+                                                              .only(),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -1809,7 +1842,8 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                   ),
                                                 ),
                                               ),
-                                            ].divide(SizedBox(width: 1.0)),
+                                            ].divide(
+                                                const SizedBox(width: 1.0)),
                                           ),
                                           Row(
                                             mainAxisSize: MainAxisSize.min,
@@ -1839,7 +1873,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 4,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -1850,28 +1884,29 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(4)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         bottomLeft:
                                                             Radius.circular(
                                                                 7.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -1909,7 +1944,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 5,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -1920,17 +1955,19 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(5)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: CachedNetworkImage(
-                                                      fadeInDuration: Duration(
-                                                          milliseconds: 5),
-                                                      fadeOutDuration: Duration(
-                                                          milliseconds: 5),
-                                                      imageUrl: widget!
+                                                      fadeInDuration:
+                                                          const Duration(
+                                                              milliseconds: 5),
+                                                      fadeOutDuration:
+                                                          const Duration(
+                                                              milliseconds: 5),
+                                                      imageUrl: widget
                                                           .messageDoc!
                                                           .listImages
                                                           .elementAtOrNull(5)!,
@@ -1966,7 +2003,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 6,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -1977,27 +2014,28 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!.messageDoc!
+                                                    tag: widget.messageDoc!
                                                         .listImages.lastOrNull!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         bottomRight:
                                                             Radius.circular(
                                                                 17.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .lastOrNull!,
@@ -2009,12 +2047,12 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                   ),
                                                 ),
                                               ),
-                                            ].divide(SizedBox(width: 1.0)),
+                                            ].divide(
+                                                const SizedBox(width: 1.0)),
                                           ),
-                                        ].divide(SizedBox(height: 1.0)),
+                                        ].divide(const SizedBox(height: 1.0)),
                                       ),
-                                    if (widget!
-                                            .messageDoc?.listImages?.length ==
+                                    if (widget.messageDoc?.listImages.length ==
                                         8)
                                       Column(
                                         mainAxisSize: MainAxisSize.min,
@@ -2047,7 +2085,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 0,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -2058,7 +2096,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!
                                                         .listImages
                                                         .firstOrNull!,
@@ -2066,21 +2104,22 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         topLeft:
                                                             Radius.circular(
                                                                 17.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .firstOrNull!,
@@ -2117,7 +2156,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 1,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -2128,28 +2167,29 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(1)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         topRight:
                                                             Radius.circular(
                                                                 17.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -2162,7 +2202,8 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                   ),
                                                 ),
                                               ),
-                                            ].divide(SizedBox(width: 1.0)),
+                                            ].divide(
+                                                const SizedBox(width: 1.0)),
                                           ),
                                           Row(
                                             mainAxisSize: MainAxisSize.min,
@@ -2192,7 +2233,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 2,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -2203,24 +2244,25 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(2)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(),
+                                                          const BorderRadius
+                                                              .only(),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -2258,7 +2300,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 3,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -2269,24 +2311,25 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(3)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(),
+                                                          const BorderRadius
+                                                              .only(),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -2324,7 +2367,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 4,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -2335,24 +2378,25 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(4)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(),
+                                                          const BorderRadius
+                                                              .only(),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -2365,7 +2409,8 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                   ),
                                                 ),
                                               ),
-                                            ].divide(SizedBox(width: 1.0)),
+                                            ].divide(
+                                                const SizedBox(width: 1.0)),
                                           ),
                                           Row(
                                             mainAxisSize: MainAxisSize.min,
@@ -2395,7 +2440,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 5,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -2406,28 +2451,29 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(5)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         bottomLeft:
                                                             Radius.circular(
                                                                 7.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -2465,7 +2511,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 6,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -2476,17 +2522,19 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(6)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: CachedNetworkImage(
-                                                      fadeInDuration: Duration(
-                                                          milliseconds: 5),
-                                                      fadeOutDuration: Duration(
-                                                          milliseconds: 5),
-                                                      imageUrl: widget!
+                                                      fadeInDuration:
+                                                          const Duration(
+                                                              milliseconds: 5),
+                                                      fadeOutDuration:
+                                                          const Duration(
+                                                              milliseconds: 5),
+                                                      imageUrl: widget
                                                           .messageDoc!
                                                           .listImages
                                                           .elementAtOrNull(6)!,
@@ -2522,7 +2570,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 7,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -2533,27 +2581,28 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!.messageDoc!
+                                                    tag: widget.messageDoc!
                                                         .listImages.lastOrNull!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         bottomRight:
                                                             Radius.circular(
                                                                 17.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .lastOrNull!,
@@ -2565,12 +2614,12 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                   ),
                                                 ),
                                               ),
-                                            ].divide(SizedBox(width: 1.0)),
+                                            ].divide(
+                                                const SizedBox(width: 1.0)),
                                           ),
-                                        ].divide(SizedBox(height: 1.0)),
+                                        ].divide(const SizedBox(height: 1.0)),
                                       ),
-                                    if (widget!
-                                            .messageDoc?.listImages?.length ==
+                                    if (widget.messageDoc?.listImages.length ==
                                         9)
                                       Column(
                                         mainAxisSize: MainAxisSize.min,
@@ -2603,7 +2652,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 0,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -2614,7 +2663,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!
                                                         .listImages
                                                         .firstOrNull!,
@@ -2622,21 +2671,22 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         topLeft:
                                                             Radius.circular(
                                                                 17.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .firstOrNull!,
@@ -2673,7 +2723,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 1,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -2684,24 +2734,25 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(1)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(),
+                                                          const BorderRadius
+                                                              .only(),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -2739,7 +2790,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 2,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -2750,28 +2801,29 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(2)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         topRight:
                                                             Radius.circular(
                                                                 17.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -2784,7 +2836,8 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                   ),
                                                 ),
                                               ),
-                                            ].divide(SizedBox(width: 1.0)),
+                                            ].divide(
+                                                const SizedBox(width: 1.0)),
                                           ),
                                           Row(
                                             mainAxisSize: MainAxisSize.min,
@@ -2814,7 +2867,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 3,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -2825,24 +2878,25 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(3)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(),
+                                                          const BorderRadius
+                                                              .only(),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -2880,7 +2934,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 4,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -2891,24 +2945,25 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(4)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(),
+                                                          const BorderRadius
+                                                              .only(),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -2946,7 +3001,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 5,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -2957,24 +3012,25 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(5)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(),
+                                                          const BorderRadius
+                                                              .only(),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -2987,7 +3043,8 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                   ),
                                                 ),
                                               ),
-                                            ].divide(SizedBox(width: 1.0)),
+                                            ].divide(
+                                                const SizedBox(width: 1.0)),
                                           ),
                                           Row(
                                             mainAxisSize: MainAxisSize.min,
@@ -3017,7 +3074,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 6,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -3028,28 +3085,29 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(6)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         bottomLeft:
                                                             Radius.circular(
                                                                 7.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -3087,7 +3145,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 7,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -3098,17 +3156,19 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(7)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: CachedNetworkImage(
-                                                      fadeInDuration: Duration(
-                                                          milliseconds: 5),
-                                                      fadeOutDuration: Duration(
-                                                          milliseconds: 5),
-                                                      imageUrl: widget!
+                                                      fadeInDuration:
+                                                          const Duration(
+                                                              milliseconds: 5),
+                                                      fadeOutDuration:
+                                                          const Duration(
+                                                              milliseconds: 5),
+                                                      imageUrl: widget
                                                           .messageDoc!
                                                           .listImages
                                                           .elementAtOrNull(7)!,
@@ -3144,7 +3204,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 8,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -3155,27 +3215,28 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!.messageDoc!
+                                                    tag: widget.messageDoc!
                                                         .listImages.lastOrNull!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         bottomRight:
                                                             Radius.circular(
                                                                 17.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .lastOrNull!,
@@ -3187,12 +3248,12 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                   ),
                                                 ),
                                               ),
-                                            ].divide(SizedBox(width: 1.0)),
+                                            ].divide(
+                                                const SizedBox(width: 1.0)),
                                           ),
-                                        ].divide(SizedBox(height: 1.0)),
+                                        ].divide(const SizedBox(height: 1.0)),
                                       ),
-                                    if (widget!
-                                            .messageDoc?.listImages?.length ==
+                                    if (widget.messageDoc?.listImages.length ==
                                         10)
                                       Column(
                                         mainAxisSize: MainAxisSize.min,
@@ -3225,7 +3286,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 0,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -3236,7 +3297,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!
                                                         .listImages
                                                         .firstOrNull!,
@@ -3244,21 +3305,22 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         topLeft:
                                                             Radius.circular(
                                                                 17.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .firstOrNull!,
@@ -3295,7 +3357,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 1,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -3306,24 +3368,25 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(1)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(),
+                                                          const BorderRadius
+                                                              .only(),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -3361,7 +3424,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 2,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -3372,28 +3435,29 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(2)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         topRight:
                                                             Radius.circular(
                                                                 17.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -3406,7 +3470,8 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                   ),
                                                 ),
                                               ),
-                                            ].divide(SizedBox(width: 1.0)),
+                                            ].divide(
+                                                const SizedBox(width: 1.0)),
                                           ),
                                           Row(
                                             mainAxisSize: MainAxisSize.min,
@@ -3436,7 +3501,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 3,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -3447,24 +3512,25 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(3)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(),
+                                                          const BorderRadius
+                                                              .only(),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -3502,7 +3568,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 4,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -3513,24 +3579,25 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(4)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(),
+                                                          const BorderRadius
+                                                              .only(),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -3568,7 +3635,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 5,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -3579,24 +3646,25 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(5)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(),
+                                                          const BorderRadius
+                                                              .only(),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -3634,7 +3702,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 6,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -3645,24 +3713,25 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(6)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(),
+                                                          const BorderRadius
+                                                              .only(),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -3675,7 +3744,8 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                   ),
                                                 ),
                                               ),
-                                            ].divide(SizedBox(width: 1.0)),
+                                            ].divide(
+                                                const SizedBox(width: 1.0)),
                                           ),
                                           Row(
                                             mainAxisSize: MainAxisSize.min,
@@ -3705,7 +3775,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 7,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -3716,28 +3786,29 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(7)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         bottomLeft:
                                                             Radius.circular(
                                                                 7.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .elementAtOrNull(
@@ -3775,7 +3846,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 8,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -3786,17 +3857,19 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!
+                                                    tag: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(8)!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: CachedNetworkImage(
-                                                      fadeInDuration: Duration(
-                                                          milliseconds: 5),
-                                                      fadeOutDuration: Duration(
-                                                          milliseconds: 5),
-                                                      imageUrl: widget!
+                                                      fadeInDuration:
+                                                          const Duration(
+                                                              milliseconds: 5),
+                                                      fadeOutDuration:
+                                                          const Duration(
+                                                              milliseconds: 5),
+                                                      imageUrl: widget
                                                           .messageDoc!
                                                           .listImages
                                                           .elementAtOrNull(8)!,
@@ -3832,7 +3905,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             child:
                                                                 ImageViewWidget(
                                                               indexCurrent: 9,
-                                                              alllistImage: widget!
+                                                              alllistImage: widget
                                                                   .messageDoc!
                                                                   .listImages,
                                                             ),
@@ -3843,27 +3916,28 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         safeSetState(() {}));
                                                   },
                                                   child: Hero(
-                                                    tag: widget!.messageDoc!
+                                                    tag: widget.messageDoc!
                                                         .listImages.lastOrNull!,
                                                     transitionOnUserGestures:
                                                         true,
                                                     child: ClipRRect(
                                                       borderRadius:
-                                                          BorderRadius.only(
+                                                          const BorderRadius
+                                                              .only(
                                                         bottomRight:
                                                             Radius.circular(
                                                                 17.0),
                                                       ),
                                                       child: CachedNetworkImage(
                                                         fadeInDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
                                                         fadeOutDuration:
-                                                            Duration(
+                                                            const Duration(
                                                                 milliseconds:
                                                                     5),
-                                                        imageUrl: widget!
+                                                        imageUrl: widget
                                                             .messageDoc!
                                                             .listImages
                                                             .lastOrNull!,
@@ -3875,30 +3949,29 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                   ),
                                                 ),
                                               ),
-                                            ].divide(SizedBox(width: 1.0)),
+                                            ].divide(
+                                                const SizedBox(width: 1.0)),
                                           ),
-                                        ].divide(SizedBox(height: 1.0)),
+                                        ].divide(const SizedBox(height: 1.0)),
                                       ),
-                                    if (widget!.messageDoc?.text == null ||
-                                        widget!.messageDoc?.text == '')
+                                    if (widget.messageDoc?.text == null ||
+                                        widget.messageDoc?.text == '')
                                       Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, 5.0, 5.0),
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(0.0, 0.0, 5.0, 5.0),
                                         child: Container(
                                           decoration: BoxDecoration(
-                                            color: Color(0xB3000000),
+                                            color: const Color(0xB3000000),
                                             borderRadius:
                                                 BorderRadius.circular(24.0),
                                           ),
                                           child: Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    6.0, 5.0, 6.0, 6.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(6.0, 5.0, 6.0, 6.0),
                                             child: Text(
                                               dateTimeFormat(
                                                 "Hm",
-                                                widget!
-                                                    .messageDoc!.dateCreated!,
+                                                widget.messageDoc!.dateCreated!,
                                                 locale: FFLocalizations.of(
                                                             context)
                                                         .languageShortCode ??
@@ -3919,7 +3992,8 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                               .bodyMedium
                                                               .fontStyle,
                                                     ),
-                                                    color: Color(0xFFF6F6F6),
+                                                    color:
+                                                        const Color(0xFFF6F6F6),
                                                     fontSize: 12.0,
                                                     letterSpacing: 0.0,
                                                     fontWeight: FontWeight.w500,
@@ -3937,11 +4011,11 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                   ],
                                 ),
                               ),
-                            if ((widget!.messageDoc?.text != null &&
-                                    widget!.messageDoc?.text != '') &&
-                                !(widget!.messageDoc!.listImages.isNotEmpty))
+                            if ((widget.messageDoc?.text != null &&
+                                    widget.messageDoc?.text != '') &&
+                                !(widget.messageDoc!.listImages.isNotEmpty))
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     16.0, 9.0, 7.0, 4.0),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -3951,10 +4025,10 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                   children: [
                                     Flexible(
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, 0.0, 5.0),
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(0.0, 0.0, 0.0, 5.0),
                                         child: Text(
-                                          widget!.messageDoc!.text,
+                                          widget.messageDoc!.text,
                                           textAlign: TextAlign.start,
                                           style: FlutterFlowTheme.of(context)
                                               .bodyMedium
@@ -3992,13 +4066,12 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                       mainAxisSize: MainAxisSize.max,
                                       children: [
                                         Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  7.0, 0.0, 0.0, 0.0),
+                                          padding: const EdgeInsetsDirectional
+                                              .fromSTEB(7.0, 0.0, 0.0, 0.0),
                                           child: Text(
                                             dateTimeFormat(
                                               "Hm",
-                                              widget!.messageDoc!.dateCreated!,
+                                              widget.messageDoc!.dateCreated!,
                                               locale: FFLocalizations.of(
                                                           context)
                                                       .languageShortCode ??
@@ -4017,7 +4090,8 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             .bodyMedium
                                                             .fontStyle,
                                                   ),
-                                                  color: Color(0xFF909595),
+                                                  color:
+                                                      const Color(0xFF909595),
                                                   fontSize: 12.0,
                                                   letterSpacing: 0.0,
                                                   fontWeight: FontWeight.w500,
@@ -4034,11 +4108,11 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                   ],
                                 ),
                               ),
-                            if ((widget!.messageDoc?.text != null &&
-                                    widget!.messageDoc?.text != '') &&
-                                (widget!.messageDoc!.listImages.isNotEmpty))
+                            if ((widget.messageDoc?.text != null &&
+                                    widget.messageDoc?.text != '') &&
+                                (widget.messageDoc!.listImages.isNotEmpty))
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     16.0, 9.0, 7.0, 4.0),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
@@ -4048,10 +4122,10 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                   children: [
                                     Flexible(
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, 0.0, 5.0),
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(0.0, 0.0, 0.0, 5.0),
                                         child: Text(
-                                          widget!.messageDoc!.text,
+                                          widget.messageDoc!.text,
                                           textAlign: TextAlign.start,
                                           style: FlutterFlowTheme.of(context)
                                               .bodyMedium
@@ -4086,12 +4160,13 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                       ),
                                     ),
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          7.0, 0.0, 0.0, 0.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              7.0, 0.0, 0.0, 0.0),
                                       child: Text(
                                         dateTimeFormat(
                                           "Hm",
-                                          widget!.messageDoc!.dateCreated!,
+                                          widget.messageDoc!.dateCreated!,
                                           locale: FFLocalizations.of(context)
                                                   .languageShortCode ??
                                               FFLocalizations.of(context)
@@ -4108,7 +4183,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                         .bodyMedium
                                                         .fontStyle,
                                               ),
-                                              color: Color(0xFF909595),
+                                              color: const Color(0xFF909595),
                                               fontSize: 12.0,
                                               letterSpacing: 0.0,
                                               fontWeight: FontWeight.w500,
@@ -4131,19 +4206,19 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
               ],
             ),
           ),
-        if (widget!.messageDoc?.sender == currentUserReference)
+        if (widget.messageDoc?.sender == currentUserReference)
           Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(30.0, 0.0, 10.0, 0.0),
+            padding: const EdgeInsetsDirectional.fromSTEB(30.0, 0.0, 10.0, 0.0),
             child: Column(
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Align(
-                  alignment: AlignmentDirectional(1.0, 0.0),
+                  alignment: const AlignmentDirectional(1.0, 0.0),
                   child: Container(
                     decoration: BoxDecoration(
                       color: FlutterFlowTheme.of(context).tertiary,
-                      borderRadius: BorderRadius.only(
+                      borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(18.0),
                         topRight: Radius.circular(18.0),
                         bottomLeft: Radius.circular(18.0),
@@ -4154,14 +4229,14 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (widget!.messageDoc?.listImages != null &&
-                            (widget!.messageDoc?.listImages)!.isNotEmpty)
+                        if (widget.messageDoc?.listImages != null &&
+                            (widget.messageDoc?.listImages)!.isNotEmpty)
                           Padding(
-                            padding: EdgeInsets.all(1.0),
+                            padding: const EdgeInsets.all(1.0),
                             child: Stack(
-                              alignment: AlignmentDirectional(1.0, 1.0),
+                              alignment: const AlignmentDirectional(1.0, 1.0),
                               children: [
-                                if (widget!.messageDoc?.listImages?.length == 1)
+                                if (widget.messageDoc?.listImages.length == 1)
                                   InkWell(
                                     splashColor: Colors.transparent,
                                     focusColor: Colors.transparent,
@@ -4179,7 +4254,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                   context),
                                               child: ImageViewWidget(
                                                 indexCurrent: 0,
-                                                alllistImage: widget!
+                                                alllistImage: widget
                                                     .messageDoc!.listImages,
                                               ),
                                             ),
@@ -4188,11 +4263,11 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                       ).then((value) => safeSetState(() {}));
                                     },
                                     child: Hero(
-                                      tag: widget!
+                                      tag: widget
                                           .messageDoc!.listImages.firstOrNull!,
                                       transitionOnUserGestures: true,
                                       child: ClipRRect(
-                                        borderRadius: BorderRadius.only(
+                                        borderRadius: const BorderRadius.only(
                                           topLeft: Radius.circular(18.0),
                                           topRight: Radius.circular(18.0),
                                           bottomLeft: Radius.circular(18.0),
@@ -4200,10 +4275,10 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                         ),
                                         child: CachedNetworkImage(
                                           fadeInDuration:
-                                              Duration(milliseconds: 5),
+                                              const Duration(milliseconds: 5),
                                           fadeOutDuration:
-                                              Duration(milliseconds: 5),
-                                          imageUrl: widget!.messageDoc!
+                                              const Duration(milliseconds: 5),
+                                          imageUrl: widget.messageDoc!
                                               .listImages.firstOrNull!,
                                           width: double.infinity,
                                           height: 300.0,
@@ -4212,7 +4287,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                       ),
                                     ),
                                   ),
-                                if (widget!.messageDoc?.listImages?.length == 2)
+                                if (widget.messageDoc?.listImages.length == 2)
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -4236,7 +4311,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             context),
                                                     child: ImageViewWidget(
                                                       indexCurrent: 0,
-                                                      alllistImage: widget!
+                                                      alllistImage: widget
                                                           .messageDoc!
                                                           .listImages,
                                                     ),
@@ -4247,21 +4322,22 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                 (value) => safeSetState(() {}));
                                           },
                                           child: Hero(
-                                            tag: widget!.messageDoc!.listImages
+                                            tag: widget.messageDoc!.listImages
                                                 .firstOrNull!,
                                             transitionOnUserGestures: true,
                                             child: ClipRRect(
-                                              borderRadius: BorderRadius.only(
+                                              borderRadius:
+                                                  const BorderRadius.only(
                                                 topLeft: Radius.circular(18.0),
                                                 bottomLeft:
                                                     Radius.circular(18.0),
                                               ),
                                               child: CachedNetworkImage(
-                                                fadeInDuration:
-                                                    Duration(milliseconds: 5),
-                                                fadeOutDuration:
-                                                    Duration(milliseconds: 5),
-                                                imageUrl: widget!.messageDoc!
+                                                fadeInDuration: const Duration(
+                                                    milliseconds: 5),
+                                                fadeOutDuration: const Duration(
+                                                    milliseconds: 5),
+                                                imageUrl: widget.messageDoc!
                                                     .listImages.firstOrNull!,
                                                 width: double.infinity,
                                                 height: 170.0,
@@ -4291,7 +4367,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                             context),
                                                     child: ImageViewWidget(
                                                       indexCurrent: 1,
-                                                      alllistImage: widget!
+                                                      alllistImage: widget
                                                           .messageDoc!
                                                           .listImages,
                                                     ),
@@ -4302,21 +4378,22 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                 (value) => safeSetState(() {}));
                                           },
                                           child: Hero(
-                                            tag: widget!.messageDoc!.listImages
+                                            tag: widget.messageDoc!.listImages
                                                 .lastOrNull!,
                                             transitionOnUserGestures: true,
                                             child: ClipRRect(
-                                              borderRadius: BorderRadius.only(
+                                              borderRadius:
+                                                  const BorderRadius.only(
                                                 topRight: Radius.circular(18.0),
                                                 bottomRight:
                                                     Radius.circular(8.0),
                                               ),
                                               child: CachedNetworkImage(
-                                                fadeInDuration:
-                                                    Duration(milliseconds: 5),
-                                                fadeOutDuration:
-                                                    Duration(milliseconds: 5),
-                                                imageUrl: widget!.messageDoc!
+                                                fadeInDuration: const Duration(
+                                                    milliseconds: 5),
+                                                fadeOutDuration: const Duration(
+                                                    milliseconds: 5),
+                                                imageUrl: widget.messageDoc!
                                                     .listImages.lastOrNull!,
                                                 width: double.infinity,
                                                 height: 170.0,
@@ -4326,9 +4403,9 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                           ),
                                         ),
                                       ),
-                                    ].divide(SizedBox(width: 1.0)),
+                                    ].divide(const SizedBox(width: 1.0)),
                                   ),
-                                if (widget!.messageDoc?.listImages?.length == 3)
+                                if (widget.messageDoc?.listImages.length == 3)
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -4350,7 +4427,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                           context),
                                                   child: ImageViewWidget(
                                                     indexCurrent: 0,
-                                                    alllistImage: widget!
+                                                    alllistImage: widget
                                                         .messageDoc!.listImages,
                                                   ),
                                                 ),
@@ -4360,20 +4437,21 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                               (value) => safeSetState(() {}));
                                         },
                                         child: Hero(
-                                          tag: widget!.messageDoc!.listImages
+                                          tag: widget.messageDoc!.listImages
                                               .firstOrNull!,
                                           transitionOnUserGestures: true,
                                           child: ClipRRect(
-                                            borderRadius: BorderRadius.only(
+                                            borderRadius:
+                                                const BorderRadius.only(
                                               topLeft: Radius.circular(18.0),
                                               bottomLeft: Radius.circular(18.0),
                                             ),
                                             child: CachedNetworkImage(
-                                              fadeInDuration:
-                                                  Duration(milliseconds: 5),
-                                              fadeOutDuration:
-                                                  Duration(milliseconds: 5),
-                                              imageUrl: widget!.messageDoc!
+                                              fadeInDuration: const Duration(
+                                                  milliseconds: 5),
+                                              fadeOutDuration: const Duration(
+                                                  milliseconds: 5),
+                                              imageUrl: widget.messageDoc!
                                                   .listImages.firstOrNull!,
                                               width: 260.0,
                                               height: 300.0,
@@ -4408,7 +4486,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 1,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -4419,22 +4497,24 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(1)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     topRight:
                                                         Radius.circular(18.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(1)!,
                                                     width: double.infinity,
@@ -4464,7 +4544,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 2,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -4475,24 +4555,24 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!.messageDoc!
+                                                tag: widget.messageDoc!
                                                     .listImages.lastOrNull!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     bottomRight:
                                                         Radius.circular(8.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
-                                                        .messageDoc!
-                                                        .listImages
-                                                        .lastOrNull!,
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget.messageDoc!
+                                                        .listImages.lastOrNull!,
                                                     width: double.infinity,
                                                     height: 150.0,
                                                     fit: BoxFit.cover,
@@ -4500,12 +4580,12 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                 ),
                                               ),
                                             ),
-                                          ].divide(SizedBox(height: 1.0)),
+                                          ].divide(const SizedBox(height: 1.0)),
                                         ),
                                       ),
-                                    ].divide(SizedBox(width: 1.0)),
+                                    ].divide(const SizedBox(width: 1.0)),
                                   ),
-                                if (widget!.messageDoc?.listImages?.length == 4)
+                                if (widget.messageDoc?.listImages.length == 4)
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -4527,7 +4607,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                           context),
                                                   child: ImageViewWidget(
                                                     indexCurrent: 0,
-                                                    alllistImage: widget!
+                                                    alllistImage: widget
                                                         .messageDoc!.listImages,
                                                   ),
                                                 ),
@@ -4537,20 +4617,21 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                               (value) => safeSetState(() {}));
                                         },
                                         child: Hero(
-                                          tag: widget!.messageDoc!.listImages
+                                          tag: widget.messageDoc!.listImages
                                               .firstOrNull!,
                                           transitionOnUserGestures: true,
                                           child: ClipRRect(
-                                            borderRadius: BorderRadius.only(
+                                            borderRadius:
+                                                const BorderRadius.only(
                                               topLeft: Radius.circular(18.0),
                                               bottomLeft: Radius.circular(8.0),
                                             ),
                                             child: CachedNetworkImage(
-                                              fadeInDuration:
-                                                  Duration(milliseconds: 5),
-                                              fadeOutDuration:
-                                                  Duration(milliseconds: 5),
-                                              imageUrl: widget!.messageDoc!
+                                              fadeInDuration: const Duration(
+                                                  milliseconds: 5),
+                                              fadeOutDuration: const Duration(
+                                                  milliseconds: 5),
+                                              imageUrl: widget.messageDoc!
                                                   .listImages.firstOrNull!,
                                               width: 260.0,
                                               height: 300.0,
@@ -4585,7 +4666,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 1,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -4596,22 +4677,24 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(1)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     topRight:
                                                         Radius.circular(18.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(1)!,
                                                     width: double.infinity,
@@ -4641,7 +4724,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 2,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -4652,19 +4735,21 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(2)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(),
+                                                      const BorderRadius.only(),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(2)!,
                                                     width: double.infinity,
@@ -4694,7 +4779,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 3,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -4705,24 +4790,24 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!.messageDoc!
+                                                tag: widget.messageDoc!
                                                     .listImages.lastOrNull!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     bottomRight:
                                                         Radius.circular(8.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
-                                                        .messageDoc!
-                                                        .listImages
-                                                        .lastOrNull!,
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget.messageDoc!
+                                                        .listImages.lastOrNull!,
                                                     width: double.infinity,
                                                     height: 100.0,
                                                     fit: BoxFit.cover,
@@ -4730,12 +4815,12 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                 ),
                                               ),
                                             ),
-                                          ].divide(SizedBox(height: 1.0)),
+                                          ].divide(const SizedBox(height: 1.0)),
                                         ),
                                       ),
-                                    ].divide(SizedBox(width: 1.0)),
+                                    ].divide(const SizedBox(width: 1.0)),
                                   ),
-                                if (widget!.messageDoc?.listImages?.length == 5)
+                                if (widget.messageDoc?.listImages.length == 5)
                                   Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -4763,7 +4848,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 0,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -4774,21 +4859,23 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!.messageDoc!
+                                                tag: widget.messageDoc!
                                                     .listImages.firstOrNull!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     topLeft:
                                                         Radius.circular(18.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!
                                                         .listImages
                                                         .firstOrNull!,
@@ -4821,7 +4908,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 1,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -4832,22 +4919,24 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(1)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     topRight:
                                                         Radius.circular(18.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(1)!,
                                                     width: double.infinity,
@@ -4858,7 +4947,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                               ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 1.0)),
+                                        ].divide(const SizedBox(width: 1.0)),
                                       ),
                                       Row(
                                         mainAxisSize: MainAxisSize.min,
@@ -4884,7 +4973,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 2,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -4895,22 +4984,24 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(2)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     bottomLeft:
                                                         Radius.circular(18.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(2)!,
                                                     width: double.infinity,
@@ -4942,7 +5033,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 3,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -4953,16 +5044,18 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(3)!,
                                                 transitionOnUserGestures: true,
                                                 child: CachedNetworkImage(
                                                   fadeInDuration:
-                                                      Duration(milliseconds: 5),
+                                                      const Duration(
+                                                          milliseconds: 5),
                                                   fadeOutDuration:
-                                                      Duration(milliseconds: 5),
-                                                  imageUrl: widget!
+                                                      const Duration(
+                                                          milliseconds: 5),
+                                                  imageUrl: widget
                                                       .messageDoc!.listImages
                                                       .elementAtOrNull(3)!,
                                                   width: double.infinity,
@@ -4993,7 +5086,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 4,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -5004,24 +5097,24 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!.messageDoc!
+                                                tag: widget.messageDoc!
                                                     .listImages.lastOrNull!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     bottomRight:
                                                         Radius.circular(8.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
-                                                        .messageDoc!
-                                                        .listImages
-                                                        .lastOrNull!,
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget.messageDoc!
+                                                        .listImages.lastOrNull!,
                                                     width: double.infinity,
                                                     height: 127.0,
                                                     fit: BoxFit.cover,
@@ -5030,11 +5123,11 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                               ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 1.0)),
+                                        ].divide(const SizedBox(width: 1.0)),
                                       ),
-                                    ].divide(SizedBox(height: 1.0)),
+                                    ].divide(const SizedBox(height: 1.0)),
                                   ),
-                                if (widget!.messageDoc?.listImages?.length == 6)
+                                if (widget.messageDoc?.listImages.length == 6)
                                   Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -5062,7 +5155,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 0,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -5073,21 +5166,23 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!.messageDoc!
+                                                tag: widget.messageDoc!
                                                     .listImages.firstOrNull!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     topLeft:
                                                         Radius.circular(18.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!
                                                         .listImages
                                                         .firstOrNull!,
@@ -5120,7 +5215,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 1,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -5131,16 +5226,18 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(1)!,
                                                 transitionOnUserGestures: true,
                                                 child: CachedNetworkImage(
                                                   fadeInDuration:
-                                                      Duration(milliseconds: 5),
+                                                      const Duration(
+                                                          milliseconds: 5),
                                                   fadeOutDuration:
-                                                      Duration(milliseconds: 5),
-                                                  imageUrl: widget!
+                                                      const Duration(
+                                                          milliseconds: 5),
+                                                  imageUrl: widget
                                                       .messageDoc!.listImages
                                                       .elementAtOrNull(1)!,
                                                   width: double.infinity,
@@ -5171,7 +5268,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 2,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -5182,22 +5279,24 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(2)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     topRight:
                                                         Radius.circular(18.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(2)!,
                                                     width: double.infinity,
@@ -5208,7 +5307,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                               ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 1.0)),
+                                        ].divide(const SizedBox(width: 1.0)),
                                       ),
                                       Row(
                                         mainAxisSize: MainAxisSize.min,
@@ -5234,7 +5333,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 3,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -5245,22 +5344,24 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(3)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     bottomLeft:
                                                         Radius.circular(18.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(3)!,
                                                     width: double.infinity,
@@ -5292,7 +5393,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 4,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -5303,16 +5404,18 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(4)!,
                                                 transitionOnUserGestures: true,
                                                 child: CachedNetworkImage(
                                                   fadeInDuration:
-                                                      Duration(milliseconds: 5),
+                                                      const Duration(
+                                                          milliseconds: 5),
                                                   fadeOutDuration:
-                                                      Duration(milliseconds: 5),
-                                                  imageUrl: widget!
+                                                      const Duration(
+                                                          milliseconds: 5),
+                                                  imageUrl: widget
                                                       .messageDoc!.listImages
                                                       .elementAtOrNull(4)!,
                                                   width: double.infinity,
@@ -5343,7 +5446,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 5,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -5354,24 +5457,24 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!.messageDoc!
+                                                tag: widget.messageDoc!
                                                     .listImages.lastOrNull!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     bottomRight:
                                                         Radius.circular(8.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
-                                                        .messageDoc!
-                                                        .listImages
-                                                        .lastOrNull!,
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget.messageDoc!
+                                                        .listImages.lastOrNull!,
                                                     width: double.infinity,
                                                     height: 120.0,
                                                     fit: BoxFit.cover,
@@ -5380,11 +5483,11 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                               ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 1.0)),
+                                        ].divide(const SizedBox(width: 1.0)),
                                       ),
-                                    ].divide(SizedBox(height: 1.0)),
+                                    ].divide(const SizedBox(height: 1.0)),
                                   ),
-                                if (widget!.messageDoc?.listImages?.length == 7)
+                                if (widget.messageDoc?.listImages.length == 7)
                                   Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -5412,7 +5515,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 0,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -5423,21 +5526,23 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!.messageDoc!
+                                                tag: widget.messageDoc!
                                                     .listImages.firstOrNull!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     topLeft:
                                                         Radius.circular(18.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!
                                                         .listImages
                                                         .firstOrNull!,
@@ -5470,7 +5575,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 1,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -5481,22 +5586,24 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(1)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     topRight:
                                                         Radius.circular(18.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(1)!,
                                                     width: double.infinity,
@@ -5507,7 +5614,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                               ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 1.0)),
+                                        ].divide(const SizedBox(width: 1.0)),
                                       ),
                                       Row(
                                         mainAxisSize: MainAxisSize.min,
@@ -5533,7 +5640,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 2,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -5544,19 +5651,21 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(2)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(),
+                                                      const BorderRadius.only(),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(2)!,
                                                     width: double.infinity,
@@ -5588,7 +5697,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 3,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -5599,19 +5708,21 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(3)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(),
+                                                      const BorderRadius.only(),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(3)!,
                                                     width: double.infinity,
@@ -5622,7 +5733,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                               ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 1.0)),
+                                        ].divide(const SizedBox(width: 1.0)),
                                       ),
                                       Row(
                                         mainAxisSize: MainAxisSize.min,
@@ -5648,7 +5759,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 4,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -5659,22 +5770,24 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(4)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     bottomLeft:
                                                         Radius.circular(18.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(4)!,
                                                     width: double.infinity,
@@ -5706,7 +5819,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 5,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -5717,16 +5830,18 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(5)!,
                                                 transitionOnUserGestures: true,
                                                 child: CachedNetworkImage(
                                                   fadeInDuration:
-                                                      Duration(milliseconds: 5),
+                                                      const Duration(
+                                                          milliseconds: 5),
                                                   fadeOutDuration:
-                                                      Duration(milliseconds: 5),
-                                                  imageUrl: widget!
+                                                      const Duration(
+                                                          milliseconds: 5),
+                                                  imageUrl: widget
                                                       .messageDoc!.listImages
                                                       .elementAtOrNull(5)!,
                                                   width: double.infinity,
@@ -5757,7 +5872,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 6,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -5768,24 +5883,24 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!.messageDoc!
+                                                tag: widget.messageDoc!
                                                     .listImages.lastOrNull!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     bottomRight:
                                                         Radius.circular(8.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
-                                                        .messageDoc!
-                                                        .listImages
-                                                        .lastOrNull!,
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget.messageDoc!
+                                                        .listImages.lastOrNull!,
                                                     width: double.infinity,
                                                     height: 120.0,
                                                     fit: BoxFit.cover,
@@ -5794,11 +5909,11 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                               ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 1.0)),
+                                        ].divide(const SizedBox(width: 1.0)),
                                       ),
-                                    ].divide(SizedBox(height: 1.0)),
+                                    ].divide(const SizedBox(height: 1.0)),
                                   ),
-                                if (widget!.messageDoc?.listImages?.length == 8)
+                                if (widget.messageDoc?.listImages.length == 8)
                                   Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -5826,7 +5941,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 0,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -5837,21 +5952,23 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!.messageDoc!
+                                                tag: widget.messageDoc!
                                                     .listImages.firstOrNull!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     topLeft:
                                                         Radius.circular(18.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!
                                                         .listImages
                                                         .firstOrNull!,
@@ -5884,7 +6001,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 1,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -5895,22 +6012,24 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(1)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     topRight:
                                                         Radius.circular(18.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(1)!,
                                                     width: double.infinity,
@@ -5921,7 +6040,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                               ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 1.0)),
+                                        ].divide(const SizedBox(width: 1.0)),
                                       ),
                                       Row(
                                         mainAxisSize: MainAxisSize.min,
@@ -5947,7 +6066,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 2,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -5958,19 +6077,21 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(2)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(),
+                                                      const BorderRadius.only(),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(2)!,
                                                     width: double.infinity,
@@ -6002,7 +6123,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 3,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -6013,19 +6134,21 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(3)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(),
+                                                      const BorderRadius.only(),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(3)!,
                                                     width: double.infinity,
@@ -6057,7 +6180,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 4,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -6068,19 +6191,21 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(4)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(),
+                                                      const BorderRadius.only(),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(4)!,
                                                     width: double.infinity,
@@ -6091,7 +6216,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                               ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 1.0)),
+                                        ].divide(const SizedBox(width: 1.0)),
                                       ),
                                       Row(
                                         mainAxisSize: MainAxisSize.min,
@@ -6117,7 +6242,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 5,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -6128,22 +6253,24 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(5)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     bottomLeft:
                                                         Radius.circular(18.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(5)!,
                                                     width: double.infinity,
@@ -6175,7 +6302,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 6,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -6186,16 +6313,18 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(6)!,
                                                 transitionOnUserGestures: true,
                                                 child: CachedNetworkImage(
                                                   fadeInDuration:
-                                                      Duration(milliseconds: 5),
+                                                      const Duration(
+                                                          milliseconds: 5),
                                                   fadeOutDuration:
-                                                      Duration(milliseconds: 5),
-                                                  imageUrl: widget!
+                                                      const Duration(
+                                                          milliseconds: 5),
+                                                  imageUrl: widget
                                                       .messageDoc!.listImages
                                                       .elementAtOrNull(6)!,
                                                   width: double.infinity,
@@ -6226,7 +6355,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 7,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -6237,24 +6366,24 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!.messageDoc!
+                                                tag: widget.messageDoc!
                                                     .listImages.lastOrNull!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     bottomRight:
                                                         Radius.circular(8.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
-                                                        .messageDoc!
-                                                        .listImages
-                                                        .lastOrNull!,
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget.messageDoc!
+                                                        .listImages.lastOrNull!,
                                                     width: double.infinity,
                                                     height: 120.0,
                                                     fit: BoxFit.cover,
@@ -6263,11 +6392,11 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                               ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 1.0)),
+                                        ].divide(const SizedBox(width: 1.0)),
                                       ),
-                                    ].divide(SizedBox(height: 1.0)),
+                                    ].divide(const SizedBox(height: 1.0)),
                                   ),
-                                if (widget!.messageDoc?.listImages?.length == 9)
+                                if (widget.messageDoc?.listImages.length == 9)
                                   Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -6295,7 +6424,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 0,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -6306,21 +6435,23 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!.messageDoc!
+                                                tag: widget.messageDoc!
                                                     .listImages.firstOrNull!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     topLeft:
                                                         Radius.circular(18.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!
                                                         .listImages
                                                         .firstOrNull!,
@@ -6353,7 +6484,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 1,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -6364,19 +6495,21 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(1)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(),
+                                                      const BorderRadius.only(),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(1)!,
                                                     width: double.infinity,
@@ -6408,7 +6541,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 2,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -6419,22 +6552,24 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(2)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     topRight:
                                                         Radius.circular(18.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(2)!,
                                                     width: double.infinity,
@@ -6445,7 +6580,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                               ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 1.0)),
+                                        ].divide(const SizedBox(width: 1.0)),
                                       ),
                                       Row(
                                         mainAxisSize: MainAxisSize.min,
@@ -6471,7 +6606,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 3,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -6482,19 +6617,21 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(3)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(),
+                                                      const BorderRadius.only(),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(3)!,
                                                     width: double.infinity,
@@ -6526,7 +6663,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 4,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -6537,19 +6674,21 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(4)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(),
+                                                      const BorderRadius.only(),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(4)!,
                                                     width: double.infinity,
@@ -6581,7 +6720,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 5,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -6592,19 +6731,21 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(5)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(),
+                                                      const BorderRadius.only(),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(5)!,
                                                     width: double.infinity,
@@ -6615,7 +6756,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                               ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 1.0)),
+                                        ].divide(const SizedBox(width: 1.0)),
                                       ),
                                       Row(
                                         mainAxisSize: MainAxisSize.min,
@@ -6641,7 +6782,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 6,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -6652,22 +6793,24 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(6)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     bottomLeft:
                                                         Radius.circular(18.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(6)!,
                                                     width: double.infinity,
@@ -6699,7 +6842,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 7,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -6710,16 +6853,18 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(7)!,
                                                 transitionOnUserGestures: true,
                                                 child: CachedNetworkImage(
                                                   fadeInDuration:
-                                                      Duration(milliseconds: 5),
+                                                      const Duration(
+                                                          milliseconds: 5),
                                                   fadeOutDuration:
-                                                      Duration(milliseconds: 5),
-                                                  imageUrl: widget!
+                                                      const Duration(
+                                                          milliseconds: 5),
+                                                  imageUrl: widget
                                                       .messageDoc!.listImages
                                                       .elementAtOrNull(7)!,
                                                   width: double.infinity,
@@ -6750,7 +6895,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 8,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -6761,24 +6906,24 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!.messageDoc!
+                                                tag: widget.messageDoc!
                                                     .listImages.lastOrNull!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     bottomRight:
                                                         Radius.circular(8.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
-                                                        .messageDoc!
-                                                        .listImages
-                                                        .lastOrNull!,
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget.messageDoc!
+                                                        .listImages.lastOrNull!,
                                                     width: double.infinity,
                                                     height: 120.0,
                                                     fit: BoxFit.cover,
@@ -6787,12 +6932,11 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                               ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 1.0)),
+                                        ].divide(const SizedBox(width: 1.0)),
                                       ),
-                                    ].divide(SizedBox(height: 1.0)),
+                                    ].divide(const SizedBox(height: 1.0)),
                                   ),
-                                if (widget!.messageDoc?.listImages?.length ==
-                                    10)
+                                if (widget.messageDoc?.listImages.length == 10)
                                   Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -6820,7 +6964,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 0,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -6831,21 +6975,23 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!.messageDoc!
+                                                tag: widget.messageDoc!
                                                     .listImages.firstOrNull!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     topLeft:
                                                         Radius.circular(18.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!
                                                         .listImages
                                                         .firstOrNull!,
@@ -6878,7 +7024,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 1,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -6889,19 +7035,21 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(1)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(),
+                                                      const BorderRadius.only(),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(1)!,
                                                     width: double.infinity,
@@ -6933,7 +7081,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 2,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -6944,22 +7092,24 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(2)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     topRight:
                                                         Radius.circular(18.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(2)!,
                                                     width: double.infinity,
@@ -6970,7 +7120,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                               ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 1.0)),
+                                        ].divide(const SizedBox(width: 1.0)),
                                       ),
                                       Row(
                                         mainAxisSize: MainAxisSize.min,
@@ -6996,7 +7146,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 3,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -7007,19 +7157,21 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(3)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(),
+                                                      const BorderRadius.only(),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(3)!,
                                                     width: double.infinity,
@@ -7051,7 +7203,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 4,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -7062,19 +7214,21 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(4)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(),
+                                                      const BorderRadius.only(),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(4)!,
                                                     width: double.infinity,
@@ -7106,7 +7260,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 5,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -7117,19 +7271,21 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(5)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(),
+                                                      const BorderRadius.only(),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(5)!,
                                                     width: double.infinity,
@@ -7161,7 +7317,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 6,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -7172,19 +7328,21 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(6)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(),
+                                                      const BorderRadius.only(),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(6)!,
                                                     width: double.infinity,
@@ -7195,7 +7353,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                               ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 1.0)),
+                                        ].divide(const SizedBox(width: 1.0)),
                                       ),
                                       Row(
                                         mainAxisSize: MainAxisSize.min,
@@ -7221,7 +7379,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 7,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -7232,22 +7390,24 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(7)!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     bottomLeft:
                                                         Radius.circular(18.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget
                                                         .messageDoc!.listImages
                                                         .elementAtOrNull(7)!,
                                                     width: double.infinity,
@@ -7279,7 +7439,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 8,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -7290,16 +7450,18 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!
+                                                tag: widget
                                                     .messageDoc!.listImages
                                                     .elementAtOrNull(8)!,
                                                 transitionOnUserGestures: true,
                                                 child: CachedNetworkImage(
                                                   fadeInDuration:
-                                                      Duration(milliseconds: 5),
+                                                      const Duration(
+                                                          milliseconds: 5),
                                                   fadeOutDuration:
-                                                      Duration(milliseconds: 5),
-                                                  imageUrl: widget!
+                                                      const Duration(
+                                                          milliseconds: 5),
+                                                  imageUrl: widget
                                                       .messageDoc!.listImages
                                                       .elementAtOrNull(8)!,
                                                   width: double.infinity,
@@ -7330,7 +7492,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                                 context),
                                                         child: ImageViewWidget(
                                                           indexCurrent: 9,
-                                                          alllistImage: widget!
+                                                          alllistImage: widget
                                                               .messageDoc!
                                                               .listImages,
                                                         ),
@@ -7341,24 +7503,24 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                     safeSetState(() {}));
                                               },
                                               child: Hero(
-                                                tag: widget!.messageDoc!
+                                                tag: widget.messageDoc!
                                                     .listImages.lastOrNull!,
                                                 transitionOnUserGestures: true,
                                                 child: ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.only(
+                                                      const BorderRadius.only(
                                                     bottomRight:
                                                         Radius.circular(8.0),
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    fadeInDuration: Duration(
-                                                        milliseconds: 5),
-                                                    fadeOutDuration: Duration(
-                                                        milliseconds: 5),
-                                                    imageUrl: widget!
-                                                        .messageDoc!
-                                                        .listImages
-                                                        .lastOrNull!,
+                                                    fadeInDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    fadeOutDuration:
+                                                        const Duration(
+                                                            milliseconds: 5),
+                                                    imageUrl: widget.messageDoc!
+                                                        .listImages.lastOrNull!,
                                                     width: double.infinity,
                                                     height: 120.0,
                                                     fit: BoxFit.cover,
@@ -7367,28 +7529,29 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                               ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 1.0)),
+                                        ].divide(const SizedBox(width: 1.0)),
                                       ),
-                                    ].divide(SizedBox(height: 1.0)),
+                                    ].divide(const SizedBox(height: 1.0)),
                                   ),
-                                if (widget!.messageDoc?.text == null ||
-                                    widget!.messageDoc?.text == '')
+                                if (widget.messageDoc?.text == null ||
+                                    widget.messageDoc?.text == '')
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 5.0, 5.0),
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            0.0, 0.0, 5.0, 5.0),
                                     child: Container(
                                       decoration: BoxDecoration(
-                                        color: Color(0xB3000000),
+                                        color: const Color(0xB3000000),
                                         borderRadius:
                                             BorderRadius.circular(24.0),
                                       ),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            6.0, 5.0, 6.0, 6.0),
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(6.0, 5.0, 6.0, 6.0),
                                         child: Text(
                                           dateTimeFormat(
                                             "Hm",
-                                            widget!.messageDoc!.dateCreated!,
+                                            widget.messageDoc!.dateCreated!,
                                             locale: FFLocalizations.of(context)
                                                     .languageShortCode ??
                                                 FFLocalizations.of(context)
@@ -7406,7 +7569,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                                           .bodyMedium
                                                           .fontStyle,
                                                 ),
-                                                color: Color(0xFFF6F6F6),
+                                                color: const Color(0xFFF6F6F6),
                                                 fontSize: 12.0,
                                                 letterSpacing: 0.0,
                                                 fontWeight: FontWeight.w500,
@@ -7423,11 +7586,11 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                               ],
                             ),
                           ),
-                        if ((widget!.messageDoc?.text != null &&
-                                widget!.messageDoc?.text != '') &&
-                            !(widget!.messageDoc!.listImages.isNotEmpty))
+                        if ((widget.messageDoc?.text != null &&
+                                widget.messageDoc?.text != '') &&
+                            !(widget.messageDoc!.listImages.isNotEmpty))
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 16.0, 9.0, 12.0, 6.0),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -7436,10 +7599,11 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                               children: [
                                 Flexible(
                                   child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 5.0),
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            0.0, 0.0, 0.0, 5.0),
                                     child: Text(
-                                      widget!.messageDoc!.text,
+                                      widget.messageDoc!.text,
                                       textAlign: TextAlign.start,
                                       style: FlutterFlowTheme.of(context)
                                           .bodyMedium
@@ -7474,12 +7638,13 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          7.0, 0.0, 0.0, 0.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              7.0, 0.0, 0.0, 0.0),
                                       child: Text(
                                         dateTimeFormat(
                                           "Hm",
-                                          widget!.messageDoc!.dateCreated!,
+                                          widget.messageDoc!.dateCreated!,
                                           locale: FFLocalizations.of(context)
                                                   .languageShortCode ??
                                               FFLocalizations.of(context)
@@ -7511,14 +7676,14 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                     ),
                                     Stack(
                                       children: [
-                                        if (widget!.messageDoc?.read ?? true)
+                                        if (widget.messageDoc?.read ?? true)
                                           FaIcon(
                                             FontAwesomeIcons.checkDouble,
                                             color: FlutterFlowTheme.of(context)
                                                 .secondaryBackground,
                                             size: 11.0,
                                           ),
-                                        if (!widget!.messageDoc!.read)
+                                        if (!widget.messageDoc!.read)
                                           FaIcon(
                                             FontAwesomeIcons.check,
                                             color: FlutterFlowTheme.of(context)
@@ -7527,16 +7692,16 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                           ),
                                       ],
                                     ),
-                                  ].divide(SizedBox(width: 8.0)),
+                                  ].divide(const SizedBox(width: 8.0)),
                                 ),
                               ],
                             ),
                           ),
-                        if ((widget!.messageDoc?.text != null &&
-                                widget!.messageDoc?.text != '') &&
-                            (widget!.messageDoc!.listImages.isNotEmpty))
+                        if ((widget.messageDoc?.text != null &&
+                                widget.messageDoc?.text != '') &&
+                            (widget.messageDoc!.listImages.isNotEmpty))
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 16.0, 9.0, 12.0, 6.0),
                             child: Row(
                               mainAxisSize: MainAxisSize.max,
@@ -7545,10 +7710,11 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                               children: [
                                 Flexible(
                                   child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 5.0),
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            0.0, 0.0, 0.0, 5.0),
                                     child: Text(
-                                      widget!.messageDoc!.text,
+                                      widget.messageDoc!.text,
                                       textAlign: TextAlign.start,
                                       style: FlutterFlowTheme.of(context)
                                           .bodyMedium
@@ -7583,12 +7749,13 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          7.0, 0.0, 0.0, 0.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              7.0, 0.0, 0.0, 0.0),
                                       child: Text(
                                         dateTimeFormat(
                                           "Hm",
-                                          widget!.messageDoc!.dateCreated!,
+                                          widget.messageDoc!.dateCreated!,
                                           locale: FFLocalizations.of(context)
                                                   .languageShortCode ??
                                               FFLocalizations.of(context)
@@ -7620,14 +7787,14 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                     ),
                                     Stack(
                                       children: [
-                                        if (widget!.messageDoc?.read ?? true)
+                                        if (widget.messageDoc?.read ?? true)
                                           FaIcon(
                                             FontAwesomeIcons.checkDouble,
                                             color: FlutterFlowTheme.of(context)
                                                 .secondaryBackground,
                                             size: 11.0,
                                           ),
-                                        if (!widget!.messageDoc!.read)
+                                        if (!widget.messageDoc!.read)
                                           FaIcon(
                                             FontAwesomeIcons.check,
                                             color: FlutterFlowTheme.of(context)
@@ -7636,7 +7803,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                                           ),
                                       ],
                                     ),
-                                  ].divide(SizedBox(width: 8.0)),
+                                  ].divide(const SizedBox(width: 8.0)),
                                 ),
                               ],
                             ),

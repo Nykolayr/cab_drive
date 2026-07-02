@@ -91,13 +91,13 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
             wrapWithModel(
               model: _model.appBarModel,
               updateCallback: () => safeSetState(() {}),
-              child: AppBarWidget(
+              child: const AppBarWidget(
                 text: 'Настройки',
               ),
             ),
             Expanded(
               child: ClipRRect(
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(18.0),
                   topRight: Radius.circular(18.0),
                 ),
@@ -106,14 +106,14 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
                   height: double.infinity,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).secondaryBackground,
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(18.0),
                       topRight: Radius.circular(18.0),
                     ),
                   ),
                   child: Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                        const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
                     child: SingleChildScrollView(
                       primary: false,
                       child: Column(
@@ -121,7 +121,7 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 8.0),
                             child: InkWell(
                               splashColor: Colors.transparent,
@@ -226,9 +226,9 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
                                   builder: (context) => ClipRRect(
                                     borderRadius: BorderRadius.circular(18.0),
                                     child: CachedNetworkImage(
-                                      fadeInDuration: Duration(milliseconds: 5),
+                                      fadeInDuration: const Duration(milliseconds: 5),
                                       fadeOutDuration:
-                                          Duration(milliseconds: 5),
+                                          const Duration(milliseconds: 5),
                                       imageUrl: currentUserPhoto,
                                       width: double.infinity,
                                       height: double.infinity,
@@ -285,7 +285,7 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
                                       focusNode: _model.nameInput2FocusNode,
                                       onChanged: (_) => EasyDebounce.debounce(
                                         '_model.nameInput2TextController',
-                                        Duration(milliseconds: 0),
+                                        const Duration(milliseconds: 0),
                                         () => safeSetState(() {}),
                                       ),
                                       autofocus: false,
@@ -342,7 +342,7 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
                                               BorderRadius.circular(0.0),
                                         ),
                                         contentPadding:
-                                            EdgeInsetsDirectional.fromSTEB(
+                                            const EdgeInsetsDirectional.fromSTEB(
                                                 0.0, 0.0, 0.0, 16.0),
                                         hoverColor: Colors.transparent,
                                       ),
@@ -377,8 +377,8 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
                                 Container(
                                   width: double.infinity,
                                   height: 49.0,
-                                  decoration: BoxDecoration(),
-                                  child: Align(
+                                  decoration: const BoxDecoration(),
+                                  child: const Align(
                                     alignment: AlignmentDirectional(1.0, 0.0),
                                     child: Icon(
                                       FFIcons.kedit01,
@@ -488,7 +488,7 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
                                               BorderRadius.circular(0.0),
                                         ),
                                         contentPadding:
-                                            EdgeInsetsDirectional.fromSTEB(
+                                            const EdgeInsetsDirectional.fromSTEB(
                                                 0.0, 0.0, 0.0, 16.0),
                                         hoverColor: Colors.transparent,
                                       ),
@@ -523,8 +523,8 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
                                 Container(
                                   width: double.infinity,
                                   height: 49.0,
-                                  decoration: BoxDecoration(),
-                                  child: Align(
+                                  decoration: const BoxDecoration(),
+                                  child: const Align(
                                     alignment: AlignmentDirectional(1.0, 0.0),
                                     child: Icon(
                                       FFIcons.kedit01,
@@ -689,7 +689,7 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
                                               BorderRadius.circular(0.0),
                                         ),
                                         contentPadding:
-                                            EdgeInsetsDirectional.fromSTEB(
+                                            const EdgeInsetsDirectional.fromSTEB(
                                                 0.0, 0.0, 0.0, 16.0),
                                         hoverColor: Colors.transparent,
                                       ),
@@ -724,8 +724,8 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
                                 Container(
                                   width: double.infinity,
                                   height: 49.0,
-                                  decoration: BoxDecoration(),
-                                  child: Align(
+                                  decoration: const BoxDecoration(),
+                                  child: const Align(
                                     alignment: AlignmentDirectional(1.0, 0.0),
                                     child: Icon(
                                       FFIcons.kedit01,
@@ -835,7 +835,7 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
                                               BorderRadius.circular(0.0),
                                         ),
                                         contentPadding:
-                                            EdgeInsetsDirectional.fromSTEB(
+                                            const EdgeInsetsDirectional.fromSTEB(
                                                 0.0, 0.0, 0.0, 16.0),
                                         hoverColor: Colors.transparent,
                                       ),
@@ -870,8 +870,8 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
                                 Container(
                                   width: double.infinity,
                                   height: 49.0,
-                                  decoration: BoxDecoration(),
-                                  child: Align(
+                                  decoration: const BoxDecoration(),
+                                  child: const Align(
                                     alignment: AlignmentDirectional(1.0, 0.0),
                                     child: Icon(
                                       FFIcons.kedit01,
@@ -884,7 +884,7 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 24.0, 0.0, 0.0),
                             child: InkWell(
                               splashColor: Colors.transparent,
@@ -907,7 +907,7 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
                                         child: Padding(
                                           padding:
                                               MediaQuery.viewInsetsOf(context),
-                                          child: ExitWidget(),
+                                          child: const ExitWidget(),
                                         ),
                                       ),
                                     );
@@ -916,11 +916,11 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
                               },
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: Color(0xFFF9FAFB),
+                                  color: const Color(0xFFF9FAFB),
                                   borderRadius: BorderRadius.circular(25.0),
                                 ),
                                 child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       20.0, 10.0, 20.0, 10.0),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
@@ -942,7 +942,7 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
                                               fontWeight: FontWeight.w500,
                                             ),
                                       ),
-                                    ].divide(SizedBox(width: 10.0)),
+                                    ].divide(const SizedBox(width: 10.0)),
                                   ),
                                 ),
                               ),
@@ -969,7 +969,7 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
                                       child: Padding(
                                         padding:
                                             MediaQuery.viewInsetsOf(context),
-                                        child: Delete1Widget(),
+                                        child: const Delete1Widget(),
                                       ),
                                     ),
                                   );
@@ -978,11 +978,11 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
                             },
                             child: Container(
                               decoration: BoxDecoration(
-                                color: Color(0xFFF9FAFB),
+                                color: const Color(0xFFF9FAFB),
                                 borderRadius: BorderRadius.circular(25.0),
                               ),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     20.0, 10.0, 20.0, 10.0),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -1005,22 +1005,22 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
                                             fontWeight: FontWeight.w500,
                                           ),
                                     ),
-                                  ].divide(SizedBox(width: 10.0)),
+                                  ].divide(const SizedBox(width: 10.0)),
                                 ),
                               ),
                             ),
                           ),
                         ]
-                            .divide(SizedBox(height: 12.0))
-                            .addToStart(SizedBox(height: 30.0))
-                            .addToEnd(SizedBox(height: 50.0)),
+                            .divide(const SizedBox(height: 12.0))
+                            .addToStart(const SizedBox(height: 30.0))
+                            .addToEnd(const SizedBox(height: 50.0)),
                       ),
                     ),
                   ),
                 ),
               ),
             ),
-          ].divide(SizedBox(height: 5.0)),
+          ].divide(const SizedBox(height: 5.0)),
         ),
       ),
     );

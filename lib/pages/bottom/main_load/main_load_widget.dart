@@ -37,7 +37,7 @@ class _MainLoadWidgetState extends State<MainLoadWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: BoxConstraints(
+      constraints: const BoxConstraints(
         minHeight: 120.0,
       ),
       decoration: BoxDecoration(
@@ -50,9 +50,9 @@ class _MainLoadWidgetState extends State<MainLoadWidget> {
         children: [
           Container(
             height: 60.0,
-            decoration: BoxDecoration(),
+            decoration: const BoxDecoration(),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+              padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -64,7 +64,7 @@ class _MainLoadWidgetState extends State<MainLoadWidget> {
                       color: FlutterFlowTheme.of(context).secondaryBackground,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: Color(0xFFA4A6B2),
+                        color: const Color(0xFFA4A6B2),
                         width: 3.0,
                       ),
                     ),
@@ -72,7 +72,7 @@ class _MainLoadWidgetState extends State<MainLoadWidget> {
                   Flexible(
                     child: Padding(
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(13.0, 0.0, 0.0, 0.0),
+                          const EdgeInsetsDirectional.fromSTEB(13.0, 0.0, 0.0, 0.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.end,
@@ -88,19 +88,19 @@ class _MainLoadWidgetState extends State<MainLoadWidget> {
                                     .bodyMedium
                                     .override(
                                       fontFamily: 'SF',
-                                      color: Color(0xFFA4A6B2),
+                                      color: const Color(0xFFA4A6B2),
                                       fontSize: 16.0,
                                       letterSpacing: 0.0,
                                     ),
                               ),
                             ],
                           ),
-                          Divider(
+                          const Divider(
                             height: 0.3,
                             thickness: 0.3,
                             color: Color(0xFFD0CFCE),
                           ),
-                        ].divide(SizedBox(height: 18.0)),
+                        ].divide(const SizedBox(height: 18.0)),
                       ),
                     ),
                   ),
@@ -110,9 +110,9 @@ class _MainLoadWidgetState extends State<MainLoadWidget> {
           ),
           Container(
             height: 60.0,
-            decoration: BoxDecoration(),
+            decoration: const BoxDecoration(),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+              padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -124,7 +124,7 @@ class _MainLoadWidgetState extends State<MainLoadWidget> {
                       color: FlutterFlowTheme.of(context).secondaryBackground,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: Color(0xFFA4A6B2),
+                        color: const Color(0xFFA4A6B2),
                         width: 3.0,
                       ),
                     ),
@@ -132,7 +132,7 @@ class _MainLoadWidgetState extends State<MainLoadWidget> {
                   Expanded(
                     child: Padding(
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(13.0, 0.0, 0.0, 0.0),
+                          const EdgeInsetsDirectional.fromSTEB(13.0, 0.0, 0.0, 0.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.end,
@@ -140,21 +140,21 @@ class _MainLoadWidgetState extends State<MainLoadWidget> {
                         children: [
                           Expanded(
                             child: Align(
-                              alignment: AlignmentDirectional(-1.0, 0.0),
+                              alignment: const AlignmentDirectional(-1.0, 0.0),
                               child: Text(
                                 'Куда доставить',
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
                                     .override(
                                       fontFamily: 'SF',
-                                      color: Color(0xFFA4A6B2),
+                                      color: const Color(0xFFA4A6B2),
                                       fontSize: 16.0,
                                       letterSpacing: 0.0,
                                     ),
                               ),
                             ),
                           ),
-                          Divider(
+                          const Divider(
                             height: 0.3,
                             thickness: 0.3,
                             color: Color(0xFFD0CFCE),
@@ -168,10 +168,10 @@ class _MainLoadWidgetState extends State<MainLoadWidget> {
             ),
           ),
           Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 8.0),
+            padding: const EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 8.0),
             child: Container(
               height: 100.0,
-              decoration: BoxDecoration(),
+              decoration: const BoxDecoration(),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -184,7 +184,7 @@ class _MainLoadWidgetState extends State<MainLoadWidget> {
                       ),
                       child: Padding(
                         padding:
-                            EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 0.0),
+                            const EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 0.0),
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -200,7 +200,7 @@ class _MainLoadWidgetState extends State<MainLoadWidget> {
                               ),
                             ),
                             Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   6.0, 12.0, 0.0, 0.0),
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
@@ -238,13 +238,13 @@ class _MainLoadWidgetState extends State<MainLoadWidget> {
                                                 fontWeight: FontWeight.normal,
                                               ),
                                         ),
-                                        TextSpan(
+                                        const TextSpan(
                                           text: '797',
                                           style: TextStyle(
                                             fontSize: 15.0,
                                           ),
                                         ),
-                                        TextSpan(
+                                        const TextSpan(
                                           text: ' ₽',
                                           style: TextStyle(
                                             fontSize: 12.0,
@@ -276,7 +276,7 @@ class _MainLoadWidgetState extends State<MainLoadWidget> {
                       ),
                       child: Padding(
                         padding:
-                            EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 0.0),
+                            const EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 0.0),
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -292,7 +292,7 @@ class _MainLoadWidgetState extends State<MainLoadWidget> {
                               ),
                             ),
                             Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   6.0, 12.0, 0.0, 0.0),
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
@@ -327,13 +327,13 @@ class _MainLoadWidgetState extends State<MainLoadWidget> {
                                                 fontWeight: FontWeight.normal,
                                               ),
                                         ),
-                                        TextSpan(
+                                        const TextSpan(
                                           text: '1035',
                                           style: TextStyle(
                                             fontSize: 15.0,
                                           ),
                                         ),
-                                        TextSpan(
+                                        const TextSpan(
                                           text: ' ₽',
                                           style: TextStyle(
                                             fontSize: 12.0,
@@ -363,7 +363,7 @@ class _MainLoadWidgetState extends State<MainLoadWidget> {
                       ),
                       child: Padding(
                         padding:
-                            EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 0.0),
+                            const EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 0.0),
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -379,7 +379,7 @@ class _MainLoadWidgetState extends State<MainLoadWidget> {
                               ),
                             ),
                             Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   6.0, 12.0, 0.0, 0.0),
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
@@ -414,13 +414,13 @@ class _MainLoadWidgetState extends State<MainLoadWidget> {
                                                 fontWeight: FontWeight.normal,
                                               ),
                                         ),
-                                        TextSpan(
+                                        const TextSpan(
                                           text: '2500',
                                           style: TextStyle(
                                             fontSize: 15.0,
                                           ),
                                         ),
-                                        TextSpan(
+                                        const TextSpan(
                                           text: ' ₽',
                                           style: TextStyle(
                                             fontSize: 12.0,
@@ -445,9 +445,9 @@ class _MainLoadWidgetState extends State<MainLoadWidget> {
                       ),
                     ),
                   ]
-                      .divide(SizedBox(width: 8.0))
-                      .addToStart(SizedBox(width: 16.0))
-                      .addToEnd(SizedBox(width: 16.0)),
+                      .divide(const SizedBox(width: 8.0))
+                      .addToStart(const SizedBox(width: 16.0))
+                      .addToEnd(const SizedBox(width: 16.0)),
                 ),
               ),
             ),

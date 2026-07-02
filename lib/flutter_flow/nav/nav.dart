@@ -83,23 +83,24 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       refreshListenable: appStateNotifier,
       navigatorKey: appNavigatorKey,
       errorBuilder: (context, state) =>
-          appStateNotifier.loggedIn ? LoadWidget() : OnbordWidget(),
+          appStateNotifier.loggedIn ? const LoadWidget() : const OnbordWidget(),
       routes: [
         FFRoute(
           name: '_initialize',
           path: '/',
-          builder: (context, _) =>
-              appStateNotifier.loggedIn ? LoadWidget() : OnbordWidget(),
+          builder: (context, _) => appStateNotifier.loggedIn
+              ? const LoadWidget()
+              : const OnbordWidget(),
         ),
         FFRoute(
           name: OnbordWidget.routeName,
           path: OnbordWidget.routePath,
-          builder: (context, params) => OnbordWidget(),
+          builder: (context, params) => const OnbordWidget(),
         ),
         FFRoute(
           name: LoginWidget.routeName,
           path: LoginWidget.routePath,
-          builder: (context, params) => LoginWidget(),
+          builder: (context, params) => const LoginWidget(),
         ),
         FFRoute(
           name: OtpWidget.routeName,
@@ -132,7 +133,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: ViborWidget.routeName,
           path: ViborWidget.routePath,
-          builder: (context, params) => ViborWidget(),
+          builder: (context, params) => const ViborWidget(),
         ),
         FFRoute(
           name: VerifDriverWidget.routeName,
@@ -147,7 +148,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: MainUserWidget.routeName,
           path: MainUserWidget.routePath,
-          builder: (context, params) => MainUserWidget(),
+          builder: (context, params) => const MainUserWidget(),
         ),
         FFRoute(
           name: DetaliySozdanieWidget.routeName,
@@ -206,7 +207,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: MyOrdersWidget.routeName,
           path: MyOrdersWidget.routePath,
-          builder: (context, params) => MyOrdersWidget(),
+          builder: (context, params) => const MyOrdersWidget(),
         ),
         FFRoute(
           name: OrderPageDriverWidget.routeName,
@@ -223,22 +224,22 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: ProfileWidget.routeName,
           path: ProfileWidget.routePath,
-          builder: (context, params) => ProfileWidget(),
+          builder: (context, params) => const ProfileWidget(),
         ),
         FFRoute(
           name: NastroikiWidget.routeName,
           path: NastroikiWidget.routePath,
-          builder: (context, params) => NastroikiWidget(),
+          builder: (context, params) => const NastroikiWidget(),
         ),
         FFRoute(
           name: ChatsWidget.routeName,
           path: ChatsWidget.routePath,
-          builder: (context, params) => ChatsWidget(),
+          builder: (context, params) => const ChatsWidget(),
         ),
         FFRoute(
           name: ProfilAdminWidget.routeName,
           path: ProfilAdminWidget.routePath,
-          builder: (context, params) => ProfilAdminWidget(),
+          builder: (context, params) => const ProfilAdminWidget(),
         ),
         FFRoute(
           name: DetaliZayavkiAdminWidget.routeName,
@@ -273,7 +274,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: ChatAdminWidget.routeName,
           path: ChatAdminWidget.routePath,
-          builder: (context, params) => ChatAdminWidget(),
+          builder: (context, params) => const ChatAdminWidget(),
         ),
         FFRoute(
           name: VerifUserWidget.routeName,
@@ -288,27 +289,27 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: VerifAdminWidget.routeName,
           path: VerifAdminWidget.routePath,
-          builder: (context, params) => VerifAdminWidget(),
+          builder: (context, params) => const VerifAdminWidget(),
         ),
         FFRoute(
           name: LoadWidget.routeName,
           path: LoadWidget.routePath,
-          builder: (context, params) => LoadWidget(),
+          builder: (context, params) => const LoadWidget(),
         ),
         FFRoute(
           name: MainDriverWidget.routeName,
           path: MainDriverWidget.routePath,
-          builder: (context, params) => MainDriverWidget(),
+          builder: (context, params) => const MainDriverWidget(),
         ),
         FFRoute(
           name: OnbordDriverWidget.routeName,
           path: OnbordDriverWidget.routePath,
-          builder: (context, params) => OnbordDriverWidget(),
+          builder: (context, params) => const OnbordDriverWidget(),
         ),
         FFRoute(
           name: OnbordUserWidget.routeName,
           path: OnbordUserWidget.routePath,
-          builder: (context, params) => OnbordUserWidget(),
+          builder: (context, params) => const OnbordUserWidget(),
         )
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
@@ -546,7 +547,8 @@ class TransitionInfo {
   final Duration duration;
   final Alignment? alignment;
 
-  static TransitionInfo appDefault() => TransitionInfo(hasTransition: false);
+  static TransitionInfo appDefault() =>
+      const TransitionInfo(hasTransition: false);
 }
 
 class RootPageContext {

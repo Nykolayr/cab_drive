@@ -1,37 +1,34 @@
 # Cab Drive — сборка APK по запросу «сделай апк»
 
-> Правило для агента: `.cursor/rules/cab-drive-apk-workflow.mdc` (alwaysApply).
+> Правило: `.cursor/rules/cab-drive-apk-workflow.mdc`
+
+## Первый раз на машине
+
+```powershell
+copy .env.example .env
+# ключи уже могут быть в .env — иначе заполни
+dart run tool/sync_env.dart
+flutter pub get
+```
+
+Дальше **`flutter run` / `flutter build apk` / `flutter build appbundle`** — **без** `--dart-define`.
+
+Ключи лежат в **`.env`** (не в git). Android/iOS MapKit подхватываются через `sync_env` (автоматически при `pod install` на iOS; Gradle читает `.env` напрямую на Android).
 
 ## Когда пользователь пишет «сделай апк»
 
-Выполнить **по порядку**, без лишних вопросов:
+1. **Повысить версию** в `pubspec.yaml` (`+build` на 1).
+2. **`dart run tool/sync_env.dart`** (если меняли `.env`).
+3. **`flutter build apk --release`**
+4. **Скопировать** в `D:\Temp\cabdrive_{build}.apk`
+5. **Git:** commit + push
 
-1. **Повысить версию** в `pubspec.yaml`: build после `+` на 1 (обычно `1.0.{build}+{build}`).
-2. **Собрать release APK**:
-   ```powershell
-   cd D:\Projects\cab_drive\cab_drive
-   flutter build apk --release
-   ```
-   Опционально (если ключ есть локально, не в git):
-   `--dart-define=ORS_API_KEY=...`
-3. **Скопировать** в `D:\Temp\`:
-   ```powershell
-   $build = 15   # число после + в pubspec
-   New-Item -ItemType Directory -Force -Path "D:\Temp" | Out-Null
-   Copy-Item -Force "build\app\outputs\flutter-apk\app-release.apk" "D:\Temp\cabdrive_$build.apk"
-   Get-Item "D:\Temp\cabdrive_$build.apk"
-   ```
-4. **Git:** commit + **push** текущей ветки.
+## iOS (Mac)
 
-## Имя файла (только Cab Drive)
+```bash
+cp .env.example .env   # один раз
+dart run tool/sync_env.dart
+flutter build ios --release
+```
 
-| Шаблон | Пример |
-|--------|--------|
-| `D:\Temp\cabdrive_{buildNumber}.apk` | `cabdrive_15.apk` при `1.0.15+15` |
-
-Не использовать `{slug}_1_{n}` из общего `android_release.md`.
-
-## Заметки
-
-- Release сейчас подписан debug keystore в `build.gradle` — для стора позже release keystore.
-- `verify_handoff.ps1` — отдельная проверка перед «готово», не заменяет этот сценарий.
+`pod install` сам вызывает `sync_env`, если есть `.env`.

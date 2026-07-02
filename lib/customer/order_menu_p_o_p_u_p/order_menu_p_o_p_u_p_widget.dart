@@ -47,12 +47,12 @@ class _OrderMenuPOPUPWidgetState extends State<OrderMenuPOPUPWidget> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(50.0, 0.0, 16.0, 0.0),
+      padding: const EdgeInsetsDirectional.fromSTEB(50.0, 0.0, 16.0, 0.0),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).secondaryBackground,
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
               blurRadius: 44.0,
               color: Color(0x33000000),
@@ -69,21 +69,21 @@ class _OrderMenuPOPUPWidgetState extends State<OrderMenuPOPUPWidget> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if ((widget!.order?.status == StatusOrder.newOrder) ||
-                (widget!.order?.status == StatusOrder.hidden))
+            if ((widget.order?.status == StatusOrder.newOrder) ||
+                (widget.order?.status == StatusOrder.hidden))
               Column(
                 mainAxisSize: MainAxisSize.max,
                 children: [
-                  Container(
+                  SizedBox(
                     height: 57.0,
                     child: Stack(
-                      alignment: AlignmentDirectional(-1.0, 0.0),
+                      alignment: const AlignmentDirectional(-1.0, 0.0),
                       children: [
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               16.0, 0.0, 0.0, 0.0),
                           child: Text(
-                            widget!.order?.status == StatusOrder.hidden
+                            widget.order?.status == StatusOrder.hidden
                                 ? 'Опубликовать снова'
                                 : 'Скрыть заказ',
                             style: FlutterFlowTheme.of(context)
@@ -97,24 +97,24 @@ class _OrderMenuPOPUPWidgetState extends State<OrderMenuPOPUPWidget> {
                         ),
                         FFButtonWidget(
                           onPressed: () async {
-                            if (widget!.order?.status == StatusOrder.hidden) {
+                            if (widget.order?.status == StatusOrder.hidden) {
                               Navigator.pop(context);
 
-                              await widget!.order!.reference
+                              await widget.order!.reference
                                   .update(createOrderRecordData(
-                                status: widget!.order?.statusDoHidden,
+                                status: widget.order?.statusDoHidden,
                                 dateUpd: getCurrentTimestamp,
                               ));
                               return;
                             } else {
                               Navigator.pop(context);
 
-                              await widget!.order!.reference
+                              await widget.order!.reference
                                   .update(createOrderRecordData(
-                                statusDoHidden: widget!.order?.status,
+                                statusDoHidden: widget.order?.status,
                               ));
 
-                              await widget!.order!.reference
+                              await widget.order!.reference
                                   .update(createOrderRecordData(
                                 status: StatusOrder.hidden,
                                 dateUpd: getCurrentTimestamp,
@@ -126,9 +126,9 @@ class _OrderMenuPOPUPWidgetState extends State<OrderMenuPOPUPWidget> {
                           options: FFButtonOptions(
                             width: double.infinity,
                             height: double.infinity,
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 16.0, 0.0, 16.0, 0.0),
-                            iconPadding: EdgeInsetsDirectional.fromSTEB(
+                            iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 0.0),
                             color: Colors.transparent,
                             textStyle: FlutterFlowTheme.of(context)
@@ -140,7 +140,7 @@ class _OrderMenuPOPUPWidgetState extends State<OrderMenuPOPUPWidget> {
                                 ),
                             elevation: 0.0,
                             hoverColor: Colors.transparent,
-                            hoverBorderSide: BorderSide(
+                            hoverBorderSide: const BorderSide(
                               color: Colors.transparent,
                             ),
                             hoverTextColor: Colors.transparent,
@@ -150,18 +150,18 @@ class _OrderMenuPOPUPWidgetState extends State<OrderMenuPOPUPWidget> {
                       ],
                     ),
                   ),
-                  Divider(
+                  const Divider(
                     height: 0.3,
                     thickness: 0.3,
                     color: Color(0xFFD0CFCE),
                   ),
-                  Container(
+                  SizedBox(
                     height: 57.0,
                     child: Stack(
-                      alignment: AlignmentDirectional(-1.0, 0.0),
+                      alignment: const AlignmentDirectional(-1.0, 0.0),
                       children: [
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               16.0, 0.0, 0.0, 0.0),
                           child: Text(
                             'Отменить заказ',
@@ -186,7 +186,7 @@ class _OrderMenuPOPUPWidgetState extends State<OrderMenuPOPUPWidget> {
                                   child: Padding(
                                     padding: MediaQuery.viewInsetsOf(context),
                                     child: OtmenaZakazaWidget(
-                                      order: widget!.order!.reference,
+                                      order: widget.order!.reference,
                                     ),
                                   ),
                                 );
@@ -197,9 +197,9 @@ class _OrderMenuPOPUPWidgetState extends State<OrderMenuPOPUPWidget> {
                           options: FFButtonOptions(
                             width: double.infinity,
                             height: double.infinity,
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 16.0, 0.0, 16.0, 0.0),
-                            iconPadding: EdgeInsetsDirectional.fromSTEB(
+                            iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 0.0),
                             color: Colors.transparent,
                             textStyle: FlutterFlowTheme.of(context)
@@ -210,12 +210,12 @@ class _OrderMenuPOPUPWidgetState extends State<OrderMenuPOPUPWidget> {
                                   letterSpacing: 0.0,
                                 ),
                             elevation: 0.0,
-                            borderRadius: BorderRadius.only(
+                            borderRadius: const BorderRadius.only(
                               bottomLeft: Radius.circular(18.0),
                               bottomRight: Radius.circular(18.0),
                             ),
                             hoverColor: Colors.transparent,
-                            hoverBorderSide: BorderSide(
+                            hoverBorderSide: const BorderSide(
                               color: Colors.transparent,
                             ),
                             hoverTextColor: Colors.transparent,

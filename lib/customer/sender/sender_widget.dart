@@ -78,7 +78,7 @@ class _SenderWidgetState extends State<SenderWidget> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).primaryBackground,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(22.0),
           topRight: Radius.circular(22.0),
         ),
@@ -92,7 +92,7 @@ class _SenderWidgetState extends State<SenderWidget> {
             height: 64.0,
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).secondaryBackground,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(22.0),
                 topRight: Radius.circular(22.0),
                 bottomLeft: Radius.circular(5.0),
@@ -100,7 +100,8 @@ class _SenderWidgetState extends State<SenderWidget> {
               ),
             ),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -121,10 +122,10 @@ class _SenderWidgetState extends State<SenderWidget> {
                     borderRadius: 54.0,
                     borderWidth: 0.0,
                     buttonSize: 32.0,
-                    fillColor: Color(0xFFF4F5F8),
+                    fillColor: const Color(0xFFF4F5F8),
                     hoverColor: FlutterFlowTheme.of(context).primary,
                     hoverIconColor: FlutterFlowTheme.of(context).primaryText,
-                    icon: Icon(
+                    icon: const Icon(
                       FFIcons.kkrestStroke,
                       color: Color(0xFF21201F),
                       size: 8.0,
@@ -145,21 +146,22 @@ class _SenderWidgetState extends State<SenderWidget> {
                 borderRadius: BorderRadius.circular(5.0),
               ),
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(24.0, 12.0, 24.0, 24.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(
+                    24.0, 12.0, 24.0, 24.0),
                 child: Form(
                   key: _model.formKey,
                   autovalidateMode: AutovalidateMode.disabled,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
+                      SizedBox(
                         width: double.infinity,
                         child: TextFormField(
                           controller: _model.nameTextController,
                           focusNode: _model.nameFocusNode,
                           onChanged: (_) => EasyDebounce.debounce(
                             '_model.nameTextController',
-                            Duration(milliseconds: 0),
+                            const Duration(milliseconds: 0),
                             () => safeSetState(() {}),
                           ),
                           autofocus: true,
@@ -174,19 +176,19 @@ class _SenderWidgetState extends State<SenderWidget> {
                                 .labelMedium
                                 .override(
                                   fontFamily: 'SF',
-                                  color: Color(0xFF8F8F8E),
+                                  color: const Color(0xFF8F8F8E),
                                   fontSize: 16.0,
                                   letterSpacing: 0.0,
                                 ),
                             enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(
+                              borderSide: const BorderSide(
                                 color: Color(0xFFD0CFCE),
                                 width: 0.3,
                               ),
                               borderRadius: BorderRadius.circular(0.0),
                             ),
                             focusedBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(
+                              borderSide: const BorderSide(
                                 color: Color(0xFFD0CFCE),
                                 width: 0.3,
                               ),
@@ -206,8 +208,9 @@ class _SenderWidgetState extends State<SenderWidget> {
                               ),
                               borderRadius: BorderRadius.circular(0.0),
                             ),
-                            contentPadding: EdgeInsetsDirectional.fromSTEB(
-                                0.0, 16.0, 0.0, 16.0),
+                            contentPadding:
+                                const EdgeInsetsDirectional.fromSTEB(
+                                    0.0, 16.0, 0.0, 16.0),
                             hoverColor: Colors.transparent,
                           ),
                           style:
@@ -232,14 +235,14 @@ class _SenderWidgetState extends State<SenderWidget> {
                           ],
                         ),
                       ),
-                      Container(
+                      SizedBox(
                         width: double.infinity,
                         child: TextFormField(
                           controller: _model.phoneTextController,
                           focusNode: _model.phoneFocusNode,
                           onChanged: (_) => EasyDebounce.debounce(
                             '_model.phoneTextController',
-                            Duration(milliseconds: 0),
+                            const Duration(milliseconds: 0),
                             () => safeSetState(() {}),
                           ),
                           autofocus: false,
@@ -253,19 +256,19 @@ class _SenderWidgetState extends State<SenderWidget> {
                                 .labelMedium
                                 .override(
                                   fontFamily: 'SF',
-                                  color: Color(0xFF8F8F8E),
+                                  color: const Color(0xFF8F8F8E),
                                   fontSize: 16.0,
                                   letterSpacing: 0.0,
                                 ),
                             enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(
+                              borderSide: const BorderSide(
                                 color: Color(0xFFD0CFCE),
                                 width: 0.3,
                               ),
                               borderRadius: BorderRadius.circular(0.0),
                             ),
                             focusedBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(
+                              borderSide: const BorderSide(
                                 color: Color(0xFFD0CFCE),
                                 width: 0.3,
                               ),
@@ -285,8 +288,9 @@ class _SenderWidgetState extends State<SenderWidget> {
                               ),
                               borderRadius: BorderRadius.circular(0.0),
                             ),
-                            contentPadding: EdgeInsetsDirectional.fromSTEB(
-                                0.0, 16.0, 0.0, 16.0),
+                            contentPadding:
+                                const EdgeInsetsDirectional.fromSTEB(
+                                    0.0, 16.0, 0.0, 16.0),
                             hoverColor: Colors.transparent,
                           ),
                           style:
@@ -303,8 +307,8 @@ class _SenderWidgetState extends State<SenderWidget> {
                         ),
                       ),
                       Padding(
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 29.0, 0.0, 0.0),
+                        padding: const EdgeInsetsDirectional.fromSTEB(
+                            0.0, 29.0, 0.0, 0.0),
                         child: Row(
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -323,8 +327,8 @@ class _SenderWidgetState extends State<SenderWidget> {
                               value: _model.switchValue!,
                               onChanged: (newValue) async {
                                 safeSetState(
-                                    () => _model.switchValue = newValue!);
-                                if (newValue!) {
+                                    () => _model.switchValue = newValue);
+                                if (newValue) {
                                   HapticFeedback.mediumImpact();
                                   safeSetState(() {
                                     _model.nameTextController?.text =
@@ -347,7 +351,7 @@ class _SenderWidgetState extends State<SenderWidget> {
                                   .secondaryBackground,
                               activeTrackColor:
                                   FlutterFlowTheme.of(context).tertiary,
-                              inactiveTrackColor: Color(0xFFF4F5F8),
+                              inactiveTrackColor: const Color(0xFFF4F5F8),
                               inactiveThumbColor: FlutterFlowTheme.of(context)
                                   .secondaryBackground,
                             ),
@@ -361,11 +365,11 @@ class _SenderWidgetState extends State<SenderWidget> {
             ),
           ),
           Align(
-            alignment: AlignmentDirectional(0.0, 1.0),
+            alignment: const AlignmentDirectional(0.0, 1.0),
             child: Container(
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondary,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(5.0),
                   topRight: Radius.circular(5.0),
                 ),
@@ -417,9 +421,10 @@ class _SenderWidgetState extends State<SenderWidget> {
                   options: FFButtonOptions(
                     width: double.infinity,
                     height: 56.0,
-                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                    iconPadding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 0.0, 0.0, 0.0),
+                    iconPadding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 0.0, 0.0, 0.0),
                     color: FlutterFlowTheme.of(context).tertiary,
                     textStyle: FlutterFlowTheme.of(context).titleSmall.override(
                           fontFamily: 'SF',
@@ -434,7 +439,7 @@ class _SenderWidgetState extends State<SenderWidget> {
               ),
             ),
           ),
-        ].divide(SizedBox(height: 5.0)),
+        ].divide(const SizedBox(height: 5.0)),
       ),
     );
   }

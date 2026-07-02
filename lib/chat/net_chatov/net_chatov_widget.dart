@@ -44,7 +44,7 @@ class _NetChatovWidgetState extends State<NetChatovWidget> {
         borderRadius: BorderRadius.circular(18.0),
       ),
       child: Padding(
-        padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+        padding: const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
         child: Column(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -67,7 +67,7 @@ class _NetChatovWidgetState extends State<NetChatovWidget> {
                     fontWeight: FontWeight.w500,
                   ),
             ),
-          ].divide(SizedBox(height: 24.0)),
+          ].divide(const SizedBox(height: 24.0)),
         ),
       ),
     );

@@ -18,7 +18,7 @@ abstract class FFFirebaseStruct extends BaseStruct {
   FFFirebaseStruct(this.firestoreUtilData);
 
   /// Utility class for Firestore updates
-  FirestoreUtilData firestoreUtilData = FirestoreUtilData();
+  FirestoreUtilData firestoreUtilData = const FirestoreUtilData();
 }
 
 class FirestoreUtilData {

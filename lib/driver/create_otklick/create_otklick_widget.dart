@@ -66,7 +66,7 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).primaryBackground,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(22.0),
           topRight: Radius.circular(22.0),
         ),
@@ -80,7 +80,7 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
             height: 64.0,
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).secondaryBackground,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(22.0),
                 topRight: Radius.circular(22.0),
                 bottomLeft: Radius.circular(5.0),
@@ -88,7 +88,8 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
               ),
             ),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -109,10 +110,10 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
                     borderRadius: 54.0,
                     borderWidth: 0.0,
                     buttonSize: 32.0,
-                    fillColor: Color(0xFFF4F5F8),
+                    fillColor: const Color(0xFFF4F5F8),
                     hoverColor: FlutterFlowTheme.of(context).primary,
                     hoverIconColor: FlutterFlowTheme.of(context).primaryText,
-                    icon: Icon(
+                    icon: const Icon(
                       FFIcons.kkrestStroke,
                       color: Color(0xFF21201F),
                       size: 8.0,
@@ -135,19 +136,20 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
               key: _model.formKey,
               autovalidateMode: AutovalidateMode.disabled,
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(24.0, 12.0, 24.0, 24.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(
+                    24.0, 12.0, 24.0, 24.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
+                    SizedBox(
                       width: double.infinity,
                       child: TextFormField(
                         controller: _model.budgetInputTextController,
                         focusNode: _model.budgetInputFocusNode,
                         onChanged: (_) => EasyDebounce.debounce(
                           '_model.budgetInputTextController',
-                          Duration(milliseconds: 0),
+                          const Duration(milliseconds: 0),
                           () => safeSetState(() {}),
                         ),
                         autofocus: false,
@@ -160,19 +162,19 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
                           hintStyle:
                               FlutterFlowTheme.of(context).bodyMedium.override(
                                     fontFamily: 'SF',
-                                    color: Color(0xFF8F8F8E),
+                                    color: const Color(0xFF8F8F8E),
                                     fontSize: 16.0,
                                     letterSpacing: 0.0,
                                   ),
                           enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(
+                            borderSide: const BorderSide(
                               color: Color(0xFFD0CFCE),
                               width: 0.3,
                             ),
                             borderRadius: BorderRadius.circular(0.0),
                           ),
                           focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(
+                            borderSide: const BorderSide(
                               color: Color(0xFFD0CFCE),
                               width: 0.3,
                             ),
@@ -192,7 +194,7 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
                             ),
                             borderRadius: BorderRadius.circular(0.0),
                           ),
-                          contentPadding: EdgeInsetsDirectional.fromSTEB(
+                          contentPadding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 24.0, 0.0, 24.0),
                           hoverColor: Colors.transparent,
                         ),
@@ -218,14 +220,14 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
                         ],
                       ),
                     ),
-                    Container(
+                    SizedBox(
                       width: double.infinity,
                       child: TextFormField(
                         controller: _model.commentBTextController,
                         focusNode: _model.commentBFocusNode,
                         onChanged: (_) => EasyDebounce.debounce(
                           '_model.commentBTextController',
-                          Duration(milliseconds: 0),
+                          const Duration(milliseconds: 0),
                           () => safeSetState(() {}),
                         ),
                         onFieldSubmitted: (_) async {
@@ -244,7 +246,7 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
                           labelStyle:
                               FlutterFlowTheme.of(context).labelMedium.override(
                                     fontFamily: 'SF',
-                                    color: Color(0xFF8F8F8E),
+                                    color: const Color(0xFF8F8F8E),
                                     fontSize: 16.0,
                                     letterSpacing: 0.0,
                                   ),
@@ -253,19 +255,19 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
                           hintStyle:
                               FlutterFlowTheme.of(context).bodyMedium.override(
                                     fontFamily: 'SF',
-                                    color: Color(0xFF8F8F8E),
+                                    color: const Color(0xFF8F8F8E),
                                     fontSize: 16.0,
                                     letterSpacing: 0.0,
                                   ),
                           enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(
+                            borderSide: const BorderSide(
                               color: Color(0xFFD0CFCE),
                               width: 0.3,
                             ),
                             borderRadius: BorderRadius.circular(0.0),
                           ),
                           focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(
+                            borderSide: const BorderSide(
                               color: Color(0xFFD0CFCE),
                               width: 0.3,
                             ),
@@ -285,7 +287,7 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
                             ),
                             borderRadius: BorderRadius.circular(0.0),
                           ),
-                          contentPadding: EdgeInsetsDirectional.fromSTEB(
+                          contentPadding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 16.0, 0.0, 16.0),
                           hoverColor: Colors.transparent,
                         ),
@@ -312,7 +314,7 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
                         ],
                       ),
                     ),
-                  ].divide(SizedBox(height: 17.0)),
+                  ].divide(const SizedBox(height: 17.0)),
                 ),
               ),
             ),
@@ -320,22 +322,22 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
           Container(
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).secondary,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(5.0),
                 topRight: Radius.circular(5.0),
               ),
             ),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(8.0, 16.0, 8.0, 0.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(8.0, 16.0, 8.0, 0.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (_model.budgetInputTextController.text != null &&
-                      _model.budgetInputTextController.text != '')
+                  if (_model.budgetInputTextController.text != '')
                     Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 16.0),
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                          16.0, 0.0, 16.0, 16.0),
                       child: Row(
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -368,7 +370,7 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
                                   return WebViewAware(
                                     child: Padding(
                                       padding: MediaQuery.viewInsetsOf(context),
-                                      child: ZaChtoPlataWidget(),
+                                      child: const ZaChtoPlataWidget(),
                                     ),
                                   );
                                 },
@@ -379,12 +381,12 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
                       ),
                     ),
                   Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 35.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 0.0, 0.0, 35.0),
                     child: FFButtonWidget(
                       onPressed: () async {
                         currentUserLocationValue = await getCurrentUserLocation(
-                            defaultLocation: LatLng(0.0, 0.0));
+                            defaultLocation: const LatLng(0.0, 0.0));
                         if (_model.formKey.currentState == null ||
                             !_model.formKey.currentState!.validate()) {
                           return;
@@ -393,11 +395,10 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
                           destination:
                               '${functions.extractLatLong(currentUserLocationValue!, true).toString()},${functions.extractLatLong(currentUserLocationValue!, false).toString()}',
                           origin:
-                              '${functions.extractLatLong(widget!.order!.pointA.latlng!, true).toString()},${functions.extractLatLong(widget!.order!.pointA.latlng!, false).toString()}',
+                              '${functions.extractLatLong(widget.order!.pointA.latlng!, true).toString()},${functions.extractLatLong(widget.order!.pointA.latlng!, false).toString()}',
                         );
 
-                        await ResponsesRecord.createDoc(
-                                widget!.order!.reference)
+                        await ResponsesRecord.createDoc(widget.order!.reference)
                             .set(createResponsesRecordData(
                           userDriver: currentUserReference,
                           viewed: false,
@@ -413,7 +414,7 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
                           ),
                         ));
 
-                        await widget!.order!.reference.update({
+                        await widget.order!.reference.update({
                           ...mapToFirestore(
                             {
                               'user_who_responced':
@@ -426,11 +427,11 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
                           notificationTitle: 'Новый отлик',
                           notificationText: 'На ваш заказ отликнулся водитель',
                           notificationSound: 'default',
-                          userRefs: [widget!.order!.userCustomer!],
+                          userRefs: [widget.order!.userCustomer!],
                           initialPageName: 'order_Page_Customer',
                           parameterData: {
                             'index': 1,
-                            'order': widget!.order?.reference,
+                            'order': widget.order?.reference,
                           },
                         );
                         Navigator.pop(context);
@@ -441,10 +442,10 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
                       options: FFButtonOptions(
                         width: double.infinity,
                         height: 56.0,
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                        iconPadding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                        padding: const EdgeInsetsDirectional.fromSTEB(
+                            0.0, 0.0, 0.0, 0.0),
+                        iconPadding: const EdgeInsetsDirectional.fromSTEB(
+                            0.0, 0.0, 0.0, 0.0),
                         color: FlutterFlowTheme.of(context).tertiary,
                         textStyle:
                             FlutterFlowTheme.of(context).titleSmall.override(
@@ -462,7 +463,7 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
               ),
             ),
           ),
-        ].divide(SizedBox(height: 5.0)),
+        ].divide(const SizedBox(height: 5.0)),
       ),
     );
   }

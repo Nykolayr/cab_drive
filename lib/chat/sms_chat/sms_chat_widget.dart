@@ -46,7 +46,7 @@ class _SmsChatWidgetState extends State<SmsChatWidget> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<UsersRecord>(
-      future: UsersRecord.getDocumentOnce(widget!.chat!.users
+      future: UsersRecord.getDocumentOnce(widget.chat!.users
           .where((e) => e != currentUserReference)
           .toList()
           .firstOrNull!),
@@ -78,7 +78,7 @@ class _SmsChatWidgetState extends State<SmsChatWidget> {
               ChatWidget.routeName,
               queryParameters: {
                 'chat': serializeParam(
-                  widget!.chat?.reference,
+                  widget.chat?.reference,
                   ParamType.DocumentReference,
                 ),
                 'name': serializeParam(
@@ -95,13 +95,14 @@ class _SmsChatWidgetState extends State<SmsChatWidget> {
               borderRadius: BorderRadius.circular(18.0),
             ),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 12.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 12.0, 0.0, 12.0),
                     child: Row(
                       mainAxisSize: MainAxisSize.max,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -110,7 +111,7 @@ class _SmsChatWidgetState extends State<SmsChatWidget> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12.0),
                             border: Border.all(
-                              color: Color(0x26A4A6B2),
+                              color: const Color(0x26A4A6B2),
                               width: 0.5,
                             ),
                           ),
@@ -126,7 +127,7 @@ class _SmsChatWidgetState extends State<SmsChatWidget> {
                         ),
                         Flexible(
                           child: Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 14.0, 0.0, 0.0, 0.0),
                             child: Column(
                               mainAxisSize: MainAxisSize.max,
@@ -153,7 +154,7 @@ class _SmsChatWidgetState extends State<SmsChatWidget> {
                                     Text(
                                       dateTimeFormat(
                                         "Hm",
-                                        widget!.chat!.dateCreated!,
+                                        widget.chat!.dateCreated!,
                                         locale: FFLocalizations.of(context)
                                             .languageCode,
                                       ),
@@ -161,7 +162,7 @@ class _SmsChatWidgetState extends State<SmsChatWidget> {
                                           .bodyMedium
                                           .override(
                                             fontFamily: 'SF',
-                                            color: Color(0xFFA4A6B2),
+                                            color: const Color(0xFFA4A6B2),
                                             letterSpacing: 0.0,
                                           ),
                                     ),
@@ -173,21 +174,21 @@ class _SmsChatWidgetState extends State<SmsChatWidget> {
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Text(
-                                      widget!.chat!.lastMessage,
+                                      widget.chat!.lastMessage,
                                       maxLines: 1,
                                       style: FlutterFlowTheme.of(context)
                                           .bodyMedium
                                           .override(
                                             fontFamily: 'SF',
-                                            color: Color(0xFFA4A6B2),
+                                            color: const Color(0xFFA4A6B2),
                                             fontSize: 16.0,
                                             letterSpacing: 0.0,
                                           ),
                                     ),
                                     Flexible(
                                       child: Align(
-                                        alignment:
-                                            AlignmentDirectional(1.0, 0.0),
+                                        alignment: const AlignmentDirectional(
+                                            1.0, 0.0),
                                         child: FutureBuilder<int>(
                                           future: queryMessagesRecordCount(
                                             queryBuilder: (messagesRecord) =>
@@ -199,7 +200,7 @@ class _SmsChatWidgetState extends State<SmsChatWidget> {
                                                     )
                                                     .where(
                                                       'chatRef',
-                                                      isEqualTo: widget!
+                                                      isEqualTo: widget
                                                           .chat?.reference,
                                                     )
                                                     .where(
@@ -230,19 +231,20 @@ class _SmsChatWidgetState extends State<SmsChatWidget> {
                                             int containerCount = snapshot.data!;
 
                                             return Container(
-                                              decoration: BoxDecoration(),
+                                              decoration: const BoxDecoration(),
                                               child: Visibility(
                                                 visible: containerCount != 0,
                                                 child: Container(
                                                   width: 23.0,
                                                   height: 23.0,
-                                                  decoration: BoxDecoration(
+                                                  decoration:
+                                                      const BoxDecoration(
                                                     color: Color(0xFFE01935),
                                                     shape: BoxShape.circle,
                                                   ),
                                                   child: Align(
                                                     alignment:
-                                                        AlignmentDirectional(
+                                                        const AlignmentDirectional(
                                                             0.0, 0.0),
                                                     child: Text(
                                                       containerCount.toString(),
@@ -269,7 +271,7 @@ class _SmsChatWidgetState extends State<SmsChatWidget> {
                                     ),
                                   ],
                                 ),
-                              ].divide(SizedBox(height: 6.0)),
+                              ].divide(const SizedBox(height: 6.0)),
                             ),
                           ),
                         ),

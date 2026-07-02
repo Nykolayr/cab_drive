@@ -3,7 +3,6 @@ import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
 import '/customer/create_order/searh_address/searh_address_widget.dart';
-import '/flutter_flow/flutter_flow_google_map.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -23,6 +22,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:provider/provider.dart';
 import 'package:webviewx_plus/webviewx_plus.dart';
+import 'package:yandex_mapkit/yandex_mapkit.dart';
 import 'main_user_model.dart';
 export 'main_user_model.dart';
 
@@ -50,13 +50,22 @@ class _MainUserWidgetState extends State<MainUserWidget> {
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       currentUserLocationValue =
-          await getCurrentUserLocation(defaultLocation: LatLng(0.0, 0.0));
+          await getCurrentUserLocation(defaultLocation: const LatLng(0.0, 0.0));
       if (await getPermissionStatus(locationPermission)) {
-        await _model.googleMapsController.future.then(
-          (c) => c.animateCamera(
-            CameraUpdate.newLatLng(currentUserLocationValue!.toGoogleMaps()),
-          ),
-        );
+        final controller = _model.yandexMapController;
+        if (controller != null && currentUserLocationValue != null) {
+          await controller.moveCamera(
+            CameraUpdate.newCameraPosition(
+              CameraPosition(
+                target: Point(
+                  latitude: currentUserLocationValue!.latitude,
+                  longitude: currentUserLocationValue!.longitude,
+                ),
+                zoom: 15,
+              ),
+            ),
+          );
+        }
       }
     });
   }
@@ -111,12 +120,10 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                     width:
                                         MediaQuery.sizeOf(context).width * 1.0,
                                     height: double.infinity,
-                                    child: custom_widgets.PolylineMap(
+                                    child: custom_widgets.YandexOrderMap(
                                       width: MediaQuery.sizeOf(context).width *
                                           1.0,
                                       height: double.infinity,
-                                      googleApiKey:
-                                          'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
                                       startLatLng: FFAppState().pointA.latlng!,
                                       endLatLng: FFAppState().pointB.latlng!,
                                       isStatic: false,
@@ -125,9 +132,10 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                 ),
                               ),
                               Align(
-                                alignment: AlignmentDirectional(-1.0, 1.0),
+                                alignment:
+                                    const AlignmentDirectional(-1.0, 1.0),
                                 child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       16.0, 0.0, 0.0, 16.0),
                                   child: FlutterFlowIconButton(
                                     borderColor: Colors.transparent,
@@ -184,7 +192,7 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                           child: Padding(
                                             padding: MediaQuery.viewInsetsOf(
                                                 context),
-                                            child: SearhAddressWidget(
+                                            child: const SearhAddressWidget(
                                               index: 1,
                                             ),
                                           ),
@@ -195,10 +203,11 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                 },
                                 child: Container(
                                   height: 60.0,
-                                  decoration: BoxDecoration(),
+                                  decoration: const BoxDecoration(),
                                   child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        16.0, 0.0, 16.0, 0.0),
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            16.0, 0.0, 16.0, 0.0),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
                                       crossAxisAlignment:
@@ -212,16 +221,15 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                 .secondaryBackground,
                                             shape: BoxShape.circle,
                                             border: Border.all(
-                                              color: Color(0xFFA4A6B2),
+                                              color: const Color(0xFFA4A6B2),
                                               width: 3.0,
                                             ),
                                           ),
                                         ),
                                         Flexible(
                                           child: Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    13.0, 0.0, 0.0, 0.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(13.0, 0.0, 0.0, 0.0),
                                             child: Column(
                                               mainAxisSize: MainAxisSize.max,
                                               mainAxisAlignment:
@@ -258,12 +266,13 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                     ),
                                                   ],
                                                 ),
-                                                Divider(
+                                                const Divider(
                                                   height: 0.3,
                                                   thickness: 0.3,
                                                   color: Color(0xFFD0CFCE),
                                                 ),
-                                              ].divide(SizedBox(height: 18.0)),
+                                              ].divide(
+                                                  const SizedBox(height: 18.0)),
                                             ),
                                           ),
                                         ),
@@ -293,7 +302,7 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                           child: Padding(
                                             padding: MediaQuery.viewInsetsOf(
                                                 context),
-                                            child: SearhAddressWidget(
+                                            child: const SearhAddressWidget(
                                               index: 2,
                                             ),
                                           ),
@@ -304,10 +313,11 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                 },
                                 child: Container(
                                   height: 60.0,
-                                  decoration: BoxDecoration(),
+                                  decoration: const BoxDecoration(),
                                   child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        16.0, 0.0, 16.0, 0.0),
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            16.0, 0.0, 16.0, 0.0),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
                                       crossAxisAlignment:
@@ -321,16 +331,15 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                 .secondaryBackground,
                                             shape: BoxShape.circle,
                                             border: Border.all(
-                                              color: Color(0xFFA4A6B2),
+                                              color: const Color(0xFFA4A6B2),
                                               width: 3.0,
                                             ),
                                           ),
                                         ),
                                         Flexible(
                                           child: Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    13.0, 0.0, 0.0, 0.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(13.0, 0.0, 0.0, 0.0),
                                             child: Column(
                                               mainAxisSize: MainAxisSize.max,
                                               mainAxisAlignment:
@@ -376,12 +385,9 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                             '')
                                                       Padding(
                                                         padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    6.0,
-                                                                    0.0,
-                                                                    6.0,
-                                                                    0.0),
+                                                            const EdgeInsetsDirectional
+                                                                .fromSTEB(6.0,
+                                                                0.0, 6.0, 0.0),
                                                         child: Container(
                                                           width: 5.0,
                                                           height: 5.0,
@@ -411,12 +417,13 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                     ),
                                                   ],
                                                 ),
-                                                Divider(
+                                                const Divider(
                                                   height: 0.3,
                                                   thickness: 0.3,
                                                   color: Color(0xFFD0CFCE),
                                                 ),
-                                              ].divide(SizedBox(height: 18.0)),
+                                              ].divide(
+                                                  const SizedBox(height: 18.0)),
                                             ),
                                           ),
                                         ),
@@ -426,11 +433,11 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                 ),
                               ),
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     0.0, 8.0, 0.0, 8.0),
                                 child: Container(
                                   height: 100.0,
-                                  decoration: BoxDecoration(),
+                                  decoration: const BoxDecoration(),
                                   child: SingleChildScrollView(
                                     scrollDirection: Axis.horizontal,
                                     child: Row(
@@ -461,8 +468,10 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                   BorderRadius.circular(12.0),
                                             ),
                                             child: Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(8.0, 0.0, 8.0, 0.0),
+                                              padding:
+                                                  const EdgeInsetsDirectional
+                                                      .fromSTEB(
+                                                      8.0, 0.0, 8.0, 0.0),
                                               child: Column(
                                                 mainAxisSize: MainAxisSize.max,
                                                 mainAxisAlignment:
@@ -483,9 +492,9 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                   ),
                                                   Padding(
                                                     padding:
-                                                        EdgeInsetsDirectional
+                                                        const EdgeInsetsDirectional
                                                             .fromSTEB(6.0, 12.0,
-                                                                0.0, 0.0),
+                                                            0.0, 0.0),
                                                     child: Column(
                                                       mainAxisSize:
                                                           MainAxisSize.max,
@@ -532,7 +541,7 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                                   .textScaler,
                                                           text: TextSpan(
                                                             children: [
-                                                              TextSpan(
+                                                              const TextSpan(
                                                                 text: 'от ',
                                                                 style:
                                                                     TextStyle(
@@ -545,12 +554,12 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                                     .priceLargus
                                                                     .toString(),
                                                                 style:
-                                                                    TextStyle(
+                                                                    const TextStyle(
                                                                   fontSize:
                                                                       15.0,
                                                                 ),
                                                               ),
-                                                              TextSpan(
+                                                              const TextSpan(
                                                                 text: ' ₽',
                                                                 style:
                                                                     TextStyle(
@@ -621,8 +630,10 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                   BorderRadius.circular(12.0),
                                             ),
                                             child: Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(8.0, 0.0, 8.0, 0.0),
+                                              padding:
+                                                  const EdgeInsetsDirectional
+                                                      .fromSTEB(
+                                                      8.0, 0.0, 8.0, 0.0),
                                               child: Column(
                                                 mainAxisSize: MainAxisSize.max,
                                                 mainAxisAlignment:
@@ -643,9 +654,9 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                   ),
                                                   Padding(
                                                     padding:
-                                                        EdgeInsetsDirectional
+                                                        const EdgeInsetsDirectional
                                                             .fromSTEB(6.0, 12.0,
-                                                                0.0, 0.0),
+                                                            0.0, 0.0),
                                                     child: Column(
                                                       mainAxisSize:
                                                           MainAxisSize.max,
@@ -692,7 +703,7 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                                   .textScaler,
                                                           text: TextSpan(
                                                             children: [
-                                                              TextSpan(
+                                                              const TextSpan(
                                                                 text: 'от ',
                                                                 style:
                                                                     TextStyle(
@@ -705,12 +716,12 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                                     .priceFiat
                                                                     .toString(),
                                                                 style:
-                                                                    TextStyle(
+                                                                    const TextStyle(
                                                                   fontSize:
                                                                       15.0,
                                                                 ),
                                                               ),
-                                                              TextSpan(
+                                                              const TextSpan(
                                                                 text: ' ₽',
                                                                 style:
                                                                     TextStyle(
@@ -781,8 +792,10 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                   BorderRadius.circular(12.0),
                                             ),
                                             child: Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(8.0, 0.0, 8.0, 0.0),
+                                              padding:
+                                                  const EdgeInsetsDirectional
+                                                      .fromSTEB(
+                                                      8.0, 0.0, 8.0, 0.0),
                                               child: Column(
                                                 mainAxisSize: MainAxisSize.max,
                                                 mainAxisAlignment:
@@ -803,9 +816,9 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                   ),
                                                   Padding(
                                                     padding:
-                                                        EdgeInsetsDirectional
+                                                        const EdgeInsetsDirectional
                                                             .fromSTEB(6.0, 12.0,
-                                                                0.0, 0.0),
+                                                            0.0, 0.0),
                                                     child: Column(
                                                       mainAxisSize:
                                                           MainAxisSize.max,
@@ -852,7 +865,7 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                                   .textScaler,
                                                           text: TextSpan(
                                                             children: [
-                                                              TextSpan(
+                                                              const TextSpan(
                                                                 text: 'от ',
                                                                 style:
                                                                     TextStyle(
@@ -865,12 +878,12 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                                     .priceTermo
                                                                     .toString(),
                                                                 style:
-                                                                    TextStyle(
+                                                                    const TextStyle(
                                                                   fontSize:
                                                                       15.0,
                                                                 ),
                                                               ),
-                                                              TextSpan(
+                                                              const TextSpan(
                                                                 text: ' ₽',
                                                                 style:
                                                                     TextStyle(
@@ -918,15 +931,17 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                           ),
                                         ),
                                       ]
-                                          .divide(SizedBox(width: 8.0))
-                                          .addToStart(SizedBox(width: 16.0))
-                                          .addToEnd(SizedBox(width: 16.0)),
+                                          .divide(const SizedBox(width: 8.0))
+                                          .addToStart(
+                                              const SizedBox(width: 16.0))
+                                          .addToEnd(
+                                              const SizedBox(width: 16.0)),
                                     ),
                                   ),
                                 ),
                               ),
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     8.0, 0.0, 8.0, 8.0),
                                 child: FFButtonWidget(
                                   onPressed: () async {
@@ -944,10 +959,12 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                   options: FFButtonOptions(
                                     width: double.infinity,
                                     height: 56.0,
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 0.0),
-                                    iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 0.0),
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            0.0, 0.0, 0.0, 0.0),
+                                    iconPadding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            0.0, 0.0, 0.0, 0.0),
                                     color:
                                         FlutterFlowTheme.of(context).tertiary,
                                     textStyle: FlutterFlowTheme.of(context)
@@ -984,7 +1001,7 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                             ],
                           ),
                         ),
-                      ].divide(SizedBox(height: 5.0)),
+                      ].divide(const SizedBox(height: 5.0)),
                     );
                   } else {
                     return Column(
@@ -1003,32 +1020,25 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                               ),
                               child: Stack(
                                 children: [
-                                  FlutterFlowGoogleMap(
-                                    controller: _model.googleMapsController,
-                                    onCameraIdle: (latLng) => safeSetState(
-                                        () => _model.googleMapsCenter = latLng),
-                                    initialLocation: _model.googleMapsCenter ??=
+                                  custom_widgets.YandexPickerMap(
+                                    initialLocation: _model.mapCenter ??=
                                         FFAppState().mskGeo!,
-                                    markerColor: GoogleMarkerColor.violet,
-                                    mapType: MapType.normal,
-                                    style: GoogleMapStyle.standard,
                                     initialZoom: 15.0,
                                     allowInteraction: true,
-                                    allowZoom: true,
-                                    showZoomControls: false,
-                                    showLocation: true,
-                                    showCompass: false,
-                                    showMapToolbar: false,
-                                    showTraffic: false,
-                                    centerMapOnMarkerTap: false,
+                                    onCameraIdle: (latLng) => safeSetState(
+                                        () => _model.mapCenter = latLng),
+                                    onMapCreated: (controller) {
+                                      _model.yandexMapController = controller;
+                                    },
                                   ),
                                   Align(
-                                    alignment: AlignmentDirectional(0.0, 0.0),
+                                    alignment:
+                                        const AlignmentDirectional(0.0, 0.0),
                                     child: PointerInterceptor(
                                       intercepting: isWeb,
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, 0.0, 40.0),
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(0.0, 0.0, 0.0, 40.0),
                                         child: FaIcon(
                                           FontAwesomeIcons.mapPin,
                                           color: FlutterFlowTheme.of(context)
@@ -1045,19 +1055,18 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                         ),
                         FutureBuilder<ApiCallResponse>(
                           future: GeocodeLatLngCall.call(
-                            latlng: functions
-                                .formatLatLng(_model.googleMapsCenter!),
+                            latlng: functions.formatLatLng(_model.mapCenter!),
                           ),
                           builder: (context, snapshot) {
                             // Customize what your widget looks like when it's loading.
                             if (!snapshot.hasData) {
-                              return MainLoadWidget();
+                              return const MainLoadWidget();
                             }
                             final containerGeocodeLatLngResponse =
                                 snapshot.data!;
 
                             return Container(
-                              constraints: BoxConstraints(
+                              constraints: const BoxConstraints(
                                 minHeight: 120.0,
                               ),
                               decoration: BoxDecoration(
@@ -1076,7 +1085,7 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                     highlightColor: Colors.transparent,
                                     onTap: () async {
                                       FFAppState().pointA = PointStruct(
-                                        latlng: _model.googleMapsCenter,
+                                        latlng: _model.mapCenter,
                                         placeID: GeocodeLatLngCall.placeId(
                                           containerGeocodeLatLngResponse
                                               .jsonBody,
@@ -1242,7 +1251,7 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                 padding:
                                                     MediaQuery.viewInsetsOf(
                                                         context),
-                                                child: SearhAddressWidget(
+                                                child: const SearhAddressWidget(
                                                   index: 1,
                                                 ),
                                               ),
@@ -1253,10 +1262,10 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                     },
                                     child: Container(
                                       height: 60.0,
-                                      decoration: BoxDecoration(),
+                                      decoration: const BoxDecoration(),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            16.0, 0.0, 16.0, 0.0),
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(16.0, 0.0, 16.0, 0.0),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.max,
                                           crossAxisAlignment:
@@ -1271,15 +1280,17 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                         .secondaryBackground,
                                                 shape: BoxShape.circle,
                                                 border: Border.all(
-                                                  color: Color(0xFFA4A6B2),
+                                                  color:
+                                                      const Color(0xFFA4A6B2),
                                                   width: 3.0,
                                                 ),
                                               ),
                                             ),
                                             Flexible(
                                               child: Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
+                                                padding:
+                                                    const EdgeInsetsDirectional
+                                                        .fromSTEB(
                                                         13.0, 0.0, 0.0, 0.0),
                                                 child: Column(
                                                   mainAxisSize:
@@ -1358,7 +1369,7 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                                 .override(
                                                                   fontFamily:
                                                                       'SF',
-                                                                  color: Color(
+                                                                  color: const Color(
                                                                       0xFFA4A6B2),
                                                                   fontSize:
                                                                       16.0,
@@ -1432,7 +1443,7 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                                 .override(
                                                                   fontFamily:
                                                                       'SF',
-                                                                  color: Color(
+                                                                  color: const Color(
                                                                       0xFFA4A6B2),
                                                                   fontSize:
                                                                       16.0,
@@ -1642,13 +1653,13 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                           ),
                                                       ],
                                                     ),
-                                                    Divider(
+                                                    const Divider(
                                                       height: 0.3,
                                                       thickness: 0.3,
                                                       color: Color(0xFFD0CFCE),
                                                     ),
-                                                  ].divide(
-                                                      SizedBox(height: 18.0)),
+                                                  ].divide(const SizedBox(
+                                                      height: 18.0)),
                                                 ),
                                               ),
                                             ),
@@ -1664,7 +1675,7 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                     highlightColor: Colors.transparent,
                                     onTap: () async {
                                       FFAppState().pointA = PointStruct(
-                                        latlng: _model.googleMapsCenter,
+                                        latlng: _model.mapCenter,
                                         placeID: GeocodeLatLngCall.placeId(
                                           containerGeocodeLatLngResponse
                                               .jsonBody,
@@ -1830,7 +1841,7 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                 padding:
                                                     MediaQuery.viewInsetsOf(
                                                         context),
-                                                child: SearhAddressWidget(
+                                                child: const SearhAddressWidget(
                                                   index: 2,
                                                 ),
                                               ),
@@ -1841,10 +1852,10 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                     },
                                     child: Container(
                                       height: 60.0,
-                                      decoration: BoxDecoration(),
+                                      decoration: const BoxDecoration(),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            16.0, 0.0, 16.0, 0.0),
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(16.0, 0.0, 16.0, 0.0),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.max,
                                           crossAxisAlignment:
@@ -1859,15 +1870,17 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                         .secondaryBackground,
                                                 shape: BoxShape.circle,
                                                 border: Border.all(
-                                                  color: Color(0xFFA4A6B2),
+                                                  color:
+                                                      const Color(0xFFA4A6B2),
                                                   width: 3.0,
                                                 ),
                                               ),
                                             ),
                                             Expanded(
                                               child: Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
+                                                padding:
+                                                    const EdgeInsetsDirectional
+                                                        .fromSTEB(
                                                         13.0, 0.0, 0.0, 0.0),
                                                 child: Column(
                                                   mainAxisSize:
@@ -1880,7 +1893,7 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                     Expanded(
                                                       child: Align(
                                                         alignment:
-                                                            AlignmentDirectional(
+                                                            const AlignmentDirectional(
                                                                 -1.0, 0.0),
                                                         child: Text(
                                                           'Куда доставить',
@@ -1890,7 +1903,7 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                               .override(
                                                                 fontFamily:
                                                                     'SF',
-                                                                color: Color(
+                                                                color: const Color(
                                                                     0xFFA4A6B2),
                                                                 fontSize: 16.0,
                                                                 letterSpacing:
@@ -1899,7 +1912,7 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                         ),
                                                       ),
                                                     ),
-                                                    Divider(
+                                                    const Divider(
                                                       height: 0.3,
                                                       thickness: 0.3,
                                                       color: Color(0xFFD0CFCE),
@@ -1914,11 +1927,12 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                     ),
                                   ),
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 8.0, 0.0, 8.0),
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            0.0, 8.0, 0.0, 8.0),
                                     child: Container(
                                       height: 100.77,
-                                      decoration: BoxDecoration(),
+                                      decoration: const BoxDecoration(),
                                       child: SingleChildScrollView(
                                         scrollDirection: Axis.horizontal,
                                         child: Row(
@@ -1951,8 +1965,9 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                           12.0),
                                                 ),
                                                 child: Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
                                                           8.0, 0.0, 8.0, 0.0),
                                                   child: Column(
                                                     mainAxisSize:
@@ -1977,12 +1992,9 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                       ),
                                                       Padding(
                                                         padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    6.0,
-                                                                    12.0,
-                                                                    0.0,
-                                                                    0.0),
+                                                            const EdgeInsetsDirectional
+                                                                .fromSTEB(6.0,
+                                                                12.0, 0.0, 0.0),
                                                         child: Column(
                                                           mainAxisSize:
                                                               MainAxisSize.max,
@@ -2025,7 +2037,7 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                                           context)
                                                                       .textScaler,
                                                               text: TextSpan(
-                                                                children: [
+                                                                children: const [
                                                                   TextSpan(
                                                                     text: 'от ',
                                                                     style:
@@ -2110,8 +2122,9 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                           12.0),
                                                 ),
                                                 child: Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
                                                           8.0, 0.0, 8.0, 0.0),
                                                   child: Column(
                                                     mainAxisSize:
@@ -2136,12 +2149,9 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                       ),
                                                       Padding(
                                                         padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    6.0,
-                                                                    12.0,
-                                                                    0.0,
-                                                                    0.0),
+                                                            const EdgeInsetsDirectional
+                                                                .fromSTEB(6.0,
+                                                                12.0, 0.0, 0.0),
                                                         child: Column(
                                                           mainAxisSize:
                                                               MainAxisSize.max,
@@ -2185,7 +2195,7 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                                           context)
                                                                       .textScaler,
                                                               text: TextSpan(
-                                                                children: [
+                                                                children: const [
                                                                   TextSpan(
                                                                     text: 'от ',
                                                                     style:
@@ -2272,8 +2282,9 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                           12.0),
                                                 ),
                                                 child: Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
                                                           8.0, 0.0, 8.0, 0.0),
                                                   child: Column(
                                                     mainAxisSize:
@@ -2298,12 +2309,9 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                       ),
                                                       Padding(
                                                         padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    6.0,
-                                                                    12.0,
-                                                                    0.0,
-                                                                    0.0),
+                                                            const EdgeInsetsDirectional
+                                                                .fromSTEB(6.0,
+                                                                12.0, 0.0, 0.0),
                                                         child: Column(
                                                           mainAxisSize:
                                                               MainAxisSize.max,
@@ -2347,7 +2355,7 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                                           context)
                                                                       .textScaler,
                                                               text: TextSpan(
-                                                                children: [
+                                                                children: const [
                                                                   TextSpan(
                                                                     text: 'от ',
                                                                     style:
@@ -2408,9 +2416,12 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                               ),
                                             ),
                                           ]
-                                              .divide(SizedBox(width: 8.0))
-                                              .addToStart(SizedBox(width: 16.0))
-                                              .addToEnd(SizedBox(width: 16.0)),
+                                              .divide(
+                                                  const SizedBox(width: 8.0))
+                                              .addToStart(
+                                                  const SizedBox(width: 16.0))
+                                              .addToEnd(
+                                                  const SizedBox(width: 16.0)),
                                         ),
                                       ),
                                     ),
@@ -2420,7 +2431,7 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                             );
                           },
                         ),
-                      ].divide(SizedBox(height: 5.0)),
+                      ].divide(const SizedBox(height: 5.0)),
                     );
                   }
                 },
@@ -2429,11 +2440,11 @@ class _MainUserWidgetState extends State<MainUserWidget> {
             wrapWithModel(
               model: _model.navbarModel,
               updateCallback: () => safeSetState(() {}),
-              child: NavbarWidget(
+              child: const NavbarWidget(
                 index: 3,
               ),
             ),
-          ].divide(SizedBox(height: 5.0)),
+          ].divide(const SizedBox(height: 5.0)),
         ),
       ),
     );

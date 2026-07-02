@@ -65,16 +65,16 @@ class _VerifUserWidgetState extends State<VerifUserWidget> {
               height: 120.0,
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondaryBackground,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(18.0),
                   bottomRight: Radius.circular(18.0),
                 ),
               ),
               child: Align(
-                alignment: AlignmentDirectional(0.0, 1.0),
+                alignment: const AlignmentDirectional(0.0, 1.0),
                 child: Padding(
-                  padding:
-                      EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 12.0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(
+                      12.0, 0.0, 12.0, 12.0),
                   child: Container(
                     width: double.infinity,
                     height: 56.0,
@@ -83,13 +83,13 @@ class _VerifUserWidgetState extends State<VerifUserWidget> {
                       borderRadius: BorderRadius.circular(88.0),
                     ),
                     child: Padding(
-                      padding: EdgeInsets.all(4.0),
+                      padding: const EdgeInsets.all(4.0),
                       child: Row(
                         mainAxisSize: MainAxisSize.max,
                         children: [
                           if (widget!.home == 1)
                             Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 8.0, 0.0),
                               child: FlutterFlowIconButton(
                                 borderColor: Colors.transparent,
@@ -121,7 +121,7 @@ class _VerifUserWidgetState extends State<VerifUserWidget> {
                                 borderRadius: BorderRadius.circular(88.0),
                               ),
                               child: Align(
-                                alignment: AlignmentDirectional(0.0, 0.0),
+                                alignment: const AlignmentDirectional(0.0, 0.0),
                                 child: Text(
                                   'Знакомство',
                                   style: FlutterFlowTheme.of(context)
@@ -149,14 +149,15 @@ class _VerifUserWidgetState extends State<VerifUserWidget> {
                 borderRadius: BorderRadius.circular(18.0),
               ),
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(8.0, 32.0, 8.0, 8.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(8.0, 32.0, 8.0, 8.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 0.0, 0.0),
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                          16.0, 0.0, 0.0, 0.0),
                       child: Text(
                         'Давайте\nзнакомиться',
                         style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -172,15 +173,15 @@ class _VerifUserWidgetState extends State<VerifUserWidget> {
                       key: _model.formKey,
                       autovalidateMode: AutovalidateMode.disabled,
                       child: Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
                             16.0, 30.0, 16.0, 0.0),
-                        child: Container(
+                        child: SizedBox(
                           width: double.infinity,
                           child: TextFormField(
                             controller: _model.nameTextController,
                             focusNode: _model.nameFocusNode,
                             autofocus: true,
-                            autofillHints: [AutofillHints.name],
+                            autofillHints: const [AutofillHints.name],
                             textCapitalization: TextCapitalization.sentences,
                             textInputAction: TextInputAction.go,
                             obscureText: false,
@@ -226,8 +227,9 @@ class _VerifUserWidgetState extends State<VerifUserWidget> {
                               ),
                               filled: true,
                               fillColor: Colors.transparent,
-                              contentPadding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 0.0, 16.0),
+                              contentPadding:
+                                  const EdgeInsetsDirectional.fromSTEB(
+                                      0.0, 0.0, 0.0, 16.0),
                               hoverColor: Colors.transparent,
                             ),
                             style: FlutterFlowTheme.of(context)
@@ -257,8 +259,8 @@ class _VerifUserWidgetState extends State<VerifUserWidget> {
                       ),
                     ),
                     Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 32.0, 0.0, 0.0),
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                          0.0, 32.0, 0.0, 0.0),
                       child: FFButtonWidget(
                         onPressed: () async {
                           if (_model.formKey.currentState == null ||
@@ -279,9 +281,9 @@ class _VerifUserWidgetState extends State<VerifUserWidget> {
                         options: FFButtonOptions(
                           width: double.infinity,
                           height: 56.0,
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 0.0),
-                          iconPadding: EdgeInsetsDirectional.fromSTEB(
+                          iconPadding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 0.0),
                           color: FlutterFlowTheme.of(context).tertiary,
                           textStyle:
@@ -301,7 +303,7 @@ class _VerifUserWidgetState extends State<VerifUserWidget> {
                 ),
               ),
             ),
-          ].divide(SizedBox(height: 5.0)),
+          ].divide(const SizedBox(height: 5.0)),
         ),
       ),
     );

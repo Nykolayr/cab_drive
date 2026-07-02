@@ -56,13 +56,14 @@ class _VerifAdminWidgetState extends State<VerifAdminWidget> {
               height: 120.0,
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondaryBackground,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(18.0),
                   bottomRight: Radius.circular(18.0),
                 ),
               ),
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 0.0, 16.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 0.0, 16.0),
                 child: Row(
                   mainAxisSize: MainAxisSize.max,
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -93,7 +94,7 @@ class _VerifAdminWidgetState extends State<VerifAdminWidget> {
                           borderRadius: BorderRadius.circular(12.0),
                         ),
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               18.0, 9.0, 18.0, 9.0),
                           child: Text(
                             'Новые',
@@ -140,7 +141,7 @@ class _VerifAdminWidgetState extends State<VerifAdminWidget> {
                           borderRadius: BorderRadius.circular(12.0),
                         ),
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               18.0, 9.0, 18.0, 9.0),
                           child: Text(
                             'Архив',
@@ -161,7 +162,7 @@ class _VerifAdminWidgetState extends State<VerifAdminWidget> {
                         ),
                       ),
                     ),
-                  ].divide(SizedBox(width: 8.0)),
+                  ].divide(const SizedBox(width: 8.0)),
                 ),
               ),
             ),
@@ -212,7 +213,8 @@ class _VerifAdminWidgetState extends State<VerifAdminWidget> {
                             shrinkWrap: true,
                             scrollDirection: Axis.vertical,
                             itemCount: containerVar.length,
-                            separatorBuilder: (_, __) => SizedBox(height: 5.0),
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 5.0),
                             itemBuilder: (context, containerVarIndex) {
                               final containerVarItem =
                                   containerVar[containerVarIndex];
@@ -233,11 +235,11 @@ class _VerifAdminWidgetState extends State<VerifAdminWidget> {
             wrapWithModel(
               model: _model.navbarAdminModel,
               updateCallback: () => safeSetState(() {}),
-              child: NavbarAdminWidget(
+              child: const NavbarAdminWidget(
                 index: 2,
               ),
             ),
-          ].divide(SizedBox(height: 5.0)),
+          ].divide(const SizedBox(height: 5.0)),
         ),
       ),
     );

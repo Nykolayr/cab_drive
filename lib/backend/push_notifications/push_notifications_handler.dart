@@ -8,7 +8,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
-
 final _handledMessageIds = <String?>{};
 
 class PushNotificationsHandler extends StatefulWidget {
@@ -107,7 +106,7 @@ class ParameterData {
       );
 
   static Future<ParameterData> Function(Map<String, dynamic>) none() =>
-      (data) async => ParameterData();
+      (data) async => const ParameterData();
 }
 
 final parametersBuilderMap =
@@ -133,7 +132,7 @@ final parametersBuilderMap =
         },
       ),
   'MAIN_USER': ParameterData.none(),
-  'Detaliy_sozdanie': (data) async => ParameterData(
+  'Detaliy_sozdanie': (data) async => const ParameterData(
         allParams: <String, dynamic>{},
       ),
   'order_Page_Customer': (data) async => ParameterData(

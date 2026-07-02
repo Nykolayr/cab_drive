@@ -45,13 +45,12 @@ class _ResponseWidgetState extends State<ResponseWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(),
+      decoration: const BoxDecoration(),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           FutureBuilder<UsersRecord>(
-            future:
-                UsersRecord.getDocumentOnce(widget!.responseDT!.userDriver!),
+            future: UsersRecord.getDocumentOnce(widget.responseDT!.userDriver!),
             builder: (context, snapshot) {
               // Customize what your widget looks like when it's loading.
               if (!snapshot.hasData) {
@@ -71,9 +70,10 @@ class _ResponseWidgetState extends State<ResponseWidget> {
               final containerUsersRecord = snapshot.data!;
 
               return Container(
-                decoration: BoxDecoration(),
+                decoration: const BoxDecoration(),
                 child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 8.0),
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 8.0),
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -82,7 +82,7 @@ class _ResponseWidgetState extends State<ResponseWidget> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12.0),
                           border: Border.all(
-                            color: Color(0x26A4A6B2),
+                            color: const Color(0x26A4A6B2),
                             width: 0.5,
                           ),
                         ),
@@ -98,7 +98,7 @@ class _ResponseWidgetState extends State<ResponseWidget> {
                       ),
                       Flexible(
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               14.0, 0.0, 0.0, 0.0),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
@@ -127,7 +127,7 @@ class _ResponseWidgetState extends State<ResponseWidget> {
                                   Text(
                                     dateTimeFormat(
                                       "Hm",
-                                      widget!.responseDT!.dateCreated!,
+                                      widget.responseDT!.dateCreated!,
                                       locale: FFLocalizations.of(context)
                                           .languageCode,
                                     ),
@@ -135,14 +135,14 @@ class _ResponseWidgetState extends State<ResponseWidget> {
                                         .bodyMedium
                                         .override(
                                           fontFamily: 'SF',
-                                          color: Color(0xFFA4A6B2),
+                                          color: const Color(0xFFA4A6B2),
                                           letterSpacing: 0.0,
                                         ),
                                   ),
                                 ],
                               ),
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     0.0, 8.0, 0.0, 0.0),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
@@ -162,8 +162,9 @@ class _ResponseWidgetState extends State<ResponseWidget> {
                                                   BorderRadius.circular(8.0),
                                             ),
                                             child: Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
+                                              padding:
+                                                  const EdgeInsetsDirectional
+                                                      .fromSTEB(
                                                       10.0, 4.0, 10.0, 4.0),
                                               child: Row(
                                                 mainAxisSize: MainAxisSize.max,
@@ -190,14 +191,15 @@ class _ResponseWidgetState extends State<ResponseWidget> {
                                                         .bodyMedium
                                                         .override(
                                                           fontFamily: 'SF',
-                                                          color:
-                                                              Color(0xFFA4A6B2),
+                                                          color: const Color(
+                                                              0xFFA4A6B2),
                                                           letterSpacing: 0.0,
                                                           fontWeight:
                                                               FontWeight.w500,
                                                         ),
                                                   ),
-                                                ].divide(SizedBox(width: 6.0)),
+                                                ].divide(
+                                                    const SizedBox(width: 6.0)),
                                               ),
                                             ),
                                           ),
@@ -211,8 +213,9 @@ class _ResponseWidgetState extends State<ResponseWidget> {
                                                   BorderRadius.circular(8.0),
                                             ),
                                             child: Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
+                                              padding:
+                                                  const EdgeInsetsDirectional
+                                                      .fromSTEB(
                                                       10.0, 4.0, 10.0, 4.0),
                                               child: Row(
                                                 mainAxisSize: MainAxisSize.max,
@@ -234,18 +237,19 @@ class _ResponseWidgetState extends State<ResponseWidget> {
                                                         .bodyMedium
                                                         .override(
                                                           fontFamily: 'SF',
-                                                          color:
-                                                              Color(0xFFA4A6B2),
+                                                          color: const Color(
+                                                              0xFFA4A6B2),
                                                           letterSpacing: 0.0,
                                                           fontWeight:
                                                               FontWeight.w500,
                                                         ),
                                                   ),
-                                                ].divide(SizedBox(width: 6.0)),
+                                                ].divide(
+                                                    const SizedBox(width: 6.0)),
                                               ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 4.0)),
+                                        ].divide(const SizedBox(width: 4.0)),
                                       ),
                                     Container(
                                       height: 30.0,
@@ -256,8 +260,8 @@ class _ResponseWidgetState extends State<ResponseWidget> {
                                             BorderRadius.circular(8.0),
                                       ),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            10.0, 4.0, 10.0, 4.0),
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(10.0, 4.0, 10.0, 4.0),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.max,
                                           children: [
@@ -287,16 +291,17 @@ class _ResponseWidgetState extends State<ResponseWidget> {
                                                   .bodyMedium
                                                   .override(
                                                     fontFamily: 'SF',
-                                                    color: Color(0xFFA4A6B2),
+                                                    color:
+                                                        const Color(0xFFA4A6B2),
                                                     letterSpacing: 0.0,
                                                     fontWeight: FontWeight.w500,
                                                   ),
                                             ),
-                                          ].divide(SizedBox(width: 6.0)),
+                                          ].divide(const SizedBox(width: 6.0)),
                                         ),
                                       ),
                                     ),
-                                  ].divide(SizedBox(width: 4.0)),
+                                  ].divide(const SizedBox(width: 4.0)),
                                 ),
                               ),
                             ],
@@ -310,7 +315,7 @@ class _ResponseWidgetState extends State<ResponseWidget> {
             },
           ),
           Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 14.0),
+            padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 14.0),
             child: Row(
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -318,21 +323,21 @@ class _ResponseWidgetState extends State<ResponseWidget> {
               children: [
                 Flexible(
                   child: Text(
-                    widget!.responseDT!.text,
+                    widget.responseDT!.text,
                     maxLines: 1,
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                           fontFamily: 'SF',
-                          color: Color(0xFFA4A6B2),
+                          color: const Color(0xFFA4A6B2),
                           fontSize: 16.0,
                           letterSpacing: 0.0,
                         ),
                   ),
                 ),
-                if (!widget!.responseDT!.viewed)
+                if (!widget.responseDT!.viewed)
                   Container(
                     width: 16.0,
                     height: 16.0,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Color(0xFFE01935),
                       shape: BoxShape.circle,
                     ),
@@ -340,7 +345,7 @@ class _ResponseWidgetState extends State<ResponseWidget> {
               ],
             ),
           ),
-          Divider(
+          const Divider(
             height: 0.3,
             thickness: 0.3,
             color: Color(0xFFD0CFCE),

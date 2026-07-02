@@ -1,6 +1,5 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'rew_empt_model.dart';
 export 'rew_empt_model.dart';
@@ -44,7 +43,7 @@ class _RewEmptWidgetState extends State<RewEmptWidget> {
         borderRadius: BorderRadius.circular(5.0),
       ),
       child: Padding(
-        padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+        padding: const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -59,7 +58,8 @@ class _RewEmptWidgetState extends State<RewEmptWidget> {
               ),
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
               child: Text(
                 'Отзывов пока нет',
                 style: FlutterFlowTheme.of(context).bodyMedium.override(

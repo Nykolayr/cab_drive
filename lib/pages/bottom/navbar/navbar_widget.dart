@@ -50,7 +50,7 @@ class _NavbarWidgetState extends State<NavbarWidget> {
       height: 100.0,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).secondaryBackground,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(18.0),
           topRight: Radius.circular(18.0),
         ),
@@ -65,14 +65,14 @@ class _NavbarWidgetState extends State<NavbarWidget> {
               hoverColor: Colors.transparent,
               highlightColor: Colors.transparent,
               onTap: () async {
-                if (widget!.index == 1) {
+                if (widget.index == 1) {
                   return;
                 }
 
                 context.pushNamed(
                   ChatsWidget.routeName,
                   extra: <String, dynamic>{
-                    '__transition_info__': TransitionInfo(
+                    '__transition_info__': const TransitionInfo(
                       hasTransition: true,
                       transitionType: PageTransitionType.fade,
                       duration: Duration(milliseconds: 0),
@@ -89,7 +89,7 @@ class _NavbarWidgetState extends State<NavbarWidget> {
                 children: [
                   Icon(
                     FFIcons.kmessageTextCircle02,
-                    color: widget!.index == 1
+                    color: widget.index == 1
                         ? FlutterFlowTheme.of(context).tertiary
                         : FlutterFlowTheme.of(context).secondaryText,
                     size: 20.0,
@@ -98,14 +98,14 @@ class _NavbarWidgetState extends State<NavbarWidget> {
                     'Чаты',
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                           fontFamily: 'SF',
-                          color: widget!.index == 1
+                          color: widget.index == 1
                               ? FlutterFlowTheme.of(context).tertiary
                               : FlutterFlowTheme.of(context).secondaryText,
                           letterSpacing: 0.0,
                           fontWeight: FontWeight.w500,
                         ),
                   ),
-                ].divide(SizedBox(height: 5.0)),
+                ].divide(const SizedBox(height: 5.0)),
               ),
             ),
           ),
@@ -116,14 +116,14 @@ class _NavbarWidgetState extends State<NavbarWidget> {
               hoverColor: Colors.transparent,
               highlightColor: Colors.transparent,
               onTap: () async {
-                if (widget!.index == 2) {
+                if (widget.index == 2) {
                   return;
                 }
 
                 context.pushNamed(
                   MyOrdersWidget.routeName,
                   extra: <String, dynamic>{
-                    '__transition_info__': TransitionInfo(
+                    '__transition_info__': const TransitionInfo(
                       hasTransition: true,
                       transitionType: PageTransitionType.fade,
                       duration: Duration(milliseconds: 0),
@@ -140,7 +140,7 @@ class _NavbarWidgetState extends State<NavbarWidget> {
                 children: [
                   Icon(
                     FFIcons.krows01,
-                    color: widget!.index == 2
+                    color: widget.index == 2
                         ? FlutterFlowTheme.of(context).tertiary
                         : FlutterFlowTheme.of(context).secondaryText,
                     size: 20.0,
@@ -149,14 +149,14 @@ class _NavbarWidgetState extends State<NavbarWidget> {
                     'Заказы',
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                           fontFamily: 'SF',
-                          color: widget!.index == 2
+                          color: widget.index == 2
                               ? FlutterFlowTheme.of(context).tertiary
                               : FlutterFlowTheme.of(context).secondaryText,
                           letterSpacing: 0.0,
                           fontWeight: FontWeight.w500,
                         ),
                   ),
-                ].divide(SizedBox(height: 5.0)),
+                ].divide(const SizedBox(height: 5.0)),
               ),
             ),
           ),
@@ -170,14 +170,14 @@ class _NavbarWidgetState extends State<NavbarWidget> {
                     hoverColor: Colors.transparent,
                     highlightColor: Colors.transparent,
                     onTap: () async {
-                      if (widget!.index == 3) {
+                      if (widget.index == 3) {
                         return;
                       }
 
                       context.pushNamed(
                         MainUserWidget.routeName,
                         extra: <String, dynamic>{
-                          '__transition_info__': TransitionInfo(
+                          '__transition_info__': const TransitionInfo(
                             hasTransition: true,
                             transitionType: PageTransitionType.fade,
                             duration: Duration(milliseconds: 0),
@@ -194,7 +194,7 @@ class _NavbarWidgetState extends State<NavbarWidget> {
                       children: [
                         Icon(
                           FFIcons.kgrid02,
-                          color: widget!.index == 3
+                          color: widget.index == 3
                               ? FlutterFlowTheme.of(context).tertiary
                               : FlutterFlowTheme.of(context).secondaryText,
                           size: 20.0,
@@ -204,7 +204,7 @@ class _NavbarWidgetState extends State<NavbarWidget> {
                           style:
                               FlutterFlowTheme.of(context).bodyMedium.override(
                                     fontFamily: 'SF',
-                                    color: widget!.index == 3
+                                    color: widget.index == 3
                                         ? FlutterFlowTheme.of(context).tertiary
                                         : FlutterFlowTheme.of(context)
                                             .secondaryText,
@@ -212,7 +212,7 @@ class _NavbarWidgetState extends State<NavbarWidget> {
                                     fontWeight: FontWeight.w500,
                                   ),
                         ),
-                      ].divide(SizedBox(height: 5.0)),
+                      ].divide(const SizedBox(height: 5.0)),
                     ),
                   );
                 } else {
@@ -222,14 +222,14 @@ class _NavbarWidgetState extends State<NavbarWidget> {
                     hoverColor: Colors.transparent,
                     highlightColor: Colors.transparent,
                     onTap: () async {
-                      if (widget!.index == 3) {
+                      if (widget.index == 3) {
                         return;
                       }
 
                       context.pushNamed(
                         MainDriverWidget.routeName,
                         extra: <String, dynamic>{
-                          '__transition_info__': TransitionInfo(
+                          '__transition_info__': const TransitionInfo(
                             hasTransition: true,
                             transitionType: PageTransitionType.fade,
                             duration: Duration(milliseconds: 0),
@@ -246,7 +246,7 @@ class _NavbarWidgetState extends State<NavbarWidget> {
                       children: [
                         Icon(
                           FFIcons.ksearch,
-                          color: widget!.index == 3
+                          color: widget.index == 3
                               ? FlutterFlowTheme.of(context).tertiary
                               : FlutterFlowTheme.of(context).secondaryText,
                           size: 20.0,
@@ -256,7 +256,7 @@ class _NavbarWidgetState extends State<NavbarWidget> {
                           style:
                               FlutterFlowTheme.of(context).bodyMedium.override(
                                     fontFamily: 'SF',
-                                    color: widget!.index == 3
+                                    color: widget.index == 3
                                         ? FlutterFlowTheme.of(context).tertiary
                                         : FlutterFlowTheme.of(context)
                                             .secondaryText,
@@ -264,7 +264,7 @@ class _NavbarWidgetState extends State<NavbarWidget> {
                                     fontWeight: FontWeight.w500,
                                   ),
                         ),
-                      ].divide(SizedBox(height: 5.0)),
+                      ].divide(const SizedBox(height: 5.0)),
                     ),
                   );
                 }
@@ -278,14 +278,14 @@ class _NavbarWidgetState extends State<NavbarWidget> {
               hoverColor: Colors.transparent,
               highlightColor: Colors.transparent,
               onTap: () async {
-                if (widget!.index == 4) {
+                if (widget.index == 4) {
                   return;
                 }
 
                 context.pushNamed(
                   ProfileWidget.routeName,
                   extra: <String, dynamic>{
-                    '__transition_info__': TransitionInfo(
+                    '__transition_info__': const TransitionInfo(
                       hasTransition: true,
                       transitionType: PageTransitionType.fade,
                       duration: Duration(milliseconds: 0),
@@ -302,7 +302,7 @@ class _NavbarWidgetState extends State<NavbarWidget> {
                 children: [
                   Icon(
                     FFIcons.kmenu04,
-                    color: widget!.index == 4
+                    color: widget.index == 4
                         ? FlutterFlowTheme.of(context).tertiary
                         : FlutterFlowTheme.of(context).secondaryText,
                     size: 20.0,
@@ -311,14 +311,14 @@ class _NavbarWidgetState extends State<NavbarWidget> {
                     'Меню',
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                           fontFamily: 'SF',
-                          color: widget!.index == 4
+                          color: widget.index == 4
                               ? FlutterFlowTheme.of(context).tertiary
                               : FlutterFlowTheme.of(context).secondaryText,
                           letterSpacing: 0.0,
                           fontWeight: FontWeight.w500,
                         ),
                   ),
-                ].divide(SizedBox(height: 5.0)),
+                ].divide(const SizedBox(height: 5.0)),
               ),
             ),
           ),

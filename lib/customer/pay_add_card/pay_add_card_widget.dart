@@ -50,7 +50,7 @@ class _PayAddCardWidgetState extends State<PayAddCardWidget> {
 
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      _model.order = await PayOrderRecord.getDocumentOnce(widget!.payOrderRef!);
+      _model.order = await PayOrderRecord.getDocumentOnce(widget.payOrderRef!);
       _model.aposdasdanfa23 = await InitRecurrentPaymentCall.call(
         amount: 100,
         description: 'Добавление карты',
@@ -61,7 +61,7 @@ class _PayAddCardWidgetState extends State<PayAddCardWidget> {
       if ((_model.aposdasdanfa23?.succeeded ?? true)) {
         unawaited(
           () async {
-            await widget!.payOrderRef!.update(createPayOrderRecordData(
+            await widget.payOrderRef!.update(createPayOrderRecordData(
               paymentId: InitRecurrentPaymentCall.paymentId(
                 (_model.aposdasdanfa23?.jsonBody ?? ''),
               ),
@@ -96,12 +96,12 @@ class _PayAddCardWidgetState extends State<PayAddCardWidget> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(0.0, 50.0, 0.0, 0.0),
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 50.0, 0.0, 0.0),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).primaryBackground,
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(22.0),
             topRight: Radius.circular(22.0),
           ),
@@ -114,7 +114,7 @@ class _PayAddCardWidgetState extends State<PayAddCardWidget> {
               height: 64.0,
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondaryBackground,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(22.0),
                   topRight: Radius.circular(22.0),
                   bottomLeft: Radius.circular(5.0),
@@ -122,7 +122,8 @@ class _PayAddCardWidgetState extends State<PayAddCardWidget> {
                 ),
               ),
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
                 child: Row(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -143,10 +144,10 @@ class _PayAddCardWidgetState extends State<PayAddCardWidget> {
                       borderRadius: 54.0,
                       borderWidth: 0.0,
                       buttonSize: 32.0,
-                      fillColor: Color(0xFFF4F5F8),
+                      fillColor: const Color(0xFFF4F5F8),
                       hoverColor: FlutterFlowTheme.of(context).primary,
                       hoverIconColor: FlutterFlowTheme.of(context).primaryText,
-                      icon: Icon(
+                      icon: const Icon(
                         FFIcons.kkrestStroke,
                         color: Color(0xFF21201F),
                         size: 8.0,
@@ -161,7 +162,7 @@ class _PayAddCardWidgetState extends State<PayAddCardWidget> {
             ),
             Expanded(
               child: StreamBuilder<PayOrderRecord>(
-                stream: PayOrderRecord.getDocument(widget!.payOrderRef!),
+                stream: PayOrderRecord.getDocument(widget.payOrderRef!),
                 builder: (context, snapshot) {
                   // Customize what your widget looks like when it's loading.
                   if (!snapshot.hasData) {
@@ -230,16 +231,17 @@ class _PayAddCardWidgetState extends State<PayAddCardWidget> {
                                             BorderRadius.circular(5.0),
                                       ),
                                       child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            24.0, 32.0, 24.0, 0.0),
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(24.0, 32.0, 24.0, 0.0),
                                         child: Column(
                                           mainAxisSize: MainAxisSize.max,
                                           crossAxisAlignment:
                                               CrossAxisAlignment.center,
                                           children: [
                                             Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
+                                              padding:
+                                                  const EdgeInsetsDirectional
+                                                      .fromSTEB(
                                                       0.0, 0.0, 0.0, 16.0),
                                               child: Text(
                                                 'Карта привязана!',
@@ -280,7 +282,7 @@ class _PayAddCardWidgetState extends State<PayAddCardWidget> {
                                   decoration: BoxDecoration(
                                     color:
                                         FlutterFlowTheme.of(context).secondary,
-                                    borderRadius: BorderRadius.only(
+                                    borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(5.0),
                                       topRight: Radius.circular(5.0),
                                     ),
@@ -313,11 +315,11 @@ class _PayAddCardWidgetState extends State<PayAddCardWidget> {
                                           options: FFButtonOptions(
                                             width: double.infinity,
                                             height: 56.0,
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 0.0, 0.0, 0.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(0.0, 0.0, 0.0, 0.0),
                                             iconPadding:
-                                                EdgeInsetsDirectional.fromSTEB(
+                                                const EdgeInsetsDirectional
+                                                    .fromSTEB(
                                                     0.0, 0.0, 0.0, 0.0),
                                             color: FlutterFlowTheme.of(context)
                                                 .tertiary,
@@ -341,7 +343,7 @@ class _PayAddCardWidgetState extends State<PayAddCardWidget> {
                                     ),
                                   ),
                                 ),
-                              ].divide(SizedBox(height: 5.0)),
+                              ].divide(const SizedBox(height: 5.0)),
                             );
                           } else if (_model.urlIsSet) {
                             return ClipRRect(
@@ -376,7 +378,7 @@ class _PayAddCardWidgetState extends State<PayAddCardWidget> {
                                 borderRadius: BorderRadius.circular(5.0),
                               ),
                               child: Align(
-                                alignment: AlignmentDirectional(0.0, 0.0),
+                                alignment: const AlignmentDirectional(0.0, 0.0),
                                 child: Lottie.asset(
                                   'assets/jsons/QxDtZdOkBw.json',
                                   width: 100.0,
@@ -394,7 +396,7 @@ class _PayAddCardWidgetState extends State<PayAddCardWidget> {
                 },
               ),
             ),
-          ].divide(SizedBox(height: 5.0)),
+          ].divide(const SizedBox(height: 5.0)),
         ),
       ),
     );

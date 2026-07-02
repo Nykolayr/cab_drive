@@ -52,15 +52,15 @@ class _OtzivWidgetState extends State<OtzivWidget> {
           borderRadius: BorderRadius.circular(5.0),
         ),
         child: Padding(
-          padding: EdgeInsetsDirectional.fromSTEB(24.0, 16.0, 24.0, 16.0),
+          padding: const EdgeInsetsDirectional.fromSTEB(24.0, 16.0, 24.0, 16.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 4.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 4.0),
                 child: Text(
-                  widget!.rewDoc!.nameUserWhoWrote,
+                  widget.rewDoc!.nameUserWhoWrote,
                   maxLines: 1,
                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                         fontFamily: 'SF',
@@ -71,11 +71,11 @@ class _OtzivWidgetState extends State<OtzivWidget> {
                 ),
               ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 11.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 11.0),
                 child: Text(
                   dateTimeFormat(
                     "relative",
-                    widget!.rewDoc!.date!,
+                    widget.rewDoc!.date!,
                     locale: FFLocalizations.of(context).languageCode,
                   ),
                   style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -86,33 +86,33 @@ class _OtzivWidgetState extends State<OtzivWidget> {
                 ),
               ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 7.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 7.0),
                 child: RatingBarIndicator(
                   itemBuilder: (context, index) => Icon(
                     Icons.star_rounded,
                     color: () {
-                      if (widget!.rewDoc?.rating == 5) {
-                        return Color(0xFFFFB800);
-                      } else if (widget!.rewDoc?.rating == 4) {
-                        return Color(0xFFF68512);
-                      } else if (widget!.rewDoc?.rating == 3) {
-                        return Color(0xFFF0671C);
-                      } else if (widget!.rewDoc?.rating == 2) {
-                        return Color(0xFFE94627);
+                      if (widget.rewDoc?.rating == 5) {
+                        return const Color(0xFFFFB800);
+                      } else if (widget.rewDoc?.rating == 4) {
+                        return const Color(0xFFF68512);
+                      } else if (widget.rewDoc?.rating == 3) {
+                        return const Color(0xFFF0671C);
+                      } else if (widget.rewDoc?.rating == 2) {
+                        return const Color(0xFFE94627);
                       } else {
-                        return Color(0xFFE01935);
+                        return const Color(0xFFE01935);
                       }
                     }(),
                   ),
                   direction: Axis.horizontal,
-                  rating: widget!.rewDoc!.rating.toDouble(),
-                  unratedColor: Color(0xFFE7E7E7),
+                  rating: widget.rewDoc!.rating.toDouble(),
+                  unratedColor: const Color(0xFFE7E7E7),
                   itemCount: 5,
                   itemSize: 13.0,
                 ),
               ),
               Text(
-                widget!.rewDoc!.text,
+                widget.rewDoc!.text,
                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                       fontFamily: 'SF',
                       fontSize: 16.0,

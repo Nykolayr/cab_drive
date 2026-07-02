@@ -73,15 +73,15 @@ class _OnbordWidgetState extends State<OnbordWidget> {
                               decoration: BoxDecoration(
                                 color: FlutterFlowTheme.of(context)
                                     .secondaryBackground,
-                                borderRadius: BorderRadius.only(
+                                borderRadius: const BorderRadius.only(
                                   bottomLeft: Radius.circular(18.0),
                                   bottomRight: Radius.circular(18.0),
                                 ),
                               ),
                               child: Align(
-                                alignment: AlignmentDirectional(1.0, 0.0),
+                                alignment: const AlignmentDirectional(1.0, 0.0),
                                 child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0.0, 0.0, 4.0, 0.0),
                                   child: FFButtonWidget(
                                     onPressed: () async {
@@ -90,10 +90,11 @@ class _OnbordWidgetState extends State<OnbordWidget> {
                                     text: 'Пропустить',
                                     options: FFButtonOptions(
                                       height: 40.0,
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          12.0, 0.0, 12.0, 0.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              12.0, 0.0, 12.0, 0.0),
                                       iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
+                                          const EdgeInsetsDirectional.fromSTEB(
                                               0.0, 0.0, 0.0, 0.0),
                                       color: FlutterFlowTheme.of(context)
                                           .secondaryBackground,
@@ -168,7 +169,7 @@ class _OnbordWidgetState extends State<OnbordWidget> {
                                   borderRadius: BorderRadius.circular(18.0),
                                 ),
                                 child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       24.0, 32.0, 24.0, 0.0),
                                   child: Column(
                                     mainAxisSize: MainAxisSize.max,
@@ -176,8 +177,8 @@ class _OnbordWidgetState extends State<OnbordWidget> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, 0.0, 16.0),
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(0.0, 0.0, 0.0, 16.0),
                                         child: Text(
                                           'Приложение для водителей и заказчиков',
                                           style: FlutterFlowTheme.of(context)
@@ -238,7 +239,7 @@ class _OnbordWidgetState extends State<OnbordWidget> {
                                 ),
                               ),
                             ),
-                          ].divide(SizedBox(height: 5.0)),
+                          ].divide(const SizedBox(height: 5.0)),
                         ),
                         Column(
                           mainAxisSize: MainAxisSize.max,
@@ -251,15 +252,15 @@ class _OnbordWidgetState extends State<OnbordWidget> {
                               decoration: BoxDecoration(
                                 color: FlutterFlowTheme.of(context)
                                     .secondaryBackground,
-                                borderRadius: BorderRadius.only(
+                                borderRadius: const BorderRadius.only(
                                   bottomLeft: Radius.circular(18.0),
                                   bottomRight: Radius.circular(18.0),
                                 ),
                               ),
                               child: Align(
-                                alignment: AlignmentDirectional(1.0, 0.0),
+                                alignment: const AlignmentDirectional(1.0, 0.0),
                                 child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0.0, 0.0, 4.0, 0.0),
                                   child: FFButtonWidget(
                                     onPressed: () async {
@@ -268,10 +269,11 @@ class _OnbordWidgetState extends State<OnbordWidget> {
                                     text: 'Пропустить',
                                     options: FFButtonOptions(
                                       height: 40.0,
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          12.0, 0.0, 12.0, 0.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              12.0, 0.0, 12.0, 0.0),
                                       iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
+                                          const EdgeInsetsDirectional.fromSTEB(
                                               0.0, 0.0, 0.0, 0.0),
                                       color: FlutterFlowTheme.of(context)
                                           .secondaryBackground,
@@ -334,7 +336,7 @@ class _OnbordWidgetState extends State<OnbordWidget> {
                               child: Image.asset(
                                 'assets/images/_2.png',
                                 fit: BoxFit.contain,
-                                alignment: Alignment(0.0, 0.0),
+                                alignment: const Alignment(0.0, 0.0),
                               ),
                             ),
                             Expanded(
@@ -343,13 +345,13 @@ class _OnbordWidgetState extends State<OnbordWidget> {
                                 decoration: BoxDecoration(
                                   color: FlutterFlowTheme.of(context)
                                       .secondaryBackground,
-                                  borderRadius: BorderRadius.only(
+                                  borderRadius: const BorderRadius.only(
                                     topLeft: Radius.circular(18.0),
                                     topRight: Radius.circular(18.0),
                                   ),
                                 ),
                                 child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       24.0, 0.0, 24.0, 0.0),
                                   child: SingleChildScrollView(
                                     child: Column(
@@ -358,9 +360,8 @@ class _OnbordWidgetState extends State<OnbordWidget> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 0.0, 0.0, 16.0),
+                                          padding: const EdgeInsetsDirectional
+                                              .fromSTEB(0.0, 0.0, 0.0, 16.0),
                                           child: Text(
                                             'Малогабаритные авто для любых задач',
                                             style: FlutterFlowTheme.of(context)
@@ -420,22 +421,24 @@ class _OnbordWidgetState extends State<OnbordWidget> {
                                               ),
                                         ),
                                       ]
-                                          .addToStart(SizedBox(height: 32.0))
-                                          .addToEnd(SizedBox(height: 32.0)),
+                                          .addToStart(
+                                              const SizedBox(height: 32.0))
+                                          .addToEnd(
+                                              const SizedBox(height: 32.0)),
                                     ),
                                   ),
                                 ),
                               ),
                             ),
-                          ].divide(SizedBox(height: 5.0)),
+                          ].divide(const SizedBox(height: 5.0)),
                         ),
                       ],
                     ),
                     Align(
-                      alignment: AlignmentDirectional(0.0, -1.0),
+                      alignment: const AlignmentDirectional(0.0, -1.0),
                       child: Padding(
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 57.0, 0.0, 0.0),
+                        padding: const EdgeInsetsDirectional.fromSTEB(
+                            0.0, 57.0, 0.0, 0.0),
                         child: smooth_page_indicator.SmoothPageIndicator(
                           controller: _model.pageViewController ??=
                               PageController(initialPage: 0),
@@ -444,12 +447,12 @@ class _OnbordWidgetState extends State<OnbordWidget> {
                           onDotClicked: (i) async {
                             await _model.pageViewController!.animateToPage(
                               i,
-                              duration: Duration(milliseconds: 500),
+                              duration: const Duration(milliseconds: 500),
                               curve: Curves.ease,
                             );
                             safeSetState(() {});
                           },
-                          effect: smooth_page_indicator.SlideEffect(
+                          effect: const smooth_page_indicator.SlideEffect(
                             spacing: 5.0,
                             radius: 100.0,
                             dotWidth: 8.0,
@@ -468,18 +471,19 @@ class _OnbordWidgetState extends State<OnbordWidget> {
             Container(
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondary,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(18.0),
                   topRight: Radius.circular(18.0),
                 ),
               ),
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 34.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 34.0),
                 child: FFButtonWidget(
                   onPressed: () async {
                     if (_model.pageViewCurrentIndex == 0) {
                       await _model.pageViewController?.nextPage(
-                        duration: Duration(milliseconds: 300),
+                        duration: const Duration(milliseconds: 300),
                         curve: Curves.ease,
                       );
                       return;
@@ -493,9 +497,10 @@ class _OnbordWidgetState extends State<OnbordWidget> {
                   options: FFButtonOptions(
                     width: double.infinity,
                     height: 56.0,
-                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                    iconPadding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 0.0, 0.0, 0.0),
+                    iconPadding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 0.0, 0.0, 0.0),
                     color: FlutterFlowTheme.of(context).tertiary,
                     textStyle: FlutterFlowTheme.of(context).titleSmall.override(
                           fontFamily: 'SF',
@@ -509,7 +514,7 @@ class _OnbordWidgetState extends State<OnbordWidget> {
                 ),
               ),
             ),
-          ].divide(SizedBox(height: 5.0)),
+          ].divide(const SizedBox(height: 5.0)),
         ),
       ),
     );

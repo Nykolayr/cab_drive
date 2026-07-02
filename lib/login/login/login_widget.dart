@@ -83,7 +83,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                   height: 120.0,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).secondaryBackground,
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(18.0),
                       bottomRight: Radius.circular(18.0),
                     ),
@@ -117,9 +117,9 @@ class _LoginWidgetState extends State<LoginWidget> {
                           text: 'войти',
                           options: FFButtonOptions(
                             height: 40.0,
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 16.0, 0.0, 16.0, 0.0),
-                            iconPadding: EdgeInsetsDirectional.fromSTEB(
+                            iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 0.0),
                             color: FlutterFlowTheme.of(context).tertiary,
                             textStyle: FlutterFlowTheme.of(context)
@@ -211,9 +211,9 @@ class _LoginWidgetState extends State<LoginWidget> {
                           text: 'Создать акк',
                           options: FFButtonOptions(
                             height: 40.0,
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 16.0, 0.0, 16.0, 0.0),
-                            iconPadding: EdgeInsetsDirectional.fromSTEB(
+                            iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 0.0),
                             color: FlutterFlowTheme.of(context).tertiary,
                             textStyle: FlutterFlowTheme.of(context)
@@ -227,7 +227,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                         ),
-                    ].divide(SizedBox(width: 22.0)),
+                    ].divide(const SizedBox(width: 22.0)),
                   ),
                 ),
                 Container(
@@ -238,13 +238,13 @@ class _LoginWidgetState extends State<LoginWidget> {
                   ),
                   child: Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(8.0, 32.0, 8.0, 8.0),
+                        const EdgeInsetsDirectional.fromSTEB(8.0, 32.0, 8.0, 8.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               16.0, 0.0, 16.0, 0.0),
                           child: Text(
                             'Войти или создать профиль',
@@ -268,7 +268,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               16.0, 24.0, 16.0, 0.0),
                           child: Text(
                             'Введите номер телефона чтобы, войти или зарегестрироваться ',
@@ -276,7 +276,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                                 .bodyMedium
                                 .override(
                                   fontFamily: 'SF',
-                                  color: Color(0xFFA4A6B2),
+                                  color: const Color(0xFFA4A6B2),
                                   fontSize: 16.0,
                                   letterSpacing: 0.0,
                                   lineHeight: 1.467,
@@ -284,7 +284,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               16.0, 8.0, 16.0, 0.0),
                           child: Container(
                             width: double.infinity,
@@ -300,7 +300,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 16.0, 0.0, 0.0),
                           child: FFButtonWidget(
                             onPressed: () async {
@@ -405,9 +405,9 @@ class _LoginWidgetState extends State<LoginWidget> {
                             options: FFButtonOptions(
                               width: double.infinity,
                               height: 56.0,
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
+                              iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
                               color: FlutterFlowTheme.of(context).tertiary,
                               textStyle: FlutterFlowTheme.of(context)
@@ -433,7 +433,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                     : _isKeyboardVisible))
                   Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(24.0, 12.0, 24.0, 0.0),
+                        const EdgeInsetsDirectional.fromSTEB(24.0, 12.0, 24.0, 0.0),
                     child: InkWell(
                       splashColor: Colors.transparent,
                       focusColor: Colors.transparent,
@@ -453,11 +453,11 @@ class _LoginWidgetState extends State<LoginWidget> {
                                   .bodyMedium
                                   .override(
                                     fontFamily: 'SF',
-                                    color: Color(0xFFA4A6B2),
+                                    color: const Color(0xFFA4A6B2),
                                     letterSpacing: 0.0,
                                   ),
                             ),
-                            TextSpan(
+                            const TextSpan(
                               text: 'Политики конфиденциальности',
                               style: TextStyle(),
                             )
@@ -472,7 +472,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                       ),
                     ),
                   ),
-              ].divide(SizedBox(height: 5.0)),
+              ].divide(const SizedBox(height: 5.0)),
             ),
           ],
         ),

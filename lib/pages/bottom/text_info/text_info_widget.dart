@@ -33,7 +33,7 @@ class _TextInfoWidgetState extends State<TextInfoWidget> {
     super.initState();
     _model = createModel(context, () => TextInfoModel());
 
-    _model.inputTextController ??= TextEditingController(text: widget!.pole);
+    _model.inputTextController ??= TextEditingController(text: widget.pole);
     _model.inputFocusNode ??= FocusNode();
   }
 
@@ -48,10 +48,10 @@ class _TextInfoWidgetState extends State<TextInfoWidget> {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      constraints: BoxConstraints(
+      constraints: const BoxConstraints(
         minHeight: 57.0,
       ),
-      decoration: BoxDecoration(),
+      decoration: const BoxDecoration(),
       child: Stack(
         children: [
           TextFormField(
@@ -63,22 +63,22 @@ class _TextInfoWidgetState extends State<TextInfoWidget> {
             obscureText: false,
             decoration: InputDecoration(
               isDense: false,
-              labelText: widget!.tittle,
+              labelText: widget.tittle,
               labelStyle: FlutterFlowTheme.of(context).labelMedium.override(
                     fontFamily: 'SF',
-                    color: Color(0xFF8F8F8E),
+                    color: const Color(0xFF8F8F8E),
                     fontSize: 16.0,
                     letterSpacing: 0.0,
                   ),
               enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(
+                borderSide: const BorderSide(
                   color: Color(0xFFD0CFCE),
                   width: 0.3,
                 ),
                 borderRadius: BorderRadius.circular(0.0),
               ),
               focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(
+                borderSide: const BorderSide(
                   color: Color(0xFFD0CFCE),
                   width: 0.3,
                 ),
@@ -99,7 +99,7 @@ class _TextInfoWidgetState extends State<TextInfoWidget> {
                 borderRadius: BorderRadius.circular(0.0),
               ),
               contentPadding:
-                  EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 16.0),
+                  const EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 16.0),
               hoverColor: Colors.transparent,
             ),
             style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -124,10 +124,10 @@ class _TextInfoWidgetState extends State<TextInfoWidget> {
           ),
           Container(
             width: double.infinity,
-            constraints: BoxConstraints(
+            constraints: const BoxConstraints(
               minHeight: 57.0,
             ),
-            decoration: BoxDecoration(),
+            decoration: const BoxDecoration(),
           ),
         ],
       ),

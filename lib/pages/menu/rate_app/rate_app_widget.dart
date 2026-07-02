@@ -5,7 +5,6 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/pages/bottom/chips_card/chips_card_widget.dart';
-import 'dart:ui';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -48,13 +47,13 @@ class _RateAppWidgetState extends State<RateAppWidget> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(0.0, 50.0, 0.0, 0.0),
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 50.0, 0.0, 0.0),
       child: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).primaryBackground,
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(22.0),
             topRight: Radius.circular(22.0),
           ),
@@ -68,7 +67,7 @@ class _RateAppWidgetState extends State<RateAppWidget> {
               height: 64.0,
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondaryBackground,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(22.0),
                   topRight: Radius.circular(22.0),
                   bottomLeft: Radius.circular(5.0),
@@ -76,7 +75,8 @@ class _RateAppWidgetState extends State<RateAppWidget> {
                 ),
               ),
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
                 child: Row(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -127,12 +127,12 @@ class _RateAppWidgetState extends State<RateAppWidget> {
                   color: FlutterFlowTheme.of(context).secondaryBackground,
                   borderRadius: BorderRadius.circular(5.0),
                 ),
-                child: Container(
+                child: SizedBox(
                   width: double.infinity,
                   height: double.infinity,
                   child: Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 40.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 0.0, 0.0, 40.0),
                     child: PageView(
                       physics: const NeverScrollableScrollPhysics(),
                       controller: _model.pageViewController ??=
@@ -206,12 +206,12 @@ class _RateAppWidgetState extends State<RateAppWidget> {
                                 ),
                               ),
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     24.0, 24.0, 24.0, 0.0),
                                 child: Form(
                                   key: _model.formKey,
                                   autovalidateMode: AutovalidateMode.disabled,
-                                  child: Container(
+                                  child: SizedBox(
                                     width: double.infinity,
                                     child: TextFormField(
                                       controller:
@@ -219,7 +219,7 @@ class _RateAppWidgetState extends State<RateAppWidget> {
                                       focusNode: _model.nameInputFocusNode,
                                       onChanged: (_) => EasyDebounce.debounce(
                                         '_model.nameInputTextController',
-                                        Duration(milliseconds: 0),
+                                        const Duration(milliseconds: 0),
                                         () => safeSetState(() {}),
                                       ),
                                       autofocus: false,
@@ -235,7 +235,7 @@ class _RateAppWidgetState extends State<RateAppWidget> {
                                             .labelMedium
                                             .override(
                                               fontFamily: 'SF',
-                                              color: Color(0xFFA4A6B2),
+                                              color: const Color(0xFFA4A6B2),
                                               fontSize: 16.0,
                                               letterSpacing: 0.0,
                                             ),
@@ -277,8 +277,8 @@ class _RateAppWidgetState extends State<RateAppWidget> {
                                               BorderRadius.circular(0.0),
                                         ),
                                         contentPadding:
-                                            EdgeInsetsDirectional.fromSTEB(
-                                                0.0, 0.0, 0.0, 16.0),
+                                            const EdgeInsetsDirectional
+                                                .fromSTEB(0.0, 0.0, 0.0, 16.0),
                                         hoverColor: Colors.transparent,
                                       ),
                                       style: FlutterFlowTheme.of(context)
@@ -313,12 +313,12 @@ class _RateAppWidgetState extends State<RateAppWidget> {
                                 ),
                               ),
                             ]
-                                .addToStart(SizedBox(height: 16.0))
-                                .addToEnd(SizedBox(height: 150.0)),
+                                .addToStart(const SizedBox(height: 16.0))
+                                .addToEnd(const SizedBox(height: 150.0)),
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               24.0, 24.0, 24.0, 0.0),
                           child: Text(
                             'Мы читаем каждое сообщение. Если нас хвалят - радуемся. Если ругают - думаем, как всё исправить. Без вас ничего бы не получилось!',
@@ -353,13 +353,14 @@ class _RateAppWidgetState extends State<RateAppWidget> {
             Container(
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondary,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(5.0),
                   topRight: Radius.circular(5.0),
                 ),
               ),
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 35.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 35.0),
                 child: FFButtonWidget(
                   onPressed: (_model.chips == null || _model.chips == '')
                       ? null
@@ -379,7 +380,7 @@ class _RateAppWidgetState extends State<RateAppWidget> {
                                   date: getCurrentTimestamp,
                                 ));
                             await _model.pageViewController?.nextPage(
-                              duration: Duration(milliseconds: 300),
+                              duration: const Duration(milliseconds: 300),
                               curve: Curves.ease,
                             );
                             return;
@@ -397,9 +398,10 @@ class _RateAppWidgetState extends State<RateAppWidget> {
                   options: FFButtonOptions(
                     width: double.infinity,
                     height: 56.0,
-                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                    iconPadding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 0.0, 0.0, 0.0),
+                    iconPadding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 0.0, 0.0, 0.0),
                     color: FlutterFlowTheme.of(context).tertiary,
                     textStyle: FlutterFlowTheme.of(context).titleSmall.override(
                           fontFamily: 'SF',
@@ -416,7 +418,7 @@ class _RateAppWidgetState extends State<RateAppWidget> {
                 ),
               ),
             ),
-          ].divide(SizedBox(height: 5.0)),
+          ].divide(const SizedBox(height: 5.0)),
         ),
       ),
     );

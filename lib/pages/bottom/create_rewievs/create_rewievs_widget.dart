@@ -22,7 +22,7 @@ class CreateRewievsWidget extends StatefulWidget {
     required this.user,
     int? rait,
     required this.order,
-  }) : this.rait = rait ?? 5;
+  }) : rait = rait ?? 5;
 
   final DocumentReference? user;
   final int rait;
@@ -51,10 +51,8 @@ class _CreateRewievsWidgetState extends State<CreateRewievsWidget> {
 
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      if (widget!.rait != null) {
-        _model.rait = widget!.rait;
-        safeSetState(() {});
-      }
+      _model.rait = widget.rait;
+      safeSetState(() {});
     });
 
     if (!isWeb) {
@@ -88,7 +86,7 @@ class _CreateRewievsWidgetState extends State<CreateRewievsWidget> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).primaryBackground,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(22.0),
           topRight: Radius.circular(22.0),
         ),
@@ -102,7 +100,7 @@ class _CreateRewievsWidgetState extends State<CreateRewievsWidget> {
             height: 64.0,
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).secondaryBackground,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(22.0),
                 topRight: Radius.circular(22.0),
                 bottomLeft: Radius.circular(5.0),
@@ -110,7 +108,8 @@ class _CreateRewievsWidgetState extends State<CreateRewievsWidget> {
               ),
             ),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -133,10 +132,10 @@ class _CreateRewievsWidgetState extends State<CreateRewievsWidget> {
                     borderRadius: 54.0,
                     borderWidth: 0.0,
                     buttonSize: 32.0,
-                    fillColor: Color(0xFFF4F5F8),
+                    fillColor: const Color(0xFFF4F5F8),
                     hoverColor: FlutterFlowTheme.of(context).primary,
                     hoverIconColor: FlutterFlowTheme.of(context).primaryText,
-                    icon: Icon(
+                    icon: const Icon(
                       FFIcons.kkrestStroke,
                       color: Color(0xFF21201F),
                       size: 8.0,
@@ -154,9 +153,10 @@ class _CreateRewievsWidgetState extends State<CreateRewievsWidget> {
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).secondaryBackground,
             ),
-            alignment: AlignmentDirectional(0.0, 0.0),
+            alignment: const AlignmentDirectional(0.0, 0.0),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(8.0, 35.0, 8.0, 35.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(8.0, 35.0, 8.0, 35.0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -171,20 +171,20 @@ class _CreateRewievsWidgetState extends State<CreateRewievsWidget> {
                         color: valueOrDefault<Color>(
                           () {
                             if (_model.rait == 1) {
-                              return Color(0xFF850000);
+                              return const Color(0xFF850000);
                             } else if (_model.rait == 2) {
-                              return Color(0xFFFF0000);
+                              return const Color(0xFFFF0000);
                             } else if (_model.rait == 3) {
-                              return Color(0xFFFF3D00);
+                              return const Color(0xFFFF3D00);
                             } else if (_model.rait == 4) {
-                              return Color(0xFFFF7000);
+                              return const Color(0xFFFF7000);
                             } else if (_model.rait == 5) {
-                              return Color(0xFFFFC600);
+                              return const Color(0xFFFFC600);
                             } else {
-                              return Color(0xFFEEEEEE);
+                              return const Color(0xFFEEEEEE);
                             }
                           }(),
-                          Color(0xFFEEEEEE),
+                          const Color(0xFFEEEEEE),
                         ),
                         size: 40.0,
                       ),
@@ -204,18 +204,18 @@ class _CreateRewievsWidgetState extends State<CreateRewievsWidget> {
                         color: valueOrDefault<Color>(
                           () {
                             if (_model.rait == 2) {
-                              return Color(0xFFFF0000);
+                              return const Color(0xFFFF0000);
                             } else if (_model.rait == 3) {
-                              return Color(0xFFFF3D00);
+                              return const Color(0xFFFF3D00);
                             } else if (_model.rait == 4) {
-                              return Color(0xFFFF7000);
+                              return const Color(0xFFFF7000);
                             } else if (_model.rait == 5) {
-                              return Color(0xFFFFC600);
+                              return const Color(0xFFFFC600);
                             } else {
-                              return Color(0xFFEEEEEE);
+                              return const Color(0xFFEEEEEE);
                             }
                           }(),
-                          Color(0xFFEEEEEE),
+                          const Color(0xFFEEEEEE),
                         ),
                         size: 40.0,
                       ),
@@ -235,16 +235,16 @@ class _CreateRewievsWidgetState extends State<CreateRewievsWidget> {
                         color: valueOrDefault<Color>(
                           () {
                             if (_model.rait == 3) {
-                              return Color(0xFFFF3D00);
+                              return const Color(0xFFFF3D00);
                             } else if (_model.rait == 4) {
-                              return Color(0xFFFF7000);
+                              return const Color(0xFFFF7000);
                             } else if (_model.rait == 5) {
-                              return Color(0xFFFFC600);
+                              return const Color(0xFFFFC600);
                             } else {
-                              return Color(0xFFEEEEEE);
+                              return const Color(0xFFEEEEEE);
                             }
                           }(),
-                          Color(0xFFEEEEEE),
+                          const Color(0xFFEEEEEE),
                         ),
                         size: 40.0,
                       ),
@@ -264,14 +264,14 @@ class _CreateRewievsWidgetState extends State<CreateRewievsWidget> {
                         color: valueOrDefault<Color>(
                           () {
                             if (_model.rait == 4) {
-                              return Color(0xFFFF7000);
+                              return const Color(0xFFFF7000);
                             } else if (_model.rait == 5) {
-                              return Color(0xFFFFC600);
+                              return const Color(0xFFFFC600);
                             } else {
-                              return Color(0xFFEEEEEE);
+                              return const Color(0xFFEEEEEE);
                             }
                           }(),
-                          Color(0xFFEEEEEE),
+                          const Color(0xFFEEEEEE),
                         ),
                         size: 40.0,
                       ),
@@ -290,9 +290,9 @@ class _CreateRewievsWidgetState extends State<CreateRewievsWidget> {
                         FFIcons.kantDesignStarFilled,
                         color: valueOrDefault<Color>(
                           _model.rait == 5
-                              ? Color(0xFFFFC600)
-                              : Color(0xFFEEEEEE),
-                          Color(0xFFEEEEEE),
+                              ? const Color(0xFFFFC600)
+                              : const Color(0xFFEEEEEE),
+                          const Color(0xFFEEEEEE),
                         ),
                         size: 40.0,
                       ),
@@ -313,7 +313,7 @@ class _CreateRewievsWidgetState extends State<CreateRewievsWidget> {
               borderRadius: BorderRadius.circular(5.0),
             ),
             child: Padding(
-              padding: EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(24.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -336,8 +336,8 @@ class _CreateRewievsWidgetState extends State<CreateRewievsWidget> {
                         ),
                   ),
                   Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 12.0, 0.0, 0.0),
                     child: TextFormField(
                       controller: _model.textController,
                       focusNode: _model.textFieldFocusNode,
@@ -358,14 +358,14 @@ class _CreateRewievsWidgetState extends State<CreateRewievsWidget> {
                                   lineHeight: 0.0,
                                 ),
                         enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(
+                          borderSide: const BorderSide(
                             color: Color(0xFFD0CFCE),
                             width: 0.3,
                           ),
                           borderRadius: BorderRadius.circular(0.0),
                         ),
                         focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(
+                          borderSide: const BorderSide(
                             color: Color(0xFFD0CFCE),
                             width: 0.3,
                           ),
@@ -385,7 +385,7 @@ class _CreateRewievsWidgetState extends State<CreateRewievsWidget> {
                           ),
                           borderRadius: BorderRadius.circular(0.0),
                         ),
-                        contentPadding: EdgeInsetsDirectional.fromSTEB(
+                        contentPadding: const EdgeInsetsDirectional.fromSTEB(
                             0.0, 24.0, 0.0, 22.0),
                         hoverColor: Colors.transparent,
                       ),
@@ -418,7 +418,7 @@ class _CreateRewievsWidgetState extends State<CreateRewievsWidget> {
           Container(
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).secondary,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(5.0),
                 topRight: Radius.circular(5.0),
               ),
@@ -438,14 +438,13 @@ class _CreateRewievsWidgetState extends State<CreateRewievsWidget> {
                   )),
               child: FFButtonWidget(
                 onPressed: ((_model.rait == null) ||
-                        (_model.textController.text == null ||
-                            _model.textController.text == ''))
+                        (_model.textController.text == ''))
                     ? null
                     : () async {
                         await ReviewsRecord.collection
                             .doc()
                             .set(createReviewsRecordData(
-                              userWhoWasReviewed: widget!.user,
+                              userWhoWasReviewed: widget.user,
                               userWhoWroteTheReview: currentUserReference,
                               text: _model.textController.text,
                               rating: _model.rait,
@@ -454,20 +453,20 @@ class _CreateRewievsWidgetState extends State<CreateRewievsWidget> {
                                   '${currentUserDisplayName} ${valueOrDefault(currentUserDocument?.surname, '')}',
                             ));
                         if (FFAppState().driver) {
-                          await widget!.order!.update(createOrderRecordData(
+                          await widget.order!.update(createOrderRecordData(
                             customerReviewed: true,
                           ));
                         } else {
-                          await widget!.order!.update(createOrderRecordData(
+                          await widget.order!.update(createOrderRecordData(
                             driverReviewed: true,
                           ));
                         }
 
                         _model.user =
-                            await UsersRecord.getDocumentOnce(widget!.user!);
+                            await UsersRecord.getDocumentOnce(widget.user!);
                         unawaited(
                           () async {
-                            await widget!.user!.update({
+                            await widget.user!.update({
                               ...createUsersRecordData(
                                 averageRating:
                                     functions.recalculateRatingWithNewReview(
@@ -491,9 +490,10 @@ class _CreateRewievsWidgetState extends State<CreateRewievsWidget> {
                 options: FFButtonOptions(
                   width: double.infinity,
                   height: 56.0,
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                   iconPadding:
-                      EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                   color: FlutterFlowTheme.of(context).tertiary,
                   textStyle: FlutterFlowTheme.of(context).titleSmall.override(
                         fontFamily: 'SF',
@@ -509,7 +509,7 @@ class _CreateRewievsWidgetState extends State<CreateRewievsWidget> {
               ),
             ),
           ),
-        ].divide(SizedBox(height: 5.0)),
+        ].divide(const SizedBox(height: 5.0)),
       ),
     );
   }

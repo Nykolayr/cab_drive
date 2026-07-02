@@ -51,7 +51,7 @@ class _PhotoSPasportWidgetState extends State<PhotoSPasportWidget> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).primaryBackground,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(22.0),
           topRight: Radius.circular(22.0),
         ),
@@ -65,7 +65,7 @@ class _PhotoSPasportWidgetState extends State<PhotoSPasportWidget> {
             height: 64.0,
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).secondaryBackground,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(22.0),
                 topRight: Radius.circular(22.0),
                 bottomLeft: Radius.circular(5.0),
@@ -73,13 +73,14 @@ class _PhotoSPasportWidgetState extends State<PhotoSPasportWidget> {
               ),
             ),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Align(
-                    alignment: AlignmentDirectional(-1.0, 0.0),
+                    alignment: const AlignmentDirectional(-1.0, 0.0),
                     child: Text(
                       'Селфи с паспортом',
                       textAlign: TextAlign.center,
@@ -97,10 +98,10 @@ class _PhotoSPasportWidgetState extends State<PhotoSPasportWidget> {
                     borderRadius: 54.0,
                     borderWidth: 0.0,
                     buttonSize: 32.0,
-                    fillColor: Color(0xFFF4F5F8),
+                    fillColor: const Color(0xFFF4F5F8),
                     hoverColor: FlutterFlowTheme.of(context).primary,
                     hoverIconColor: FlutterFlowTheme.of(context).primaryText,
-                    icon: Icon(
+                    icon: const Icon(
                       FFIcons.kkrestStroke,
                       color: Color(0xFF21201F),
                       size: 8.0,
@@ -117,7 +118,7 @@ class _PhotoSPasportWidgetState extends State<PhotoSPasportWidget> {
                             return WebViewAware(
                               child: Padding(
                                 padding: MediaQuery.viewInsetsOf(context),
-                                child: ErrorPopupWidget(
+                                child: const ErrorPopupWidget(
                                   title: 'Загрузка не завершена',
                                   text:
                                       'Фото с паспортом ещё не успело загрузиться. Пожалуйста, дождитесь окончания.',
@@ -142,7 +143,7 @@ class _PhotoSPasportWidgetState extends State<PhotoSPasportWidget> {
               borderRadius: BorderRadius.circular(5.0),
             ),
             child: Padding(
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8.0),
                 child: Image.asset(
@@ -161,7 +162,8 @@ class _PhotoSPasportWidgetState extends State<PhotoSPasportWidget> {
               borderRadius: BorderRadius.circular(5.0),
             ),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(16.0, 24.0, 16.0, 24.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(16.0, 24.0, 16.0, 24.0),
               child: Text(
                 'Должно быть чётко видно данные паспорта и твое лицо',
                 textAlign: TextAlign.start,
@@ -177,13 +179,14 @@ class _PhotoSPasportWidgetState extends State<PhotoSPasportWidget> {
           Container(
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).secondary,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(5.0),
                 topRight: Radius.circular(5.0),
               ),
             ),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 35.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 35.0),
               child: FFButtonWidget(
                 onPressed: () async {
                   final selectedMedia = await selectMedia(
@@ -250,7 +253,7 @@ class _PhotoSPasportWidgetState extends State<PhotoSPasportWidget> {
                         return WebViewAware(
                           child: Padding(
                             padding: MediaQuery.viewInsetsOf(context),
-                            child: ErrorPopupWidget(
+                            child: const ErrorPopupWidget(
                               title: 'Что-то пошло не так',
                               text: 'Давайте попробуем позже.',
                             ),
@@ -266,9 +269,10 @@ class _PhotoSPasportWidgetState extends State<PhotoSPasportWidget> {
                 options: FFButtonOptions(
                   width: double.infinity,
                   height: 56.0,
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                   iconPadding:
-                      EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                   color: FlutterFlowTheme.of(context).tertiary,
                   textStyle: FlutterFlowTheme.of(context).titleSmall.override(
                         fontFamily: 'SF',
@@ -281,7 +285,7 @@ class _PhotoSPasportWidgetState extends State<PhotoSPasportWidget> {
               ),
             ),
           ),
-        ].divide(SizedBox(height: 5.0)),
+        ].divide(const SizedBox(height: 5.0)),
       ),
     );
   }

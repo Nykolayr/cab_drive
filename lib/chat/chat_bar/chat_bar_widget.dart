@@ -491,7 +491,7 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
                                     });
                                     triggerPushNotification(
                                       notificationTitle:
-                                          '${currentUserDisplayName} ${valueOrDefault(currentUserDocument?.surname, '')}',
+                                          '$currentUserDisplayName ${valueOrDefault(currentUserDocument?.surname, '')}',
                                       notificationText: _model.newmess2?.text !=
                                                   null &&
                                               _model.newmess2?.text != ''
@@ -508,7 +508,7 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
                                       parameterData: {
                                         'chat': widget.chat,
                                         'name':
-                                            '${currentUserDisplayName} ${valueOrDefault(currentUserDocument?.surname, '')}',
+                                            '$currentUserDisplayName ${valueOrDefault(currentUserDocument?.surname, '')}',
                                       },
                                     );
                                     _model.images = [];
@@ -565,7 +565,7 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
                                     });
                                     triggerPushNotification(
                                       notificationTitle:
-                                          '${currentUserDisplayName} ${valueOrDefault(currentUserDocument?.surname, '')}',
+                                          '$currentUserDisplayName ${valueOrDefault(currentUserDocument?.surname, '')}',
                                       notificationText: _model.newmess!.text,
                                       notificationImageUrl: currentUserPhoto,
                                       notificationSound: 'default',
@@ -574,7 +574,7 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
                                       parameterData: {
                                         'chat': widget.chat,
                                         'name':
-                                            '${currentUserDisplayName} ${valueOrDefault(currentUserDocument?.surname, '')}',
+                                            '$currentUserDisplayName ${valueOrDefault(currentUserDocument?.surname, '')}',
                                       },
                                     );
                                   }

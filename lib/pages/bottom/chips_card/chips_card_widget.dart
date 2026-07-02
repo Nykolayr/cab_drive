@@ -53,20 +53,20 @@ class _ChipsCardWidgetState extends State<ChipsCardWidget> {
       highlightColor: Colors.transparent,
       onTap: () async {
         await widget.action?.call(
-          widget!.text!,
+          widget.text!,
         );
         HapticFeedback.mediumImpact();
       },
       child: Container(
-        decoration: BoxDecoration(),
+        decoration: const BoxDecoration(),
         child: Padding(
-          padding: EdgeInsetsDirectional.fromSTEB(24.0, 12.0, 24.0, 12.0),
+          padding: const EdgeInsetsDirectional.fromSTEB(24.0, 12.0, 24.0, 12.0),
           child: Row(
             mainAxisSize: MainAxisSize.max,
             children: [
               Expanded(
                 child: Text(
-                  widget!.text!,
+                  widget.text!,
                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                         fontFamily: 'SF',
                         fontSize: 16.0,
@@ -82,7 +82,7 @@ class _ChipsCardWidgetState extends State<ChipsCardWidget> {
                   shape: BoxShape.circle,
                 ),
                 child: Visibility(
-                  visible: widget!.selectedItem == widget!.text,
+                  visible: widget.selectedItem == widget.text,
                   child: Container(
                     width: double.infinity,
                     height: double.infinity,

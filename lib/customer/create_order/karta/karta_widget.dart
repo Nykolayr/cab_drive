@@ -87,15 +87,15 @@ class _KartaWidgetState extends State<KartaWidget> {
     context.watch<FFAppState>();
 
     return Align(
-      alignment: AlignmentDirectional(0.0, 1.0),
+      alignment: const AlignmentDirectional(0.0, 1.0),
       child: Padding(
-        padding: EdgeInsetsDirectional.fromSTEB(0.0, 50.0, 0.0, 0.0),
+        padding: const EdgeInsetsDirectional.fromSTEB(0.0, 50.0, 0.0, 0.0),
         child: Container(
           width: double.infinity,
           height: double.infinity,
           decoration: BoxDecoration(
             color: FlutterFlowTheme.of(context).secondaryBackground,
-            boxShadow: [
+            boxShadow: const [
               BoxShadow(
                 blurRadius: 4.0,
                 color: Colors.black,
@@ -106,7 +106,7 @@ class _KartaWidgetState extends State<KartaWidget> {
                 spreadRadius: 0.0,
               )
             ],
-            borderRadius: BorderRadius.only(
+            borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(14.0),
               topRight: Radius.circular(14.0),
               bottomLeft: Radius.circular(5.0),
@@ -114,21 +114,21 @@ class _KartaWidgetState extends State<KartaWidget> {
             ),
           ),
           child: Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(8.0, 5.0, 8.0, 0.0),
+            padding: const EdgeInsetsDirectional.fromSTEB(8.0, 5.0, 8.0, 0.0),
             child: Column(
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Align(
-                  alignment: AlignmentDirectional(0.0, -1.0),
+                  alignment: const AlignmentDirectional(0.0, -1.0),
                   child: Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 0.0, 0.0, 16.0),
                     child: Container(
                       width: 39.0,
                       height: 5.0,
                       decoration: BoxDecoration(
-                        color: Color(0xFFD9D9D9),
+                        color: const Color(0xFFD9D9D9),
                         borderRadius: BorderRadius.circular(28.0),
                       ),
                     ),
@@ -139,7 +139,7 @@ class _KartaWidgetState extends State<KartaWidget> {
                   height: 62.0,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).secondaryBackground,
-                    boxShadow: [
+                    boxShadow: const [
                       BoxShadow(
                         blurRadius: 30.0,
                         color: Color(0x1E090909),
@@ -153,7 +153,7 @@ class _KartaWidgetState extends State<KartaWidget> {
                     borderRadius: BorderRadius.circular(17.0),
                   ),
                   child: Padding(
-                    padding: EdgeInsets.all(12.0),
+                    padding: const EdgeInsets.all(12.0),
                     child: Row(
                       mainAxisSize: MainAxisSize.max,
                       children: [
@@ -166,20 +166,21 @@ class _KartaWidgetState extends State<KartaWidget> {
                         ),
                         Expanded(
                           child: Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 8.0, 0.0, 0.0, 0.0),
-                            child: Container(
+                            child: SizedBox(
                               width: double.infinity,
                               child: TextFormField(
                                 controller: _model.pointTextController,
                                 focusNode: _model.pointFocusNode,
                                 onChanged: (_) => EasyDebounce.debounce(
                                   '_model.pointTextController',
-                                  Duration(milliseconds: 0),
+                                  const Duration(milliseconds: 0),
                                   () async {
                                     currentUserLocationValue =
                                         await getCurrentUserLocation(
-                                            defaultLocation: LatLng(0.0, 0.0));
+                                            defaultLocation:
+                                                const LatLng(0.0, 0.0));
                                     _model.apiResult1ve =
                                         await AutocompleteCall.call(
                                       input: _model.pointTextController.text,
@@ -214,7 +215,7 @@ class _KartaWidgetState extends State<KartaWidget> {
                                   errorBorder: InputBorder.none,
                                   focusedErrorBorder: InputBorder.none,
                                   contentPadding:
-                                      EdgeInsetsDirectional.fromSTEB(
+                                      const EdgeInsetsDirectional.fromSTEB(
                                           0.0, 15.0, 0.0, 15.0),
                                   hoverColor: Colors.transparent,
                                   suffixIcon: _model
@@ -225,7 +226,7 @@ class _KartaWidgetState extends State<KartaWidget> {
                                             currentUserLocationValue =
                                                 await getCurrentUserLocation(
                                                     defaultLocation:
-                                                        LatLng(0.0, 0.0));
+                                                        const LatLng(0.0, 0.0));
                                             _model.apiResult1ve =
                                                 await AutocompleteCall.call(
                                               input: _model
@@ -237,7 +238,7 @@ class _KartaWidgetState extends State<KartaWidget> {
                                             safeSetState(() {});
                                             safeSetState(() {});
                                           },
-                                          child: Icon(
+                                          child: const Icon(
                                             Icons.clear,
                                             size: 24.0,
                                           ),
@@ -284,7 +285,7 @@ class _KartaWidgetState extends State<KartaWidget> {
                         [];
 
                     return ListView.builder(
-                      padding: EdgeInsets.fromLTRB(
+                      padding: const EdgeInsets.fromLTRB(
                         0,
                         12.0,
                         0,
@@ -512,9 +513,9 @@ class _KartaWidgetState extends State<KartaWidget> {
                             if (_shouldSetState) safeSetState(() {});
                           },
                           child: Container(
-                            decoration: BoxDecoration(),
+                            decoration: const BoxDecoration(),
                             child: Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   24.0, 14.0, 24.0, 14.0),
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
@@ -558,8 +559,9 @@ class _KartaWidgetState extends State<KartaWidget> {
                                           )?.elementAtOrNull(pointIndex)) !=
                                           '')
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 6.0, 0.0, 0.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              0.0, 6.0, 0.0, 0.0),
                                       child: Text(
                                         (AutocompleteCall.region(
                                           (_model.apiResult1ve?.jsonBody ?? ''),

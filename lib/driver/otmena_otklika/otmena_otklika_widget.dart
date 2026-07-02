@@ -52,7 +52,7 @@ class _OtmenaOtklikaWidgetState extends State<OtmenaOtklikaWidget> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).primaryBackground,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(22.0),
           topRight: Radius.circular(22.0),
         ),
@@ -66,7 +66,7 @@ class _OtmenaOtklikaWidgetState extends State<OtmenaOtklikaWidget> {
             height: 64.0,
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).secondaryBackground,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(22.0),
                 topRight: Radius.circular(22.0),
                 bottomLeft: Radius.circular(5.0),
@@ -74,7 +74,8 @@ class _OtmenaOtklikaWidgetState extends State<OtmenaOtklikaWidget> {
               ),
             ),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -95,10 +96,10 @@ class _OtmenaOtklikaWidgetState extends State<OtmenaOtklikaWidget> {
                     borderRadius: 54.0,
                     borderWidth: 0.0,
                     buttonSize: 32.0,
-                    fillColor: Color(0xFFF4F5F8),
+                    fillColor: const Color(0xFFF4F5F8),
                     hoverColor: FlutterFlowTheme.of(context).primary,
                     hoverIconColor: FlutterFlowTheme.of(context).primaryText,
-                    icon: Icon(
+                    icon: const Icon(
                       FFIcons.kkrestStroke,
                       color: Color(0xFF21201F),
                       size: 8.0,
@@ -118,7 +119,7 @@ class _OtmenaOtklikaWidgetState extends State<OtmenaOtklikaWidget> {
               borderRadius: BorderRadius.circular(5.0),
             ),
             child: Padding(
-              padding: EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(24.0),
               child: Text(
                 'Заказчик еще не выбрал исполнителя',
                 style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -133,19 +134,20 @@ class _OtmenaOtklikaWidgetState extends State<OtmenaOtklikaWidget> {
           Container(
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).secondary,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(5.0),
                 topRight: Radius.circular(5.0),
               ),
             ),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 34.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 34.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   FFButtonWidget(
                     onPressed: () async {
-                      await widget!.order!.reference.update({
+                      await widget.order!.reference.update({
                         ...mapToFirestore(
                           {
                             'user_who_responced':
@@ -154,22 +156,22 @@ class _OtmenaOtklikaWidgetState extends State<OtmenaOtklikaWidget> {
                           },
                         ),
                       });
-                      await widget!.resp!.delete();
+                      await widget.resp!.delete();
                       Navigator.pop(context);
                     },
                     text: 'Отменить отклик',
                     options: FFButtonOptions(
                       width: double.infinity,
                       height: 56.0,
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                      iconPadding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                      color: Color(0xFFF4F5F8),
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                          0.0, 0.0, 0.0, 0.0),
+                      iconPadding: const EdgeInsetsDirectional.fromSTEB(
+                          0.0, 0.0, 0.0, 0.0),
+                      color: const Color(0xFFF4F5F8),
                       textStyle:
                           FlutterFlowTheme.of(context).titleSmall.override(
                                 fontFamily: 'SF',
-                                color: Color(0xFFFF0004),
+                                color: const Color(0xFFFF0004),
                                 letterSpacing: 0.0,
                               ),
                       elevation: 0.0,
@@ -184,10 +186,10 @@ class _OtmenaOtklikaWidgetState extends State<OtmenaOtklikaWidget> {
                     options: FFButtonOptions(
                       width: double.infinity,
                       height: 56.0,
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                      iconPadding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                          0.0, 0.0, 0.0, 0.0),
+                      iconPadding: const EdgeInsetsDirectional.fromSTEB(
+                          0.0, 0.0, 0.0, 0.0),
                       color: FlutterFlowTheme.of(context).tertiary,
                       textStyle: FlutterFlowTheme.of(context)
                           .titleSmall
@@ -202,11 +204,11 @@ class _OtmenaOtklikaWidgetState extends State<OtmenaOtklikaWidget> {
                     ),
                     showLoadingIndicator: false,
                   ),
-                ].divide(SizedBox(height: 10.0)),
+                ].divide(const SizedBox(height: 10.0)),
               ),
             ),
           ),
-        ].divide(SizedBox(height: 5.0)),
+        ].divide(const SizedBox(height: 5.0)),
       ),
     );
   }

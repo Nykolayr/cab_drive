@@ -86,12 +86,12 @@ class _FiltersWidgetState extends State<FiltersWidget> {
     context.watch<FFAppState>();
 
     return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(0.0, 50.0, 0.0, 0.0),
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 50.0, 0.0, 0.0),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).primaryBackground,
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(22.0),
             topRight: Radius.circular(22.0),
           ),
@@ -105,7 +105,7 @@ class _FiltersWidgetState extends State<FiltersWidget> {
               height: 64.0,
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondaryBackground,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(22.0),
                   topRight: Radius.circular(22.0),
                   bottomLeft: Radius.circular(5.0),
@@ -113,7 +113,8 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                 ),
               ),
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
                 child: Row(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -134,10 +135,10 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                       borderRadius: 54.0,
                       borderWidth: 0.0,
                       buttonSize: 35.0,
-                      fillColor: Color(0xFFF4F5F8),
+                      fillColor: const Color(0xFFF4F5F8),
                       hoverColor: FlutterFlowTheme.of(context).primary,
                       hoverIconColor: FlutterFlowTheme.of(context).primaryText,
-                      icon: Icon(
+                      icon: const Icon(
                         FFIcons.kkrestStroke,
                         color: Color(0xFF21201F),
                         size: 8.0,
@@ -151,12 +152,12 @@ class _FiltersWidgetState extends State<FiltersWidget> {
               ),
             ),
             ClipRRect(
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(5.0),
                 topRight: Radius.circular(5.0),
               ),
               child: Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(5.0),
                     topRight: Radius.circular(5.0),
@@ -174,7 +175,7 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                           borderRadius: BorderRadius.circular(5.0),
                         ),
                         child: Padding(
-                          padding: EdgeInsets.all(24.0),
+                          padding: const EdgeInsets.all(24.0),
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,7 +192,7 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                                     ),
                               ),
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     0.0, 12.0, 0.0, 0.0),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
@@ -203,7 +204,7 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                                         focusNode: _model.ottFocusNode,
                                         onChanged: (_) => EasyDebounce.debounce(
                                           '_model.ottTextController',
-                                          Duration(milliseconds: 0),
+                                          const Duration(milliseconds: 0),
                                           () => safeSetState(() {}),
                                         ),
                                         onFieldSubmitted: (_) async {
@@ -227,12 +228,13 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                                                   .labelMedium
                                                   .override(
                                                     fontFamily: 'SF',
-                                                    color: Color(0xFF8F8F8E),
+                                                    color:
+                                                        const Color(0xFF8F8F8E),
                                                     fontSize: 16.0,
                                                     letterSpacing: 0.0,
                                                   ),
                                           enabledBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(
+                                            borderSide: const BorderSide(
                                               color: Color(0xFFD0CFCE),
                                               width: 0.3,
                                             ),
@@ -240,7 +242,7 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                                                 BorderRadius.circular(0.0),
                                           ),
                                           focusedBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(
+                                            borderSide: const BorderSide(
                                               color: Color(0xFFD0CFCE),
                                               width: 0.3,
                                             ),
@@ -269,7 +271,8 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                                                 BorderRadius.circular(0.0),
                                           ),
                                           contentPadding:
-                                              EdgeInsetsDirectional.fromSTEB(
+                                              const EdgeInsetsDirectional
+                                                  .fromSTEB(
                                                   0.0, 16.0, 0.0, 16.0),
                                           hoverColor: Colors.transparent,
                                         ),
@@ -296,7 +299,7 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                                         focusNode: _model.dooFocusNode,
                                         onChanged: (_) => EasyDebounce.debounce(
                                           '_model.dooTextController',
-                                          Duration(milliseconds: 0),
+                                          const Duration(milliseconds: 0),
                                           () => safeSetState(() {}),
                                         ),
                                         onFieldSubmitted: (_) async {
@@ -320,12 +323,13 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                                                   .labelMedium
                                                   .override(
                                                     fontFamily: 'SF',
-                                                    color: Color(0xFF8F8F8E),
+                                                    color:
+                                                        const Color(0xFF8F8F8E),
                                                     fontSize: 16.0,
                                                     letterSpacing: 0.0,
                                                   ),
                                           enabledBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(
+                                            borderSide: const BorderSide(
                                               color: Color(0xFFD0CFCE),
                                               width: 0.3,
                                             ),
@@ -333,7 +337,7 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                                                 BorderRadius.circular(0.0),
                                           ),
                                           focusedBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(
+                                            borderSide: const BorderSide(
                                               color: Color(0xFFD0CFCE),
                                               width: 0.3,
                                             ),
@@ -362,7 +366,8 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                                                 BorderRadius.circular(0.0),
                                           ),
                                           contentPadding:
-                                              EdgeInsetsDirectional.fromSTEB(
+                                              const EdgeInsetsDirectional
+                                                  .fromSTEB(
                                                   0.0, 16.0, 0.0, 16.0),
                                           hoverColor: Colors.transparent,
                                         ),
@@ -383,7 +388,7 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                                         inputFormatters: [_model.dooMask],
                                       ),
                                     ),
-                                  ].divide(SizedBox(width: 16.0)),
+                                  ].divide(const SizedBox(width: 16.0)),
                                 ),
                               ),
                             ],
@@ -398,14 +403,14 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                           borderRadius: BorderRadius.circular(5.0),
                         ),
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 24.0, 0.0, 16.0),
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     24.0, 0.0, 24.0, 0.0),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
@@ -443,12 +448,12 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                                 ),
                               ),
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     0.0, 12.0, 0.0, 0.0),
                                 child: Slider(
                                   activeColor:
                                       FlutterFlowTheme.of(context).tertiary,
-                                  inactiveColor: Color(0xFFF3F4F7),
+                                  inactiveColor: const Color(0xFFF3F4F7),
                                   min: 0.0,
                                   max: 200.0,
                                   value: _model.sliderValue ??=
@@ -473,13 +478,13 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                           borderRadius: BorderRadius.circular(5.0),
                         ),
                         child: Padding(
-                          padding: EdgeInsets.all(24.0),
+                          padding: const EdgeInsets.all(24.0),
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     0.0, 0.0, 0.0, 12.0),
                                 child: Text(
                                   'Подача',
@@ -493,7 +498,7 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                                       ),
                                 ),
                               ),
-                              Divider(
+                              const Divider(
                                 height: 0.5,
                                 thickness: 0.5,
                                 color: Color(0xFFD0CFCE),
@@ -516,10 +521,11 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                                 },
                                 child: Container(
                                   height: 57.0,
-                                  decoration: BoxDecoration(),
+                                  decoration: const BoxDecoration(),
                                   child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 12.0, 0.0, 12.0),
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            0.0, 12.0, 0.0, 12.0),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
                                       children: [
@@ -565,7 +571,7 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                                   ),
                                 ),
                               ),
-                              Divider(
+                              const Divider(
                                 height: 0.3,
                                 thickness: 0.3,
                                 color: Color(0xFFD0CFCE),
@@ -587,13 +593,14 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                                   HapticFeedback.mediumImpact();
                                 },
                                 child: Container(
-                                  constraints: BoxConstraints(
+                                  constraints: const BoxConstraints(
                                     minHeight: 57.0,
                                   ),
-                                  decoration: BoxDecoration(),
+                                  decoration: const BoxDecoration(),
                                   child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 12.0, 0.0, 12.0),
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            0.0, 12.0, 0.0, 12.0),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
                                       children: [
@@ -647,7 +654,7 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                                   ),
                                 ),
                               ),
-                              Divider(
+                              const Divider(
                                 height: 0.3,
                                 thickness: 0.3,
                                 color: Color(0xFFD0CFCE),
@@ -656,7 +663,7 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                           ),
                         ),
                       ),
-                    ].divide(SizedBox(height: 5.0)),
+                    ].divide(const SizedBox(height: 5.0)),
                   ),
                 ),
               ),
@@ -664,7 +671,7 @@ class _FiltersWidgetState extends State<FiltersWidget> {
             Container(
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondary,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(5.0),
                   topRight: Radius.circular(5.0),
                 ),
@@ -685,15 +692,13 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                 child: Row(
                   mainAxisSize: MainAxisSize.max,
                   children: [
-                    if ((_model.ottTextController.text != null &&
-                            _model.ottTextController.text != '') ||
-                        (_model.dooTextController.text != null &&
-                            _model.dooTextController.text != '') ||
+                    if ((_model.ottTextController.text != '') ||
+                        (_model.dooTextController.text != '') ||
                         (_model.supply != 0) ||
                         (_model.sliderValue != 0.0))
                       Flexible(
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 8.0, 0.0),
                           child: FFButtonWidget(
                             onPressed: () async {
@@ -715,9 +720,9 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                             options: FFButtonOptions(
                               width: double.infinity,
                               height: 56.0,
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
+                              iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
                               color: FlutterFlowTheme.of(context).primary,
                               textStyle: FlutterFlowTheme.of(context)
@@ -743,16 +748,13 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                               ..radius = _model.sliderValue != 0.0
                                   ? _model.sliderValue
                                   : null
-                              ..ott = _model.ottTextController.text != null &&
-                                      _model.ottTextController.text != ''
+                              ..ott = _model.ottTextController.text != ''
                                   ? int.tryParse(_model.ottTextController.text)
                                   : null
-                              ..doo = _model.dooTextController.text != null &&
-                                      _model.dooTextController.text != ''
+                              ..doo = _model.dooTextController.text != ''
                                   ? int.tryParse(_model.dooTextController.text)
                                   : null
-                              ..supply =
-                                  _model.supply != null ? _model.supply : null,
+                              ..supply = _model.supply,
                           );
                           safeSetState(() {});
                           Navigator.pop(context);
@@ -761,9 +763,9 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                         options: FFButtonOptions(
                           width: double.infinity,
                           height: 56.0,
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 0.0),
-                          iconPadding: EdgeInsetsDirectional.fromSTEB(
+                          iconPadding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 0.0),
                           color: FlutterFlowTheme.of(context).tertiary,
                           textStyle:
@@ -782,7 +784,7 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                 ),
               ),
             ),
-          ].divide(SizedBox(height: 5.0)),
+          ].divide(const SizedBox(height: 5.0)),
         ),
       ),
     );

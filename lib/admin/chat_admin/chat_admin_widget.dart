@@ -117,9 +117,7 @@ class _ChatAdminWidgetState extends State<ChatAdminWidget> {
                         child: Builder(
                           builder: (context) {
                             final containerVar = containerChatsRecordList
-                                .where((e) =>
-                                    e.lastMessage != null &&
-                                    e.lastMessage != '')
+                                .where((e) => e.lastMessage != '')
                                 .toList();
 
                             return ListView.separated(

@@ -60,13 +60,14 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
         borderRadius: BorderRadius.circular(18.0),
       ),
       child: Padding(
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(8.0, 16.0, 8.0, 16.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(8.0, 16.0, 8.0, 16.0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -77,13 +78,14 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                     size: 16.0,
                   ),
                   Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(6.0, 0.0, 0.0, 0.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        6.0, 0.0, 0.0, 0.0),
                     child: Text(
-                      widget!.order?.supply == 1
+                      widget.order?.supply == 1
                           ? 'В ближайшее время'
                           : dateTimeFormat(
                               "d MMM (E) hh:mm",
-                              widget!.order!.dateTime!,
+                              widget.order!.dateTime!,
                               locale: FFLocalizations.of(context).languageCode,
                             ),
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -96,7 +98,7 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                   ),
                   Expanded(
                     child: Text(
-                      '${widget!.order?.budget?.toString()} ₽',
+                      '${widget.order?.budget?.toString()} ₽',
                       textAlign: TextAlign.end,
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             fontFamily: 'SF',
@@ -110,13 +112,14 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                 ],
               ),
             ),
-            Divider(
+            const Divider(
               height: 0.3,
               thickness: 0.3,
               color: Color(0xFFD0CFCE),
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(8.0, 21.0, 8.0, 19.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(8.0, 21.0, 8.0, 19.0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -126,17 +129,17 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                     width: 22.0,
                     height: 22.0,
                     decoration: BoxDecoration(
-                      color: Color(0xFFF4F5F8),
+                      color: const Color(0xFFF4F5F8),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: Color(0xFF007AFF),
+                        color: const Color(0xFF007AFF),
                         width: 6.0,
                       ),
                     ),
                   ),
                   Flexible(
                     child: Text(
-                      widget!.order!.pointA.address,
+                      widget.order!.pointA.address,
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             fontFamily: 'SF',
                             fontSize: 16.0,
@@ -144,11 +147,11 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                           ),
                     ),
                   ),
-                ].divide(SizedBox(width: 8.0)),
+                ].divide(const SizedBox(width: 8.0)),
               ),
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 0.0),
+              padding: const EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 0.0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -158,17 +161,17 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                     width: 22.0,
                     height: 22.0,
                     decoration: BoxDecoration(
-                      color: Color(0xFFF4F5F8),
+                      color: const Color(0xFFF4F5F8),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: Color(0xFF2EB518),
+                        color: const Color(0xFF2EB518),
                         width: 6.0,
                       ),
                     ),
                   ),
                   Flexible(
                     child: Text(
-                      widget!.order!.pointB.address,
+                      widget.order!.pointB.address,
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             fontFamily: 'SF',
                             fontSize: 16.0,
@@ -176,11 +179,12 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                           ),
                     ),
                   ),
-                ].divide(SizedBox(width: 8.0)),
+                ].divide(const SizedBox(width: 8.0)),
               ),
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(8.0, 19.0, 8.0, 0.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(8.0, 19.0, 8.0, 0.0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -193,7 +197,7 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                   ),
                   Flexible(
                     child: Text(
-                      '${widget!.order?.distance}, ${widget!.order?.time}',
+                      '${widget.order?.distance}, ${widget.order?.time}',
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             fontFamily: 'SF',
                             fontSize: 16.0,
@@ -201,21 +205,22 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                           ),
                     ),
                   ),
-                ].divide(SizedBox(width: 8.0)),
+                ].divide(const SizedBox(width: 8.0)),
               ),
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 32.0, 0.0, 0.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(0.0, 32.0, 0.0, 0.0),
               child: Builder(
                 builder: (context) {
-                  if (widget!.order?.selectedDriver == currentUserReference) {
+                  if (widget.order?.selectedDriver == currentUserReference) {
                     return FFButtonWidget(
                       onPressed: () async {
                         context.pushNamed(
                           OrderPageDriverWidget.routeName,
                           queryParameters: {
                             'order': serializeParam(
-                              widget!.order?.reference,
+                              widget.order?.reference,
                               ParamType.DocumentReference,
                             ),
                           }.withoutNulls,
@@ -225,10 +230,10 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                       options: FFButtonOptions(
                         width: double.infinity,
                         height: 45.0,
-                        padding: EdgeInsetsDirectional.fromSTEB(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
                             40.0, 0.0, 40.0, 0.0),
-                        iconPadding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                        iconPadding: const EdgeInsetsDirectional.fromSTEB(
+                            0.0, 0.0, 0.0, 0.0),
                         color: FlutterFlowTheme.of(context).primary,
                         textStyle:
                             FlutterFlowTheme.of(context).titleSmall.override(
@@ -242,16 +247,16 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                       ),
                       showLoadingIndicator: false,
                     );
-                  } else if (widget!.order!.userWhoResponced
+                  } else if (widget.order!.userWhoResponced
                           .contains(currentUserReference) &&
-                      (widget!.order?.status == StatusOrder.newOrder)) {
+                      (widget.order?.status == StatusOrder.newOrder)) {
                     return FFButtonWidget(
                       onPressed: () async {
                         context.pushNamed(
                           OrderPageDriverWidget.routeName,
                           queryParameters: {
                             'order': serializeParam(
-                              widget!.order?.reference,
+                              widget.order?.reference,
                               ParamType.DocumentReference,
                             ),
                           }.withoutNulls,
@@ -261,10 +266,10 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                       options: FFButtonOptions(
                         width: double.infinity,
                         height: 45.0,
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                        iconPadding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                        padding: const EdgeInsetsDirectional.fromSTEB(
+                            0.0, 0.0, 0.0, 0.0),
+                        iconPadding: const EdgeInsetsDirectional.fromSTEB(
+                            0.0, 0.0, 0.0, 0.0),
                         color: FlutterFlowTheme.of(context).primary,
                         textStyle:
                             FlutterFlowTheme.of(context).titleSmall.override(
@@ -299,7 +304,7 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                                           padding:
                                               MediaQuery.viewInsetsOf(context),
                                           child: CreateOtklickWidget(
-                                            order: widget!.order!,
+                                            order: widget.order!,
                                           ),
                                         ),
                                       );
@@ -317,7 +322,7 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                                         child: Padding(
                                           padding:
                                               MediaQuery.viewInsetsOf(context),
-                                          child: VklGeoWidget(),
+                                          child: const VklGeoWidget(),
                                         ),
                                       );
                                     },
@@ -335,7 +340,7 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                                       child: Padding(
                                         padding:
                                             MediaQuery.viewInsetsOf(context),
-                                        child: ErrorPopupWidget(
+                                        child: const ErrorPopupWidget(
                                           title: 'Аккаунт на модерации!',
                                           text:
                                               'Мы проверим ваш аккаунт в течении 24 часов, и откроем вам доступ ко всему приложению.',
@@ -351,9 +356,9 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                             text: 'Откликнуться',
                             options: FFButtonOptions(
                               height: 45.0,
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
+                              iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
                               color: FlutterFlowTheme.of(context).tertiary,
                               textStyle: FlutterFlowTheme.of(context)
@@ -378,7 +383,7 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                                 OrderPageDriverWidget.routeName,
                                 queryParameters: {
                                   'order': serializeParam(
-                                    widget!.order?.reference,
+                                    widget.order?.reference,
                                     ParamType.DocumentReference,
                                   ),
                                 }.withoutNulls,
@@ -387,9 +392,9 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                             text: 'Детали',
                             options: FFButtonOptions(
                               height: 45.0,
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
+                              iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
                               color: FlutterFlowTheme.of(context)
                                   .primaryBackground,
@@ -408,22 +413,23 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                             showLoadingIndicator: false,
                           ),
                         ),
-                      ].divide(SizedBox(width: 7.0)),
+                      ].divide(const SizedBox(width: 7.0)),
                     );
                   }
                 },
               ),
             ),
-            if ((widget!.order?.status == StatusOrder.completed) &&
-                !widget!.order!.customerReviewed)
+            if ((widget.order?.status == StatusOrder.completed) &&
+                !widget.order!.customerReviewed)
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
                 child: Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).secondary,
                     boxShadow: [
-                      BoxShadow(
+                      const BoxShadow(
                         blurRadius: 4.0,
                         color: Color(0x33000000),
                         offset: Offset(
@@ -435,8 +441,8 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                     borderRadius: BorderRadius.circular(16.0),
                   ),
                   child: Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 24.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 24.0, 0.0, 24.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -450,7 +456,7 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                               borderRadius: 8.0,
                               buttonSize: 55.0,
                               hoverColor: Colors.transparent,
-                              icon: Icon(
+                              icon: const Icon(
                                 FFIcons.kantDesignStarFilled,
                                 color: Color(0xFFEEEEEE),
                                 size: 40.0,
@@ -466,8 +472,8 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                                         padding:
                                             MediaQuery.viewInsetsOf(context),
                                         child: CreateRewievsWidget(
-                                          user: widget!.order!.userCustomer!,
-                                          order: widget!.order!.reference,
+                                          user: widget.order!.userCustomer!,
+                                          order: widget.order!.reference,
                                           rait: 1,
                                         ),
                                       ),
@@ -481,7 +487,7 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                               borderRadius: 8.0,
                               buttonSize: 55.0,
                               hoverColor: Colors.transparent,
-                              icon: Icon(
+                              icon: const Icon(
                                 FFIcons.kantDesignStarFilled,
                                 color: Color(0xFFEEEEEE),
                                 size: 40.0,
@@ -497,8 +503,8 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                                         padding:
                                             MediaQuery.viewInsetsOf(context),
                                         child: CreateRewievsWidget(
-                                          user: widget!.order!.userCustomer!,
-                                          order: widget!.order!.reference,
+                                          user: widget.order!.userCustomer!,
+                                          order: widget.order!.reference,
                                           rait: 2,
                                         ),
                                       ),
@@ -512,7 +518,7 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                               borderRadius: 8.0,
                               buttonSize: 55.0,
                               hoverColor: Colors.transparent,
-                              icon: Icon(
+                              icon: const Icon(
                                 FFIcons.kantDesignStarFilled,
                                 color: Color(0xFFEEEEEE),
                                 size: 40.0,
@@ -528,8 +534,8 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                                         padding:
                                             MediaQuery.viewInsetsOf(context),
                                         child: CreateRewievsWidget(
-                                          user: widget!.order!.userCustomer!,
-                                          order: widget!.order!.reference,
+                                          user: widget.order!.userCustomer!,
+                                          order: widget.order!.reference,
                                           rait: 3,
                                         ),
                                       ),
@@ -543,7 +549,7 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                               borderRadius: 8.0,
                               buttonSize: 55.0,
                               hoverColor: Colors.transparent,
-                              icon: Icon(
+                              icon: const Icon(
                                 FFIcons.kantDesignStarFilled,
                                 color: Color(0xFFEEEEEE),
                                 size: 40.0,
@@ -559,8 +565,8 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                                         padding:
                                             MediaQuery.viewInsetsOf(context),
                                         child: CreateRewievsWidget(
-                                          user: widget!.order!.userCustomer!,
-                                          order: widget!.order!.reference,
+                                          user: widget.order!.userCustomer!,
+                                          order: widget.order!.reference,
                                           rait: 4,
                                         ),
                                       ),
@@ -574,7 +580,7 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                               borderRadius: 8.0,
                               buttonSize: 55.0,
                               hoverColor: Colors.transparent,
-                              icon: Icon(
+                              icon: const Icon(
                                 FFIcons.kantDesignStarFilled,
                                 color: Color(0xFFEEEEEE),
                                 size: 40.0,
@@ -590,8 +596,8 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                                         padding:
                                             MediaQuery.viewInsetsOf(context),
                                         child: CreateRewievsWidget(
-                                          user: widget!.order!.userCustomer!,
-                                          order: widget!.order!.reference,
+                                          user: widget.order!.userCustomer!,
+                                          order: widget.order!.reference,
                                           rait: 5,
                                         ),
                                       ),

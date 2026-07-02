@@ -3,16 +3,22 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
 
-Write-Host "==> 1/4 yandex/mapkit leftovers"
-$hits = @()
-if (Select-String -Path "pubspec.yaml" -Pattern "yandex_mapkit" -Quiet) { $hits += "pubspec.yaml: yandex_mapkit" }
-Get-ChildItem -Path "android","lib","ios" -Recurse -File -ErrorAction SilentlyContinue |
-  Where-Object { $_.FullName -notmatch '\\\.gradle\\|\\build\\' } |
-  Select-String -Pattern "MapKitFactory|maps\.mobile|package:yandex_mapkit|YandexMapsMobile" -List |
-  ForEach-Object { $hits += $_.Path }
-if ($hits.Count -gt 0) {
-  $hits | ForEach-Object { Write-Host $_ }
-  throw "Found Yandex/MapKit references. Remove before handoff."
+Write-Host "==> 0/4 sync .env -> Android/iOS native"
+if (-not (Test-Path ".env")) {
+  throw "Нет .env — скопируй .env.example в .env и заполни ключи."
+}
+dart run tool/sync_env.dart
+if ($LASTEXITCODE -ne 0) { throw "sync_env failed" }
+
+Write-Host "==> 1/4 Yandex MapKit configured"
+if (-not (Select-String -Path "pubspec.yaml" -Pattern "yandex_mapkit" -Quiet)) {
+  throw "pubspec.yaml: missing yandex_mapkit"
+}
+if (-not (Select-String -Path "android\app\src\main\kotlin\com\example\my_project\MainActivity.kt" -Pattern "MapKitFactory.setApiKey" -Quiet)) {
+  throw "MainActivity.kt: MapKitFactory.setApiKey before super.configureFlutterEngine"
+}
+if (Select-String -Path "pubspec.yaml" -Pattern "google_maps_flutter" -Quiet) {
+  throw "pubspec.yaml: remove google_maps_flutter"
 }
 
 Write-Host "==> 2/4 mainDriver must not block UI on null location"

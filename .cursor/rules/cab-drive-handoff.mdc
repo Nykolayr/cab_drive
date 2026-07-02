@@ -12,24 +12,25 @@ alwaysApply: true
 ## Обязательно перед «готово»
 
 1. **`scripts/verify_handoff.ps1`** — агент запускает сам (`powershell -File scripts/verify_handoff.ps1`).
-2. Если менялись **карты / плагины / нативка** — чеклист отката/замены:
-   - `pubspec.yaml` (зависимость удалена?)
-   - `android/app/build.gradle`, `MainActivity.kt`, `ios/Runner/AppDelegate.swift`
-   - `grep` по `yandex_mapkit`, `MapKit`, `YandexMaps`
-3. Если пользователь прислал **лог** — сначала строка с **первым `E/` / `Exception` / `AssertionError`**, потом правки. Не гадать про OTP/онбординг, если в логе уже есть stack trace.
-4. Критический путь после правок логина/карт: **логин → load → mainDriver/mainUser** — при сомнении `AppLog.trace` с `tag: 'Auth'` / `'Nav'` (см. `feature-trace-logs.mdc`), вычистить после подтверждения пользователя.
+2. Если менялись **карты / плагины / нативка** — чеклист:
+   - `pubspec.yaml` — `yandex_mapkit` есть, `google_maps_flutter` **нет**
+   - `android/app/build.gradle` — `maps.mobile`, `BuildConfig.YANDEX_MAPS_API_KEY`, `minSdk 26`
+   - `MainActivity.kt` — `MapKitFactory.setApiKey` **до** `super.configureFlutterEngine`
+   - `ios/Runner/AppDelegate.swift` — `YMKMapKit.setApiKey` **до** `GeneratedPluginRegistrant`
+   - `lib/main.dart` — `AndroidYandexMap.useAndroidViewSurface` на Android
+   - `grep` по `google_maps_flutter` / `FlutterFlowGoogleMap` в экранах заказа — не должно остаться
+3. Если пользователь прислал **лог** — сначала строка с **первым `E/` / `Exception` / `AssertionError`**, потом правки.
+4. Критический путь: **логин → load → mainDriver/mainUser** — при сомнении `AppLog.trace` с `tag: 'Auth'` / `'Nav'`.
 
-## Замена карты (Google ↔ Yandex)
+## Карты (только Yandex MapKit)
 
-Одна атомарная операция, не «только виджеты»:
-
-| Слой | Действие |
-|------|----------|
-| UI | `PolylineMap` / `DriverTrackingMap` / `FlutterFlowGoogleMap` |
-| pubspec | убрать/добавить `yandex_mapkit` |
-| Android/iOS | MapKit SDK, ключи, `MainActivity` |
-| main.dart | инициализация MapKit только если плагин в pubspec |
+| Слой | Технология |
+|------|------------|
+| Подложка | `yandex_mapkit` + нативный ключ |
+| Маршрут | OpenRouteService (`ORS_API_KEY`) |
+| Геокодер/подсказки | Yandex Geocoder API (`YANDEX_GEOCODER_KEY`) |
+| Виджеты | `YandexOrderMap`, `YandexPickerMap` |
 
 ## Пользователь не тестер
 
-Не просить «запусти и скажи» как единственную проверку. Сначала `verify_handoff` + analyze/build; ручной прогон на устройстве — только если нет эмулятора/девайса в CI и после автоматических проверок.
+Сначала `verify_handoff` + analyze/build; ручной прогон — только если нет устройства.

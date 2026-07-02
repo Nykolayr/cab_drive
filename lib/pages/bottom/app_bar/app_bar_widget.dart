@@ -47,15 +47,15 @@ class _AppBarWidgetState extends State<AppBarWidget> {
       height: 120.0,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).secondaryBackground,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(18.0),
           bottomRight: Radius.circular(18.0),
         ),
       ),
       child: Align(
-        alignment: AlignmentDirectional(0.0, 1.0),
+        alignment: const AlignmentDirectional(0.0, 1.0),
         child: Padding(
-          padding: EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 12.0),
+          padding: const EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 12.0),
           child: Container(
             width: double.infinity,
             height: 56.0,
@@ -64,7 +64,7 @@ class _AppBarWidgetState extends State<AppBarWidget> {
               borderRadius: BorderRadius.circular(88.0),
             ),
             child: Padding(
-              padding: EdgeInsets.all(4.0),
+              padding: const EdgeInsets.all(4.0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 children: [
@@ -92,7 +92,7 @@ class _AppBarWidgetState extends State<AppBarWidget> {
                         borderRadius: BorderRadius.circular(88.0),
                       ),
                       child: Align(
-                        alignment: AlignmentDirectional(0.0, 0.0),
+                        alignment: const AlignmentDirectional(0.0, 0.0),
                         child: Text(
                           widget!.text!,
                           textAlign: TextAlign.center,
@@ -106,7 +106,7 @@ class _AppBarWidgetState extends State<AppBarWidget> {
                       ),
                     ),
                   ),
-                ].divide(SizedBox(width: 8.0)),
+                ].divide(const SizedBox(width: 8.0)),
               ),
             ),
           ),

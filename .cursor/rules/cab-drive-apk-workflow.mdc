@@ -5,37 +5,26 @@ alwaysApply: true
 
 # «Сделай апк» — обязательный сценарий (Cab Drive)
 
-Когда пользователь пишет **«сделай апк»** (или то же по смыслу) — **не** запускать только `flutter build apk`. Выполнить **все 4 шага по порядку**, без лишних вопросов.
+Когда пользователь пишет **«сделай апк»** — выполнить **все шаги по порядку**, без `--dart-define`.
 
 Подробности: `.cursor/cab_drive_apk_workflow.md`.
 
-## Шаги (строго по порядку)
+## Ключи
 
-1. **Поднять версию** в `pubspec.yaml`: `+{build}` на 1 (обычно `1.0.{build}+{build}`).
-2. **Собрать release APK** из корня репо:
-   ```powershell
-   flutter build apk --release
-   ```
-   При наличии ключа локально: `--dart-define=ORS_API_KEY=...` (не коммитить ключ).
-3. **Скопировать** в `D:\Temp\`:
-   ```text
-   D:\Temp\cabdrive_{buildNumber}.apk
-   ```
-   Пример: `version: 1.0.15+15` → `D:\Temp\cabdrive_15.apk`.
-   **Не** использовать шаблон `{slug}_1_{n}` — только `cabdrive_{build}`.
-4. **Git:** закоммитить изменения (включая bump версии), **push** в текущую рабочую ветку.
+- Один файл **`.env`** в корне (шаблон **`.env.example`**, в git только example).
+- Перед сборкой: **`dart run tool/sync_env.dart`** (если `.env` менялся).
+- **Не** просить пользователя передавать ключи в командной строке.
+
+## Шаги
+
+1. **Поднять версию** в `pubspec.yaml`.
+2. **`dart run tool/sync_env.dart`** — синхронизация MapKit в Android/iOS.
+3. **`flutter build apk --release`** (или `appbundle` по запросу).
+4. **Скопировать** в `D:\Temp\cabdrive_{buildNumber}.apk`.
+5. **Git:** commit + push.
 
 ## Запрещено
 
-- Пропускать bump версии или push.
-- Спрашивать «собрать?» — пользователь уже попросил.
-- Класть APK не в `D:\Temp` или с другим именем.
-- Заменять сценарий на `verify_handoff.ps1` вместо release-сборки (handoff — отдельно, не вместо «сделай апк»).
-
-## После сборки
-
-```powershell
-Get-Item "D:\Temp\cabdrive_*.apk" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-```
-
-Сообщить пользователю: новая версия, путь к APK, ветка и факт push.
+- Сборка без `.env` на машине (сначала `.env.example` → `.env`).
+- `--dart-define=ORS_API_KEY=...` и т.п. как обязательный шаг.
+- Пропускать bump / push / копирование в `D:\Temp`.

@@ -60,7 +60,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
         borderRadius: BorderRadius.circular(18.0),
       ),
       child: Padding(
-        padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 8.0),
+        padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 8.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,7 +79,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                       ParamType.int,
                     ),
                     'order': serializeParam(
-                      widget!.order?.reference,
+                      widget.order?.reference,
                       ParamType.DocumentReference,
                     ),
                   }.withoutNulls,
@@ -89,14 +89,14 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                 mainAxisSize: MainAxisSize.max,
                 children: [
                   Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(16.0, 12.0, 16.0, 12.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        16.0, 12.0, 16.0, 12.0),
                     child: Row(
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 7.0, 0.0),
                           child: Container(
                             height: 28.0,
@@ -109,32 +109,32 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                               ),
                             ),
                             child: Align(
-                              alignment: AlignmentDirectional(0.0, 0.0),
+                              alignment: const AlignmentDirectional(0.0, 0.0),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     15.0, 0.0, 15.0, 0.0),
                                 child: Text(
                                   valueOrDefault<String>(
                                     () {
-                                      if (widget!.order?.status ==
+                                      if (widget.order?.status ==
                                           StatusOrder.newOrder) {
                                         return 'Поиск водителя';
-                                      } else if (widget!.order?.status ==
+                                      } else if (widget.order?.status ==
                                           StatusOrder.spec_set) {
                                         return 'Ожидает доставки';
-                                      } else if (widget!.order?.status ==
+                                      } else if (widget.order?.status ==
                                           StatusOrder.at_work) {
                                         return 'В работе';
-                                      } else if (widget!.order?.status ==
+                                      } else if (widget.order?.status ==
                                           StatusOrder.completed) {
                                         return 'Заказ завершен';
-                                      } else if (widget!.order?.status ==
+                                      } else if (widget.order?.status ==
                                           StatusOrder.hidden) {
                                         return 'Заказ скрыт';
-                                      } else if (widget!.order?.status ==
+                                      } else if (widget.order?.status ==
                                           StatusOrder.cancelled) {
                                         return 'Заказ отменен';
-                                      } else if (widget!.order?.status ==
+                                      } else if (widget.order?.status ==
                                           StatusOrder.on_confirmation) {
                                         return 'На подтверждении';
                                       } else {
@@ -157,10 +157,10 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                             ),
                           ),
                         ),
-                        if (widget!.order?.countResp != 0)
+                        if (widget.order?.countResp != 0)
                           FutureBuilder<int>(
                             future: queryResponsesRecordCount(
-                              parent: widget!.order?.reference,
+                              parent: widget.order?.reference,
                               queryBuilder: (responsesRecord) =>
                                   responsesRecord.where(
                                 'viewed',
@@ -185,18 +185,19 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                               int containerCount = snapshot.data!;
 
                               return Container(
-                                decoration: BoxDecoration(),
+                                decoration: const BoxDecoration(),
                                 child: Visibility(
                                   visible: containerCount != 0,
                                   child: Container(
                                     width: 28.0,
                                     height: 28.0,
-                                    decoration: BoxDecoration(
+                                    decoration: const BoxDecoration(
                                       color: Color(0xFFE01935),
                                       shape: BoxShape.circle,
                                     ),
                                     child: Align(
-                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      alignment:
+                                          const AlignmentDirectional(0.0, 0.0),
                                       child: Text(
                                         containerCount.toString(),
                                         style: FlutterFlowTheme.of(context)
@@ -218,9 +219,9 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                           ),
                         Expanded(
                           child: Text(
-                            widget!.order?.currentPrice != 0
-                                ? '${widget!.order?.currentPrice?.toString()} ₽'
-                                : '${widget!.order?.budget?.toString()} ₽',
+                            widget.order?.currentPrice != 0
+                                ? '${widget.order?.currentPrice?.toString()} ₽'
+                                : '${widget.order?.budget?.toString()} ₽',
                             textAlign: TextAlign.end,
                             style: FlutterFlowTheme.of(context)
                                 .bodyMedium
@@ -237,14 +238,14 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                     ),
                   ),
                   Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        16.0, 0.0, 16.0, 0.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 5.0),
                           child: Row(
                             mainAxisSize: MainAxisSize.max,
@@ -276,7 +277,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 14.0),
                           child: Row(
                             mainAxisSize: MainAxisSize.max,
@@ -284,7 +285,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                             children: [
                               Expanded(
                                 child: Text(
-                                  widget!.order!.pointA.address
+                                  widget.order!.pointA.address
                                       .maybeHandleOverflow(
                                     maxChars: 25,
                                     replacement: '…',
@@ -316,8 +317,9 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                       ),
                                     ),
                                     Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          4.0, 0.0, 4.0, 0.0),
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
+                                              4.0, 0.0, 4.0, 0.0),
                                       child: Icon(
                                         FFIcons.kcar01,
                                         color: FlutterFlowTheme.of(context)
@@ -335,12 +337,12 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                         ),
                                       ),
                                     ),
-                                  ].divide(SizedBox(width: 4.0)),
+                                  ].divide(const SizedBox(width: 4.0)),
                                 ),
                               ),
                               Expanded(
                                 child: Text(
-                                  widget!.order!.pointB.address
+                                  widget.order!.pointB.address
                                       .maybeHandleOverflow(
                                     maxChars: 25,
                                     replacement: '…',
@@ -357,25 +359,25 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                       ),
                                 ),
                               ),
-                            ].divide(SizedBox(width: 7.0)),
+                            ].divide(const SizedBox(width: 7.0)),
                           ),
                         ),
                       ],
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.all(8.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Divider(
+                        const Divider(
                           height: 0.3,
                           thickness: 0.3,
                           color: Color(0xFFD0CFCE),
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               8.0, 19.0, 8.0, 0.0),
                           child: Row(
                             mainAxisSize: MainAxisSize.max,
@@ -389,7 +391,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                               ),
                               Flexible(
                                 child: Text(
-                                  'В пути - ${widget!.order?.distance}, ${widget!.order?.time}',
+                                  'В пути - ${widget.order?.distance}, ${widget.order?.time}',
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
                                       .override(
@@ -399,11 +401,11 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                       ),
                                 ),
                               ),
-                            ].divide(SizedBox(width: 8.0)),
+                            ].divide(const SizedBox(width: 8.0)),
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               8.0, 16.0, 8.0, 16.0),
                           child: Row(
                             mainAxisSize: MainAxisSize.max,
@@ -415,14 +417,14 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                 size: 18.0,
                               ),
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     6.0, 0.0, 0.0, 0.0),
                                 child: Text(
-                                  widget!.order?.supply == 1
+                                  widget.order?.supply == 1
                                       ? 'В ближайшее время'
                                       : dateTimeFormat(
                                           "d MMM (E) hh:mm",
-                                          widget!.order!.dateTime!,
+                                          widget.order!.dateTime!,
                                           locale: FFLocalizations.of(context)
                                               .languageCode,
                                         ),
@@ -445,29 +447,29 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                 ],
               ),
             ),
-            if ((widget!.order?.status == StatusOrder.spec_set) ||
-                (widget!.order?.status == StatusOrder.completed) ||
-                (widget!.order?.status == StatusOrder.at_work))
+            if ((widget.order?.status == StatusOrder.spec_set) ||
+                (widget.order?.status == StatusOrder.completed) ||
+                (widget.order?.status == StatusOrder.at_work))
               Column(
                 mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Divider(
+                  const Divider(
                     height: 0.3,
                     thickness: 0.3,
                     color: Color(0xFFD0CFCE),
                   ),
                   Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(16.0, 14.0, 16.0, 10.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        16.0, 14.0, 16.0, 10.0),
                     child: Text(
                       () {
-                        if (widget!.order?.status == StatusOrder.spec_set) {
+                        if (widget.order?.status == StatusOrder.spec_set) {
                           return 'Заказ выполнит';
-                        } else if (widget!.order?.status ==
+                        } else if (widget.order?.status ==
                             StatusOrder.completed) {
                           return 'Заказ выполнил';
-                        } else if (widget!.order?.status ==
+                        } else if (widget.order?.status ==
                             StatusOrder.at_work) {
                           return 'Заказ доставляет';
                         } else {
@@ -484,7 +486,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                   ),
                   FutureBuilder<UsersRecord>(
                     future: UsersRecord.getDocumentOnce(
-                        widget!.order!.selectedDriver!),
+                        widget.order!.selectedDriver!),
                     builder: (context, snapshot) {
                       // Customize what your widget looks like when it's loading.
                       if (!snapshot.hasData) {
@@ -504,19 +506,20 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                       final containerUsersRecord = snapshot.data!;
 
                       return Container(
-                        decoration: BoxDecoration(),
+                        decoration: const BoxDecoration(),
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
                           children: [
                             Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   16.0, 0.0, 16.0, 14.0),
                               child: Row(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 11.0, 0.0),
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            0.0, 0.0, 11.0, 0.0),
                                     child: Container(
                                       decoration: BoxDecoration(
                                         color: FlutterFlowTheme.of(context)
@@ -524,7 +527,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                         borderRadius:
                                             BorderRadius.circular(8.0),
                                         border: Border.all(
-                                          color: Color(0x27A4A6B2),
+                                          color: const Color(0x27A4A6B2),
                                         ),
                                       ),
                                       child: ClipRRect(
@@ -574,14 +577,14 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                                 fontWeight: FontWeight.w500,
                                               ),
                                         ),
-                                      ].divide(SizedBox(height: 2.0)),
+                                      ].divide(const SizedBox(height: 2.0)),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
                             Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   8.0, 0.0, 8.0, 0.0),
                               child: Row(
                                 mainAxisSize: MainAxisSize.max,
@@ -687,11 +690,10 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                       text: 'Написать',
                                       options: FFButtonOptions(
                                         height: 45.0,
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, 0.0, 0.0),
-                                        iconPadding:
-                                            EdgeInsetsDirectional.fromSTEB(
-                                                0.0, 0.0, 0.0, 0.0),
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(0.0, 0.0, 0.0, 0.0),
+                                        iconPadding: const EdgeInsetsDirectional
+                                            .fromSTEB(0.0, 0.0, 0.0, 0.0),
                                         color: FlutterFlowTheme.of(context)
                                             .primaryBackground,
                                         textStyle: FlutterFlowTheme.of(context)
@@ -723,11 +725,10 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                       text: 'Позвонить',
                                       options: FFButtonOptions(
                                         height: 45.0,
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, 0.0, 0.0),
-                                        iconPadding:
-                                            EdgeInsetsDirectional.fromSTEB(
-                                                0.0, 0.0, 0.0, 0.0),
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(0.0, 0.0, 0.0, 0.0),
+                                        iconPadding: const EdgeInsetsDirectional
+                                            .fromSTEB(0.0, 0.0, 0.0, 0.0),
                                         color: FlutterFlowTheme.of(context)
                                             .primaryBackground,
                                         textStyle: FlutterFlowTheme.of(context)
@@ -747,7 +748,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                       showLoadingIndicator: false,
                                     ),
                                   ),
-                                ].divide(SizedBox(width: 7.0)),
+                                ].divide(const SizedBox(width: 7.0)),
                               ),
                             ),
                           ],
@@ -755,18 +756,18 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                       );
                     },
                   ),
-                  if ((widget!.order?.status == StatusOrder.completed) &&
-                      !widget!.order!.driverReviewed)
+                  if ((widget.order?.status == StatusOrder.completed) &&
+                      !widget.order!.driverReviewed)
                     Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(8.0, 24.0, 8.0, 0.0),
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                          8.0, 24.0, 8.0, 0.0),
                       child: Container(
                         width: double.infinity,
                         decoration: BoxDecoration(
                           color:
                               FlutterFlowTheme.of(context).secondaryBackground,
                           boxShadow: [
-                            BoxShadow(
+                            const BoxShadow(
                               blurRadius: 4.0,
                               color: Color(0x33000000),
                               offset: Offset(
@@ -778,7 +779,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                           borderRadius: BorderRadius.circular(16.0),
                         ),
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 24.0, 0.0, 24.0),
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
@@ -794,7 +795,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                     borderRadius: 8.0,
                                     buttonSize: 55.0,
                                     hoverColor: Colors.transparent,
-                                    icon: Icon(
+                                    icon: const Icon(
                                       FFIcons.kantDesignStarFilled,
                                       color: Color(0xFFEEEEEE),
                                       size: 40.0,
@@ -810,9 +811,9 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                               padding: MediaQuery.viewInsetsOf(
                                                   context),
                                               child: CreateRewievsWidget(
-                                                user: widget!
+                                                user: widget
                                                     .order!.selectedDriver!,
-                                                order: widget!.order!.reference,
+                                                order: widget.order!.reference,
                                                 rait: 1,
                                               ),
                                             ),
@@ -826,7 +827,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                     borderRadius: 8.0,
                                     buttonSize: 55.0,
                                     hoverColor: Colors.transparent,
-                                    icon: Icon(
+                                    icon: const Icon(
                                       FFIcons.kantDesignStarFilled,
                                       color: Color(0xFFEEEEEE),
                                       size: 40.0,
@@ -842,9 +843,9 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                               padding: MediaQuery.viewInsetsOf(
                                                   context),
                                               child: CreateRewievsWidget(
-                                                user: widget!
+                                                user: widget
                                                     .order!.selectedDriver!,
-                                                order: widget!.order!.reference,
+                                                order: widget.order!.reference,
                                                 rait: 2,
                                               ),
                                             ),
@@ -858,7 +859,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                     borderRadius: 8.0,
                                     buttonSize: 55.0,
                                     hoverColor: Colors.transparent,
-                                    icon: Icon(
+                                    icon: const Icon(
                                       FFIcons.kantDesignStarFilled,
                                       color: Color(0xFFEEEEEE),
                                       size: 40.0,
@@ -874,9 +875,9 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                               padding: MediaQuery.viewInsetsOf(
                                                   context),
                                               child: CreateRewievsWidget(
-                                                user: widget!
+                                                user: widget
                                                     .order!.selectedDriver!,
-                                                order: widget!.order!.reference,
+                                                order: widget.order!.reference,
                                                 rait: 3,
                                               ),
                                             ),
@@ -890,7 +891,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                     borderRadius: 8.0,
                                     buttonSize: 55.0,
                                     hoverColor: Colors.transparent,
-                                    icon: Icon(
+                                    icon: const Icon(
                                       FFIcons.kantDesignStarFilled,
                                       color: Color(0xFFEEEEEE),
                                       size: 40.0,
@@ -906,9 +907,9 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                               padding: MediaQuery.viewInsetsOf(
                                                   context),
                                               child: CreateRewievsWidget(
-                                                user: widget!
+                                                user: widget
                                                     .order!.selectedDriver!,
-                                                order: widget!.order!.reference,
+                                                order: widget.order!.reference,
                                                 rait: 4,
                                               ),
                                             ),
@@ -922,7 +923,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                     borderRadius: 8.0,
                                     buttonSize: 55.0,
                                     hoverColor: Colors.transparent,
-                                    icon: Icon(
+                                    icon: const Icon(
                                       FFIcons.kantDesignStarFilled,
                                       color: Color(0xFFEEEEEE),
                                       size: 40.0,
@@ -938,9 +939,9 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                               padding: MediaQuery.viewInsetsOf(
                                                   context),
                                               child: CreateRewievsWidget(
-                                                user: widget!
+                                                user: widget
                                                     .order!.selectedDriver!,
-                                                order: widget!.order!.reference,
+                                                order: widget.order!.reference,
                                                 rait: 5,
                                               ),
                                             ),
