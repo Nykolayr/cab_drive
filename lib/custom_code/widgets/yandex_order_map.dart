@@ -123,13 +123,13 @@ class _YandexOrderMapState extends State<YandexOrderMap> {
           id: 'point_a',
           latLng: widget.startLatLng,
           icon: iconStart,
-          anchor: const Offset(0.5, 1.0),
+          anchor: const Offset(0.5, 0.5),
         ));
         objects.add(_buildPlacemark(
           id: 'point_b',
           latLng: widget.endLatLng,
           icon: iconEnd,
-          anchor: const Offset(0.5, 1.0),
+          anchor: const Offset(0.5, 0.5),
         ));
       }
 
@@ -263,6 +263,10 @@ class _YandexOrderMapState extends State<YandexOrderMap> {
     return BitmapDescriptor.fromBytes(byteData!.buffer.asUint8List());
   }
 
+  /// Доля расширения вида после fit (log₂(1+x) к zoom).
+  static const _zoomMarginFull = 0.15;
+  static const _zoomMarginPreview = 0.18;
+
   Future<void> _fitCamera() async {
     final controller = _mapController;
     if (controller == null) return;
@@ -301,6 +305,20 @@ class _YandexOrderMapState extends State<YandexOrderMap> {
             northEast: Point(latitude: maxLat, longitude: maxLng),
             southWest: Point(latitude: minLat, longitude: minLng),
           ),
+        ),
+      ),
+    );
+
+    final margin = widget.isStatic ? _zoomMarginPreview : _zoomMarginFull;
+    final pos = await controller.getCameraPosition();
+    final newZoom = pos.zoom - log(1 + margin) / ln2;
+    await controller.moveCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: pos.target,
+          zoom: newZoom,
+          azimuth: pos.azimuth,
+          tilt: pos.tilt,
         ),
       ),
     );

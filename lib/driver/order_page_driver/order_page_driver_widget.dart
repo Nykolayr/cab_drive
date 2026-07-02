@@ -2457,9 +2457,8 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                     child: Column(
                                       mainAxisSize: MainAxisSize.max,
                                       children: [
-                                        Stack(
-                                          alignment: const AlignmentDirectional(
-                                              0.0, 1.0),
+                                        Column(
+                                          mainAxisSize: MainAxisSize.min,
                                           children: [
                                             ClipRRect(
                                               borderRadius:

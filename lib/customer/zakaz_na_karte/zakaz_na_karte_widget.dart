@@ -1,8 +1,8 @@
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/pages/bottom/app_bar/app_bar_widget.dart';
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -75,43 +75,32 @@ class _ZakazNaKarteWidgetState extends State<ZakazNaKarteWidget> {
           child: Scaffold(
             key: scaffoldKey,
             backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-            body: Stack(
+            body: Column(
+              mainAxisSize: MainAxisSize.max,
               children: [
-                Builder(
-                  builder: (context) {
-                    final order = zakazNaKarteOrderRecord;
-                    final showDriver = (order.status == StatusOrder.at_work ||
-                            order.status == StatusOrder.spec_set) &&
-                        order.hasDriverLocation();
+                wrapWithModel(
+                  model: _model.appBarModel,
+                  updateCallback: () => safeSetState(() {}),
+                  child: const AppBarWidget(
+                    text: 'Заказ на карте',
+                  ),
+                ),
+                Expanded(
+                  child: Builder(
+                    builder: (context) {
+                      final order = zakazNaKarteOrderRecord;
+                      final showDriver = (order.status == StatusOrder.at_work ||
+                              order.status == StatusOrder.spec_set) &&
+                          order.hasDriverLocation();
 
-                    return Container(
-                      width: double.infinity,
-                      height: double.infinity,
-                      child: custom_widgets.YandexOrderMap(
+                      return custom_widgets.YandexOrderMap(
                         width: double.infinity,
                         height: double.infinity,
                         startLatLng: order.pointA.latlng!,
                         endLatLng: order.pointB.latlng!,
                         driverLocation: order.driverLocation,
                         showDriver: showDriver,
-                      ),
-                    );
-                  },
-                ),
-                Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(18.0, 61.0, 0.0, 0.0),
-                  child: FlutterFlowIconButton(
-                    borderColor: Colors.transparent,
-                    borderRadius: 88.0,
-                    buttonSize: 48.0,
-                    fillColor: FlutterFlowTheme.of(context).secondaryBackground,
-                    icon: Icon(
-                      FFIcons.kiconStroke,
-                      color: FlutterFlowTheme.of(context).primaryText,
-                      size: 12.0,
-                    ),
-                    onPressed: () async {
-                      context.safePop();
+                      );
                     },
                   ),
                 ),

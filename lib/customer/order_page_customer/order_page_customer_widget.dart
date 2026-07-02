@@ -2542,9 +2542,8 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
-                                    Stack(
-                                      alignment:
-                                          const AlignmentDirectional(0.0, 1.0),
+                                    Column(
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
                                         ClipRRect(
                                           borderRadius:
@@ -2554,7 +2553,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                               borderRadius:
                                                   BorderRadius.circular(12.0),
                                             ),
-                                            child: Container(
+                                            child: SizedBox(
                                               width: double.infinity,
                                               height: 300.0,
                                               child: Builder(
