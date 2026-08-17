@@ -10,7 +10,6 @@ import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
 import '/customer/create_order/searh_address/searh_address_widget.dart';
-import '/flutter_flow/flutter_flow_google_map.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -31,6 +30,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:provider/provider.dart';
 import 'package:webviewx_plus/webviewx_plus.dart';
+import 'package:yandex_mapkit/yandex_mapkit.dart';
 import 'main_user_model.dart';
 export 'main_user_model.dart';
 
@@ -63,11 +63,20 @@ class _MainUserWidgetState extends State<MainUserWidget> {
       currentUserLocationValue =
           await getCurrentUserLocation(defaultLocation: const LatLng(0.0, 0.0));
       if (await getPermissionStatus(locationPermission)) {
-        await _model.googleMapsController.future.then(
-          (c) => c.animateCamera(
-            CameraUpdate.newLatLng(currentUserLocationValue!.toGoogleMaps()),
-          ),
-        );
+        final controller = _model.yandexMapController;
+        if (controller != null && currentUserLocationValue != null) {
+          await controller.moveCamera(
+            CameraUpdate.newCameraPosition(
+              CameraPosition(
+                target: Point(
+                  latitude: currentUserLocationValue!.latitude,
+                  longitude: currentUserLocationValue!.longitude,
+                ),
+                zoom: 15,
+              ),
+            ),
+          );
+        }
       }
 
       await currentUserReference!.update(createUsersRecordData(
@@ -299,12 +308,10 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                             width:
                                                 MediaQuery.sizeOf(context).width * 1.0,
                                             height: double.infinity,
-                                            child: custom_widgets.PolylineMap(
+                                            child: custom_widgets.YandexOrderMap(
                                               width: MediaQuery.sizeOf(context).width *
                                                   1.0,
                                               height: double.infinity,
-                                              googleApiKey:
-                                                  'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
                                               startLatLng: FFAppState().pointA.latlng!,
                                               endLatLng: FFAppState().pointB.latlng!,
                                               isStatic: false,
@@ -1196,33 +1203,28 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                       ),
                                       child: Stack(
                                         children: [
-                                          FlutterFlowGoogleMap(
-                                            controller: _model.googleMapsController,
-                                            onCameraIdle: (latLng) async {
-                                              safeSetState(
-                                                      () => _model.googleMapsCenter = latLng);
-                                              FFAppState().lastPickerMapCenter = latLng;
-                                              try {
-                                                final c = await _model
-                                                    .googleMapsController.future;
-                                                FFAppState().lastPickerMapZoom =
-                                                    await c.getZoomLevel();
-                                              } catch (_) {}
-                                            },
-                                            initialLocation: _model.googleMapsCenter ??=
+                                          custom_widgets.YandexPickerMap(
+                                            initialLocation: _model.mapCenter ??=
                                                 FFAppState().mskGeo!,
-                                            markerColor: GoogleMarkerColor.violet,
-                                            mapType: MapType.normal,
-                                            style: GoogleMapStyle.standard,
                                             initialZoom: 15.0,
                                             allowInteraction: true,
-                                            allowZoom: true,
-                                            showZoomControls: false,
-                                            showLocation: true,
-                                            showCompass: false,
-                                            showMapToolbar: false,
-                                            showTraffic: false,
-                                            centerMapOnMarkerTap: false,
+                                            onCameraIdle: (latLng) async {
+                                              safeSetState(
+                                                  () => _model.mapCenter = latLng);
+                                              FFAppState().lastPickerMapCenter = latLng;
+                                              try {
+                                                final c = _model.yandexMapController;
+                                                if (c != null) {
+                                                  final pos =
+                                                      await c.getCameraPosition();
+                                                  FFAppState().lastPickerMapZoom =
+                                                      pos.zoom;
+                                                }
+                                              } catch (_) {}
+                                            },
+                                            onMapCreated: (controller) {
+                                              _model.yandexMapController = controller;
+                                            },
                                           ),
                                           Align(
                                             alignment: const AlignmentDirectional(0.0, 0.0),
@@ -1248,7 +1250,7 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                 FutureBuilder<ApiCallResponse>(
                                   future: GeocodeLatLngCall.call(
                                     latlng: functions
-                                        .formatLatLng(_model.googleMapsCenter!),
+                                        .formatLatLng(_model.mapCenter!),
                                   ),
                                   builder: (context, snapshot) {
                                     // Customize what your widget looks like when it's loading.
@@ -1277,10 +1279,10 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                             hoverColor: Colors.transparent,
                                             highlightColor: Colors.transparent,
                                             onTap: () async {
-                                              context.read<OrdersBloc>().add(OrdersEvent.getEtas(userLocation: LocationEntity(lat: _model.googleMapsCenter!.latitude, lng: _model.googleMapsCenter!.longitude)));
+                                              context.read<OrdersBloc>().add(OrdersEvent.getEtas(userLocation: LocationEntity(lat: _model.mapCenter!.latitude, lng: _model.mapCenter!.longitude)));
 
                                               FFAppState().pointA = PointStruct(
-                                                latlng: _model.googleMapsCenter,
+                                                latlng: _model.mapCenter,
                                                 placeID: GeocodeLatLngCall.placeId(
                                                   containerGeocodeLatLngResponse
                                                       .jsonBody,
@@ -1870,10 +1872,10 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                             hoverColor: Colors.transparent,
                                             highlightColor: Colors.transparent,
                                             onTap: () async {
-                                              context.read<OrdersBloc>().add(OrdersEvent.getEtas(userLocation: LocationEntity(lat: _model.googleMapsCenter!.latitude, lng: _model.googleMapsCenter!.longitude)));
+                                              context.read<OrdersBloc>().add(OrdersEvent.getEtas(userLocation: LocationEntity(lat: _model.mapCenter!.latitude, lng: _model.mapCenter!.longitude)));
 
                                               FFAppState().pointA = PointStruct(
-                                                latlng: _model.googleMapsCenter,
+                                                latlng: _model.mapCenter,
                                                 placeID: GeocodeLatLngCall.placeId(
                                                   containerGeocodeLatLngResponse
                                                       .jsonBody,

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:cab_drive/core/utils/shared_prefs.dart';
 import 'package:cab_drive/customer/create_map_page/data/datasources/orders_remote_data_source.dart';
@@ -8,6 +9,7 @@ import 'package:cab_drive/customer/create_map_page/domain/usecases/get_prices.da
 import 'package:cab_drive/customer/create_map_page/presentation/bloc/orders_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,7 +17,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:yandex_mapkit/yandex_mapkit.dart';
 
+import '/core/config/app_env.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'auth/firebase_auth/auth_util.dart';
 import 'auth/firebase_auth/firebase_user_provider.dart';
@@ -30,9 +34,13 @@ import 'index.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (!kIsWeb && Platform.isAndroid) {
+    AndroidYandexMap.useAndroidViewSurface = true;
+  }
   GoRouter.optionURLReflectsImperativeAPIs = true;
   usePathUrlStrategy();
 
+  await AppEnv.load();
   await initFirebase();
 
   // Register background message handler BEFORE any other Firebase calls

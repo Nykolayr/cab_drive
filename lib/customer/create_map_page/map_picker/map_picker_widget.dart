@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
-import 'package:provider/provider.dart';
+import 'package:yandex_mapkit/yandex_mapkit.dart';
 
 import '/backend/api_requests/api_calls.dart';
 import '/backend/schema/structs/index.dart';
+import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '../domain/entities/entities.dart';
@@ -29,10 +29,9 @@ class MapPickerWidget extends StatefulWidget {
 }
 
 class _MapPickerWidgetState extends State<MapPickerWidget> {
-  final Completer<gmaps.GoogleMapController> _controllerCompleter =
-      Completer<gmaps.GoogleMapController>();
+  YandexMapController? _mapController;
 
-  gmaps.LatLng _center = const gmaps.LatLng(55.751244, 37.618423);
+  LatLng _center = const LatLng(55.751244, 37.618423);
   double _zoom = 17;
   String _addressLabel = '';
   bool _loadingLabel = true;
@@ -48,7 +47,7 @@ class _MapPickerWidgetState extends State<MapPickerWidget> {
     final lastCenter = FFAppState().lastPickerMapCenter;
     final lastZoom = FFAppState().lastPickerMapZoom;
     if (lastCenter != null) {
-      _center = gmaps.LatLng(lastCenter.latitude, lastCenter.longitude);
+      _center = lastCenter;
     }
     if (lastZoom != null) {
       _zoom = lastZoom;
@@ -63,12 +62,9 @@ class _MapPickerWidgetState extends State<MapPickerWidget> {
               defaultLocation: const LatLng(55.751244, 37.618423));
       if (!mounted) return;
       setState(() {
-        _center = gmaps.LatLng(initial.latitude, initial.longitude);
+        _center = initial;
       });
-      final controller = await _controllerCompleter.future;
-      await controller.animateCamera(
-        gmaps.CameraUpdate.newLatLngZoom(_center, _zoom),
-      );
+      await _moveCamera(_center, _zoom);
       await _reverseGeocode();
     });
   }
@@ -77,6 +73,19 @@ class _MapPickerWidgetState extends State<MapPickerWidget> {
   void dispose() {
     _debounce?.cancel();
     super.dispose();
+  }
+
+  Future<void> _moveCamera(LatLng target, double zoom) async {
+    final controller = _mapController;
+    if (controller == null) return;
+    await controller.moveCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: Point(latitude: target.latitude, longitude: target.longitude),
+          zoom: zoom,
+        ),
+      ),
+    );
   }
 
   Future<void> _reverseGeocode() async {
@@ -100,17 +109,21 @@ class _MapPickerWidgetState extends State<MapPickerWidget> {
     });
   }
 
-  void _onCameraMove(gmaps.CameraPosition pos) {
-    _center = pos.target;
-    _zoom = pos.zoom;
-  }
-
-  void _onCameraIdle() {
-    // Сохраняем позицию/зум на случай повторного открытия пикера или возврата
-    // к карте на главном экране.
-    FFAppState().lastPickerMapCenter =
-        LatLng(_center.latitude, _center.longitude);
-    FFAppState().lastPickerMapZoom = _zoom;
+  Future<void> _onCameraIdle(LatLng latLng) async {
+    _center = latLng;
+    FFAppState().lastPickerMapCenter = latLng;
+    try {
+      final c = _mapController;
+      if (c != null) {
+        final pos = await c.getCameraPosition();
+        _zoom = pos.zoom;
+        FFAppState().lastPickerMapZoom = _zoom;
+      } else {
+        FFAppState().lastPickerMapZoom = _zoom;
+      }
+    } catch (_) {
+      FFAppState().lastPickerMapZoom = _zoom;
+    }
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 350), _reverseGeocode);
   }
@@ -198,23 +211,15 @@ class _MapPickerWidgetState extends State<MapPickerWidget> {
       body: Stack(
         children: [
           Positioned.fill(
-            child: gmaps.GoogleMap(
-              initialCameraPosition: gmaps.CameraPosition(
-                target: _center,
-                zoom: 17,
-              ),
-              onMapCreated: (controller) {
-                if (!_controllerCompleter.isCompleted) {
-                  _controllerCompleter.complete(controller);
-                }
-              },
-              onCameraMove: _onCameraMove,
+            child: custom_widgets.YandexPickerMap(
+              initialLocation: _center,
+              initialZoom: _zoom,
+              allowInteraction: true,
               onCameraIdle: _onCameraIdle,
-              myLocationEnabled: true,
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: false,
-              compassEnabled: false,
-              mapToolbarEnabled: false,
+              onMapCreated: (controller) async {
+                _mapController = controller;
+                await _moveCamera(_center, _zoom);
+              },
             ),
           ),
           IgnorePointer(

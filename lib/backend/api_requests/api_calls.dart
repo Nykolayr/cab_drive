@@ -5,6 +5,8 @@ import '../schema/structs/index.dart';
 import 'package:flutter/foundation.dart';
 
 import '/flutter_flow/flutter_flow_util.dart';
+import '/custom_code/services/ors_route_service.dart';
+import '/custom_code/services/yandex_geocoder_service.dart';
 import 'api_manager.dart';
 
 export 'api_manager.dart' show ApiCallResponse;
@@ -54,6 +56,18 @@ class AutocompleteCall {
     String? types = 'geocode',
     String? location = '55.7558,37.6173',
   }) async {
+    if (YandexGeocoderService.hasApiKey) {
+      final results = await YandexGeocoderService.searchByAddress(
+        query: input ?? '',
+      );
+      final body = YandexGeocoderService.googleStyleAutocompleteBody(results);
+      return ApiCallResponse(
+        body,
+        {},
+        200,
+      );
+    }
+
     return ApiManager.instance.makeApiCall(
       callName: 'autocomplete',
       apiUrl: 'https://maps.googleapis.com/maps/api/place/autocomplete/json',
@@ -115,6 +129,21 @@ class GeocodeLatLngCall {
   static Future<ApiCallResponse> call({
     String? latlng = '',
   }) async {
+    if (YandexGeocoderService.hasApiKey) {
+      final coords = YandexGeocoderService.parseLatLngPair(latlng ?? '');
+      if (coords != null) {
+        final result = await YandexGeocoderService.reverseGeocode(
+          lat: coords.latitude,
+          lon: coords.longitude,
+        );
+        if (result != null) {
+          final body =
+              YandexGeocoderService.googleStyleGeocodeBody(result);
+          return ApiCallResponse(body, {}, 200);
+        }
+      }
+    }
+
     return ApiManager.instance.makeApiCall(
       callName: 'geocode LatLng',
       apiUrl: 'https://maps.googleapis.com/maps/api/geocode/json',
@@ -183,6 +212,21 @@ class GeocodePlaceIDCall {
   static Future<ApiCallResponse> call({
     String? placeId = '',
   }) async {
+    if (YandexGeocoderService.hasApiKey) {
+      final coords = YandexGeocoderService.parseLatLngPair(placeId ?? '');
+      if (coords != null) {
+        final result = await YandexGeocoderService.reverseGeocode(
+          lat: coords.latitude,
+          lon: coords.longitude,
+        );
+        if (result != null) {
+          final body =
+              YandexGeocoderService.googleStyleGeocodeBody(result);
+          return ApiCallResponse(body, {}, 200);
+        }
+      }
+    }
+
     return ApiManager.instance.makeApiCall(
       callName: 'geocode Place ID',
       apiUrl: 'https://maps.googleapis.com/maps/api/geocode/json',
@@ -254,6 +298,22 @@ class DistanceMatrixCall {
     String? waypoints = '',
 
   }) async {
+    final from = YandexGeocoderService.parseLatLngPair(origin ?? '');
+    final to = YandexGeocoderService.parseLatLngPair(destination ?? '');
+    if (from != null && to != null) {
+      final matrix = await OrsRouteService.fetchDrivingMatrix(
+        from: from,
+        to: to,
+      );
+      if (matrix != null) {
+        final body = YandexGeocoderService.googleStyleDistanceMatrixBody(
+          distanceText: matrix.kmLeft,
+          durationText: matrix.timeLeft,
+        );
+        return ApiCallResponse(body, {}, 200);
+      }
+    }
+
     return ApiManager.instance.makeApiCall(
       callName: 'DistanceMatrix',
       apiUrl:

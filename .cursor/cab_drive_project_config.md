@@ -12,10 +12,10 @@
 | Имя пакета (`pubspec.yaml` → `name`) | `cab_drive` |
 | Импорты | `package:cab_drive/...` |
 | Отображаемое имя | Cab Drive |
-| Версия | `1.0.5+13` (`pubspec.yaml`) |
+| Версия | `1.1.1+75` (`pubspec.yaml`) |
 | Dart SDK | `>=3.0.0 <4.0.0` |
-| Android `applicationId` | `com.appwawe.YDrive` |
-| Android namespace | `com.appwawe.YDrive` |
+| Android `applicationId` | `com.cab.drive` |
+| Android namespace | `com.cab.drive` |
 | Исходный бренд / Firebase | **YDrive** (`ydrive-a35d2`) |
 
 ---
@@ -33,7 +33,7 @@
 | Push | **FCM** + Cloud Functions |
 | REST | **`package:http`** через `ApiManager` (не Dio) |
 | Локальное хранение | `flutter_secure_storage` (через `FFAppState`) |
-| Карты | `google_maps_flutter`, custom widgets |
+| Карты | `yandex_mapkit` + ORS + Yandex Geocoder (ключи в `.env`) |
 | Локализация | `FFLocalizations`, только **`ru`** |
 | Remote Config | Firebase Remote Config (`poll`, `usl` — PDF-ссылки) |
 
@@ -280,10 +280,13 @@ In-memory (сессия заказа):
 
 | Файл | Назначение |
 |------|------------|
-| `polyline_map.dart` | карта с полилинией маршрута |
-| `driver_tracking_map.dart` | карта трекинга водителя |
+| `polyline_map.dart` | ~~карта с полилинией~~ → заменён на `yandex_order_map.dart` |
+| `driver_tracking_map.dart` | ~~трекинг~~ → `YandexOrderMap(showDriver: true)` |
+| `yandex_order_map.dart` | карта заказа A→B (+ водитель) |
+| `yandex_picker_map.dart` | пикер адреса |
 | `phone_input_widget.dart` | ввод телефона |
 | `read_message.dart` | прочитанность сообщений |
+| `user_avatar_image.dart` | аватар пользователя |
 
 ---
 

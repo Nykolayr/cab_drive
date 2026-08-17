@@ -530,7 +530,6 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
   static const _kIosBlue = Color(0xFF007AFF);
   static const _kMutedText = Color(0xFFA4A6B2);
   static const _kStarGrey = Color(0xFFEEEEEE);
-  static const _kMapApiKey = 'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY';
 
   Widget _deliveredHeader({required bool withTimer}) {
     return Padding(
@@ -607,7 +606,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
     );
   }
 
-  // Чистая обёртка над PolylineMap (без внешнего padding) — переиспользуется
+  // Чистая обёртка над YandexOrderMap (без внешнего padding) — переиспользуется
   // во всех типах карточки. Каждый caller добавляет свои отступы по контексту.
   Widget _polylineMapPreview({double height = 165.0}) {
     final a = widget!.order?.pointA.latlng;
@@ -618,10 +617,9 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
       child: SizedBox(
         width: double.infinity,
         height: height,
-        child: custom_widgets.PolylineMap(
+        child: custom_widgets.YandexOrderMap(
           width: double.infinity,
           height: height,
-          googleApiKey: _kMapApiKey,
           startLatLng: a,
           endLatLng: b,
           isStatic: true,

@@ -33,10 +33,9 @@ class MapCardWidget extends StatelessWidget {
                   child: Container(
                     width: double.infinity,
                     height: 150.0,
-                    child: custom_widgets.PolylineMap(
+                    child: custom_widgets.YandexOrderMap(
                       width: double.infinity,
                       height: 150.0,
-                      googleApiKey: 'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
                       startLatLng: order.pointA.latlng!,
                       endLatLng: order.pointB.latlng!,
                       isStatic: true,

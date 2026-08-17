@@ -27,6 +27,15 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 
 flutter_ios_podfile_setup
 
+pre_install do |installer|
+  root = File.expand_path('..', __dir__)
+  env_path = File.join(root, '.env')
+  sync_script = File.join(root, 'tool', 'sync_env.dart')
+  if File.exist?(env_path) && File.exist?(sync_script)
+    system('dart', 'run', sync_script)
+  end
+end
+
 target 'Runner' do
   pod 'GoogleUtilities'
   use_frameworks! :linkage => :static

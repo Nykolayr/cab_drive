@@ -25,7 +25,7 @@ import '/pages/bottom/create_rewievs/create_rewievs_widget.dart';
 import '/pages/bottom/image_view/image_view_widget.dart';
 import '/pages/bottom/ratting/ratting_widget.dart';
 import '/pages/bottom/text_info/text_info_widget.dart';
-import '../../custom_code/widgets/polyline_map.dart';
+import '/custom_code/widgets/index.dart' as custom_widgets;
 import 'order_page_customer_model.dart';
 
 export 'order_page_customer_model.dart';
@@ -2622,26 +2622,36 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                               borderRadius:
                                                   BorderRadius.circular(12.0),
                                             ),
-                                            child: Container(
+                                            child: SizedBox(
                                               width: double.infinity,
                                               height: 150.0,
-                                              child: MultiPolylineMap(
-                                                width: double.infinity,
-                                                height: 150.0,
-                                                googleApiKey:
-                                                    'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
-                                                points: [
-                                                  orderPageCustomerOrderRecord
-                                                      .pointA.latlng!,
-                                                  if (orderPageCustomerOrderRecord
-                                                          .pointC.latlng !=
-                                                      null)
-                                                    orderPageCustomerOrderRecord
-                                                        .pointC.latlng!,
-                                                  orderPageCustomerOrderRecord
-                                                      .pointB.latlng!
-                                                ],
-                                                isStatic: true,
+                                              child: Builder(
+                                                builder: (context) {
+                                                  final order =
+                                                      orderPageCustomerOrderRecord;
+                                                  final showDriver = (order
+                                                                  .status ==
+                                                              StatusOrder
+                                                                  .at_work ||
+                                                          order.status ==
+                                                              StatusOrder
+                                                                  .spec_set) &&
+                                                      order.hasDriverLocation();
+
+                                                  return custom_widgets
+                                                      .YandexOrderMap(
+                                                    width: double.infinity,
+                                                    height: 150.0,
+                                                    startLatLng:
+                                                        order.pointA.latlng!,
+                                                    endLatLng:
+                                                        order.pointB.latlng!,
+                                                    driverLocation:
+                                                        order.driverLocation,
+                                                    showDriver: showDriver,
+                                                    isStatic: true,
+                                                  );
+                                                },
                                               ),
                                             ),
                                           ),

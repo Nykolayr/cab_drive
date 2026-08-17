@@ -1,15 +1,11 @@
-import '../../custom_code/widgets/polyline_map.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
+import '/pages/bottom/app_bar/app_bar_widget.dart';
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'zakaz_na_karte_model.dart';
 export 'zakaz_na_karte_model.dart';
 
@@ -48,7 +44,7 @@ class _ZakazNaKarteWidgetState extends State<ZakazNaKarteWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return  StreamBuilder<OrderRecord>(
+    return StreamBuilder<OrderRecord>(
       stream: OrderRecord.getDocument(widget!.order!),
       builder: (context, snapshot) {
         // Customize what your widget looks like when it's loading.
@@ -79,59 +75,32 @@ class _ZakazNaKarteWidgetState extends State<ZakazNaKarteWidget> {
           child: Scaffold(
             key: scaffoldKey,
             backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-            body: Stack(
+            body: Column(
+              mainAxisSize: MainAxisSize.max,
               children: [
-                Builder(
-                  builder: (context) {
-                    if (zakazNaKarteOrderRecord.status == StatusOrder.at_work) {
-                      return Container(
+                wrapWithModel(
+                  model: _model.appBarModel,
+                  updateCallback: () => safeSetState(() {}),
+                  child: const AppBarWidget(
+                    text: 'Заказ на карте',
+                  ),
+                ),
+                Expanded(
+                  child: Builder(
+                    builder: (context) {
+                      final order = zakazNaKarteOrderRecord;
+                      final showDriver = (order.status == StatusOrder.at_work ||
+                              order.status == StatusOrder.spec_set) &&
+                          order.hasDriverLocation();
+
+                      return custom_widgets.YandexOrderMap(
                         width: double.infinity,
                         height: double.infinity,
-                        child: custom_widgets.DriverTrackingMap(
-                          width: double.infinity,
-                          height: double.infinity,
-                          googleApiKey:
-                              'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
-                          startLatLng: zakazNaKarteOrderRecord.pointA.latlng!,
-                          endLatLng: zakazNaKarteOrderRecord.pointB.latlng!,
-                          driverLocation:
-                              zakazNaKarteOrderRecord.driverLocation!,
-                        ),
+                        startLatLng: order.pointA.latlng!,
+                        endLatLng: order.pointB.latlng!,
+                        driverLocation: order.driverLocation,
+                        showDriver: showDriver,
                       );
-                    } else {
-                      return Container(
-                        width: MediaQuery.sizeOf(context).width * 1.0,
-                        height: double.infinity,
-                        child:   MultiPolylineMap(
-                          width: MediaQuery.sizeOf(context).width * 1.0,
-                          height: double.infinity,
-                          googleApiKey:
-                              'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
-                          points: [zakazNaKarteOrderRecord.pointA.latlng!,
-
-                            if (zakazNaKarteOrderRecord.pointC.latlng != null)
-                              zakazNaKarteOrderRecord.pointC.latlng!,
-                            zakazNaKarteOrderRecord.pointB.latlng!],
-                          isStatic: false,
-                        ),
-                      );
-                    }
-                  },
-                ),
-                Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(18.0, 61.0, 0.0, 0.0),
-                  child: FlutterFlowIconButton(
-                    borderColor: Colors.transparent,
-                    borderRadius: 88.0,
-                    buttonSize: 48.0,
-                    fillColor: FlutterFlowTheme.of(context).secondaryBackground,
-                    icon: Icon(
-                      FFIcons.kiconStroke,
-                      color: FlutterFlowTheme.of(context).primaryText,
-                      size: 12.0,
-                    ),
-                    onPressed: () async {
-                      context.safePop();
                     },
                   ),
                 ),

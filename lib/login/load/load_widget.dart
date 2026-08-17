@@ -4,6 +4,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -66,6 +67,20 @@ class _LoadWidgetState extends State<LoadWidget> {
                   ),
                 },
               );
+
+              final order = currentUserDocument?.currentOrder;
+              if (order?.orderDocRef != null && order?.pointB != null) {
+                unawaited(
+                  actions
+                      .toggleRouteTracking(
+                        '',
+                        true,
+                        order!.orderDocRef!,
+                        order.pointB!,
+                      )
+                      .catchError((_) {}),
+                );
+              }
             } else {
               debugPrint('[LoadWidget] → MainUserWidget');
               context.goNamed(
