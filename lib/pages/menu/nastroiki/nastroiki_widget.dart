@@ -1,6 +1,7 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
+import '/custom_code/widgets/user_avatar_image.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -13,7 +14,6 @@ import '/pages/menu/izmenit_imya/izmenit_imya_widget.dart';
 import '/pages/menu/izmenit_pochtu/izmenit_pochtu_widget.dart';
 import 'dart:async';
 import 'dart:ui';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/cupertino.dart';
@@ -229,17 +229,11 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
                                   ),
                                 ),
                                 child: AuthUserStreamWidget(
-                                  builder: (context) => ClipRRect(
+                                  builder: (context) => UserAvatarImage(
+                                    imageUrl: currentUserPhoto,
+                                    width: 80.0,
+                                    height: 115.0,
                                     borderRadius: BorderRadius.circular(18.0),
-                                    child: CachedNetworkImage(
-                                      fadeInDuration: Duration(milliseconds: 5),
-                                      fadeOutDuration:
-                                          Duration(milliseconds: 5),
-                                      imageUrl: currentUserPhoto,
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                      fit: BoxFit.cover,
-                                    ),
                                   ),
                                 ),
                               ),

@@ -2,10 +2,8 @@ import 'package:bloc/bloc.dart';
 import 'package:cab_drive/login/login/domain/entities/user/auth_user.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:pinput/pinput.dart';
 
 import '../../../../core/utils/shared_prefs.dart';
 import '../../../../core/utils/status.dart';
@@ -17,106 +15,100 @@ part 'event.dart';
 part 'state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  AuthBloc()
+  AuthBloc._(this._number, this._code)
       : super(_Auth(
-            phone: TextEditingController(),
-            status: SuccessStatus())) {
-    emit(_Auth(phone: _number, status: SuccessStatus()));
-    on<AuthEvent>((events, emit) async {
-      events.map(
-        sendCode: _sendCode,
-        resendCode: _resendCode,
-        confirmCode: _confirmCode,
-        pop: _pop,
-        sendResetCode: _sendResetCode, sendFcmToken: _sendToken,
-
+          phone: _number,
+          status: SuccessStatus(),
+        )) {
+    on<AuthEvent>((event, emit) async {
+      await event.map(
+        sendCode: (e) => _sendCode(e, emit),
+        resendCode: (e) => _resendCode(e, emit),
+        confirmCode: (e) => _confirmCode(e, emit),
+        pop: (e) => _pop(e, emit),
+        sendResetCode: (e) => _sendResetCode(e, emit),
+        sendFcmToken: (e) => _sendToken(e, emit),
       );
     });
   }
 
-  bool _isAuth = true;
+  factory AuthBloc() => AuthBloc._(
+        TextEditingController(),
+        TextEditingController(),
+      );
 
   final AuthRepository _repository = AuthRepositoryImpl();
-
-  final TextEditingController _number = TextEditingController();
-
-  final TextEditingController _code = TextEditingController();
+  final TextEditingController _number;
+  final TextEditingController _code;
   late String _session;
+  AuthUser? _user;
 
-  _sendToken (_SendFcmToken value) async {
-    await _sendFcmToken(_user!.firebaseId);
+  Future<void> _sendToken(_SendFcmToken value, Emitter<AuthState> emit) async {
+    final user = _user;
+    if (user == null) return;
+    await _sendFcmToken(user.firebaseId);
   }
 
-  _sendCode(_SendCode value) async {
+  Future<void> _sendCode(_SendCode value, Emitter<AuthState> emit) async {
     try {
-
-        emit((state).copyWith(status: LoadingStatus()));
-        print(_number.text);
-        final response = await _repository.sendCode(
-          _number.text,
-        );
-
-        _session = response;
-
-
+      emit(state.copyWith(status: LoadingStatus()));
+      final response = await _repository.sendCode(_number.text);
+      _session = response;
       emit(_Code(controller: _code, status: SuccessStatus()));
-    } on DioException catch (_) {
-      print(_);
-      try {
-        emit(state.copyWith(
-            status: FailedStatus(
-                exception: _.response?.data['message'] ??
-                    'Ошибка авторизации, проверьте соединение с интернетом или попробуйте позднее')));
-      } catch (_) {
-        emit(state.copyWith(
-            status: FailedStatus(
-                exception:
-                    'Ошибка авторизации, проверьте соединение с интернетом или попробуйте позднее')));
-      }
+    } on DioException catch (e) {
+      final message = e.response?.data is Map
+          ? e.response?.data['message']?.toString()
+          : null;
+      final text = (message != null && message.isNotEmpty)
+          ? message
+          : 'Ошибка авторизации (${e.response?.statusCode ?? 'сеть'}). Проверьте номер или попробуйте позже';
+      emit(state.copyWith(status: FailedStatus(exception: text)));
     } catch (_) {
       emit(state.copyWith(
-          status: FailedStatus(
-              exception:
-                  'Ошибка авторизации, проверьте соединение с интернетом или попробуйте позднее')));
+        status: FailedStatus(
+          exception:
+              'Ошибка авторизации, проверьте соединение с интернетом или попробуйте позднее',
+        ),
+      ));
     }
   }
 
-  _resendCode(_ResendCode v) async {
+  Future<void> _resendCode(_ResendCode v, Emitter<AuthState> emit) async {
     try {
-      emit((state as _Code).copyWith(status: LoadingStatus()));
-
+      emit(state.copyWith(status: LoadingStatus()));
       _session = await _repository.sendCode(_number.text);
-      emit((state as _Code).copyWith(status: SuccessStatus()));
-    } on DioException catch (_) {
-      emit((state as _Code)
-          .copyWith(status: FailedStatus(exception: _.toString())));
+      emit(state.copyWith(status: SuccessStatus()));
+    } on DioException catch (e) {
+      final message = e.response?.data is Map
+          ? e.response?.data['message']?.toString()
+          : null;
+      emit(state.copyWith(
+        status: FailedStatus(
+          exception: message ?? e.toString(),
+        ),
+      ));
     }
   }
 
-  _confirmCode(_ConfirmCode v) async {
+  Future<void> _confirmCode(_ConfirmCode v, Emitter<AuthState> emit) async {
     try {
-      emit((state).copyWith(status: LoadingStatus()));
-      final response = await _repository.confirmCode(
-          _code.text, _session);
-
+      emit(state.copyWith(status: LoadingStatus()));
+      final response = await _repository.confirmCode(_code.text, _session);
       SharedPrefs.setToken = response.token;
-
-      // Отправка FCM token после успешной авторизации
       _user ??= response.user;
-      emit((state).copyWith(status: SuccessStatus()));
+      emit(state.copyWith(status: SuccessStatus()));
       v.onSuccess?.call(response.user);
-    } on DioException catch (_) {
-      print(_.response?.data);
-      emit((state).copyWith(
-          status: FailedStatus(
-              exception: _.response?.data['message'] ?? _.toString())));
-    } catch (_) {
-      emit((state).copyWith(status: FailedStatus(exception: _.toString())));
-      rethrow;
+    } on DioException catch (e) {
+      final message = e.response?.data is Map
+          ? e.response?.data['message']?.toString()
+          : null;
+      emit(state.copyWith(
+        status: FailedStatus(exception: message ?? e.toString()),
+      ));
+    } catch (e) {
+      emit(state.copyWith(status: FailedStatus(exception: e.toString())));
     }
   }
-
-  AuthUser? _user;
 
   Future<void> _sendFcmToken(String firebaseId) async {
     try {
@@ -128,28 +120,31 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           await _repository.setFcmToken(firebaseId, fcmToken);
         }
       }
-    } catch (e) {
-      // Игнорируем ошибки FCM, чтобы не блокировать авторизацию
-      print('FCM token error: $e');
+    } catch (_) {
+      // FCM не блокирует авторизацию
     }
   }
 
-_pop(_Pop v) async {
-  emit(_Auth(phone: _number, status: SuccessStatus()));
+  Future<void> _pop(_Pop v, Emitter<AuthState> emit) async {
+    emit(_Auth(phone: _number, status: SuccessStatus()));
+  }
 
-}
-
-
-  _sendResetCode(_SendResetCode v) async {
+  Future<void> _sendResetCode(
+    _SendResetCode v,
+    Emitter<AuthState> emit,
+  ) async {
     try {
       emit(state.copyWith(status: LoadingStatus()));
       _session = await _repository.sendResetCode(_number.text);
       _code.text = '';
       emit(_Code(controller: _code, status: SuccessStatus()));
-    } on DioException catch (_) {
-
-      emit(state.copyWith(status: FailedStatus(exception: _.response?.data['message'])));
+    } on DioException catch (e) {
+      final message = e.response?.data is Map
+          ? e.response?.data['message']?.toString()
+          : null;
+      emit(state.copyWith(
+        status: FailedStatus(exception: message ?? e.toString()),
+      ));
     }
   }
-
 }

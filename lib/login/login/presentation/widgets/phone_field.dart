@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../../core/utils/formatters/phone_mask_input_formatter.dart';
@@ -12,13 +11,17 @@ class PhoneField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: TextField(
-          controller: controller,
-          decoration: InputDecoration(
-            hintText: '+7',
+        Expanded(
+          child: TextField(
+            controller: controller,
+            keyboardType: TextInputType.phone,
+            textInputAction: TextInputAction.done,
+            decoration: const InputDecoration(
+              hintText: '+7',
+            ),
+            inputFormatters: [PhoneMaskInputFormatter()],
           ),
-          inputFormatters: [PhoneMaskInputFormatter()],
-        ))
+        ),
       ],
     );
   }

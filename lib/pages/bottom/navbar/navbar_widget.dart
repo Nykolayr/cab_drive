@@ -47,22 +47,20 @@ class _NavbarWidgetState extends State<NavbarWidget> {
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
 
-    return Container(
-      width: double.infinity,
-      height: 100.0,
-      decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).secondaryBackground,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(0.0),
-          bottomRight: Radius.circular(0.0),
-          topLeft: Radius.circular(18.0),
-          topRight: Radius.circular(18.0),
-        ),
+    // Нижний inset — глобальный SafeArea в main.dart.
+    return Material(
+      color: FlutterFlowTheme.of(context).secondaryBackground,
+      borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(18.0),
+        topRight: Radius.circular(18.0),
       ),
-      padding: EdgeInsets.only(top: 10),
-      child: SafeArea(
-        top: false,
-        child: Row(
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 10),
+        child: SizedBox(
+          height: 64.0,
+          width: double.infinity,
+          child: Row(
           mainAxisSize: MainAxisSize.max,
           children: [
             Expanded(
@@ -330,6 +328,7 @@ class _NavbarWidgetState extends State<NavbarWidget> {
               ),
             ),
           ],
+        ),
         ),
       ),
     );

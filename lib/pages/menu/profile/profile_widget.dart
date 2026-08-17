@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:cab_drive/pages/menu/balance/presentation/payment_history_widget.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -11,6 +10,7 @@ import 'package:webviewx_plus/webviewx_plus.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
+import '/custom_code/widgets/user_avatar_image.dart';
 import '/driver/city/city_widget.dart';
 import '/driver/popolnit_balans/popolnit_balans_widget.dart';
 import '/driver/sposobviplat/sposobviplat_widget.dart';
@@ -129,16 +129,13 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                               width: 40.0,
                                               height: 40.0,
                                               clipBehavior: Clip.antiAlias,
-                                              decoration: BoxDecoration(
+                                              decoration: const BoxDecoration(
                                                 shape: BoxShape.circle,
                                               ),
-                                              child: CachedNetworkImage(
-                                                fadeInDuration:
-                                                    Duration(milliseconds: 5),
-                                                fadeOutDuration:
-                                                    Duration(milliseconds: 5),
+                                              child: UserAvatarImage(
                                                 imageUrl: currentUserPhoto,
-                                                fit: BoxFit.cover,
+                                                width: 40.0,
+                                                height: 40.0,
                                               ),
                                             ),
                                           ),
@@ -1933,16 +1930,13 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                           width: 40.0,
                                           height: 40.0,
                                           clipBehavior: Clip.antiAlias,
-                                          decoration: BoxDecoration(
+                                          decoration: const BoxDecoration(
                                             shape: BoxShape.circle,
                                           ),
-                                          child: CachedNetworkImage(
-                                            fadeInDuration:
-                                                Duration(milliseconds: 5),
-                                            fadeOutDuration:
-                                                Duration(milliseconds: 5),
+                                          child: UserAvatarImage(
                                             imageUrl: currentUserPhoto,
-                                            fit: BoxFit.cover,
+                                            width: 40.0,
+                                            height: 40.0,
                                           ),
                                         ),
                                       ),

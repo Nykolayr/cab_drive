@@ -196,7 +196,7 @@ class _MyAppState extends State<MyApp> {
       ),
       themeMode: _themeMode,
       routerConfig: _router,
-      builder: (_, child) => MediaQuery(
+      builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(
           textScaler:
               _textScaleFactor == FlutterFlowTheme.defaultTextScaleFactor
@@ -209,16 +209,26 @@ class _MyAppState extends State<MyApp> {
                       maxScaleFactor: FlutterFlowTheme.maxTextScaleFactor,
                     ),
         ),
-        child: MultiBlocProvider(providers: [
-          BlocProvider(
-              create: (context) => OrdersBloc(
+        // Глобально: контент над системной панелью жестов/навигации.
+        child: SafeArea(
+          top: false,
+          left: false,
+          right: false,
+          bottom: true,
+          child: MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (context) => OrdersBloc(
                   getEtasUseCase: GetEtasUseCase(_ordersRepository),
-                  getPricesUseCase: GetPricesUseCase(_ordersRepository)))
-        ], child: BlocBuilder<OrdersBloc, OrdersState>(
-          builder: (context, state) {
-            return child!;
-          }
-        )),
+                  getPricesUseCase: GetPricesUseCase(_ordersRepository),
+                ),
+              ),
+            ],
+            child: BlocBuilder<OrdersBloc, OrdersState>(
+              builder: (context, state) => child!,
+            ),
+          ),
+        ),
       ),
     );
   }

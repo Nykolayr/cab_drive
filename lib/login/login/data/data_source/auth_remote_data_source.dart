@@ -18,17 +18,34 @@ abstract class AuthRemoteDataSource {
   Future<void> setFcmToken(String uid, String fcmToken);
 }
 
+/// Формат, который принимает backend: `+7 (XXX) XXX-XX-XX`.
+String normalizeRuPhone(String raw) {
+  final digits = raw.replaceAll(RegExp(r'\D'), '');
+  late final String ten;
+  if (digits.length == 11 &&
+      (digits.startsWith('7') || digits.startsWith('8'))) {
+    ten = digits.substring(1);
+  } else if (digits.length == 10) {
+    ten = digits;
+  } else {
+    return raw.trim();
+  }
+  return '+7 (${ten.substring(0, 3)}) ${ten.substring(3, 6)}-'
+      '${ten.substring(6, 8)}-${ten.substring(8, 10)}';
+}
+
 class AuthRemoteDataSourceImpl extends AuthRemoteDataSource {
   final _dio = AppDio()();
 
   @override
   Future<String> sendCode(String number) async {
+    final phone = normalizeRuPhone(number);
     final response = await _dio.post('users/auth',
         data: FormData.fromMap({
-          'phone': number,
+          'phone': phone,
         }));
 
-    print(' reg ${response.data}');
+    print(' reg phone=$phone data=${response.data}');
     return response.data['call_token'];
   }
 
@@ -45,9 +62,10 @@ class AuthRemoteDataSourceImpl extends AuthRemoteDataSource {
 
   @override
   Future<AuthResponse> signIn(String number, String password) async {
+    final phone = normalizeRuPhone(number);
     final response = await _dio.post('users/auth',
         data: FormData.fromMap({
-          'phone': '+7 ' +number,
+          'phone': phone,
           'password': password,
         }));
     print(response.data);
@@ -56,9 +74,10 @@ class AuthRemoteDataSourceImpl extends AuthRemoteDataSource {
 
   @override
   Future<String> sendResetCode(String number) async {
+    final phone = normalizeRuPhone(number);
     final response = await _dio.post('users/send_reset_sms_code',
         data: FormData.fromMap({
-          'phone': '+7 ' + number,
+          'phone': phone,
         }));
 
     return response.data['call_token'];

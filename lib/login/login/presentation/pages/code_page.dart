@@ -64,6 +64,7 @@ class CodePage extends StatelessWidget {
                     child: Pinput(
                       length: 4,
                       autofocus: true,
+                      keyboardType: TextInputType.number,
                       onCompleted: (str) {
                         bloc.add(AuthEvent.confirmCode(onSuccess: (_user) async {
                           try {
