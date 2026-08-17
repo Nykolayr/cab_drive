@@ -37,7 +37,16 @@ class OrderWarningWidget extends StatelessWidget {
     final isSelectedDriver = order.selectedDriver == currentUserReference;
     final status = order.status;
 
-    if (!order.userWhoResponced.contains(currentUserReference)) {
+    print('[OrderWarning.build] status=$status isSelectedDriver=$isSelectedDriver '
+        'images=${model.images.length} '
+        'firstBytes=${model.images.isNotEmpty ? model.images.first.bytes?.length : "n/a"}');
+
+    // Скрываем виджет только если водитель НЕ относится к заказу:
+    // нет ни в откликнувшихся, ни в выбранных. Иначе водитель, получивший
+    // заказ через ExtraOrderBottomSheet (доп.заказ по пути — UID не пишется
+    // в userWhoResponced), терял фото-UI и инструкции.
+    if (!isSelectedDriver &&
+        !order.userWhoResponced.contains(currentUserReference)) {
       return SizedBox.shrink();
     }
 

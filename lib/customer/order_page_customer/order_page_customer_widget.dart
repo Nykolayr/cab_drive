@@ -2521,6 +2521,46 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                     final listViewResponsesRecord =
                                                         listViewResponsesRecordList[
                                                             listViewIndex];
+                                                    Future<void>
+                                                        openDetail() async {
+                                                      await showModalBottomSheet(
+                                                        isScrollControlled:
+                                                            true,
+                                                        backgroundColor:
+                                                            Colors.transparent,
+                                                        context: context,
+                                                        builder: (context) {
+                                                          return WebViewAware(
+                                                            child:
+                                                                GestureDetector(
+                                                              onTap: () {
+                                                                FocusScope.of(
+                                                                        context)
+                                                                    .unfocus();
+                                                                FocusManager
+                                                                    .instance
+                                                                    .primaryFocus
+                                                                    ?.unfocus();
+                                                              },
+                                                              child: Padding(
+                                                                padding: MediaQuery
+                                                                    .viewInsetsOf(
+                                                                        context),
+                                                                child:
+                                                                    ResponsedDetailWidget(
+                                                                  order:
+                                                                      orderPageCustomerOrderRecord,
+                                                                  respDT:
+                                                                      listViewResponsesRecord,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          );
+                                                        },
+                                                      ).then((value) =>
+                                                          safeSetState(() {}));
+                                                    }
+
                                                     return InkWell(
                                                       splashColor:
                                                           Colors.transparent,
@@ -2530,51 +2570,21 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                           Colors.transparent,
                                                       highlightColor:
                                                           Colors.transparent,
-                                                      onTap: () async {
-                                                        await showModalBottomSheet(
-                                                          isScrollControlled:
-                                                              true,
-                                                          backgroundColor:
-                                                              Colors
-                                                                  .transparent,
-                                                          context: context,
-                                                          builder: (context) {
-                                                            return WebViewAware(
-                                                              child:
-                                                                  GestureDetector(
-                                                                onTap: () {
-                                                                  FocusScope.of(
-                                                                          context)
-                                                                      .unfocus();
-                                                                  FocusManager
-                                                                      .instance
-                                                                      .primaryFocus
-                                                                      ?.unfocus();
-                                                                },
-                                                                child: Padding(
-                                                                  padding: MediaQuery
-                                                                      .viewInsetsOf(
-                                                                          context),
-                                                                  child:
-                                                                      ResponsedDetailWidget(
-                                                                    order:
-                                                                        orderPageCustomerOrderRecord,
-                                                                    respDT:
-                                                                        listViewResponsesRecord,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            );
-                                                          },
-                                                        ).then((value) =>
-                                                            safeSetState(
-                                                                () {}));
-                                                      },
+                                                      onTap: openDetail,
                                                       child: ResponseWidget(
                                                         key: Key(
                                                             'Key18r_${listViewIndex}_of_${listViewResponsesRecordList.length}'),
                                                         responseDT:
                                                             listViewResponsesRecord,
+                                                        order:
+                                                            orderPageCustomerOrderRecord,
+                                                        onAccept: openDetail,
+                                                        onReject: () async {
+                                                          await listViewResponsesRecord
+                                                              .reference
+                                                              .delete();
+                                                          safeSetState(() {});
+                                                        },
                                                       ),
                                                     );
                                                   },

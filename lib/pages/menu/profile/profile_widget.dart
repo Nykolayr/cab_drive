@@ -299,41 +299,91 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                                           ),
                                                         ),
                                                         AuthUserStreamWidget(
-                                                          builder: (context) =>
-                                                              Text(
-                                                            valueOrDefault<
-                                                                String>(
-                                                              '${formatNumber(
+                                                          builder: (context) {
+                                                            final mainBalance =
                                                                 valueOrDefault(
                                                                     currentUserDocument
                                                                         ?.balance,
-                                                                    0.0),
-                                                                formatType:
-                                                                    FormatType
-                                                                        .custom,
-                                                                format: '0',
-                                                                locale: '',
-                                                              )} руб.',
-                                                              '0 руб.',
-                                                            ),
-                                                            style: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'SF',
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .secondaryBackground,
-                                                                  fontSize:
-                                                                      30.0,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
+                                                                    0.0);
+                                                            final bonus = valueOrDefault(
+                                                                currentUserDocument
+                                                                    ?.bonusBalance,
+                                                                0.0);
+                                                            final hasBonus =
+                                                                bonus > 0;
+                                                            return Column(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .min,
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                                Text(
+                                                                  '${formatNumber(
+                                                                    hasBonus
+                                                                        ? mainBalance +
+                                                                            bonus
+                                                                        : mainBalance,
+                                                                    formatType:
+                                                                        FormatType
+                                                                            .custom,
+                                                                    format: '0',
+                                                                    locale: '',
+                                                                  )} руб.',
+                                                                  style: FlutterFlowTheme
+                                                                          .of(context)
+                                                                      .bodyMedium
+                                                                      .override(
+                                                                        fontFamily:
+                                                                            'SF',
+                                                                        color: FlutterFlowTheme.of(context)
+                                                                            .secondaryBackground,
+                                                                        fontSize:
+                                                                            30.0,
+                                                                        letterSpacing:
+                                                                            0.0,
+                                                                        fontWeight:
+                                                                            FontWeight.w600,
+                                                                      ),
                                                                 ),
-                                                          ),
+                                                                if (hasBonus)
+                                                                  Padding(
+                                                                    padding:
+                                                                        EdgeInsetsDirectional
+                                                                            .fromSTEB(
+                                                                                0,
+                                                                                2,
+                                                                                0,
+                                                                                0),
+                                                                    child: Text(
+                                                                      '${formatNumber(
+                                                                        bonus,
+                                                                        formatType:
+                                                                            FormatType.custom,
+                                                                        format:
+                                                                            '0',
+                                                                        locale:
+                                                                            '',
+                                                                      )} ₽ только для списания',
+                                                                      style: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .bodySmall
+                                                                          .override(
+                                                                            fontFamily:
+                                                                                'SF',
+                                                                            color:
+                                                                                FlutterFlowTheme.of(context).secondaryBackground,
+                                                                            fontSize:
+                                                                                12.0,
+                                                                            letterSpacing:
+                                                                                0.0,
+                                                                          ),
+                                                                    ),
+                                                                  ),
+                                                              ],
+                                                            );
+                                                          },
                                                         ),
                                                       ],
                                                     ),
@@ -348,10 +398,46 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                                     highlightColor:
                                                         Colors.transparent,
                                                     onTap: () async {
-                                                      if (valueOrDefault(
+                                                      final withdrawable =
+                                                          valueOrDefault(
                                                               currentUserDocument
                                                                   ?.balance,
-                                                              0.0) >=
+                                                              0.0);
+                                                      final bonusOnly =
+                                                          valueOrDefault(
+                                                              currentUserDocument
+                                                                  ?.bonusBalance,
+                                                              0.0);
+                                                      if (withdrawable < 200.0 &&
+                                                          bonusOnly > 0) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                          SnackBar(
+                                                            content: Text(
+                                                              'Доп. баланс не выводится. Доступно к выводу: ${withdrawable.toStringAsFixed(0)} ₽',
+                                                              style: TextStyle(
+                                                                color: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .secondaryBackground,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                                fontSize: 16.0,
+                                                              ),
+                                                            ),
+                                                            duration: Duration(
+                                                                milliseconds:
+                                                                    3000),
+                                                            backgroundColor:
+                                                                FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .tertiary,
+                                                          ),
+                                                        );
+                                                        return;
+                                                      }
+                                                      if (withdrawable >=
                                                           200.0) {
                                                         await showModalBottomSheet(
                                                           isScrollControlled:

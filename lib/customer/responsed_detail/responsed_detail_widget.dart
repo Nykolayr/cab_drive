@@ -14,8 +14,10 @@ import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -621,6 +623,60 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                   mainAxisSize: MainAxisSize.max,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
+                                    if (widget!.respDT!.price >
+                                        widget!.order!.budget)
+                                      Padding(
+                                        padding:
+                                            EdgeInsetsDirectional.fromSTEB(
+                                                0.0, 0.0, 0.0, 16.0),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.max,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            CupertinoSwitch(
+                                              value: _model
+                                                  .agreedToIncreaseBudget,
+                                              onChanged: (newValue) async {
+                                                HapticFeedback.mediumImpact();
+                                                safeSetState(() => _model
+                                                        .agreedToIncreaseBudget =
+                                                    newValue);
+                                              },
+                                              activeColor:
+                                                  FlutterFlowTheme.of(context)
+                                                      .tertiary,
+                                              trackColor: Color(0xFFF4F5F8),
+                                              thumbColor:
+                                                  FlutterFlowTheme.of(context)
+                                                      .secondaryBackground,
+                                            ),
+                                            Expanded(
+                                              child: Padding(
+                                                padding: EdgeInsetsDirectional
+                                                    .fromSTEB(
+                                                        12.0, 0.0, 0.0, 0.0),
+                                                child: Text(
+                                                  'Специалист согласен на выполнение, если вы увеличите бюджет до ${widget!.respDT!.price} ₽',
+                                                  style: FlutterFlowTheme.of(
+                                                          context)
+                                                      .bodyMedium
+                                                      .override(
+                                                        fontFamily: 'SF',
+                                                        color: FlutterFlowTheme
+                                                                .of(context)
+                                                            .tertiary,
+                                                        fontSize: 16.0,
+                                                        letterSpacing: 0.0,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                      ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                     Container(
                                       width: double.infinity,
                                       decoration: BoxDecoration(
@@ -891,7 +947,12 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                   ),
                 ),
                 if (widget!.order?.status == StatusOrder.newOrder)
-                  Container(
+                  Builder(builder: (context) {
+                    final bool budgetIncreaseRequired =
+                        widget!.respDT!.price > widget!.order!.budget;
+                    final bool selectEnabled = !budgetIncreaseRequired ||
+                        _model.agreedToIncreaseBudget;
+                    return Container(
                     decoration: BoxDecoration(
                       color: FlutterFlowTheme.of(context).secondary,
                       borderRadius: BorderRadius.only(
@@ -905,7 +966,7 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                       padding:
                           EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 35.0),
                       child: FFButtonWidget(
-                        onPressed: () async {
+                        onPressed: !selectEnabled ? null : () async {
                           if (widget!.order?.payMethod == PayMethod.cahs) {
                             await widget!.order!.reference
                                 .update(createOrderRecordData(
@@ -914,6 +975,18 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                               commissionPercent: containerUsersRecord.commissionPercent.toInt(),
                               currentPrice: widget!.respDT?.price,
                             ));
+                            // Добавляем заказ в очередь активных у выбранного водителя.
+                            try {
+                              await containerUsersRecord.reference.update({
+                                'active_orders_queue':
+                                    FieldValue.arrayUnion([widget!.order!.reference]),
+                              });
+                              print('[responsed_detail.assign] queue+= '
+                                  'driver=${containerUsersRecord.reference.id} '
+                                  'order=${widget!.order!.reference.id}');
+                            } catch (e) {
+                              print('[responsed_detail.assign] queue ERROR $e');
+                            }
                             Navigator.pop(context);
                           } else {
                             var payOrderRecordReference =
@@ -997,11 +1070,14 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                   ),
                           elevation: 0.0,
                           borderRadius: BorderRadius.circular(16.0),
+                          disabledColor: Color(0xFFF4F5F8),
+                          disabledTextColor: Color(0xFFA4A6B2),
                         ),
                         showLoadingIndicator: false,
                       ),
                     ),
-                  ),
+                  );
+                  }),
               ].divide(SizedBox(height: 5.0)),
             ),
           );

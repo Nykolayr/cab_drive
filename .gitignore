@@ -1,0 +1,33 @@
+﻿# Flutter/Dart
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+**/build/
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+**/.DS_Store
+
+# Android NDK/CMake cache
+android/app/.cxx/
+android/.kotlin/
+**/.cxx/
+
+# Secrets
+.env
+android/key.properties
+**/*.jks
+**/*.keystore
+**/pepk_out.zip
+**/cert.pem
+
+# Local agent
+.claude/settings.local.json
+
+# Node (functions deps — не коммитить изменения)
+firebase/functions/node_modules/

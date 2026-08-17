@@ -3,7 +3,6 @@ import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import '/login/delete2/delete2_widget.dart';
 import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
@@ -126,19 +125,7 @@ class _Delete1WidgetState extends State<Delete1Widget> {
                 children: [
                   FFButtonWidget(
                     onPressed: () async {
-                      showModalBottomSheet(
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        context: context,
-                        builder: (context) {
-                          return WebViewAware(
-                            child: Padding(
-                              padding: MediaQuery.viewInsetsOf(context),
-                              child: Delete2Widget(),
-                            ),
-                          );
-                        },
-                      ).then((value) => safeSetState(() {}));
+                      await authManager.deleteUser(context);
 
                       GoRouter.of(context).prepareAuthEvent();
                       await authManager.signOut();

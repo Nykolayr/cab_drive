@@ -70,7 +70,15 @@ class FirebaseAuthManager extends AuthManager
         print('Error: delete user attempted with no logged in user!');
         return;
       }
+
+      final uid = currentUser?.uid;
+      if (uid != null) {
+        await FirebaseFirestore.instance.collection('users').doc(uid).delete();
+        print('User document deleted from Firestore');
+      }
+
       await currentUser?.delete();
+      print('Firebase Auth user deleted');
     } on FirebaseAuthException catch (e) {
       if (e.code == 'requires-recent-login') {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();

@@ -8,6 +8,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:csv/csv.dart';
 import 'package:synchronized/synchronized.dart';
 import 'flutter_flow/flutter_flow_util.dart';
+import '/core/utils/app_dio.dart';
 
 class FFAppState extends ChangeNotifier {
   static FFAppState _instance = FFAppState._internal();
@@ -273,6 +274,45 @@ class FFAppState extends ChangeNotifier {
   void updateCardStruct(Function(CardStruct) updateFn) {
     updateFn(_card);
     secureStorage.setString('ff_card', _card.serialize());
+  }
+
+  // Серверные тайминги (минуты). Источник — GET /kek/settings/get.
+  // Дефолты совпадают с дефолтами SiteModel на бэке.
+  int _minutesForDeleteOrder = 15;
+  int get minutesForDeleteOrder => _minutesForDeleteOrder;
+
+  int _deadlineMinutes = 15;
+  int get deadlineMinutes => _deadlineMinutes;
+
+  // Последний центр и зум любой просматриваемой клиентом карты выбора адреса
+  // (главный экран создания заказа + MapPicker). Используются чтобы MapPicker
+  // открывался в том же месте, где юзер только что смотрел/выбирал.
+  LatLng? _lastPickerMapCenter;
+  LatLng? get lastPickerMapCenter => _lastPickerMapCenter;
+  set lastPickerMapCenter(LatLng? value) {
+    _lastPickerMapCenter = value;
+  }
+
+  double? _lastPickerMapZoom;
+  double? get lastPickerMapZoom => _lastPickerMapZoom;
+  set lastPickerMapZoom(double? value) {
+    _lastPickerMapZoom = value;
+  }
+
+  Future<void> loadServerSettings() async {
+    try {
+      final res = await AppDio.dio.get('settings/get');
+      final data = res.data;
+      if (data is Map) {
+        final m = data['minutes_for_delete_order'];
+        final d = data['deadline_minutes'];
+        if (m is num) _minutesForDeleteOrder = m.toInt();
+        if (d is num) _deadlineMinutes = d.toInt();
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('[FFAppState.loadServerSettings] failed: $e');
+    }
   }
 
   final _mychatsManager = StreamRequestManager<List<ChatsRecord>>();

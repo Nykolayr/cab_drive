@@ -2,7 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'serialization_util.dart';
+import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
+import '/backend/schema/enums/enums.dart';
+import '/driver/extra_order_bottom_sheet/extra_order_bottom_sheet_widget.dart';
+import '/driver/services/extra_orders_dedup.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '../../flutter_flow/flutter_flow_util.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -28,6 +32,8 @@ class PushNotificationsHandler extends StatefulWidget {
 class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
   bool _loading = false;
 
+  StreamSubscription<RemoteMessage>? _foregroundSub;
+
   Future handleOpenedPushNotification() async {
     if (isWeb) {
       return;
@@ -38,6 +44,94 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
       await _handlePushNotification(notification);
     }
     FirebaseMessaging.onMessageOpenedApp.listen(_handlePushNotification);
+    // Foreground messages: маршрутизация data-only push-ов type=additional_order
+    _foregroundSub ??= FirebaseMessaging.onMessage.listen(_maybeHandleExtraOrder);
+  }
+
+  Future<void> _maybeHandleExtraOrder(RemoteMessage message) async {
+    final type = message.data['type'];
+    if (type != 'additional_order') return;
+    print('[push.additional_order] foreground received data=${message.data}');
+    await _showExtraOrderSheet(message.data);
+  }
+
+  Future<void> _showExtraOrderSheet(Map<String, dynamic> data) async {
+    final orderId = (data['order_id'] ?? '').toString();
+    if (orderId.isEmpty) {
+      print('[push.additional_order] missing order_id');
+      return;
+    }
+    if (!ExtraOrdersDedup.tryAdd(orderId)) {
+      return;
+    }
+    try {
+      final ctx = appNavigatorKey.currentContext;
+      if (ctx == null) {
+        print('[push.additional_order] no navigator context — skip');
+        ExtraOrdersDedup.forget(orderId);
+        return;
+      }
+
+      final orderRef =
+          FirebaseFirestore.instance.collection('order').doc(orderId);
+      final order = await OrderRecord.getDocumentOnce(orderRef);
+      if (order.status != StatusOrder.newOrder) {
+        print('[push.additional_order] order ${orderId} no longer new '
+            '(status=${order.status})');
+        return;
+      }
+
+      String currentOrderId = (data['current_order_id'] ?? '').toString();
+      if (currentOrderId.isEmpty) {
+        currentOrderId = await _resolveActiveOrderId() ?? '';
+      }
+      if (currentOrderId.isEmpty) {
+        print('[push.additional_order] driver has no active order — skip');
+        ExtraOrdersDedup.forget(orderId);
+        return;
+      }
+
+      final dynamic dm = data['delta_min'];
+      final double? deltaMin = dm == null
+          ? null
+          : (dm is num ? dm.toDouble() : double.tryParse(dm.toString()));
+
+      print('[push.additional_order] showing sheet order=$orderId '
+          'current=$currentOrderId');
+      await showModalBottomSheet<bool>(
+        context: ctx,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => ExtraOrderBottomSheetWidget(
+          order: order,
+          currentOrderId: currentOrderId,
+          deltaMin: deltaMin,
+        ),
+      );
+    } catch (e, st) {
+      print('[push.additional_order] ERROR $e\n$st');
+      ExtraOrdersDedup.forget(orderId);
+    }
+  }
+
+  Future<String?> _resolveActiveOrderId() async {
+    final uid = currentUserUid;
+    if (uid.isEmpty) return null;
+    final driverRef =
+        FirebaseFirestore.instance.collection('users').doc(uid);
+    final activeStatuses = [
+      StatusOrder.spec_set.serialize(),
+      StatusOrder.place_pickup.serialize(),
+      StatusOrder.at_work.serialize(),
+    ];
+    final qs = await FirebaseFirestore.instance
+        .collection('order')
+        .where('selected_driver', isEqualTo: driverRef)
+        .where('status', whereIn: activeStatuses)
+        .limit(1)
+        .get();
+    if (qs.docs.isEmpty) return null;
+    return qs.docs.first.id;
   }
 
   Future _handlePushNotification(RemoteMessage message) async {
@@ -45,6 +139,14 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
       return;
     }
     _handledMessageIds.add(message.messageId);
+
+    // Перехватываем data-сообщения о дополнительных заказах ещё до перехода
+    // по initialPageName, чтобы показать bottom sheet вместо навигации.
+    if (message.data['type'] == 'additional_order') {
+      print('[push.additional_order] background opened, data=${message.data}');
+      await _showExtraOrderSheet(message.data);
+      return;
+    }
 
     safeSetState(() => _loading = true);
     try {
@@ -80,6 +182,12 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       handleOpenedPushNotification();
     });
+  }
+
+  @override
+  void dispose() {
+    _foregroundSub?.cancel();
+    super.dispose();
   }
 
   @override

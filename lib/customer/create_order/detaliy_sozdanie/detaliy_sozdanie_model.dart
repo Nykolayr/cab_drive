@@ -44,6 +44,14 @@ class DetaliySozdanieModel extends FlutterFlowModel<DetaliySozdanieWidget> {
 
   String select = 'Оплата картой';
 
+  /// Вариант заказа: false = Обычный, true = Быстрый.
+  bool isFastOrder = false;
+
+  /// Поле ввода бюджета («Сумма»). Если пусто — берётся авто-расчёт по машине.
+  FocusNode? budgetFocusNode;
+  TextEditingController? budgetTextController;
+  String? Function(BuildContext, String?)? budgetTextControllerValidator;
+
   ///  State fields for stateful widgets in this page.
 
   // Model for app_bar component.
@@ -184,6 +192,9 @@ String? Function(BuildContext, String?)? commentBTextControllerValidator;
 
     descriptionFocusNode?.dispose();
     descriptionTextController?.dispose();
+
+    budgetFocusNode?.dispose();
+    budgetTextController?.dispose();
 
     chipsCardModel1.dispose();
     chipsCardModel2.dispose();

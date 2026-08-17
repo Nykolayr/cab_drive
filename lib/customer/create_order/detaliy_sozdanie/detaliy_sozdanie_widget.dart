@@ -4,6 +4,7 @@ import 'package:cab_drive/customer/create_order/detaliy_sozdanie/widgets/interme
 import '../../../backend/api_requests/api_calls.dart';
 import '../../create_map_page/domain/entities/entities.dart';
 import '../../create_map_page/presentation/bloc/orders_bloc.dart';
+import '/auth/firebase_auth/auth_util.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
 import '/customer/create_order/create_order/create_order_widget.dart';
@@ -19,7 +20,9 @@ import '/pages/bottom/app_bar/app_bar_widget.dart';
 import '/pages/bottom/chips_card/chips_card_widget.dart';
 import '/pages/bottom/error_popup/error_popup_widget.dart';
 import 'dart:async';
+import 'dart:convert';
 import 'dart:ui';
+import 'package:http/http.dart' as http;
 import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:easy_debounce/easy_debounce.dart';
@@ -58,6 +61,837 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
   bool _isKeyboardVisible = false;
   bool intermediateOn = false;
 
+  String? _encodedPath;
+  String? _pathCacheKey;
+  bool _isFetchingPath = false;
+
+  int? _lastAutoBudget;
+
+  void _syncBudgetIfUntouched() {
+    final ctl = _model.budgetTextController;
+    if (ctl == null) return;
+    final auto = _autoBudgetForCar();
+    if (_lastAutoBudget == auto) return;
+    final current = ctl.text.trim();
+    final wasUntouched =
+        _lastAutoBudget == null || current == _lastAutoBudget.toString();
+    _lastAutoBudget = auto;
+    if (wasUntouched && current != auto.toString()) {
+      ctl.text = auto.toString();
+    }
+  }
+
+  Future<void> _fetchRoutePath(LatLng a, LatLng b) async {
+    final key = '${a.latitude},${a.longitude}|${b.latitude},${b.longitude}';
+    if (_pathCacheKey == key && _encodedPath != null) return;
+    if (_isFetchingPath) return;
+    _isFetchingPath = true;
+    try {
+      final url = Uri.parse(
+        'https://maps.googleapis.com/maps/api/directions/json'
+        '?origin=${a.latitude},${a.longitude}'
+        '&destination=${b.latitude},${b.longitude}'
+        '&key=AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
+      );
+      final resp = await http.get(url);
+      if (!mounted) return;
+      if (resp.statusCode == 200) {
+        final decoded = json.decode(resp.body);
+        if (decoded['status'] == 'OK' &&
+            (decoded['routes'] as List).isNotEmpty) {
+          final enc = decoded['routes'][0]['overview_polyline']['points']
+              as String;
+          setState(() {
+            _encodedPath = enc;
+            _pathCacheKey = key;
+          });
+        }
+      }
+    } catch (_) {
+      // тихо игнорим — UI откатится на прямую A→B
+    } finally {
+      _isFetchingPath = false;
+    }
+  }
+
+  int _autoBudgetForCar() {
+    if (widget.car == Car.largus) return FFAppState().priceLargus;
+    if (widget.car == Car.largusTermo) return FFAppState().priceTermo;
+    return FFAppState().priceFiat;
+  }
+
+  bool _canSubmit() {
+    if (_model.supply == null) return false;
+    if (_model.supply == 2 && _model.datePicked == null) return false;
+    if (FFAppState().pointA.address.isEmpty ||
+        FFAppState().pointB.address.isEmpty) return false;
+    if (_model.isFastOrder) return true;
+    bool hasPhone(String? p) => p != null && p.isNotEmpty;
+    if (!hasPhone(FFAppState().pointA.sender.phone)) return false;
+    if (!hasPhone(FFAppState().pointB.sender.phone)) return false;
+    if (intermediateOn &&
+        !hasPhone(FFAppState().pointC.sender.phone)) return false;
+    final desc = _model.descriptionTextController.text;
+    if (desc == null || desc.isEmpty) return false;
+    return true;
+  }
+
+  void _applyFastOrderDefaults() {
+    if (!_model.isFastOrder) return;
+    final phone = _userPhone();
+    FFAppState().pointA.sender = SenderStruct(phone: phone);
+    FFAppState().pointB.sender = SenderStruct(phone: phone);
+    if (intermediateOn) {
+      FFAppState().pointC.sender = SenderStruct(phone: phone);
+    }
+    FFAppState().update(() {});
+  }
+
+  int _resolvedBudget() {
+    final raw = _model.budgetTextController?.text.trim() ?? '';
+    final parsed = int.tryParse(raw.replaceAll(RegExp(r'[^0-9]'), ''));
+    if (parsed != null && parsed > 0) return parsed;
+    return _autoBudgetForCar();
+  }
+
+  String _userPhone() => currentUserDocument?.phoneNumber ?? '';
+
+  Widget _segmentedPill({
+    required String label,
+    required bool active,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          height: 36.0,
+          decoration: BoxDecoration(
+            color: active ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(10.0),
+            boxShadow: active
+                ? const [
+                    BoxShadow(
+                      color: Color(0x12000000),
+                      blurRadius: 5.5,
+                      offset: Offset(0, 0),
+                    ),
+                  ]
+                : const [],
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: FlutterFlowTheme.of(context).bodyMedium.override(
+                  fontFamily: 'SF',
+                  fontSize: 16.0,
+                  letterSpacing: 0.0,
+                  color: active ? const Color(0xFF181818) : const Color(0xFFA4A6B2),
+                ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _segmentedBar({required List<Widget> children}) {
+    return Container(
+      height: 40.0,
+      padding: const EdgeInsets.all(2.0),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4F5F8),
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: Row(children: children),
+    );
+  }
+
+  Widget _variantCard(BuildContext context) {
+    return Container(
+      margin: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 8.0),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: FlutterFlowTheme.of(context).secondaryBackground,
+        borderRadius: BorderRadius.circular(24.0),
+      ),
+      child: Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(16.0, 16.0, 16.0, 16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Вариант заказа',
+              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                    fontFamily: 'SF',
+                    color: const Color(0xFF181818),
+                    fontSize: 21.0,
+                    letterSpacing: 0.0,
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
+            const SizedBox(height: 12.0),
+            _segmentedBar(children: [
+              _segmentedPill(
+                label: 'Обычный заказ',
+                active: !_model.isFastOrder,
+                onTap: () => safeSetState(() => _model.isFastOrder = false),
+              ),
+              _segmentedPill(
+                label: 'Быстрый заказ',
+                active: _model.isFastOrder,
+                onTap: () => safeSetState(() => _model.isFastOrder = true),
+              ),
+            ]),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _staticMapCard(BuildContext context) {
+    final a = FFAppState().pointA.latlng;
+    final b = FFAppState().pointB.latlng;
+
+    String? url;
+    if (a != null && b != null) {
+      final aStr = '${a.latitude},${a.longitude}';
+      final bStr = '${b.latitude},${b.longitude}';
+      final cacheKey = '$aStr|$bStr';
+
+      if (cacheKey != _pathCacheKey && !_isFetchingPath) {
+        WidgetsBinding.instance
+            .addPostFrameCallback((_) => _fetchRoutePath(a, b));
+      }
+
+      final hasRealRoute =
+          _encodedPath != null && _pathCacheKey == cacheKey;
+      final pathParam = hasRealRoute
+          ? 'enc:${Uri.encodeQueryComponent(_encodedPath!)}'
+          : '$aStr%7C$bStr';
+
+      url = 'https://maps.googleapis.com/maps/api/staticmap'
+          '?size=400x180&scale=2&maptype=roadmap'
+          '&markers=color:0x4F8AFFFF%7Csize:small%7C$aStr'
+          '&markers=color:0x21AB3DFF%7C$bStr'
+          '&path=color:0x4F8AFFFF%7Cweight:4%7C$pathParam'
+          '&key=AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY';
+    }
+
+    return Container(
+      margin: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 8.0),
+      width: double.infinity,
+      height: 180.0,
+      decoration: BoxDecoration(
+        color: FlutterFlowTheme.of(context).secondaryBackground,
+        borderRadius: BorderRadius.circular(24.0),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: url == null
+          ? const Center(
+              child: Icon(
+                Icons.map_outlined,
+                size: 32.0,
+                color: Color(0xFFA4A6B2),
+              ),
+            )
+          : Image.network(
+              url,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const Center(
+                child: Icon(
+                  Icons.map_outlined,
+                  size: 32.0,
+                  color: Color(0xFFA4A6B2),
+                ),
+              ),
+            ),
+    );
+  }
+
+  Widget _budgetCard(BuildContext context) {
+    return Container(
+      margin: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 8.0),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: FlutterFlowTheme.of(context).secondaryBackground,
+        borderRadius: BorderRadius.circular(24.0),
+      ),
+      child: Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(16.0, 16.0, 16.0, 16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Примерный бюджет',
+              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                    fontFamily: 'SF',
+                    color: const Color(0xFF181818),
+                    fontSize: 21.0,
+                    letterSpacing: 0.0,
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
+            const SizedBox(height: 12.0),
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                SizedBox(
+                  width: 207.0,
+                  child: _segmentedBar(children: [
+                    _segmentedPill(
+                      label: 'Наличными',
+                      active: FFAppState().payMethod == PayMethod.cahs,
+                      onTap: () {
+                        FFAppState().payMethod = PayMethod.cahs;
+                        safeSetState(() {});
+                      },
+                    ),
+                    _segmentedPill(
+                      label: 'Картой',
+                      active: FFAppState().payMethod == PayMethod.card,
+                      onTap: () {
+                        FFAppState().payMethod = PayMethod.card;
+                        safeSetState(() {});
+                      },
+                    ),
+                  ]),
+                ),
+                const SizedBox(width: 16.0),
+                Expanded(
+                  child: TextFormField(
+                    controller: _model.budgetTextController,
+                    focusNode: _model.budgetFocusNode,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    onChanged: (_) => safeSetState(() {}),
+                    decoration: InputDecoration(
+                      isDense: true,
+                      hintText: 'Сумма',
+                      hintStyle: FlutterFlowTheme.of(context).bodyMedium.override(
+                            fontFamily: 'SF',
+                            color: const Color(0xFFA4A6B2),
+                            fontSize: 16.0,
+                            letterSpacing: 0.0,
+                          ),
+                      enabledBorder: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFFF4F5F8), width: 2.0),
+                      ),
+                      focusedBorder: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFFF4F5F8), width: 2.0),
+                      ),
+                      contentPadding: const EdgeInsetsDirectional.fromSTEB(
+                          0.0, 10.0, 0.0, 10.0),
+                    ),
+                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                          fontFamily: 'SF',
+                          color: const Color(0xFF181818),
+                          fontSize: 16.0,
+                          letterSpacing: 0.0,
+                          fontWeight: FontWeight.w500,
+                        ),
+                    cursorColor: FlutterFlowTheme.of(context).primaryText,
+                    validator: _model.budgetTextControllerValidator
+                        ?.asValidator(context),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _plainCard({required Widget child}) {
+    return Container(
+      margin: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 8.0),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: FlutterFlowTheme.of(context).secondaryBackground,
+        borderRadius: BorderRadius.circular(18.0),
+      ),
+      child: Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(24.0, 16.0, 24.0, 16.0),
+        child: child,
+      ),
+    );
+  }
+
+  Widget _supplyCard(BuildContext context) {
+    return _plainCard(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+        Text(
+          'Подача',
+          style: FlutterFlowTheme.of(context).bodyMedium.override(
+                fontFamily: 'SF',
+                fontSize: 21.0,
+                letterSpacing: 0.0,
+                fontWeight: FontWeight.w600,
+              ),
+        ),
+        SizedBox(height: 12,),
+        Divider(
+          height: 0.5,
+          thickness: 0.5,
+          color: Color(0xFFD0CFCE),
+        ),
+        InkWell(
+          splashColor: Colors.transparent,
+          focusColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          onTap: () async {
+            _model.supply = 1;
+            safeSetState(() {});
+            HapticFeedback.mediumImpact();
+          },
+          child: Container(
+            height: 57.0,
+            decoration: BoxDecoration(),
+            child: Padding(
+              padding: EdgeInsetsDirectional.fromSTEB(0.0, 4.0, 0.0, 4.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Expanded(
+                    child: Text(
+                      'В ближайшее время',
+                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                            fontFamily: 'SF',
+                            fontSize: 16.0,
+                            letterSpacing: 0.0,
+                          ),
+                    ),
+                  ),
+                  Container(
+                    width: 30.0,
+                    height: 30.0,
+                    decoration: BoxDecoration(
+                      color: FlutterFlowTheme.of(context).primaryBackground,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Visibility(
+                      visible: _model.supply == 1,
+                      child: Container(
+                        width: double.infinity,
+                        height: double.infinity,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: FlutterFlowTheme.of(context).tertiary,
+                            width: 8.0,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Divider(
+          height: 0.3,
+          thickness: 0.3,
+          color: Color(0xFFD0CFCE),
+        ),
+        InkWell(
+          splashColor: Colors.transparent,
+          focusColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          onTap: () async {
+            HapticFeedback.mediumImpact();
+            _model.supply = 2;
+            safeSetState(() {});
+            unawaited(
+              () async {
+                await showModalBottomSheet<bool>(
+                    context: context,
+                    builder: (context) {
+                      return Container(
+                        height: MediaQuery.of(context).size.height / 3,
+                        width: MediaQuery.of(context).size.width,
+                        child: CupertinoDatePicker(
+                          mode: CupertinoDatePickerMode.dateAndTime,
+                          minimumDate:
+                              (getCurrentTimestamp ?? DateTime(1900)),
+                          initialDateTime: ((_model.datePicked != null
+                                  ? _model.datePicked
+                                  : getCurrentTimestamp) ??
+                              DateTime.now()),
+                          maximumDate:
+                              (functions.datetime24() ?? DateTime(2050)),
+                          use24hFormat: false,
+                          onDateTimeChanged: (newDateTime) =>
+                              safeSetState(() {
+                            _model.datePicked = newDateTime;
+                          }),
+                        ),
+                      );
+                    });
+              }(),
+            );
+          },
+          child: Container(
+            constraints: BoxConstraints(
+              minHeight: 57.0,
+            ),
+            decoration: BoxDecoration(),
+            child: Padding(
+              padding: EdgeInsetsDirectional.fromSTEB(0.0, 4.0, 0.0, 4.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Заказать ко времени',
+                          style: FlutterFlowTheme.of(context)
+                              .bodyMedium
+                              .override(
+                                fontFamily: 'SF',
+                                fontSize: 16.0,
+                                letterSpacing: 0.0,
+                              ),
+                        ),
+                        if (_model.supply == 2)
+                          Text(
+                            'Водитель приедет ${dateTimeFormat(
+                              "d/M/y",
+                              _model.datePicked,
+                              locale: FFLocalizations.of(context)
+                                  .languageCode,
+                            )}, к ${dateTimeFormat(
+                              "Hm",
+                              _model.datePicked,
+                              locale: FFLocalizations.of(context)
+                                  .languageCode,
+                            )}',
+                            style: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .override(
+                                  fontFamily: 'SF',
+                                  color: Color(0xFF8F8F8E),
+                                  letterSpacing: 0.0,
+                                ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: 30.0,
+                    height: 30.0,
+                    decoration: BoxDecoration(
+                      color: FlutterFlowTheme.of(context).primaryBackground,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Visibility(
+                      visible: _model.supply == 2,
+                      child: Container(
+                        width: double.infinity,
+                        height: double.infinity,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: FlutterFlowTheme.of(context).tertiary,
+                            width: 8.0,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Divider(
+          height: 0.3,
+          thickness: 0.3,
+          color: Color(0xFFD0CFCE),
+        ),
+        ],
+      ),
+    );
+  }
+
+  Widget _descriptionCard(BuildContext context) {
+    final text = (_model.descriptionTextController?.text ?? '').trim();
+    final hasText = text.isNotEmpty;
+    return _plainCard(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Описание груза',
+            style: FlutterFlowTheme.of(context).bodyMedium.override(
+                  fontFamily: 'SF',
+                  fontSize: 21.0,
+                  letterSpacing: 0.0,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          const SizedBox(height: 6.0),
+          Text(
+            hasText ? text : 'Всё, что важно знать водителю',
+            style: FlutterFlowTheme.of(context).bodyMedium.override(
+                  fontFamily: 'SF',
+                  color: const Color(0xFF8F8F8E),
+                  fontSize: 16.0,
+                  letterSpacing: 0.0,
+                ),
+            maxLines: hasText ? 6 : 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 12.0),
+          InkWell(
+            borderRadius: BorderRadius.circular(20.0),
+            onTap: () => _openDescriptionEditor(context),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0, vertical: 8.0),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEEF2FF),
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+              child: Text(
+                hasText ? 'Изменить' : 'Добавить описание',
+                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                      fontFamily: 'SF',
+                      color: const Color(0xFF4F8AFF),
+                      fontSize: 14.0,
+                      letterSpacing: 0.0,
+                      fontWeight: FontWeight.w500,
+                    ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openDescriptionEditor(BuildContext context) async {
+    final tempController = TextEditingController(
+        text: _model.descriptionTextController?.text ?? '');
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) {
+        return Padding(
+          padding: MediaQuery.viewInsetsOf(sheetCtx),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(18.0),
+                topRight: Radius.circular(18.0),
+              ),
+            ),
+            padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Описание груза',
+                  style: FlutterFlowTheme.of(sheetCtx).bodyMedium.override(
+                        fontFamily: 'SF',
+                        fontSize: 18.0,
+                        letterSpacing: 0.0,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+                const SizedBox(height: 12.0),
+                TextField(
+                  controller: tempController,
+                  autofocus: true,
+                  maxLines: 6,
+                  minLines: 3,
+                  maxLength: 1000,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: const InputDecoration(
+                    hintText: 'Всё, что важно знать водителю',
+                    hintStyle: TextStyle(
+                        color: Color(0xFF8F8F8E), fontSize: 16.0),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xFFD0CFCE)),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xFF4F8AFF)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12.0),
+                FFButtonWidget(
+                  text: 'Сохранить',
+                  onPressed: () {
+                    _model.descriptionTextController?.text =
+                        tempController.text;
+                    Navigator.of(sheetCtx).pop();
+                  },
+                  options: FFButtonOptions(
+                    width: double.infinity,
+                    height: 48.0,
+                    color: const Color(0xFF4F8AFF),
+                    textStyle: const TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'SF',
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    borderRadius: BorderRadius.circular(12.0),
+                  ),
+                ),
+                const SizedBox(height: 8.0),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    safeSetState(() {});
+  }
+
+  Widget _fastAddressesCard(BuildContext context) {
+    final phone = _userPhone();
+    return Container(
+      margin: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 8.0),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: FlutterFlowTheme.of(context).secondaryBackground,
+        borderRadius: BorderRadius.circular(24.0),
+      ),
+      child: Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(16.0, 16.0, 16.0, 16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _fastAddressRow(
+              context,
+              label: 'Откуда',
+              address: FFAppState().pointA.address,
+              onTap: () async {
+                await showModalBottomSheet(
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  context: context,
+                  builder: (context) => WebViewAware(
+                    child: Padding(
+                      padding: MediaQuery.viewInsetsOf(context),
+                      child: const KartaWidget(point: 'A'),
+                    ),
+                  ),
+                ).then((_) => safeSetState(() {}));
+              },
+            ),
+            const Divider(height: 1.0, thickness: 1.0, color: Color(0xFFF4F5F8)),
+            _fastAddressRow(
+              context,
+              label: 'Куда',
+              address: FFAppState().pointB.address,
+              onTap: () async {
+                await showModalBottomSheet(
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  context: context,
+                  builder: (context) => WebViewAware(
+                    child: Padding(
+                      padding: MediaQuery.viewInsetsOf(context),
+                      child: const KartaWidget(point: 'B'),
+                    ),
+                  ),
+                ).then((_) => safeSetState(() {}));
+              },
+            ),
+            if (phone.isNotEmpty)
+              Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
+                child: Text(
+                  phone,
+                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                        fontFamily: 'SF',
+                        color: const Color(0xFF181818),
+                        fontSize: 16.0,
+                        letterSpacing: 0.0,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _fastAddressRow(
+    BuildContext context, {
+    required String label,
+    required String address,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      child: Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 12.0),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    label,
+                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                          fontFamily: 'SF',
+                          color: const Color(0xFFA4A6B2),
+                          fontSize: 14.0,
+                          letterSpacing: 0.0,
+                        ),
+                  ),
+                  const SizedBox(height: 2.0),
+                  Text(
+                    address.isEmpty ? '—' : address,
+                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                          fontFamily: 'SF',
+                          color: const Color(0xFF21201F),
+                          fontSize: 16.0,
+                          letterSpacing: 0.0,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              FFIcons.kiconrightStroke,
+              color: FlutterFlowTheme.of(context).primaryText,
+              size: 16.0,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -75,6 +909,12 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
       });
     }
 
+
+    _lastAutoBudget = _autoBudgetForCar();
+    _model.budgetTextController ??= TextEditingController(
+      text: _lastAutoBudget.toString(),
+    );
+    _model.budgetFocusNode ??= FocusNode();
 
     _model.entranceATextController ??= TextEditingController();
     _model.entranceAFocusNode ??= FocusNode();
@@ -140,6 +980,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
+    _syncBudgetIfUntouched();
 
     return GestureDetector(
       onTap: () {
@@ -176,6 +1017,10 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                           mainAxisSize: MainAxisSize.max,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            _variantCard(context),
+                            _staticMapCard(context),
+                            _budgetCard(context),
+                            _supplyCard(context),
                             Container(
                               width: double.infinity,
                               decoration: BoxDecoration(
@@ -191,14 +1036,14 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Кузов  - ${() {
+                                      'Кузов – ${() {
                                         if (widget!.car == Car.largus) {
-                                          return 'Мини/S';
+                                          return 'Мини S';
                                         } else if (widget!.car ==
                                             Car.largusTermo) {
-                                          return 'Термобудка/S-M';
+                                          return 'Термобудка S-M';
                                         } else {
-                                          return 'МиниПлюс/M';
+                                          return 'МиниПлюс M';
                                         }
                                       }()}',
                                       style: FlutterFlowTheme.of(context)
@@ -644,7 +1489,10 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                 ),
                               ),
                             ),
-                            Container(
+                            if (_model.isFastOrder)
+                              _fastAddressesCard(context),
+                            if (!_model.isFastOrder)
+                              Container(
                               width: double.infinity,
                               decoration: BoxDecoration(
                                 color: FlutterFlowTheme.of(context)
@@ -1419,7 +2267,8 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                       movers: FFAppState().movers));
                             },),
 
-                            Container(
+                            if (!_model.isFastOrder)
+                              Container(
                               width: double.infinity,
                               decoration: BoxDecoration(
                                 color: FlutterFlowTheme.of(context)
@@ -2184,368 +3033,10 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                 ),
                               ),
                             ),
-                            ExpandableWidget(
-
-                              children: [
-                                Text(
-                                  'Подача*',
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        fontFamily: 'SF',
-                                        fontSize: 21.0,
-                                        letterSpacing: 0.0,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                ),
-                                SizedBox(height: 12,),
-                                Divider(
-                                  height: 0.5,
-                                  thickness: 0.5,
-                                  color: Color(0xFFD0CFCE),
-                                ),
-                                InkWell(
-                                  splashColor: Colors.transparent,
-                                  focusColor: Colors.transparent,
-                                  hoverColor: Colors.transparent,
-                                  highlightColor: Colors.transparent,
-                                  onTap: () async {
-                                    _model.supply = 1;
-                                    safeSetState(() {});
-                                    HapticFeedback.mediumImpact();
-                                  },
-                                  child: Container(
-                                    height: 57.0,
-                                    decoration: BoxDecoration(),
-                                    child: Padding(
-                                      padding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              0.0, 4.0, 0.0, 4.0),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.max,
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              'В ближайшее время',
-                                              style: FlutterFlowTheme.of(
-                                                      context)
-                                                  .bodyMedium
-                                                  .override(
-                                                    fontFamily: 'SF',
-                                                    fontSize: 16.0,
-                                                    letterSpacing: 0.0,
-                                                  ),
-                                            ),
-                                          ),
-                                          Container(
-                                            width: 30.0,
-                                            height: 30.0,
-                                            decoration: BoxDecoration(
-                                              color: FlutterFlowTheme.of(
-                                                      context)
-                                                  .primaryBackground,
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: Visibility(
-                                              visible: _model.supply == 1,
-                                              child: Container(
-                                                width: double.infinity,
-                                                height: double.infinity,
-                                                decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  border: Border.all(
-                                                    color:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .tertiary,
-                                                    width: 8.0,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Divider(
-                                  height: 0.3,
-                                  thickness: 0.3,
-                                  color: Color(0xFFD0CFCE),
-                                ),
-                                InkWell(
-                                  splashColor: Colors.transparent,
-                                  focusColor: Colors.transparent,
-                                  hoverColor: Colors.transparent,
-                                  highlightColor: Colors.transparent,
-                                  onTap: () async {
-                                    HapticFeedback.mediumImpact();
-                                    _model.supply = 2;
-                                    safeSetState(() {});
-                                    unawaited(
-                                      () async {
-                                        await showModalBottomSheet<bool>(
-                                            context: context,
-                                            builder: (context) {
-                                              return Container(
-                                                height:
-                                                    MediaQuery.of(context)
-                                                            .size
-                                                            .height /
-                                                        3,
-                                                width:
-                                                    MediaQuery.of(context)
-                                                        .size
-                                                        .width,
-                                                child: CupertinoDatePicker(
-                                                  mode:
-                                                      CupertinoDatePickerMode
-                                                          .dateAndTime,
-                                                  minimumDate:
-                                                      (getCurrentTimestamp ??
-                                                          DateTime(1900)),
-                                                  initialDateTime: ((_model
-                                                                  .datePicked !=
-                                                              null
-                                                          ? _model
-                                                              .datePicked
-                                                          : getCurrentTimestamp) ??
-                                                      DateTime.now()),
-                                                  maximumDate: (functions
-                                                          .datetime24() ??
-                                                      DateTime(2050)),
-                                                  use24hFormat: false,
-                                                  onDateTimeChanged:
-                                                      (newDateTime) =>
-                                                          safeSetState(() {
-                                                    _model.datePicked =
-                                                        newDateTime;
-                                                  }),
-                                                ),
-                                              );
-                                            });
-                                      }(),
-                                    );
-                                  },
-                                  child: Container(
-                                    constraints: BoxConstraints(
-                                      minHeight: 57.0,
-                                    ),
-                                    decoration: BoxDecoration(),
-                                    child: Padding(
-                                      padding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              0.0, 4.0, 0.0, 4.0),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.max,
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              mainAxisSize:
-                                                  MainAxisSize.max,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  'Заказать ко времени',
-                                                  style: FlutterFlowTheme
-                                                          .of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        fontFamily: 'SF',
-                                                        fontSize: 16.0,
-                                                        letterSpacing: 0.0,
-                                                      ),
-                                                ),
-                                                if (_model.supply == 2)
-                                                  Text(
-                                                    'Водитель приедет ${dateTimeFormat(
-                                                      "d/M/y",
-                                                      _model.datePicked,
-                                                      locale:
-                                                          FFLocalizations.of(
-                                                                  context)
-                                                              .languageCode,
-                                                    )}, к ${dateTimeFormat(
-                                                      "Hm",
-                                                      _model.datePicked,
-                                                      locale:
-                                                          FFLocalizations.of(
-                                                                  context)
-                                                              .languageCode,
-                                                    )}',
-                                                    style: FlutterFlowTheme
-                                                            .of(context)
-                                                        .bodyMedium
-                                                        .override(
-                                                          fontFamily: 'SF',
-                                                          color: Color(
-                                                              0xFF8F8F8E),
-                                                          letterSpacing:
-                                                              0.0,
-                                                        ),
-                                                  ),
-                                              ],
-                                            ),
-                                          ),
-                                          Container(
-                                            width: 30.0,
-                                            height: 30.0,
-                                            decoration: BoxDecoration(
-                                              color: FlutterFlowTheme.of(
-                                                      context)
-                                                  .primaryBackground,
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: Visibility(
-                                              visible: _model.supply == 2,
-                                              child: Container(
-                                                width: double.infinity,
-                                                height: double.infinity,
-                                                decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  border: Border.all(
-                                                    color:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .tertiary,
-                                                    width: 8.0,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Divider(
-                                  height: 0.3,
-                                  thickness: 0.3,
-                                  color: Color(0xFFD0CFCE),
-                                ),
-                              ],
-                            ),
-                            ExpandableWidget(
-                              children: [
-                                Text(
-                                  'Описание груза*',
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        fontFamily: 'SF',
-                                        fontSize: 21.0,
-                                        letterSpacing: 0.0,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                ),
-                                Container(
-                                  width: double.infinity,
-                                  child: TextFormField(
-                                    controller:
-                                        _model.descriptionTextController,
-                                    focusNode: _model.descriptionFocusNode,
-                                    onChanged: (_) => EasyDebounce.debounce(
-                                      '_model.descriptionTextController',
-                                      Duration(milliseconds: 0),
-                                      () => safeSetState(() {}),
-                                    ),
-                                    autofocus: false,
-                                    textCapitalization:
-                                        TextCapitalization.sentences,
-                                    textInputAction: TextInputAction.next,
-                                    obscureText: false,
-                                    decoration: InputDecoration(
-                                      isDense: true,
-                                      hintText:
-                                          'Всё, что важно знать водителю',
-                                      hintStyle:
-                                          FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                fontFamily: 'SF',
-                                                color: Color(0xFF8F8F8E),
-                                                fontSize: 16.0,
-                                                letterSpacing: 0.0,
-                                              ),
-                                      enabledBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Color(0xFFD0CFCE),
-                                          width: 0.3,
-                                        ),
-                                        borderRadius:
-                                            BorderRadius.circular(0.0),
-                                      ),
-                                      focusedBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Color(0xFFD0CFCE),
-                                          width: 0.3,
-                                        ),
-                                        borderRadius:
-                                            BorderRadius.circular(0.0),
-                                      ),
-                                      errorBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color:
-                                              FlutterFlowTheme.of(context)
-                                                  .error,
-                                          width: 0.3,
-                                        ),
-                                        borderRadius:
-                                            BorderRadius.circular(0.0),
-                                      ),
-                                      focusedErrorBorder:
-                                          UnderlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color:
-                                              FlutterFlowTheme.of(context)
-                                                  .error,
-                                          width: 0.3,
-                                        ),
-                                        borderRadius:
-                                            BorderRadius.circular(0.0),
-                                      ),
-                                      contentPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              0.0, 24.0, 0.0, 24.0),
-                                      hoverColor: Colors.transparent,
-                                    ),
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          fontFamily: 'SF',
-                                          fontSize: 16.0,
-                                          letterSpacing: 0.0,
-                                        ),
-                                    maxLines: 9,
-                                    minLines: 1,
-                                    maxLength: 1000,
-                                    cursorColor:
-                                        FlutterFlowTheme.of(context)
-                                            .primaryText,
-                                    validator: _model
-                                        .descriptionTextControllerValidator
-                                        .asValidator(context),
-                                    inputFormatters: [
-                                      if (!isAndroid && !isiOS)
-                                        TextInputFormatter.withFunction(
-                                            (oldValue, newValue) {
-                                          return TextEditingValue(
-                                            selection: newValue.selection,
-                                            text: newValue.text
-                                                .toCapitalization(
-                                                    TextCapitalization
-                                                        .sentences),
-                                          );
-                                        }),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Container(
+                            if (!_model.isFastOrder)
+                              _descriptionCard(context),
+                            if (!_model.isFastOrder)
+                              Container(
                               width: double.infinity,
                               decoration: BoxDecoration(
                                 color: FlutterFlowTheme.of(context)
@@ -2842,127 +3333,6 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                 ),
                               ),
                             ),
-                            ExpandableWidget(
-                              children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'Оплата*',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            fontFamily: 'SF',
-                                            fontSize: 21.0,
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                    ),
-                                    RichText(
-                                      textScaler: MediaQuery.of(context)
-                                          .textScaler,
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: () {
-                                              if (widget!.car ==
-                                                  Car.largus) {
-                                                return FFAppState()
-                                                    .priceLargus
-                                                    .toString();
-                                              } else if (widget!.car ==
-                                                  Car.largusTermo) {
-                                                return FFAppState()
-                                                    .priceTermo
-                                                    .toString();
-                                              } else {
-                                                return FFAppState()
-                                                    .priceFiat
-                                                    .toString();
-                                              }
-                                            }(),
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 24.0,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: ' ₽',
-                                            style: TextStyle(
-                                              fontSize: 18.0,
-                                            ),
-                                          )
-                                        ],
-                                        style: FlutterFlowTheme.of(
-                                                context)
-                                            .bodyMedium
-                                            .override(
-                                              fontFamily: 'SF',
-                                              color: FlutterFlowTheme.of(
-                                                      context)
-                                                  .tertiary,
-                                              fontSize: 16.0,
-                                              letterSpacing: 0.0,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Divider(
-                                  height: 0.5,
-                                  thickness: 0.5,
-                                  color: Color(0xFFD0CFCE),
-                                ),
-                                wrapWithModel(
-                                  model: _model.chipsCardModel1,
-                                  updateCallback: () => safeSetState(() {}),
-                                  child: ChipsCardWidget(
-                                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 4.0, 0.0, 4.0,),
-                                    text: 'Оплата наличными',
-                                    selectedItem: _model.select,
-                                    action: (text) async {
-                                      _model.select = text;
-                                      safeSetState(() {});
-                                      FFAppState().payMethod =
-                                          PayMethod.cahs;
-                                      safeSetState(() {});
-                                    },
-                                  ),
-                                ),
-                                Divider(
-                                  height: 0.3,
-                                  thickness: 0.3,
-                                  color: Color(0xFFD0CFCE),
-                                ),
-                                wrapWithModel(
-                                  model: _model.chipsCardModel2,
-                                  updateCallback: () => safeSetState(() {}),
-                                  child: ChipsCardWidget(
-                                      padding: EdgeInsetsDirectional.fromSTEB(0.0, 4.0, 0.0, 4.0,),
-
-                                    text: 'Оплата картой',
-                                    selectedItem: _model.select,
-                                    action: (text) async {
-                                      _model.select = text;
-                                      safeSetState(() {});
-                                      FFAppState().payMethod =
-                                          PayMethod.card;
-                                      safeSetState(() {});
-                                    },
-                                  ),
-                                ),
-                                Divider(
-                                  height: 0.3,
-                                  thickness: 0.3,
-                                  indent: 24.0,
-                                  endIndent: 24.0,
-                                  color: Color(0xFFD0CFCE),
-                                ),
-                              ],
-                            ),
                           ].divide(SizedBox(height: 5.0)),
                         ),
                       ),
@@ -2997,20 +3367,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                       children: [
                         Builder(
                           builder: (context) {
-                            if ((FFAppState().pointA.sender.phone != null &&
-                                    FFAppState().pointA.sender.phone != '') &&
-                                (FFAppState().pointB.sender.phone != null &&
-                                    FFAppState().pointB.sender.phone != '')  &&
-                                (intermediateOn ? FFAppState().pointC.sender.phone != null &&
-                                FFAppState().pointC.sender.phone != '' : true) &&
-                                (_model.supply == 2
-                                    ? (_model.datePicked != null)
-                                    : true) &&
-                                (_model.descriptionTextController.text !=
-                                        null &&
-                                    _model.descriptionTextController.text !=
-                                        '') &&
-                                (_model.supply != null)) {
+                            if (_canSubmit()) {
                               return FFButtonWidget(
                                 onPressed: () async {
                                   unawaited(
@@ -3018,6 +3375,7 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                       await actions.closeKeyboard();
                                     }(),
                                   );
+                                  _applyFastOrderDefaults();
                                   await showModalBottomSheet(
                                     isScrollControlled: true,
                                     backgroundColor: Colors.transparent,
@@ -3040,22 +3398,15 @@ class _DetaliySozdanieWidgetState extends State<DetaliySozdanieWidget> {
                                               supply: _model.supply!,
                                               dateTime: _model.datePicked,
                                               movers: FFAppState().movers,
-                                              images: _model.images,
-                                              description: _model
-                                                  .descriptionTextController
-                                                  .text,
-                                              budget: () {
-                                                if (widget!.car == Car.largus) {
-                                                  return FFAppState()
-                                                      .priceLargus;
-                                                } else if (widget!.car ==
-                                                    Car.largusTermo) {
-                                                  return FFAppState()
-                                                      .priceTermo;
-                                                } else {
-                                                  return FFAppState().priceFiat;
-                                                }
-                                              }(),
+                                              images: _model.isFastOrder
+                                                  ? const []
+                                                  : _model.images,
+                                              description: _model.isFastOrder
+                                                  ? ''
+                                                  : _model
+                                                      .descriptionTextController
+                                                      .text,
+                                              budget: _resolvedBudget(),
                                               car: widget!.car!,
                                             ),
                                           ),

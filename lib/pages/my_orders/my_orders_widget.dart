@@ -1,4 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/file_storage_service.dart';
+import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
 import '/customer/net_zakazov_klient/net_zakazov_klient_widget.dart';
@@ -9,10 +11,12 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/pages/bottom/navbar/navbar_widget.dart';
+import 'dart:async';
 import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'my_orders_model.dart';
@@ -33,14 +37,203 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  bool _showPriceBanner = false;
+  Timer? _priceBannerTimer;
+  String? _resolvedLocation;
+  bool _isResolvingLocation = false;
+  bool _userDocCoordsTried = false;
+  bool _gpsTried = false;
+
+  void _onPriceCommitted() {
+    _priceBannerTimer?.cancel();
+    setState(() => _showPriceBanner = true);
+    _priceBannerTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) setState(() => _showPriceBanner = false);
+    });
+  }
+
+  Widget _greetingHeader(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    final name = (currentUserDisplayName ?? '').isNotEmpty
+        ? currentUserDisplayName
+        : 'друг';
+    final photo = currentUserDocument?.photoUrl ?? '';
+    final city = currentUserDocument?.city ?? '';
+    final region = currentUserDocument?.region ?? '';
+    final location = city.isNotEmpty
+        ? city
+        : (region.isNotEmpty
+            ? region
+            : (_resolvedLocation ?? '…'));
+    return Container(
+      width: double.infinity,
+      padding:
+          const EdgeInsetsDirectional.fromSTEB(16.0, 48.0, 16.0, 4.0),
+      color: theme.primaryBackground,
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.location_on_outlined,
+                        size: 16.0, color: theme.secondaryText),
+                    const SizedBox(width: 4.0),
+                    Text(
+                      location,
+                      style: theme.bodyMedium.override(
+                        fontFamily: 'SF',
+                        color: theme.secondaryText,
+                        fontSize: 14.0,
+                        letterSpacing: 0.0,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4.0),
+                Text(
+                  'Добрый день, $name',
+                  style: theme.bodyMedium.override(
+                    fontFamily: 'SF',
+                    fontSize: 22.0,
+                    letterSpacing: 0.0,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            width: 44.0,
+            height: 44.0,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Color(0xFFF4F5F8),
+            ),
+            child: ClipOval(
+              child: photo.isNotEmpty
+                  ? Image.network(
+                      FileStorageService.getImageUrl(photo),
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) =>
+                          Icon(Icons.person, color: theme.secondaryText),
+                    )
+                  : Icon(Icons.person, color: theme.secondaryText),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _priceChangedBanner(BuildContext context) {
+    final theme = FlutterFlowTheme.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+      decoration: BoxDecoration(
+        color: theme.secondaryBackground,
+        border: Border.all(color: theme.tertiary),
+        borderRadius: BorderRadius.circular(14.0),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 22.0,
+            height: 22.0,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: theme.tertiary, width: 1.6),
+            ),
+            alignment: Alignment.center,
+            child: Icon(Icons.check, size: 14.0, color: theme.tertiary),
+          ),
+          const SizedBox(width: 10.0),
+          Text(
+            'Цена изменена',
+            style: theme.bodyMedium.override(
+              fontFamily: 'SF',
+              color: theme.tertiary,
+              fontSize: 16.0,
+              letterSpacing: 0.0,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => MyOrdersModel());
   }
 
+  void _kickoffLocationResolve() {
+    if (_resolvedLocation != null || _isResolvingLocation) return;
+    final city = currentUserDocument?.city ?? '';
+    final region = currentUserDocument?.region ?? '';
+    if (city.isNotEmpty || region.isNotEmpty) return;
+
+    final docCoords = currentUserDocument?.cityLatlng;
+    if (docCoords != null && !_userDocCoordsTried) {
+      _userDocCoordsTried = true;
+      _resolveFromCoords(docCoords.latitude, docCoords.longitude);
+      return;
+    }
+    if (!_gpsTried) {
+      _gpsTried = true;
+      _resolveFromGps();
+    }
+  }
+
+  Future<void> _resolveFromGps() async {
+    _isResolvingLocation = true;
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) return;
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) return;
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings:
+            const LocationSettings(accuracy: LocationAccuracy.low),
+      );
+      await _resolveFromCoords(pos.latitude, pos.longitude);
+    } catch (_) {
+    } finally {
+      _isResolvingLocation = false;
+    }
+  }
+
+  Future<void> _resolveFromCoords(double lat, double lng) async {
+    _isResolvingLocation = true;
+    try {
+      final response =
+          await GeocodeLatLngCall.call(latlng: '$lat,$lng');
+      if (!mounted || !response.succeeded) return;
+      final body = response.jsonBody;
+      final loc = GeocodeLatLngCall.city(body) ??
+          GeocodeLatLngCall.areal2(body) ??
+          GeocodeLatLngCall.areal(body);
+      if (loc != null && loc.isNotEmpty) {
+        setState(() => _resolvedLocation = loc);
+      }
+    } catch (_) {
+    } finally {
+      _isResolvingLocation = false;
+    }
+  }
+
   @override
   void dispose() {
+    _priceBannerTimer?.cancel();
     _model.dispose();
 
     super.dispose();
@@ -49,6 +242,7 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
+    _kickoffLocationResolve();
 
     return GestureDetector(
       onTap: () {
@@ -61,6 +255,7 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
         body: Column(
           mainAxisSize: MainAxisSize.max,
           children: [
+            _greetingHeader(context),
             Flexible(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(18.0),
@@ -75,25 +270,26 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                           mainAxisSize: MainAxisSize.max,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
+                            if (_showPriceBanner)
+                              Padding(
+                                padding:
+                                    const EdgeInsetsDirectional.fromSTEB(
+                                        16.0, 8.0, 16.0, 16.0),
+                                child: _priceChangedBanner(context),
+                              ),
+                            if (!_showPriceBanner)
+                              Container(
                               width: double.infinity,
-                              height: 120.0,
                               decoration: BoxDecoration(
                                 color: FlutterFlowTheme.of(context)
-                                    .secondaryBackground,
-                                borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(18.0),
-                                  bottomRight: Radius.circular(18.0),
-                                  topLeft: Radius.circular(0.0),
-                                  topRight: Radius.circular(0.0),
-                                ),
+                                    .primaryBackground,
                               ),
                               child: Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    16.0, 0.0, 0.0, 16.0),
+                                    16.0, 8.0, 0.0, 8.0),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     InkWell(
                                       splashColor: Colors.transparent,
@@ -264,16 +460,16 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                                               .at_work) ||
                                                       (e.status ==
                                                           StatusOrder
-                                                              .on_confirmation))
+                                                              .on_confirmation) ||
+                                                      (e.status ==
+                                                          StatusOrder
+                                                              .completed))
 
                                                   : ((e.status ==
                                                           StatusOrder.hidden) ||
                                                       (e.status ==
                                                           StatusOrder
-                                                              .cancelled) ||
-                                                      (e.status ==
-                                                          StatusOrder
-                                                              .completed)))
+                                                              .cancelled)))
                                               .toList();
                                           if (containerVar.isEmpty) {
                                             return Container(
@@ -323,6 +519,8 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                                   key: Key(
                                                       'Keyf97_${containerVarIndex}_of_${containerVar.length}'),
                                                   order: containerVarItem,
+                                                  onPriceCommitted:
+                                                      _onPriceCommitted,
                                                 ),
                                               );
                                             },
@@ -343,23 +541,16 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                           children: [
                             Container(
                               width: double.infinity,
-                              height: 120.0,
                               decoration: BoxDecoration(
                                 color: FlutterFlowTheme.of(context)
-                                    .secondaryBackground,
-                                borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(18.0),
-                                  bottomRight: Radius.circular(18.0),
-                                  topLeft: Radius.circular(0.0),
-                                  topRight: Radius.circular(0.0),
-                                ),
+                                    .primaryBackground,
                               ),
                               child: Padding(
                                 padding: EdgeInsetsDirectional.fromSTEB(
-                                    16.0, 0.0, 0.0, 16.0),
+                                    16.0, 8.0, 0.0, 8.0),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     InkWell(
                                       splashColor: Colors.transparent,
@@ -383,7 +574,7 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                                 ? FlutterFlowTheme.of(context)
                                                     .tertiary
                                                 : FlutterFlowTheme.of(context)
-                                                    .primary,
+                                                    .secondaryBackground,
                                             FlutterFlowTheme.of(context)
                                                 .tertiary,
                                           ),
@@ -439,9 +630,9 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                                 ? FlutterFlowTheme.of(context)
                                                     .tertiary
                                                 : FlutterFlowTheme.of(context)
-                                                    .primary,
+                                                    .secondaryBackground,
                                             FlutterFlowTheme.of(context)
-                                                .primary,
+                                                .secondaryBackground,
                                           ),
                                           borderRadius:
                                               BorderRadius.circular(12.0),
@@ -495,9 +686,9 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                                 ? FlutterFlowTheme.of(context)
                                                     .tertiary
                                                 : FlutterFlowTheme.of(context)
-                                                    .primary,
+                                                    .secondaryBackground,
                                             FlutterFlowTheme.of(context)
-                                                .primary,
+                                                .secondaryBackground,
                                           ),
                                           borderRadius:
                                               BorderRadius.circular(12.0),

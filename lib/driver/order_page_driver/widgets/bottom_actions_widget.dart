@@ -1,7 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '/backend/backend.dart';
 import '/custom_code/actions/index.dart' as actions;
+import '/driver/order_page_driver/order_page_driver_widget.dart';
 import '/driver/vkl_geo/vkl_geo_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -172,8 +174,6 @@ class BottomActionsWidget extends StatelessWidget {
   }
 
   Future<void> _finishWithPhoto(BuildContext context) async {
-
-
     if (!(await getPermissionStatus(cameraPermission))) {
       await requestPermission(cameraPermission);
       return;
@@ -185,67 +185,42 @@ class BottomActionsWidget extends StatelessWidget {
         imageQuality: 95,
         multiImage: false);
 
+    // Юзер закрыл камеру или не дал ни одного файла — молча выходим.
+    if (selectedMedia == null || selectedMedia.isEmpty) return;
 
-
-    if (selectedMedia != null &&
-        selectedMedia
-            .every((m) => validateFileFormat(m.storagePath, context))) {
-      model.isDataUploading_uploadDataG298 = true;
-      List<FFUploadedFile> selectedUploadedFiles = [];
-      try {
-        selectedUploadedFiles = selectedMedia
-            .map((m) => FFUploadedFile(
-                name: m.storagePath.split('/').last,
-                bytes: m.bytes,
-                height: m.dimensions?.height,
-                width: m.dimensions?.width,
-                blurHash: m.blurHash))
-            .toList();
-      } finally {
-        model.isDataUploading_uploadDataG298 = false;
-      }
-      if (selectedUploadedFiles.length == selectedMedia.length) {
-        model.uploadedLocalFile_uploadDataG298 = selectedUploadedFiles;
-
-        await Future.delayed(Duration(seconds: 1), () {
-          onStateChanged?.call();
-
-        });
-      } else {
-        return;
-      }
-    }
-    if (model.uploadedLocalFile_uploadDataG298 != null &&
-        (model.uploadedLocalFile_uploadDataG298.isNotEmpty ?? false)) {
-      model.images.addAll(model.uploadedLocalFile_uploadDataG298);
-
-      await Future.delayed(Duration(seconds: 1), () {
-        onStateChanged?.call();
-
-      });
-    } else {
-      await showModalBottomSheet(
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        context: context,
-        builder: (context) {
-          return GestureDetector(
-            onTap: () {
-              FocusScope.of(context).unfocus();
-              FocusManager.instance.primaryFocus?.unfocus();
-            },
-            child: Padding(
-              padding: MediaQuery.viewInsetsOf(context),
-              child: ErrorPopupWidget(
-                  title: 'Что-то пошло не так',
-                  text: 'Давайте попробуем позже.'),
-            ),
-          );
-        },
-      );
+    if (!selectedMedia.every((m) => validateFileFormat(m.storagePath, context))) {
       return;
     }
 
+    model.isDataUploading_uploadDataG298 = true;
+    final newFiles = <FFUploadedFile>[];
+    try {
+      for (final m in selectedMedia) {
+        if (m.bytes == null || m.bytes!.isEmpty) {
+          print('[_finishWithPhoto] WARNING: media has no bytes path=${m.storagePath}');
+          continue;
+        }
+        newFiles.add(FFUploadedFile(
+          name: m.storagePath.split('/').last,
+          bytes: m.bytes,
+          height: m.dimensions?.height,
+          width: m.dimensions?.width,
+          blurHash: m.blurHash,
+        ));
+      }
+    } finally {
+      model.isDataUploading_uploadDataG298 = false;
+    }
+
+    if (newFiles.isEmpty) {
+      print('[_finishWithPhoto] no valid files to add');
+      return;
+    }
+
+    model.uploadedLocalFile_uploadDataG298 = newFiles;
+    model.images.addAll(newFiles);
+    print('[_finishWithPhoto] added ${newFiles.length} file(s), total=${model.images.length}');
+    onStateChanged?.call();
   }
 
   Future<void> _uploadAndComplete(BuildContext context) async {
@@ -329,6 +304,57 @@ class BottomActionsWidget extends StatelessWidget {
       userRefs: [order.userCustomer!],
       initialPageName: 'order_Page_Customer',
       parameterData: {'index': 1, 'order': widgetOrderRef},
+    );
+
+    await _advanceQueue(context);
+  }
+
+  /// Удаляет текущий orderRef из очереди и, если в очереди есть следующий
+  /// заказ, переходит на него (replace текущей страницы).
+  Future<void> _advanceQueue(BuildContext context) async {
+    final userRef = currentUserReference;
+    if (userRef == null) return;
+    final queue =
+        List<DocumentReference>.from(currentUserDocument?.activeOrdersQueue ?? const []);
+    final remaining =
+        queue.where((r) => r.id != widgetOrderRef.id).toList();
+    print('[BottomActions.completeOrder] order_id=${widgetOrderRef.id} '
+        'queue_size_before=${queue.length} remaining=${remaining.length}');
+
+    try {
+      await userRef.update({
+        'active_orders_queue':
+            FieldValue.arrayRemove([widgetOrderRef]),
+      });
+    } catch (e) {
+      print('[BottomActions.completeOrder] arrayRemove ERROR $e');
+    }
+
+    if (remaining.isEmpty) return;
+    final nextRef = remaining.first;
+    print('[BottomActions.completeOrder] next_order_id=${nextRef.id}');
+
+    try {
+      // Если заказ ещё в newOrder — гарантируем что он назначен на нас.
+      final snap = await nextRef.get();
+      final data = snap.data() as Map<String, dynamic>?;
+      final status = data?['status'];
+      if (status == StatusOrder.newOrder.serialize()) {
+        await nextRef.update({
+          'status': StatusOrder.spec_set.serialize(),
+          'selected_driver': userRef,
+          'date_upd': getCurrentTimestamp,
+        });
+      }
+    } catch (e) {
+      print('[BottomActions.completeOrder] next status transition ERROR $e');
+    }
+
+    if (!context.mounted) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => OrderPageDriverWidget(order: nextRef),
+      ),
     );
   }
 

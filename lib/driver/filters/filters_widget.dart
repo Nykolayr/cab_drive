@@ -17,7 +17,11 @@ import 'filters_model.dart';
 export 'filters_model.dart';
 
 class FiltersWidget extends StatefulWidget {
-  const FiltersWidget({super.key});
+  const FiltersWidget({super.key, this.focus});
+
+  /// When set to 'rate', 'radius' or 'supply' only that section is shown.
+  /// When null, the full filters sheet is shown (legacy behavior).
+  final String? focus;
 
   @override
   State<FiltersWidget> createState() => _FiltersWidgetState();
@@ -173,6 +177,7 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
+                      if (widget.focus == null || widget.focus == 'rate')
                       Container(
                         width: double.infinity,
                         decoration: BoxDecoration(
@@ -397,6 +402,7 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                           ),
                         ),
                       ),
+                      if (widget.focus == null || widget.focus == 'radius')
                       Container(
                         width: double.infinity,
                         decoration: BoxDecoration(
@@ -472,6 +478,7 @@ class _FiltersWidgetState extends State<FiltersWidget> {
                           ),
                         ),
                       ),
+                      if (widget.focus == null || widget.focus == 'supply')
                       Container(
                         width: double.infinity,
                         decoration: BoxDecoration(

@@ -1198,10 +1198,16 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                         children: [
                                           FlutterFlowGoogleMap(
                                             controller: _model.googleMapsController,
-                                            onCameraIdle: (latLng) {
-                                              print(latLng);
+                                            onCameraIdle: (latLng) async {
                                               safeSetState(
                                                       () => _model.googleMapsCenter = latLng);
+                                              FFAppState().lastPickerMapCenter = latLng;
+                                              try {
+                                                final c = await _model
+                                                    .googleMapsController.future;
+                                                FFAppState().lastPickerMapZoom =
+                                                    await c.getZoomLevel();
+                                              } catch (_) {}
                                             },
                                             initialLocation: _model.googleMapsCenter ??=
                                                 FFAppState().mskGeo!,

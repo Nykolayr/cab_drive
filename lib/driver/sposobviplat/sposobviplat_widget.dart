@@ -162,23 +162,55 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 AuthUserStreamWidget(
-                                  builder: (context) => Text(
-                                    'Баланс: ${formatNumber(
-                                      valueOrDefault(
-                                          currentUserDocument?.balance, 0.0),
-                                      formatType: FormatType.custom,
-                                      format: '0',
-                                      locale: '',
-                                    )} ₽',
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          fontFamily: 'SF',
-                                          fontSize: 18.0,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.w500,
+                                  builder: (context) {
+                                    final mainBalance = valueOrDefault(
+                                        currentUserDocument?.balance, 0.0);
+                                    final bonus = valueOrDefault(
+                                        currentUserDocument?.bonusBalance, 0.0);
+                                    return Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Баланс: ${formatNumber(
+                                            mainBalance,
+                                            formatType: FormatType.custom,
+                                            format: '0',
+                                            locale: '',
+                                          )} ₽',
+                                          style: FlutterFlowTheme.of(context)
+                                              .bodyMedium
+                                              .override(
+                                                fontFamily: 'SF',
+                                                fontSize: 18.0,
+                                                letterSpacing: 0.0,
+                                                fontWeight: FontWeight.w500,
+                                              ),
                                         ),
-                                  ),
+                                        if (bonus > 0)
+                                          Padding(
+                                            padding: EdgeInsetsDirectional
+                                                .fromSTEB(0.0, 4.0, 0.0, 0.0),
+                                            child: Text(
+                                              '+ ${formatNumber(
+                                                bonus,
+                                                formatType: FormatType.custom,
+                                                format: '0',
+                                                locale: '',
+                                              )} ₽ доп. баланс не выводится',
+                                              style: FlutterFlowTheme.of(context)
+                                                  .bodySmall
+                                                  .override(
+                                                    fontFamily: 'SF',
+                                                    fontSize: 12.0,
+                                                    letterSpacing: 0.0,
+                                                  ),
+                                            ),
+                                          ),
+                                      ],
+                                    );
+                                  },
                                 ),
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
@@ -402,6 +434,14 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
               child: FFButtonWidget(
                 onPressed: () async {
                   var _shouldSetState = false;
+                  final _withdrawableBalance =
+                      valueOrDefault(currentUserDocument?.balance, 0.0);
+                  final _bonusForAudit =
+                      valueOrDefault(currentUserDocument?.bonusBalance, 0.0);
+                  final _amountForPayout = _withdrawableBalance -
+                      functions.proc(_withdrawableBalance).round();
+                  print(
+                      '[sposobviplat.payout] withdrawable=$_withdrawableBalance bonus=$_bonusForAudit amount=$_amountForPayout');
                   if (valueOrDefault(currentUserDocument?.contractorID, 0) !=
                       0) {
                     _model.apiResultlwg = await PayoutCall.call(

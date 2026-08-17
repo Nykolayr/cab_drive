@@ -1,5 +1,6 @@
 import 'package:cab_drive/customer/create_map_page/domain/entities/entities.dart';
 
+import '../../create_map_page/map_picker/map_picker_widget.dart';
 import '../../create_map_page/presentation/bloc/orders_bloc.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
@@ -585,6 +586,43 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                 safeSetState(() {});
                               },
                             ),
+                          Container(
+                            width: 0.5,
+                            height: 37.0,
+                            margin: const EdgeInsetsDirectional.fromSTEB(
+                                4.0, 0.0, 0.0, 0.0),
+                            color: const Color(0xFFD0CFCE),
+                          ),
+                          GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () async {
+                              final point = _model.currentPoint ?? 1;
+                              final rootNavigator =
+                                  Navigator.of(context, rootNavigator: true);
+                              rootNavigator.pop();
+                              await rootNavigator.push(
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      MapPickerWidget(point: point),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
+                                  12.0, 12.0, 16.0, 12.0),
+                              child: Text(
+                                'Карта',
+                                style: FlutterFlowTheme.of(context)
+                                    .bodyMedium
+                                    .override(
+                                      fontFamily: 'SF',
+                                      color: const Color(0xFF232222),
+                                      fontSize: 14.0,
+                                      letterSpacing: 0.0,
+                                    ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ].divide(SizedBox(height: 4.0)),

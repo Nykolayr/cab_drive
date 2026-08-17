@@ -24,6 +24,9 @@ import 'package:webviewx_plus/webviewx_plus.dart';
 class ResponsedDetailModel extends FlutterFlowModel<ResponsedDetailWidget> {
   ///  State fields for stateful widgets in this component.
 
+  // State field(s) for Switch widget — customer's agreement to increase budget.
+  bool agreedToIncreaseBudget = false;
+
   // Stores action output result for [Firestore Query - Query a collection] action in Button widget.
   List<ChatsRecord>? mychats;
   // Stores action output result for [Backend Call - Create Document] action in Button widget.

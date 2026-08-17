@@ -314,6 +314,14 @@ double proc(double balance) {
   return percent < 50 ? 50 : percent;
 }
 
+String formatDriverBalance(double balance, double bonusBalance) {
+  final total = balance + bonusBalance;
+  if (bonusBalance > 0) {
+    return '${total.toStringAsFixed(0)} ₽ (${bonusBalance.toStringAsFixed(0)} ₽ только для списания)';
+  }
+  return '${balance.toStringAsFixed(0)} ₽';
+}
+
 List<DocumentReference> listusers(DocumentReference usercur) {
   final fixedUserRef =
       FirebaseFirestore.instance.doc('users/MEkzqxquE2OqdVEZi4NrxZ9K8F03');

@@ -4,6 +4,7 @@ import 'package:cab_drive/driver/order_page_driver/widgets/details_section_widge
 import 'package:cab_drive/driver/order_page_driver/widgets/images_grid_widget.dart';
 import 'package:cab_drive/driver/order_page_driver/widgets/map_card_widget.dart';
 import 'package:cab_drive/driver/order_page_driver/widgets/order_warning_widget.dart';
+import 'package:cab_drive/driver/order_page_driver/widgets/queue_indicator_widget.dart';
 import '../../pages/bottom/app_bar/app_bar_widget.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -111,6 +112,9 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                                   },
                                   model: _model,
                                   widgetOrderRef: widget.order!,
+                                ),
+                                QueueIndicatorWidget(
+                                  currentOrderRef: widget.order!,
                                 ),
                                 // Customer card
                                 CustomerCardWidget(

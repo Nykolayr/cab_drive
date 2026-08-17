@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cab_drive/core/utils/shared_prefs.dart';
 import 'package:cab_drive/customer/create_map_page/data/datasources/orders_remote_data_source.dart';
 import 'package:cab_drive/customer/create_map_page/domain/repositories/orders_repository.dart';
@@ -40,6 +42,8 @@ void main() async {
   SharedPrefs.sharedPreferences = await SharedPreferences.getInstance();
   final appState = FFAppState(); // Initialize FFAppState
   await appState.initializePersistedState();
+  // Fire-and-forget: серверные тайминги подъедут асинхронно
+  unawaited(appState.loadServerSettings());
 
   // Initialize notification channels at startup for background notifications
   await initializeNotificationChannels();

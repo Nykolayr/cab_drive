@@ -102,6 +102,26 @@ class _PayInitWidgetState extends State<PayInitWidget> {
     }
   }
 
+  bool _queueUpdated = false;
+
+  Future<void> _ensureDriverQueueUpdated(PayOrderRecord payOrder) async {
+    if (_queueUpdated) return;
+    final driverRef = payOrder.driver ?? widget.driver;
+    final orderRef = payOrder.currentOrderDocRef;
+    if (driverRef == null || orderRef == null) return;
+    _queueUpdated = true;
+    try {
+      await driverRef.update({
+        'active_orders_queue':
+            FieldValue.arrayUnion([orderRef]),
+      });
+      print('[pay_init.queue] queue+= driver=${driverRef.id} order=${orderRef.id}');
+    } catch (e) {
+      _queueUpdated = false;
+      print('[pay_init.queue] ERROR $e');
+    }
+  }
+
   @override
   void dispose() {
     _model.maybeDispose();
@@ -200,6 +220,10 @@ class _PayInitWidgetState extends State<PayInitWidget> {
                   }
 
                   final containerPayOrderRecord = snapshot.data!;
+                  if (containerPayOrderRecord.isPaid) {
+                    // idempotent — добавит ref только один раз благодаря _queueUpdated
+                    _ensureDriverQueueUpdated(containerPayOrderRecord);
+                  }
 
                   return ClipRRect(
                     borderRadius: BorderRadius.circular(5.0),

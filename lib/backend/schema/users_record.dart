@@ -95,6 +95,11 @@ class UsersRecord extends FirestoreRecord {
   double get balance => _balance ?? 0.0; // Default to 0.0
   bool hasBalance() => _balance != null;
 
+  // "bonus_balance" field — write-off only, never withdrawn.
+  double? _bonusBalance;
+  double get bonusBalance => _bonusBalance ?? 0.0;
+  bool hasBonusBalance() => _bonusBalance != null;
+
   // "average_rating" field.
   double? _averageRating;
   double get averageRating => _averageRating ?? 0.0; // Default to 0.0
@@ -191,6 +196,17 @@ class UsersRecord extends FirestoreRecord {
   String get region => _region ?? ''; // Ensure not null
   bool hasRegion() => _region != null;
 
+  // "additional_phone_number" field.
+  String? _additionalPhoneNumber;
+  String get additionalPhoneNumber => _additionalPhoneNumber ?? '';
+  bool hasAdditionalPhoneNumber() => _additionalPhoneNumber != null;
+
+  // "active_orders_queue" field (multi-orders / «по пути»).
+  List<DocumentReference>? _activeOrdersQueue;
+  List<DocumentReference> get activeOrdersQueue =>
+      _activeOrdersQueue ?? const [];
+  bool hasActiveOrdersQueue() => _activeOrdersQueue != null;
+
   void _initializeFields() {
     print(snapshotData);
     _email = snapshotData['email'] as String?;
@@ -209,6 +225,7 @@ class UsersRecord extends FirestoreRecord {
     _isBlocked = snapshotData['is_blocked'] as bool?;
     _chatWithSupport = snapshotData['chat_with_support'] as DocumentReference?;
     _balance = (snapshotData['balance'] as num?)?.toDouble(); // Handle null safely
+    _bonusBalance = (snapshotData['bonus_balance'] as num?)?.toDouble();
     _averageRating = castToType<double>(snapshotData['average_rating']);
     _onVerifNow = snapshotData['on_verif_now'] as bool?;
     _addresses = getStructList(
@@ -236,6 +253,8 @@ class UsersRecord extends FirestoreRecord {
     _shiftStartDateTime = snapshotData['shift_start_date_time'] as DateTime?;
     _cityLatlng = snapshotData['cityLatlng'] as LatLng?;
     _region = snapshotData['region'] as String?;
+    _additionalPhoneNumber = snapshotData['additional_phone_number'] as String?;
+    _activeOrdersQueue = getDataList(snapshotData['active_orders_queue']);
   }
 
   static CollectionReference get collection =>
@@ -290,6 +309,7 @@ Map<String, dynamic> createUsersRecordData({
   bool? verifCompl,
   DocumentReference? chatWithSupport,
   double? balance,
+  double? bonusBalance,
   double? averageRating,
   bool? onVerifNow,
   int? numberOfReviews,
@@ -307,6 +327,8 @@ Map<String, dynamic> createUsersRecordData({
   DateTime? shiftStartDateTime,
   LatLng? cityLatlng,
   String? region,
+  String? additionalPhoneNumber,
+  List<DocumentReference>? activeOrdersQueue,
 }) {
   print('firebase id to set $fbId');
   final firestoreData = mapToFirestore(
@@ -327,6 +349,7 @@ Map<String, dynamic> createUsersRecordData({
       'verif_compl': verifCompl,
       'chat_with_support': chatWithSupport,
       'balance': balance,
+      'bonus_balance': bonusBalance,
       'average_rating': averageRating,
       'on_verif_now': onVerifNow,
       'number_of_reviews': numberOfReviews,
@@ -344,7 +367,9 @@ Map<String, dynamic> createUsersRecordData({
       'shift_start_date_time': shiftStartDateTime,
       'cityLatlng': cityLatlng,
       'region': region,
-      'commission_percent': commissionPercent
+      'commission_percent': commissionPercent,
+      'additional_phone_number': additionalPhoneNumber,
+      'active_orders_queue': activeOrdersQueue,
     }.withoutNulls,
   );
 
@@ -378,6 +403,7 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e1?.verifCompl == e2?.verifCompl &&
         e1?.chatWithSupport == e2?.chatWithSupport &&
         e1?.balance == e2?.balance &&
+        e1?.bonusBalance == e2?.bonusBalance &&
         e1?.averageRating == e2?.averageRating &&
         e1?.onVerifNow == e2?.onVerifNow &&
         listEquality.equals(e1?.addresses, e2?.addresses) &&
@@ -395,7 +421,9 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e1?.shiftCompletionDateTime == e2?.shiftCompletionDateTime &&
         e1?.shiftStartDateTime == e2?.shiftStartDateTime &&
         e1?.cityLatlng == e2?.cityLatlng &&
-        e1?.region == e2?.region;
+        e1?.region == e2?.region &&
+        e1?.additionalPhoneNumber == e2?.additionalPhoneNumber &&
+        listEquality.equals(e1?.activeOrdersQueue, e2?.activeOrdersQueue);
   }
 
   @override
@@ -415,6 +443,7 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e?.verifCompl,
         e?.chatWithSupport,
         e?.balance,
+        e?.bonusBalance,
         e?.averageRating,
         e?.onVerifNow,
         e?.addresses,
@@ -432,7 +461,9 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e?.shiftCompletionDateTime,
         e?.shiftStartDateTime,
         e?.cityLatlng,
-        e?.region
+        e?.region,
+        e?.additionalPhoneNumber,
+        e?.activeOrdersQueue
       ]);
 
   @override

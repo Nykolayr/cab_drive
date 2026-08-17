@@ -1,5 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
+import '/core/utils/formatters/phone_mask_input_formatter.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -57,14 +58,32 @@ class VerifUserModel extends FlutterFlowModel<VerifUserWidget> {
     return null;
   }
 
+  // State field(s) for AdditionalPhone widget.
+  FocusNode? additionalPhoneFocusNode;
+  TextEditingController? additionalPhoneTextController = TextEditingController(text: currentUserDocument?.additionalPhoneNumber);
+  final PhoneMaskInputFormatter additionalPhoneMask = PhoneMaskInputFormatter();
+  String? Function(BuildContext, String?)? additionalPhoneTextControllerValidator;
+  String? _additionalPhoneTextControllerValidator(BuildContext context, String? val) {
+    if (val == null || val.isEmpty) {
+      return null;
+    }
+    if (!RegExp(r'^\+?[0-9\s\-\(\)]{5,20}$').hasMatch(val)) {
+      return 'Некорректный номер';
+    }
+    return null;
+  }
+
   @override
   void initState(BuildContext context) {
     nameTextControllerValidator = _nameTextControllerValidator;
+    additionalPhoneTextControllerValidator = _additionalPhoneTextControllerValidator;
   }
 
   @override
   void dispose() {
     nameFocusNode?.dispose();
     nameTextController?.dispose();
+    additionalPhoneFocusNode?.dispose();
+    additionalPhoneTextController?.dispose();
   }
 }

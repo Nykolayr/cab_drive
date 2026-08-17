@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../../app_state.dart';
 import '../../../flutter_flow/flutter_flow_theme.dart';
 
 /// Widget that shows a countdown starting from [dateUpd].
-/// If 10 minutes passed since [dateUpd], shows "Время истекло".
+/// If [durationMinutes] (or `FFAppState().minutesForDeleteOrder` when null) passed since [dateUpd], shows "Время истекло".
 class CountdownOrExpired extends StatefulWidget {
   const CountdownOrExpired({
     Key? key,
@@ -11,14 +12,23 @@ class CountdownOrExpired extends StatefulWidget {
     this.style,
     this.expiredStyle,
     this.descriptionTextStyle,
-    this.durationMinutes = 10,
+    this.durationMinutes,
+    this.label,
+    this.expiredText,
+    this.hideWhenExpired = false,
   }) : super(key: key);
 
   final dynamic dateUpd;
   final TextStyle? style;
   final TextStyle? expiredStyle;
   final TextStyle? descriptionTextStyle;
-  final int durationMinutes;
+  final int? durationMinutes;
+  final String? label;
+  final String? expiredText;
+  final bool hideWhenExpired;
+
+  int get effectiveDurationMinutes =>
+      durationMinutes ?? FFAppState().minutesForDeleteOrder;
 
   @override
   State<CountdownOrExpired> createState() => _CountdownOrExpiredState();
@@ -65,7 +75,7 @@ class _CountdownOrExpiredState extends State<CountdownOrExpired> {
       _remaining = null;
       return;
     }
-    final end = _start!.add(Duration(minutes: widget.durationMinutes));
+    final end = _start!.add(Duration(minutes: widget.effectiveDurationMinutes));
     final now = DateTime.now();
     final diff = end.difference(now);
     _remaining = diff.isNegative ? Duration.zero : diff;
@@ -99,8 +109,15 @@ class _CountdownOrExpiredState extends State<CountdownOrExpired> {
   }
 
   String _formatDuration(Duration d) {
-    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
     final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    if (d.inDays >= 1) {
+      final hours = d.inHours.remainder(24).toString().padLeft(2, '0');
+      return '${d.inDays}д $hours:$minutes:$seconds';
+    }
+    if (d.inHours >= 1) {
+      return '${d.inHours}:$minutes:$seconds';
+    }
     return '$minutes:$seconds';
   }
 
@@ -118,17 +135,19 @@ class _CountdownOrExpiredState extends State<CountdownOrExpired> {
     }
 
     if (_remaining == Duration.zero) {
+      if (widget.hideWhenExpired) return SizedBox.shrink();
       return Text(
-        'Время истекло',
+        widget.expiredText ?? 'Время истекло',
         style: widget.expiredStyle ?? FlutterFlowTheme.of(context).bodyMedium.override(color: FlutterFlowTheme.of(context).error),
       );
     }
 
+    final prefix = widget.label ?? 'Осталось до окончания:';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Осталось до окончания: ${_formatDuration(_remaining!)}',
+          '$prefix ${_formatDuration(_remaining!)}',
           style: widget.style ?? FlutterFlowTheme.of(context).bodyMedium.override(color: FlutterFlowTheme.of(context).accent1),
         ),
       ],

@@ -23,23 +23,88 @@ class OrderCardDriverWidget extends StatefulWidget {
   const OrderCardDriverWidget({
     super.key,
     required this.order,
-    this.canGetNew = false
+    this.canGetNew = false,
+    this.isExtraOrderPreview = false,
+    this.currentOrderId,
   });
 
   final OrderRecord? order;
 
   final bool canGetNew;
+
+  /// Если true — это просмотр доп.заказа: показываем «Принять как доп.заказ»
+  /// вместо обычного «Откликнуться» (см. extra_order_bottom_sheet).
+  final bool isExtraOrderPreview;
+
+  /// ID активного заказа (только при isExtraOrderPreview=true) — для контекста.
+  final String? currentOrderId;
+
   @override
   State<OrderCardDriverWidget> createState() => _OrderCardDriverWidgetState();
 }
 
 class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
   late OrderCardDriverModel _model;
+  bool _acceptingExtra = false;
+
+  /// Цена, которую видит водитель: актуальная currentPrice (её клиент
+  /// повышает в поиске), с откатом на budget, пока currentPrice не задана.
+  int get _displayPrice {
+    final cp = widget.order?.currentPrice ?? 0;
+    if (cp > 0) return cp;
+    return widget.order?.budget ?? 0;
+  }
 
   @override
   void setState(VoidCallback callback) {
     super.setState(callback);
     _model.onUpdate();
+  }
+
+  /// В preview-режиме доп.заказа открывает стандартную форму отклика
+  /// (CreateOtklickWidget) — где водитель указывает цену/комментарий/время.
+  Future<void> _respondAsExtra() async {
+    if (_acceptingExtra) return;
+    final order = widget.order;
+    if (order == null) return;
+    print('[OrderCardDriver.respondAsExtra] tap order_id=${order.reference.id}');
+
+    setState(() => _acceptingExtra = true);
+    OrderRecord fresh;
+    try {
+      fresh = await OrderRecord.getDocumentOnce(order.reference);
+    } catch (_) {
+      fresh = order;
+    }
+    if (!mounted) return;
+    setState(() => _acceptingExtra = false);
+
+    if (fresh.status != StatusOrder.newOrder) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Заказ уже принят другим водителем')),
+      );
+      Navigator.of(context).pop();
+      return;
+    }
+    final driverRef = currentUserReference;
+    if (driverRef != null && fresh.userWhoResponced.contains(driverRef)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Вы уже откликнулись на этот заказ')),
+      );
+      return;
+    }
+
+    await showModalBottomSheet(
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      context: context,
+      builder: (sheetCtx) {
+        return Padding(
+          padding: MediaQuery.viewInsetsOf(sheetCtx),
+          child: CreateOtklickWidget(order: fresh),
+        );
+      },
+    );
   }
 
   @override
@@ -70,7 +135,7 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(8.0, 16.0, 8.0, 16.0),
+              padding: EdgeInsetsDirectional.fromSTEB(8.0, 12.0, 8.0, 12.0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -92,6 +157,7 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                             ),
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             fontFamily: 'SF',
+                            color: FlutterFlowTheme.of(context).primaryText,
                             fontSize: 16.0,
                             letterSpacing: 0.0,
                             fontWeight: FontWeight.w500,
@@ -100,24 +166,23 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                   ),
                   Expanded(
                     child: Text(
-                      '${widget!.order?.budget?.toString()} ₽',
+                      'До $_displayPrice ₽',
                       textAlign: TextAlign.end,
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             fontFamily: 'SF',
-                            color: FlutterFlowTheme.of(context).tertiary,
+                            color: FlutterFlowTheme.of(context).primaryText,
                             fontSize: 18.0,
                             letterSpacing: 0.0,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w600,
                           ),
                     ),
                   ),
                 ],
               ),
             ),
-            Divider(
-              height: 0.3,
-              thickness: 0.3,
-              color: Color(0xFFD0CFCE),
+            Container(
+              height: 2.0,
+              color: Color(0xFFF4F5F8),
             ),
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(8.0, 10.0, 8.0, 5.0),
@@ -217,32 +282,7 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
               ),
             ),
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(8.0, 19.0, 8.0, 0.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Icon(
-                    FFIcons.kcar01,
-                    color: FlutterFlowTheme.of(context).primaryText,
-                    size: 20.0,
-                  ),
-                  Flexible(
-                    child: Text(
-                      '${widget!.order?.distanceStr}, ${widget!.order?.time}',
-                      style: FlutterFlowTheme.of(context).bodyMedium.override(
-                            fontFamily: 'SF',
-                            fontSize: 16.0,
-                            letterSpacing: 0.0,
-                          ),
-                    ),
-                  ),
-                ].divide(SizedBox(width: 8.0)),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 32.0, 0.0, 0.0),
+              padding: EdgeInsetsDirectional.fromSTEB(0.0, 18.0, 0.0, 0.0),
               child: Builder(
                 builder: (context) {
                   if (widget!.order?.selectedDriver == currentUserReference) {
@@ -316,12 +356,17 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                       showLoadingIndicator: false,
                     );
                   } else {
+                    final isExtra = widget.isExtraOrderPreview;
                     return Row(
                       mainAxisSize: MainAxisSize.max,
                       children: [
                         Expanded(
                           child: FFButtonWidget(
                             onPressed: () async {
+                              if (isExtra) {
+                                await _respondAsExtra();
+                                return;
+                              }
 
                               if(!widget.canGetNew) {
                                 ScaffoldMessenger.of(context)
@@ -412,10 +457,11 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                               elevation: 0.0,
                               borderRadius: BorderRadius.circular(16.0),
                             ),
-                            showLoadingIndicator: false,
+                            showLoadingIndicator: _acceptingExtra,
                           ),
                         ),
-                        Expanded(
+                        if (!isExtra)
+                          Expanded(
                           child: FFButtonWidget(
                             onPressed: () async {
                               context.pushNamed(

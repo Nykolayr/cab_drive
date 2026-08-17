@@ -505,13 +505,20 @@ class _MultiPolylineMapState extends State<MultiPolylineMap> {
     if (!mounted) return;
 
     try {
-      final waypoints = widget.points.map((point) => '${point.latitude},${point.longitude}').join('|');
-final url = 'https://maps.googleapis.com/maps/api/directions/json'
-    '?origin=${widget.points.first.latitude},${widget.points.first.longitude}'
-    '&destination=${widget.points.last.latitude},${widget.points.last.longitude}'
-
-    '&waypoints=$waypoints'
-      '&key=${widget.googleApiKey}';
+      final intermediate = widget.points.length > 2
+          ? widget.points.sublist(1, widget.points.length - 1)
+          : <LatLng>[];
+      final waypointsParam = intermediate.isEmpty
+          ? ''
+          : '&waypoints=' +
+              intermediate
+                  .map((p) => '${p.latitude},${p.longitude}')
+                  .join('|');
+      final url = 'https://maps.googleapis.com/maps/api/directions/json'
+          '?origin=${widget.points.first.latitude},${widget.points.first.longitude}'
+          '&destination=${widget.points.last.latitude},${widget.points.last.longitude}'
+          '$waypointsParam'
+          '&key=${widget.googleApiKey}';
 
       final response = await http.get(Uri.parse(url));
 
