@@ -43,15 +43,13 @@ if ($errors) {
 }
 Write-Host "analyze: no errors"
 
-Write-Host "==> 4/4 debug APK build (best-effort on current Flutter SDK)"
+Write-Host "==> 4/4 debug APK build"
 $ErrorActionPreference = 'Continue'
 $buildOut = (flutter build apk --debug 2>&1 | Out-String)
 $ErrorActionPreference = $prevEap
 if ($LASTEXITCODE -ne 0) {
   ($buildOut -split "`n" | Select-Object -Last 25) | ForEach-Object { Write-Host $_ }
-  Write-Host "WARN: Debug APK build failed (often Flutter SDK vs pinned FF packages)."
-  Write-Host "Maps/Yandex handoff checks 0-3 passed; fix SDK/package matrix separately."
-  exit 0
+  throw "Debug APK build failed."
 }
 
 Write-Host "OK: handoff checks passed"
