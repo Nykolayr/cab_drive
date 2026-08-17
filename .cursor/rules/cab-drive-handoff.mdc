@@ -1,0 +1,36 @@
+---
+description: Cab Drive — не отдавать «готово» без verify_handoff и без чтения логов пользователя
+alwaysApply: true
+---
+
+# Cab Drive: сдача задачи (handoff)
+
+## Запрещено писать пользователю
+
+- «Должно работать» / «перезапусти и проверь» **без** своей проверки в этом же turn.
+
+## Обязательно перед «готово»
+
+1. **`scripts/verify_handoff.ps1`** — агент запускает сам (`powershell -File scripts/verify_handoff.ps1`).
+2. Если менялись **карты / плагины / нативка** — чеклист:
+   - `pubspec.yaml` — `yandex_mapkit` есть, `google_maps_flutter` **нет**
+   - `android/app/build.gradle` — `maps.mobile`, `BuildConfig.YANDEX_MAPS_API_KEY`, `minSdk 26`
+   - `MainActivity.kt` — `MapKitFactory.setApiKey` **до** `super.configureFlutterEngine`
+   - `ios/Runner/AppDelegate.swift` — `YMKMapKit.setApiKey` **до** `GeneratedPluginRegistrant`
+   - `lib/main.dart` — `AndroidYandexMap.useAndroidViewSurface` на Android
+   - `grep` по `google_maps_flutter` / `FlutterFlowGoogleMap` в экранах заказа — не должно остаться
+3. Если пользователь прислал **лог** — сначала строка с **первым `E/` / `Exception` / `AssertionError`**, потом правки.
+4. Критический путь: **логин → load → mainDriver/mainUser** — при сомнении `AppLog.trace` с `tag: 'Auth'` / `'Nav'`.
+
+## Карты (только Yandex MapKit)
+
+| Слой | Технология |
+|------|------------|
+| Подложка | `yandex_mapkit` + нативный ключ |
+| Маршрут | OpenRouteService (`ORS_API_KEY`) |
+| Геокодер/подсказки | Yandex Geocoder API (`YANDEX_GEOCODER_KEY`) |
+| Виджеты | `YandexOrderMap`, `YandexPickerMap` |
+
+## Пользователь не тестер
+
+Сначала `verify_handoff` + analyze/build; ручной прогон — только если нет устройства.
