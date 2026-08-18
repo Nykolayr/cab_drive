@@ -2624,7 +2624,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                             ),
                                             child: SizedBox(
                                               width: double.infinity,
-                                              height: 150.0,
+                                              height: 300.0,
                                               child: Builder(
                                                 builder: (context) {
                                                   final order =
@@ -2641,7 +2641,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                   return custom_widgets
                                                       .YandexOrderMap(
                                                     width: double.infinity,
-                                                    height: 150.0,
+                                                    height: 300.0,
                                                     startLatLng:
                                                         order.pointA.latlng!,
                                                     endLatLng:
@@ -2649,6 +2649,9 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                     driverLocation:
                                                         order.driverLocation,
                                                     showDriver: showDriver,
+                                                    etaText: order.hasTimeLeft()
+                                                        ? order.timeLeft
+                                                        : null,
                                                     isStatic: true,
                                                   );
                                                 },

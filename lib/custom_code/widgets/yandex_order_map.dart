@@ -28,6 +28,7 @@ class YandexOrderMap extends StatefulWidget {
     this.driverLocation,
     this.showDriver = false,
     this.isStatic = false,
+    this.etaText,
   });
 
   final double? width;
@@ -37,6 +38,9 @@ class YandexOrderMap extends StatefulWidget {
   final LatLng? driverLocation;
   final bool showDriver;
   final bool isStatic;
+  /// Живой ETA (`time_left`), например «12 мин». Пусто — подпись не рисуем.
+  final String? etaText;
+
 
   @override
   State<YandexOrderMap> createState() => _YandexOrderMapState();
@@ -76,7 +80,8 @@ class _YandexOrderMapState extends State<YandexOrderMap> {
     if (oldWidget.startLatLng != widget.startLatLng ||
         oldWidget.endLatLng != widget.endLatLng ||
         oldWidget.driverLocation != widget.driverLocation ||
-        oldWidget.showDriver != widget.showDriver) {
+        oldWidget.showDriver != widget.showDriver ||
+        oldWidget.etaText != widget.etaText) {
       _reloadMap();
     }
   }
@@ -134,11 +139,16 @@ class _YandexOrderMapState extends State<YandexOrderMap> {
       }
 
       if (driver != null && iconDriver != null) {
+        final headingTarget = _distanceMeters(driver, widget.startLatLng) > 50
+            ? widget.startLatLng
+            : widget.endLatLng;
         objects.add(_buildPlacemark(
           id: 'driver',
           latLng: driver,
           icon: iconDriver,
           anchor: const Offset(0.5, 0.5),
+          direction: _bearingDegrees(driver, headingTarget),
+          text: _driverEtaLabel,
         ));
       }
 
@@ -198,22 +208,45 @@ class _YandexOrderMapState extends State<YandexOrderMap> {
     );
   }
 
+  String? get _driverEtaLabel {
+    final raw = widget.etaText?.trim() ?? '';
+    if (raw.isEmpty) return null;
+    return 'Через $raw';
+  }
+
   PlacemarkMapObject _buildPlacemark({
     required String id,
     required LatLng latLng,
     required BitmapDescriptor icon,
     required Offset anchor,
+    double direction = 0,
+    String? text,
   }) {
     return PlacemarkMapObject(
       mapId: MapObjectId(id),
       point: Point(latitude: latLng.latitude, longitude: latLng.longitude),
       opacity: 1,
+      direction: direction,
       icon: PlacemarkIcon.single(
         PlacemarkIconStyle(
           image: icon,
           anchor: anchor,
+          rotationType: RotationType.rotate,
         ),
       ),
+      text: text == null
+          ? null
+          : PlacemarkText(
+              text: text,
+              style: const PlacemarkTextStyle(
+                size: 12,
+                color: Color(0xFF111111),
+                outlineColor: Colors.white,
+                offset: 8,
+                offsetFromIcon: true,
+                placement: TextStylePlacement.top,
+              ),
+            ),
     );
   }
 
@@ -336,6 +369,15 @@ class _YandexOrderMapState extends State<YandexOrderMap> {
     return r * c;
   }
 
+  double _bearingDegrees(LatLng from, LatLng to) {
+    final lat1 = from.latitude * pi / 180;
+    final lat2 = to.latitude * pi / 180;
+    final dLon = (to.longitude - from.longitude) * pi / 180;
+    final y = sin(dLon) * cos(lat2);
+    final x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(dLon);
+    return (atan2(y, x) * 180 / pi + 360) % 360;
+  }
+
   @override
   Widget build(BuildContext context) {
     final gesturesEnabled = !widget.isStatic;
@@ -365,6 +407,40 @@ class _YandexOrderMapState extends State<YandexOrderMap> {
                 width: 32,
                 height: 32,
                 child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          if (widget.showDriver && _driverEtaLabel != null)
+            Positioned(
+              left: 8,
+              right: 8,
+              top: widget.isStatic ? 8 : null,
+              bottom: widget.isStatic ? null : 8,
+              child: IgnorePointer(
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.92),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      child: Text(
+                        _driverEtaLabel!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontFamily: 'SF',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF111111),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
         ],

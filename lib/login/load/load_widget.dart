@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/core/config/app_env.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -34,6 +35,24 @@ class _LoadWidgetState extends State<LoadWidget> {
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
+      if (AppEnv.isTest) {
+        debugPrint('[LoadWidget] isTest → MainDriver + mock order');
+        FFAppState().roleSelected = true;
+        FFAppState().driver = true;
+        if (!context.mounted) return;
+        context.goNamed(
+          MainDriverWidget.routeName,
+          extra: <String, dynamic>{
+            kTransitionInfoKey: TransitionInfo(
+              hasTransition: true,
+              transitionType: PageTransitionType.fade,
+              duration: Duration(milliseconds: 0),
+            ),
+          },
+        );
+        return;
+      }
+
       if (valueOrDefault<bool>(currentUserDocument?.admin, false)) {
         context.goNamed(
           VerifAdminWidget.routeName,

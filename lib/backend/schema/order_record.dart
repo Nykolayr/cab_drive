@@ -124,6 +124,16 @@ class OrderRecord extends FirestoreRecord {
   LatLng? get driverLocation => _driverLocation;
   bool hasDriverLocation() => _driverLocation != null;
 
+  // "time_left" field — живой ETA до точки B (пишет toggleRouteTracking).
+  String? _timeLeft;
+  String get timeLeft => _timeLeft ?? '';
+  bool hasTimeLeft() => _timeLeft != null && _timeLeft!.isNotEmpty;
+
+  // "km_left" field.
+  String? _kmLeft;
+  String get kmLeft => _kmLeft ?? '';
+  bool hasKmLeft() => _kmLeft != null && _kmLeft!.isNotEmpty;
+
   // "car" field.
   Car? _car;
   Car? get car => _car;
@@ -199,6 +209,8 @@ class OrderRecord extends FirestoreRecord {
     _distance = snapshotData['distance'] as int?;
     _time = snapshotData['time'] as String?;
     _driverLocation = snapshotData['driver_location'] as LatLng?;
+    _timeLeft = snapshotData['time_left'] as String?;
+    _kmLeft = snapshotData['km_left'] as String?;
     _car = snapshotData['car'] is Car
         ? snapshotData['car']
         : deserializeEnum<Car>(snapshotData['car']);
@@ -350,6 +362,8 @@ class OrderRecordDocumentEquality implements Equality<OrderRecord> {
         e1?.distance == e2?.distance &&
         e1?.time == e2?.time &&
         e1?.driverLocation == e2?.driverLocation &&
+        e1?.timeLeft == e2?.timeLeft &&
+        e1?.kmLeft == e2?.kmLeft &&
         e1?.car == e2?.car &&
         e1?.movers == e2?.movers &&
         e1?.currentPrice == e2?.currentPrice &&
@@ -383,6 +397,8 @@ class OrderRecordDocumentEquality implements Equality<OrderRecord> {
         e?.distance,
         e?.time,
         e?.driverLocation,
+        e?.timeLeft,
+        e?.kmLeft,
         e?.car,
         e?.movers,
         e?.currentPrice,

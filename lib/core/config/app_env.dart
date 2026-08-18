@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import '/core/config/test_flags.dart';
+
 /// Ключи из `.env` в корне проекта (не в git). См. `.env.example`.
 class AppEnv {
   AppEnv._();
@@ -33,4 +35,13 @@ class AppEnv {
   }
 
   static bool has(String key) => get(key).isNotEmpty;
+
+  /// Debug-only: водитель + мок-заказ. Release всегда `false`.
+  static bool get isTest {
+    if (kReleaseMode) return false;
+    final raw = get('IS_TEST').toLowerCase();
+    if (raw == 'true' || raw == '1') return true;
+    if (raw == 'false' || raw == '0') return false;
+    return TestFlags.isTest;
+  }
 }

@@ -7,12 +7,13 @@ import 'package:cab_drive/driver/order_page_driver/widgets/order_warning_widget.
 import 'package:cab_drive/driver/order_page_driver/widgets/queue_indicator_widget.dart';
 import '../../pages/bottom/app_bar/app_bar_widget.dart';
 import '/backend/backend.dart';
+import '/core/config/app_env.dart';
+import '/core/config/test_driver_seed.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 import 'order_page_driver_model.dart';
 export 'order_page_driver_model.dart';
-
 
 class OrderPageDriverWidget extends StatefulWidget {
   const OrderPageDriverWidget({
@@ -48,6 +49,10 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (AppEnv.isTest) {
+      return _buildOrderScaffold(TestDriverSeed.buildOrder());
+    }
+
     return StreamBuilder<OrderRecord>(
       stream: OrderRecord.getDocument(widget.order!),
       builder: (context, snapshot) {
@@ -68,95 +73,89 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
           );
         }
 
-        final orderRec = snapshot.data!;
-
-        return GestureDetector(
-          onTap: () {
-            FocusScope.of(context).unfocus();
-            FocusManager.instance.primaryFocus?.unfocus();
-          },
-          child: Scaffold(
-            key: scaffoldKey,
-            backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-            body: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                // App bar provided by existing widget in project (kept in page tree)
-                if (_model.appBarModel != null)
-                  wrapWithModel(
-                    model: _model.appBarModel,
-                    updateCallback: () => setState(() {}),
-                    child: AppBarWidget(text: 'Детали заказа'),
-                  ),
-                Flexible(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(18.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(18.0),
-                      ),
-                      child: Stack(
-                        children: [
-                          SingleChildScrollView(
-                            primary: false,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Top warning / status block (refactored)
-                                OrderWarningWidget(
-                                  order: orderRec,
-                                  onTap: () {
-                                    setState(() {
-
-                                    });
-                                  },
-                                  model: _model,
-                                  widgetOrderRef: widget.order!,
-                                ),
-                                QueueIndicatorWidget(
-                                  currentOrderRef: widget.order!,
-                                ),
-                                // Customer card
-                                CustomerCardWidget(
-                                  order: orderRec,
-                                  model: _model,
-                                  widgetOrderRef: widget.order!,
-                                ),
-                                // Map card
-                                MapCardWidget(order: orderRec),
-                                // Details (addresses, info, description)
-                                DetailsSectionWidget(
-                                  order: orderRec,
-                                  model: _model,
-                                ),
-                                // Images grid
-                                ImagesGridWidget(order: orderRec),
-                                SizedBox(height: 120.0),
-                              ].divide(SizedBox(height: 5.0)),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                // Bottom actions (refactored)
-                BottomActionsWidget(
-                  order: orderRec,
-                  model: _model,
-                  onStateChanged: () {
-                    print('setstate');
-                    setState(() {
-
-                    });
-                  },
-                  widgetOrderRef: widget.order!,
-                ),
-              ].divide(SizedBox(height: 5.0)),
-            ),
-          ),
-        );
+        return _buildOrderScaffold(snapshot.data!);
       },
+    );
+  }
+
+  Widget _buildOrderScaffold(OrderRecord orderRec) {
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+        FocusManager.instance.primaryFocus?.unfocus();
+      },
+      child: Scaffold(
+        key: scaffoldKey,
+        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        body: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            if (_model.appBarModel != null)
+              wrapWithModel(
+                model: _model.appBarModel,
+                updateCallback: () => setState(() {}),
+                child: const AppBarWidget(text: 'Детали заказа'),
+              ),
+            Flexible(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(18.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18.0),
+                  ),
+                  child: Stack(
+                    children: [
+                      SingleChildScrollView(
+                        primary: false,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (!AppEnv.isTest)
+                              OrderWarningWidget(
+                                order: orderRec,
+                                onTap: () {
+                                  setState(() {});
+                                },
+                                model: _model,
+                                widgetOrderRef: widget.order!,
+                              ),
+                            if (!AppEnv.isTest)
+                              QueueIndicatorWidget(
+                                currentOrderRef: widget.order!,
+                              ),
+                            if (!AppEnv.isTest)
+                              CustomerCardWidget(
+                                order: orderRec,
+                                model: _model,
+                                widgetOrderRef: widget.order!,
+                              ),
+                            MapCardWidget(order: orderRec),
+                            DetailsSectionWidget(
+                              order: orderRec,
+                              model: _model,
+                            ),
+                            ImagesGridWidget(order: orderRec),
+                            const SizedBox(height: 120.0),
+                          ].divide(const SizedBox(height: 5.0)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            if (!AppEnv.isTest)
+              BottomActionsWidget(
+                order: orderRec,
+                model: _model,
+                onStateChanged: () {
+                  setState(() {});
+                },
+                widgetOrderRef: widget.order!,
+              ),
+          ].divide(const SizedBox(height: 5.0)),
+        ),
+      ),
     );
   }
 }

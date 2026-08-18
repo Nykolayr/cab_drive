@@ -1,5 +1,7 @@
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
+import '/core/config/app_env.dart';
+import '/core/config/test_driver_seed.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/pages/bottom/app_bar/app_bar_widget.dart';
@@ -44,10 +46,13 @@ class _ZakazNaKarteWidgetState extends State<ZakazNaKarteWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (AppEnv.isTest) {
+      return _mapScaffold(TestDriverSeed.buildOrder());
+    }
+
     return StreamBuilder<OrderRecord>(
       stream: OrderRecord.getDocument(widget!.order!),
       builder: (context, snapshot) {
-        // Customize what your widget looks like when it's loading.
         if (!snapshot.hasData) {
           return Scaffold(
             backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
@@ -65,50 +70,48 @@ class _ZakazNaKarteWidgetState extends State<ZakazNaKarteWidget> {
           );
         }
 
-        final zakazNaKarteOrderRecord = snapshot.data!;
-
-        return GestureDetector(
-          onTap: () {
-            FocusScope.of(context).unfocus();
-            FocusManager.instance.primaryFocus?.unfocus();
-          },
-          child: Scaffold(
-            key: scaffoldKey,
-            backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-            body: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                wrapWithModel(
-                  model: _model.appBarModel,
-                  updateCallback: () => safeSetState(() {}),
-                  child: const AppBarWidget(
-                    text: 'Заказ на карте',
-                  ),
-                ),
-                Expanded(
-                  child: Builder(
-                    builder: (context) {
-                      final order = zakazNaKarteOrderRecord;
-                      final showDriver = (order.status == StatusOrder.at_work ||
-                              order.status == StatusOrder.spec_set) &&
-                          order.hasDriverLocation();
-
-                      return custom_widgets.YandexOrderMap(
-                        width: double.infinity,
-                        height: double.infinity,
-                        startLatLng: order.pointA.latlng!,
-                        endLatLng: order.pointB.latlng!,
-                        driverLocation: order.driverLocation,
-                        showDriver: showDriver,
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+        return _mapScaffold(snapshot.data!);
       },
+    );
+  }
+
+  Widget _mapScaffold(OrderRecord order) {
+    final showDriver = (order.status == StatusOrder.at_work ||
+            order.status == StatusOrder.spec_set) &&
+        order.hasDriverLocation();
+
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+        FocusManager.instance.primaryFocus?.unfocus();
+      },
+      child: Scaffold(
+        key: scaffoldKey,
+        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        body: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            wrapWithModel(
+              model: _model.appBarModel,
+              updateCallback: () => safeSetState(() {}),
+              child: const AppBarWidget(
+                text: 'Заказ на карте',
+              ),
+            ),
+            Expanded(
+              child: custom_widgets.YandexOrderMap(
+                width: double.infinity,
+                height: double.infinity,
+                startLatLng: order.pointA.latlng!,
+                endLatLng: order.pointB.latlng!,
+                driverLocation: order.driverLocation,
+                showDriver: showDriver,
+                etaText: order.hasTimeLeft() ? order.timeLeft : null,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

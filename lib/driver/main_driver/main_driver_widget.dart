@@ -6,6 +6,8 @@ import '/backend/api/file_storage_service.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
+import '/core/config/app_env.dart';
+import '/core/config/test_driver_seed.dart';
 import '/driver/filters/filters_widget.dart';
 import '/driver/net_poiska/net_poiska_widget.dart';
 import '/driver/order_card_driver/order_card_driver_widget.dart';
@@ -58,6 +60,16 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
+      if (AppEnv.isTest) {
+        if (!mounted) return;
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) =>
+                OrderPageDriverWidget(order: TestDriverSeed.orderRef),
+          ),
+        );
+        return;
+      }
 
       if(valueOrDefault(currentUserDocument?.onShift, false)) {
         toggleDriverPosTracking();
@@ -130,16 +142,18 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
 
     // Запуск/перезапуск резервного Firestore-листенера доп.заказов «по пути».
-    _activeOrderSub = queryOrderRecord(
-      queryBuilder: (q) => q
-          .where('selected_driver', isEqualTo: currentUserReference)
-          .where('status', whereIn: [
-        StatusOrder.spec_set.serialize(),
-        StatusOrder.place_pickup.serialize(),
-        StatusOrder.at_work.serialize(),
-      ]),
-      limit: 1,
-    ).listen(_syncExtraOrdersListener);
+    if (!AppEnv.isTest) {
+      _activeOrderSub = queryOrderRecord(
+        queryBuilder: (q) => q
+            .where('selected_driver', isEqualTo: currentUserReference)
+            .where('status', whereIn: [
+          StatusOrder.spec_set.serialize(),
+          StatusOrder.place_pickup.serialize(),
+          StatusOrder.at_work.serialize(),
+        ]),
+        limit: 1,
+      ).listen(_syncExtraOrdersListener);
+    }
   }
 
   StreamSubscription<List<OrderRecord>>? _activeOrderSub;
@@ -185,7 +199,8 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         body: Builder(
           builder: (context) {
-            if (valueOrDefault<bool>(currentUserDocument?.onShift, false)) {
+            if (AppEnv.isTest ||
+                valueOrDefault<bool>(currentUserDocument?.onShift, false)) {
               return Column(
                 mainAxisSize: MainAxisSize.max,
                 children: [
