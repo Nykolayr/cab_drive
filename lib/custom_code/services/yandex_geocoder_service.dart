@@ -1,5 +1,6 @@
-import 'dart:convert';
+import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '/custom_code/yandex/yandex_config.dart';
@@ -10,16 +11,80 @@ class YandexGeocodeResult {
     required this.lat,
     required this.lon,
     required this.text,
-    this.secondaryText = '',
+    this.country = '',
+    this.city = '',
+    this.province = '',
+    this.street = '',
+    this.house = '',
+    this.district = '',
+    this.kind = '',
   });
 
   final double lat;
   final double lon;
   final String text;
-  final String secondaryText;
+  final String country;
+  final String city;
+  final String province;
+  final String street;
+  final String house;
+  final String district;
+  final String kind;
 
   /// Google-совместимый order: lat,lng (не lon,lat Яндекса).
   String get placeId => '$lat,$lon';
+
+  String get localityLine {
+    final parts = <String>[];
+    if (country.isNotEmpty) parts.add(country);
+    final cityName = city.isNotEmpty ? city : province;
+    if (cityName.isNotEmpty && cityName != country) {
+      parts.add(cityName);
+    }
+    return parts.join(', ');
+  }
+
+  /// Город без страны: «Хамовники, Москва».
+  String get cityLine {
+    final parts = <String>[];
+    if (district.isNotEmpty) parts.add(district);
+    final cityName = city.isNotEmpty ? city : province;
+    if (cityName.isNotEmpty && cityName != district) {
+      parts.add(cityName);
+    }
+    return parts.join(', ');
+  }
+
+  String get streetLine {
+    final parts = <String>[];
+    if (street.isNotEmpty) parts.add(street);
+    if (house.isNotEmpty) parts.add(house);
+    if (parts.isNotEmpty) return parts.join(', ');
+    final loc = localityLine;
+    if (loc.isNotEmpty && text.startsWith(loc) && text.length > loc.length) {
+      final rest =
+          text.substring(loc.length).replaceFirst(RegExp(r'^,\s*'), '');
+      if (rest.isNotEmpty) return rest;
+    }
+    return '';
+  }
+
+  /// Как в Яндекс Такси: крупно улица/дом.
+  String get taxiTitle {
+    if (streetLine.isNotEmpty) return streetLine;
+    if (city.isNotEmpty) return city;
+    if (province.isNotEmpty) return province;
+    return text;
+  }
+
+  /// Как в Яндекс Такси: серым город (без страны).
+  String get taxiSubtitle {
+    if (streetLine.isNotEmpty) return cityLine;
+    if (province.isNotEmpty && province != city) return province;
+    return '';
+  }
+
+  String get secondaryText => city.isNotEmpty ? city : province;
 }
 
 /// Геокодер Яндекса (поиск и обратное геокодирование).
@@ -41,17 +106,22 @@ class YandexGeocoderService {
   static const _russiaBbox = '19.6,41.2~180,81.9';
   static const _moscowLon = 37.6173;
   static const _moscowLat = 55.7558;
+  static const _nearbyRadiusKm = 20.0;
+  static const _maxSuggestions = 10;
+  static const _earthRadiusKm = 6371.0;
 
   static Future<List<YandexGeocodeResult>> searchByAddress({
     required String query,
     String? location,
     String lang = 'ru_RU',
-    int results = 10,
+    int results = 20,
+    String types = 'geocode',
   }) async {
     if (!hasApiKey) return [];
     final q = query.trim();
     if (q.isEmpty) return [];
 
+    final forLocality = types.contains('locality');
     try {
       final bias = _parseBias(location);
       var list = await _geocode(
@@ -60,6 +130,8 @@ class YandexGeocoderService {
         results: results,
         lon: bias.lon,
         lat: bias.lat,
+        kind: forLocality ? 'locality' : null,
+        nearbyOnly: !forLocality,
       );
       if (list.isEmpty) {
         list = await _geocode(
@@ -68,10 +140,36 @@ class YandexGeocoderService {
           results: results,
           lon: bias.lon,
           lat: bias.lat,
+          kind: forLocality ? 'locality' : null,
+          nearbyOnly: !forLocality,
         );
       }
-      return list;
-    } catch (_) {
+      if (!forLocality && !_hasStreetLevel(list)) {
+        final streets = await _geocode(
+          geocode: q,
+          lang: lang,
+          results: results,
+          lon: bias.lon,
+          lat: bias.lat,
+          kind: 'street',
+          nearbyOnly: true,
+        );
+        list = _mergeUnique([...streets, ...list]);
+      }
+      list = _filterAndSort(list, forLocality: forLocality);
+      if (!forLocality) {
+        list = _withinRadius(list, bias.lat, bias.lon, _nearbyRadiusKm);
+      }
+      if (kDebugMode) {
+        debugPrint(
+          '[Geocoder] q="$q" types=$types n=${list.length}'
+          ' radiusKm=${forLocality ? "-" : _nearbyRadiusKm}'
+          ' first=${list.isEmpty ? "-" : "${list.first.taxiTitle} | ${list.first.taxiSubtitle}"}',
+        );
+      }
+      return list.take(_maxSuggestions).toList(growable: false);
+    } catch (e, st) {
+      debugPrint('[Geocoder] search failed: $e\n$st');
       return [];
     }
   }
@@ -82,20 +180,33 @@ class YandexGeocoderService {
     required int results,
     required double lon,
     required double lat,
+    String? kind,
+    bool nearbyOnly = false,
   }) async {
-    final uri = Uri.parse(_baseUrl).replace(queryParameters: {
+    final params = <String, String>{
       'apikey': _apiKey,
       'geocode': geocode,
       'format': 'json',
       'lang': lang,
       'results': '$results',
       'll': '$lon,$lat',
-      'spn': '2.5,2.5',
-      'bbox': _russiaBbox,
       'rspn': '1',
-    });
+    };
+    if (nearbyOnly) {
+      params['spn'] = _spanForRadiusKm(lat, _nearbyRadiusKm);
+    } else {
+      params['spn'] = '2.5,2.5';
+      params['bbox'] = _russiaBbox;
+    }
+    if (kind != null && kind.isNotEmpty) {
+      params['kind'] = kind;
+    }
+    final uri = Uri.parse(_baseUrl).replace(queryParameters: params);
     final response = await http.get(uri);
-    if (response.statusCode != 200) return [];
+    if (response.statusCode != 200) {
+      debugPrint('[Geocoder] HTTP ${response.statusCode}');
+      return [];
+    }
     return _parseMembers(
       jsonDecode(response.body) as Map<String, dynamic>,
       russiaOnly: true,
@@ -104,7 +215,7 @@ class YandexGeocoderService {
 
   /// Google `lat,lng`, `LatLng(lat: …, lng: …)` или Яндекс не используем.
   static ({double lat, double lon}) _parseBias(String? raw) {
-    final fallback = (lat: _moscowLat, lon: _moscowLon);
+    const fallback = (lat: _moscowLat, lon: _moscowLon);
     if (raw == null || raw.trim().isEmpty) return fallback;
 
     final named = RegExp(
@@ -130,6 +241,44 @@ class YandexGeocoderService {
     return lat >= 41 && lat <= 82 && lon >= 19 && lon <= 180;
   }
 
+  /// spn Яндекса: ширина/высота окна в градусах ≈ радиус.
+  static String _spanForRadiusKm(double lat, double radiusKm) {
+    const kmPerDegLat = 111.32;
+    final latSpan = (2 * radiusKm / kmPerDegLat).clamp(0.05, 2.0);
+    final cosLat = math.cos(lat * math.pi / 180).abs().clamp(0.2, 1.0);
+    final lonSpan = (2 * radiusKm / (kmPerDegLat * cosLat)).clamp(0.05, 4.0);
+    return '${lonSpan.toStringAsFixed(4)},${latSpan.toStringAsFixed(4)}';
+  }
+
+  static List<YandexGeocodeResult> _withinRadius(
+    List<YandexGeocodeResult> list,
+    double lat,
+    double lon,
+    double radiusKm,
+  ) {
+    return list
+        .where((r) => _distanceKm(lat, lon, r.lat, r.lon) <= radiusKm)
+        .toList();
+  }
+
+  static double _distanceKm(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
+    final dLat = _toRad(lat2 - lat1);
+    final dLon = _toRad(lon2 - lon1);
+    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(_toRad(lat1)) *
+            math.cos(_toRad(lat2)) *
+            math.sin(dLon / 2) *
+            math.sin(dLon / 2);
+    return 2 * _earthRadiusKm * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+  }
+
+  static double _toRad(double deg) => deg * math.pi / 180;
+
   static Future<YandexGeocodeResult?> reverseGeocode({
     required double lat,
     required double lon,
@@ -146,9 +295,11 @@ class YandexGeocoderService {
       });
       final response = await http.get(uri);
       if (response.statusCode != 200) return null;
-      final list = _parseMembers(jsonDecode(response.body) as Map<String, dynamic>);
+      final list =
+          _parseMembers(jsonDecode(response.body) as Map<String, dynamic>);
       return list.isEmpty ? null : list.first;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[Geocoder] reverse failed: $e');
       return null;
     }
   }
@@ -193,25 +344,88 @@ class YandexGeocoderService {
 
       final components =
           meta?['Address']?['Components'] as List<dynamic>? ?? const [];
-      var locality = '';
-      var area = '';
-      for (final c in components) {
-        final kind = (c as Map)['kind']?.toString();
-        final name = c['name']?.toString() ?? '';
-        if (kind == 'locality') locality = name;
-        if (kind == 'province' || kind == 'area') area = name;
-      }
+      final kind = meta?['kind']?.toString() ?? '';
 
       list.add(
         YandexGeocodeResult(
           lat: lat,
           lon: lon,
           text: text,
-          secondaryText: locality.isNotEmpty ? locality : area,
+          country: _component(components, 'country'),
+          city: _component(components, 'locality'),
+          province: _component(components, 'province'),
+          street: _component(components, 'street'),
+          house: _component(components, 'house'),
+          district: _component(components, 'district'),
+          kind: kind,
         ),
       );
     }
     return list;
+  }
+
+  static String _component(List<dynamic> components, String kind) {
+    for (final c in components) {
+      if ((c as Map)['kind']?.toString() == kind) {
+        return c['name']?.toString() ?? '';
+      }
+    }
+    return '';
+  }
+
+  static bool _hasStreetLevel(List<YandexGeocodeResult> list) {
+    return list.any((r) =>
+        r.kind == 'house' ||
+        r.kind == 'street' ||
+        r.street.isNotEmpty ||
+        r.house.isNotEmpty);
+  }
+
+  static List<YandexGeocodeResult> _mergeUnique(
+    List<YandexGeocodeResult> items,
+  ) {
+    final seen = <String>{};
+    final out = <YandexGeocodeResult>[];
+    for (final r in items) {
+      final key = '${r.placeId}|${r.text}';
+      if (seen.add(key)) out.add(r);
+    }
+    return out;
+  }
+
+  static List<YandexGeocodeResult> _filterAndSort(
+    List<YandexGeocodeResult> list, {
+    required bool forLocality,
+  }) {
+    final filtered = list.where((r) {
+      if (forLocality) {
+        return r.kind == 'locality' ||
+            r.kind == 'province' ||
+            r.city.isNotEmpty;
+      }
+      return r.kind != 'country';
+    }).toList();
+    filtered.sort((a, b) => _kindRank(a.kind).compareTo(_kindRank(b.kind)));
+    return filtered;
+  }
+
+  static int _kindRank(String kind) {
+    switch (kind) {
+      case 'house':
+        return 0;
+      case 'street':
+        return 1;
+      case 'district':
+      case 'metro':
+        return 2;
+      case 'locality':
+        return 3;
+      case 'area':
+      case 'province':
+        return 4;
+      default:
+        return 5;
+    }
   }
 
   /// JSON в формате, совместимом с парсерами Google Geocode в FF.
@@ -226,12 +440,24 @@ class YandexGeocoderService {
           },
           'address_components': [
             {
-              'long_name': r.secondaryText,
+              'long_name': r.city.isNotEmpty ? r.city : r.province,
               'types': ['locality'],
             },
             {
-              'long_name': r.secondaryText,
+              'long_name': r.city.isNotEmpty ? r.city : r.province,
+              'types': ['administrative_area_level_2'],
+            },
+            {
+              'long_name': r.province.isNotEmpty ? r.province : r.city,
               'types': ['administrative_area_level_1'],
+            },
+            {
+              'long_name': r.street,
+              'types': ['route'],
+            },
+            {
+              'long_name': r.house,
+              'types': ['street_number'],
             },
           ],
         },
@@ -240,18 +466,22 @@ class YandexGeocoderService {
   }
 
   static Map<String, dynamic> googleStyleAutocompleteBody(
-    List<YandexGeocodeResult> results,
-  ) {
+    List<YandexGeocodeResult> results, {
+    String types = 'geocode',
+  }) {
+    final forLocality = types.contains('locality');
     return {
       'predictions': results
           .map(
             (r) => {
               'place_id': r.placeId,
               'structured_formatting': {
-                'main_text': r.text.split(',').first.trim(),
-                'secondary_text': r.secondaryText.isNotEmpty
-                    ? r.secondaryText
-                    : r.text,
+                'main_text': forLocality
+                    ? (r.city.isNotEmpty ? r.city : r.taxiTitle)
+                    : r.taxiTitle,
+                'secondary_text': forLocality
+                    ? (r.country.isNotEmpty ? r.country : 'Россия')
+                    : r.taxiSubtitle,
               },
             },
           )

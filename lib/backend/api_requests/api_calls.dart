@@ -60,8 +60,12 @@ class AutocompleteCall {
       final results = await YandexGeocoderService.searchByAddress(
         query: input ?? '',
         location: location,
+        types: types ?? 'geocode',
       );
-      final body = YandexGeocoderService.googleStyleAutocompleteBody(results);
+      final body = YandexGeocoderService.googleStyleAutocompleteBody(
+        results,
+        types: types ?? 'geocode',
+      );
       return ApiCallResponse(
         body,
         {},

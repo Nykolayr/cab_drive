@@ -39,6 +39,20 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
 
   LatLng? currentUserLocationValue;
 
+  /// Закрывает шторку поиска, не снимая единственный экран go_router.
+  void _closeSearchSheet() {
+    if (!mounted) return;
+    final route = ModalRoute.of(context);
+    if (route is PopupRoute && _navigatorCanPopSafe()) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  bool _navigatorCanPopSafe() {
+    final navigator = Navigator.maybeOf(context);
+    return navigator != null && navigator.canPop();
+  }
+
   @override
   void setState(VoidCallback callback) {
     super.setState(callback);
@@ -599,7 +613,7 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                               final point = _model.currentPoint ?? 1;
                               final rootNavigator =
                                   Navigator.of(context, rootNavigator: true);
-                              rootNavigator.pop();
+                              _closeSearchSheet();
                               await rootNavigator.push(
                                 MaterialPageRoute(
                                   builder: (_) =>
@@ -843,8 +857,9 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                               ),
                                             );
                                             safeSetState(() {});
-                                            Navigator.pop(context);
-                                            context.read<OrdersBloc>().add(
+                                            final ordersBloc = context.read<OrdersBloc>();
+                                            _closeSearchSheet();
+                                            ordersBloc.add(
                                                 OrdersEvent.getPrices(
                                                     userLocation: LocationEntity(
                                                         lat: FFAppState().pointA
@@ -1320,8 +1335,9 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                             ),
                                           );
                                           FFAppState().update(() {});
-                                          Navigator.pop(context);
-                                          context.read<OrdersBloc>().add(
+                                          final ordersBloc = context.read<OrdersBloc>();
+                                          _closeSearchSheet();
+                                          ordersBloc.add(
                                               OrdersEvent.getPrices(
                                                   userLocation: LocationEntity(
                                                       lat: FFAppState().pointA
@@ -1517,8 +1533,9 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                             FFAppState().pointA = addressItem;
                                             FFAppState().update(() {});
 
-                                            Navigator.pop(context);
-                                            context.read<OrdersBloc>().add(
+                                            final ordersBloc = context.read<OrdersBloc>();
+                                            _closeSearchSheet();
+                                            ordersBloc.add(
                                                 OrdersEvent.getPrices(
                                                     userLocation: LocationEntity(
                                                         lat: FFAppState().pointA
@@ -1571,8 +1588,9 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                           FFAppState().pointB = addressItem;
                                           FFAppState().update(() {});
 
-                                          Navigator.pop(context);
-                                          context.read<OrdersBloc>().add(
+                                          final ordersBloc = context.read<OrdersBloc>();
+                                          _closeSearchSheet();
+                                          ordersBloc.add(
                                               OrdersEvent.getPrices(
                                                   userLocation: LocationEntity(
                                                       lat: FFAppState().pointA
