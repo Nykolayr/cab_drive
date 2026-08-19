@@ -94,6 +94,11 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>yandexnavi</string>
+		<string>yandexmaps</string>
+	</array>
 	<key>YandexMapsAPIKey</key>
 	<string>b5979b78-e513-40f3-9090-4929f3d65324</string>
 </dict>

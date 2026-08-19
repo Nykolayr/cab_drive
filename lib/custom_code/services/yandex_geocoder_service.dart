@@ -18,7 +18,8 @@ class YandexGeocodeResult {
   final String text;
   final String secondaryText;
 
-  String get placeId => '$lon,$lat';
+  /// Google-совместимый order: lat,lng (не lon,lat Яндекса).
+  String get placeId => '$lat,$lon';
 }
 
 /// Геокодер Яндекса (поиск и обратное геокодирование).
@@ -36,8 +37,14 @@ class YandexGeocoderService {
 
   static bool get hasApiKey => YandexConfig.hasGeocoderKey;
 
+  /// bbox России: Калининград … Чукотка (lon,lat~lon,lat).
+  static const _russiaBbox = '19.6,41.2~180,81.9';
+  static const _moscowLon = 37.6173;
+  static const _moscowLat = 55.7558;
+
   static Future<List<YandexGeocodeResult>> searchByAddress({
     required String query,
+    String? location,
     String lang = 'ru_RU',
     int results = 10,
   }) async {
@@ -46,19 +53,81 @@ class YandexGeocoderService {
     if (q.isEmpty) return [];
 
     try {
-      final uri = Uri.parse(_baseUrl).replace(queryParameters: {
-        'apikey': _apiKey,
-        'geocode': q,
-        'format': 'json',
-        'lang': lang,
-        'results': '$results',
-      });
-      final response = await http.get(uri);
-      if (response.statusCode != 200) return [];
-      return _parseMembers(jsonDecode(response.body) as Map<String, dynamic>);
+      final bias = _parseBias(location);
+      var list = await _geocode(
+        geocode: q,
+        lang: lang,
+        results: results,
+        lon: bias.lon,
+        lat: bias.lat,
+      );
+      if (list.isEmpty) {
+        list = await _geocode(
+          geocode: 'Россия, $q',
+          lang: lang,
+          results: results,
+          lon: bias.lon,
+          lat: bias.lat,
+        );
+      }
+      return list;
     } catch (_) {
       return [];
     }
+  }
+
+  static Future<List<YandexGeocodeResult>> _geocode({
+    required String geocode,
+    required String lang,
+    required int results,
+    required double lon,
+    required double lat,
+  }) async {
+    final uri = Uri.parse(_baseUrl).replace(queryParameters: {
+      'apikey': _apiKey,
+      'geocode': geocode,
+      'format': 'json',
+      'lang': lang,
+      'results': '$results',
+      'll': '$lon,$lat',
+      'spn': '2.5,2.5',
+      'bbox': _russiaBbox,
+      'rspn': '1',
+    });
+    final response = await http.get(uri);
+    if (response.statusCode != 200) return [];
+    return _parseMembers(
+      jsonDecode(response.body) as Map<String, dynamic>,
+      russiaOnly: true,
+    );
+  }
+
+  /// Google `lat,lng`, `LatLng(lat: …, lng: …)` или Яндекс не используем.
+  static ({double lat, double lon}) _parseBias(String? raw) {
+    final fallback = (lat: _moscowLat, lon: _moscowLon);
+    if (raw == null || raw.trim().isEmpty) return fallback;
+
+    final named = RegExp(
+      r'lat:\s*(-?\d+(?:\.\d+)?)[\s\S]*?lng:\s*(-?\d+(?:\.\d+)?)',
+    ).firstMatch(raw);
+    if (named != null) {
+      final lat = double.tryParse(named.group(1)!);
+      final lon = double.tryParse(named.group(2)!);
+      if (lat != null && lon != null && _isUsableBias(lat, lon)) {
+        return (lat: lat, lon: lon);
+      }
+    }
+
+    final pair = parseLatLngPair(raw);
+    if (pair != null && _isUsableBias(pair.latitude, pair.longitude)) {
+      return (lat: pair.latitude, lon: pair.longitude);
+    }
+    return fallback;
+  }
+
+  static bool _isUsableBias(double lat, double lon) {
+    if (lat.abs() < 0.01 && lon.abs() < 0.01) return false;
+    return lat >= 41 && lat <= 82 && lon >= 19 && lon <= 180;
   }
 
   static Future<YandexGeocodeResult?> reverseGeocode({
@@ -84,7 +153,10 @@ class YandexGeocoderService {
     }
   }
 
-  static List<YandexGeocodeResult> _parseMembers(Map<String, dynamic> data) {
+  static List<YandexGeocodeResult> _parseMembers(
+    Map<String, dynamic> data, {
+    bool russiaOnly = false,
+  }) {
     final members = data['response']?['GeoObjectCollection']?['featureMember']
         as List<dynamic>?;
     if (members == null || members.isEmpty) return [];
@@ -109,6 +181,16 @@ class YandexGeocoderService {
       final text = meta?['text']?.toString() ??
           meta?['Address']?['formatted']?.toString() ??
           '';
+      if (russiaOnly) {
+        final countryCode =
+            meta?['Address']?['country_code']?.toString().toUpperCase();
+        if (countryCode != null &&
+            countryCode.isNotEmpty &&
+            countryCode != 'RU') {
+          continue;
+        }
+      }
+
       final components =
           meta?['Address']?['Components'] as List<dynamic>? ?? const [];
       var locality = '';

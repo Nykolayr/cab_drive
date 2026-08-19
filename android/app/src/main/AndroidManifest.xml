@@ -73,4 +73,22 @@
             android:resource="@drawable/ic_launcher_foreground" />
 
     </application>
+
+    <!-- Android 11+: canLaunchUrl / open Yandex Navi & Maps -->
+    <queries>
+        <package android:name="ru.yandex.yandexnavi" />
+        <package android:name="ru.yandex.yandexmaps" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="yandexnavi" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="yandexmaps" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="market" />
+        </intent>
+    </queries>
 </manifest>

@@ -59,6 +59,7 @@ class AutocompleteCall {
     if (YandexGeocoderService.hasApiKey) {
       final results = await YandexGeocoderService.searchByAddress(
         query: input ?? '',
+        location: location,
       );
       final body = YandexGeocoderService.googleStyleAutocompleteBody(results);
       return ApiCallResponse(
