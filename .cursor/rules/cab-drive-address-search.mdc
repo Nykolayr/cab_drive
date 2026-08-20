@@ -1,0 +1,56 @@
+---
+description: Выбор адреса Cab Drive — НЕ ЛОМАТЬ (список + координаты + шторка)
+alwaysApply: true
+---
+
+# Выбор адреса (ЖЁСТКО — НЕ ЛОМАТЬ)
+
+Эта схема уже ломалась много раз. Менять только точечно и с ручным прогоном A→B.
+
+## Симптомы регресса
+
+1. Тап по подсказке — в «Откуда»/«Куда» ничего / только текст без точки.
+2. В списке сёла, реки, площади вместо **улица + дом**.
+3. После выбора — чёрный экран / с нуля (роль, FCM.init).
+4. Выбрали одну точку — **не** прыгает на пустое поле.
+
+## Канон списка подсказок + координат
+
+| Шаг | Что | Где |
+|-----|-----|-----|
+| Список UI | **HTTP Geosuggest** `types=street,house` | `YandexGeocoderService._suggest` |
+| Координаты | **MapKit Suggest center** (только street/house) приклеить к HTTP-пунктам / в `placeId` как `lat,lng` | `_attachMapKitCenters` / `placeId` |
+| Тап | **только** `AddressPlaceSelection.resolve` | `address_place_selection.dart` |
+| Закрытие | **только** `safePopModal` | `safe_modal_pop.dart` |
+
+**Почему так:** HTTP Geocoder API у ключа часто даёт **403**; HTTP Suggest **не** отдаёт lat/lng. Сырой MapKit Suggest без фильтра — сёла/реки (уже ломали UX).
+
+## MapKit full (обязательно)
+
+- Android: `yandexMapkit.variant=full` в `android/gradle.properties`
+- iOS: `ENV['YANDEX_MAPKIT_VARIANT'] = 'full'` в `ios/Podfile`
+- Без **full** нет каналов `yandex_suggest` / `yandex_search` → `MissingPluginException`, координат нет.
+
+## UX выбора (не ломать)
+
+1. Выбрали **Откуда**, **Куда** пусто → фокус на «Куда», шторку **не** закрывать.
+2. Выбрали **Куда**, **Откуда** пусто → фокус на «Откуда», шторку **не** закрывать.
+3. Оба с `latlng` → закрыть шторку (`safePopModal` only).
+
+Критерий «заполнен»: `FFAppState().pointA/B.latlng != null` (не просто текст).
+
+UI: `searh_address_widget` (A и B), `karta_widget` (A/B/C) — править **все** пути в одном diff.
+
+## Запрещено
+
+- Ставить **MapKit Suggest** основным списком UI без фильтра street/house.
+- Считать HTTP Suggest «с координатами» — их там нет.
+- Слать яндекс `uri` / русский текст в **Google** `place_id` (ложный 400).
+- Ветка `needsHouseNumber` / «улица без дома → только текст и return».
+- Голый `Navigator.pop` на шторке поиска.
+- Трогать `MainActivity` / `CabDriveApplication` / engine «заодно» (см. `cab-drive-do-not-touch.mdc`).
+- Убирать `yandexMapkit.variant=full` / iOS `YANDEX_MAPKIT_VARIANT=full`.
+
+## Перед сдачей
+
+`scripts/verify_handoff.ps1` + ручной прогон: тап с домом → точка с latlng → прыжок на пустое → оба → шторка закрылась.

@@ -37,6 +37,39 @@ if (Select-String -Path "lib\driver\main_driver\main_driver_widget.dart" -Patter
   Write-Error "main_driver still blocks build on null location (white screen risk)."
 }
 
+Write-Host "==> 2b/4 address selection guards"
+$addrFiles = @(
+  "lib\custom_code\services\address_place_selection.dart",
+  "lib\custom_code\services\safe_modal_pop.dart",
+  "lib\custom_code\services\yandex_geocoder_service.dart",
+  "lib\customer\create_order\searh_address\searh_address_widget.dart",
+  "lib\customer\create_order\karta\karta_widget.dart"
+)
+foreach ($f in $addrFiles) {
+  if (-not (Test-Path $f)) { throw "Missing $f" }
+}
+if (-not (Select-String -Path "android\gradle.properties" -Pattern "yandexMapkit\.variant\s*=\s*full" -Quiet)) {
+  throw "android/gradle.properties: yandexMapkit.variant=full required (Suggest/Search channels)"
+}
+if (-not (Select-String -Path "ios\Podfile" -Pattern "YANDEX_MAPKIT_VARIANT.*=.*full" -Quiet)) {
+  throw "ios/Podfile: YANDEX_MAPKIT_VARIANT=full required"
+}
+if (-not (Select-String -Path "lib\custom_code\services\yandex_geocoder_service.dart" -Pattern "_attachMapKitCenters|_suggestMapKit" -Quiet)) {
+  throw "yandex_geocoder_service: MapKit center attach / suggest required"
+}
+if (Select-String -Path "lib\customer\create_order\searh_address\searh_address_widget.dart","lib\customer\create_order\karta\karta_widget.dart" -Pattern "needsHouseNumber" -Quiet) {
+  throw "needsHouseNumber still referenced in address UI — tap looks like no-op"
+}
+if (-not (Select-String -Path "lib\customer\create_order\searh_address\searh_address_widget.dart" -Pattern "AddressPlaceSelection.resolve" -Quiet)) {
+  throw "searh_address must use AddressPlaceSelection.resolve"
+}
+if (-not (Select-String -Path "lib\customer\create_order\searh_address\searh_address_widget.dart" -Pattern "safePopModal" -Quiet)) {
+  throw "searh_address must close via safePopModal"
+}
+if (Select-String -Path "lib\customer\create_order\searh_address\searh_address_widget.dart" -Pattern "Navigator\.pop\(context\)" -Quiet) {
+  throw "searh_address: bare Navigator.pop(context) forbidden — use safePopModal"
+}
+
 Write-Host "==> 3/4 flutter analyze (errors only)"
 $prevEap = $ErrorActionPreference
 $ErrorActionPreference = 'Continue'

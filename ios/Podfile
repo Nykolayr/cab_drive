@@ -1,6 +1,9 @@
 # Uncomment this line to define a global platform for your project
 platform :ios, '14.0.0'
 
+# Suggest/Search с координатами — full YandexMapsMobile (см. yandex_mapkit.podspec).
+ENV['YANDEX_MAPKIT_VARIANT'] = 'full'
+
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 

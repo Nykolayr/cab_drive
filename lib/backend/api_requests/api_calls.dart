@@ -224,10 +224,10 @@ class GeocodePlaceIDCall {
         final body = YandexGeocoderService.googleStyleGeocodeBody(result);
         return ApiCallResponse(body, {}, 200);
       }
-      // Suggest uri / яндекс place_id нельзя слать в Google — пустой ответ.
-      if (YandexGeocoderService.isSuggestUri(placeId)) {
-        return ApiCallResponse({'results': <dynamic>[]}, {}, 404);
-      }
+      // Не слать яндекс uri / русский текст в Google place_id — это даёт
+      // ложный HTTP 400 и маскирует реальный 403 Geocoder.
+      final status = YandexGeocoderService.lastResolveHttpStatus ?? 404;
+      return ApiCallResponse({'results': <dynamic>[]}, {}, status);
     }
 
     return ApiManager.instance.makeApiCall(

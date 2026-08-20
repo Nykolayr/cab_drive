@@ -347,28 +347,16 @@ class _KartaWidgetState extends State<KartaWidget> {
                               placeId: selectedPlaceId,
                               mainText: selectedMain,
                             );
-                            if (!resolved.ok) {
-                              safeSetState(() {});
-                              return;
-                            }
-
-                            if (resolved.needsHouseNumber) {
-                              debugPrint(
-                                '[Search.$tag] needHouse → keep focus',
-                              );
+                            if (resolved.addressLabel.isNotEmpty) {
                               safeSetState(() {
                                 _model.pointTextController?.text =
-                                    '${resolved.addressLabel} ';
-                                _model.pointFocusNode?.requestFocus();
-                                WidgetsBinding.instance
-                                    .addPostFrameCallback((_) {
-                                  _model.pointTextController?.selection =
-                                      TextSelection.collapsed(
-                                    offset: _model
-                                        .pointTextController!.text.length,
-                                  );
-                                });
+                                    resolved.addressLabel;
                               });
+                            }
+                            if (!resolved.ok) {
+                              debugPrint(
+                                '[Search.$tag] FAIL — label shown, point not set',
+                              );
                               return;
                             }
 
@@ -376,10 +364,6 @@ class _KartaWidgetState extends State<KartaWidget> {
                             debugPrint(
                               '[Search.$tag] apply label="${resolved.addressLabel}"',
                             );
-                            safeSetState(() {
-                              _model.pointTextController?.text =
-                                  resolved.addressLabel;
-                            });
 
                             if (widget.point == 'A') {
                               FFAppState().pointA = point;

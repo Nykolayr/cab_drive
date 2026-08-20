@@ -47,6 +47,47 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
     safePopModal(context, tag: 'Search.close');
   }
 
+  bool get _pointAFilled => FFAppState().pointA.latlng != null;
+
+  bool get _pointBFilled => FFAppState().pointB.latlng != null;
+
+  /// После выбора одной точки — на пустую вторую (очистить черновик, фокус).
+  void _focusEmptyPointB() {
+    debugPrint('[Search] jump → empty B');
+    safeSetState(() {
+      _model.currentPoint = 2;
+      if (!_pointBFilled) {
+        _model.pointBTextController?.text = '';
+        _model.apiResult1veB = null;
+      }
+      _model.pointAFocusNode?.unfocus();
+      _model.pointBFocusNode?.requestFocus();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _model.pointBTextController?.selection =
+            const TextSelection.collapsed(offset: 0);
+      });
+    });
+  }
+
+  void _focusEmptyPointA() {
+    debugPrint('[Search] jump → empty A');
+    safeSetState(() {
+      _model.currentPoint = 1;
+      if (!_pointAFilled) {
+        _model.pointATextController?.text = '';
+        _model.apiResult1veA = null;
+      }
+      _model.pointBFocusNode?.unfocus();
+      _model.pointAFocusNode?.requestFocus();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _model.pointATextController?.selection =
+            const TextSelection.collapsed(offset: 0);
+      });
+    });
+  }
+
   @override
   void setState(VoidCallback callback) {
     super.setState(callback);
@@ -715,32 +756,17 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                           placeId: selectedPlaceId,
                                           mainText: selectedMain,
                                         );
-                                        if (!resolved.ok) {
-                                          safeSetState(() {});
-                                          return;
-                                        }
-
-                                        if (resolved.needsHouseNumber) {
-                                          debugPrint(
-                                            '[Search.A] needHouse → keep focus on A',
-                                          );
+                                        // Всегда пишем текст в поле — даже при fail.
+                                        if (resolved.addressLabel.isNotEmpty) {
                                           safeSetState(() {
                                             _model.pointATextController?.text =
-                                                '${resolved.addressLabel} ';
-                                            _model.pointAFocusNode
-                                                ?.requestFocus();
-                                            WidgetsBinding.instance
-                                                .addPostFrameCallback((_) {
-                                              _model.pointATextController
-                                                  ?.selection =
-                                                  TextSelection.collapsed(
-                                                offset: _model
-                                                    .pointATextController!
-                                                    .text
-                                                    .length,
-                                              );
-                                            });
+                                                resolved.addressLabel;
                                           });
+                                        }
+                                        if (!resolved.ok) {
+                                          debugPrint(
+                                            '[Search.A] FAIL — label shown, point not set',
+                                          );
                                           return;
                                         }
 
@@ -748,38 +774,31 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                         debugPrint(
                                           '[Search.A] apply label="${resolved.addressLabel}"',
                                         );
-                                        safeSetState(() {
-                                          _model.pointATextController?.text =
-                                              resolved.addressLabel;
-                                        });
 
-                                        final bFilled = (_model
-                                                    .pointBTextController
-                                                    ?.text ??
-                                                '')
-                                            .trim()
-                                            .isNotEmpty;
                                         if (!mounted) return;
                                         final ordersBloc =
                                             context.read<OrdersBloc>();
-
-                                        if (bFilled) {
-                                          // Сначала шторка, потом state/цены —
-                                          // не трогаем главный экран и карту под шторкой.
-                                          _closeSearchSheet();
-                                          FFAppState().pointA = point;
-                                          FFAppState().update(() {});
-                                          final latlng = point.latlng;
-                                          if (latlng != null) {
-                                            ordersBloc.add(
-                                              OrdersEvent.getEtas(
-                                                userLocation: LocationEntity(
-                                                  lat: latlng.latitude,
-                                                  lng: latlng.longitude,
-                                                ),
+                                        FFAppState().pointA = point;
+                                        FFAppState().update(() {});
+                                        final latlng = point.latlng;
+                                        if (latlng != null) {
+                                          ordersBloc.add(
+                                            OrdersEvent.getEtas(
+                                              userLocation: LocationEntity(
+                                                lat: latlng.latitude,
+                                                lng: latlng.longitude,
                                               ),
-                                            );
-                                          }
+                                            ),
+                                          );
+                                        }
+
+                                        // Куда уже выбран → закрыть шторку.
+                                        // Иначе перескочить на пустое «Куда».
+                                        if (_pointBFilled) {
+                                          debugPrint(
+                                            '[Search.A] both filled → close sheet',
+                                          );
+                                          _closeSearchSheet();
                                           if (FFAppState().pointA.latlng !=
                                                   null &&
                                               FFAppState().pointB.latlng !=
@@ -828,33 +847,7 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                           return;
                                         }
 
-                                        // B пустой — остаёмся в шторке, главный экран на месте.
-                                        FFAppState().pointA = point;
-                                        FFAppState().update(() {});
-                                        final latlng = point.latlng;
-                                        if (latlng != null) {
-                                          ordersBloc.add(
-                                            OrdersEvent.getEtas(
-                                              userLocation: LocationEntity(
-                                                lat: latlng.latitude,
-                                                lng: latlng.longitude,
-                                              ),
-                                            ),
-                                          );
-                                        }
-                                        safeSetState(() {
-                                          _model.pointBTextController?.text =
-                                              '';
-                                          _model.pointBFocusNode
-                                              ?.requestFocus();
-                                          WidgetsBinding.instance
-                                              .addPostFrameCallback((_) {
-                                            _model.pointBTextController
-                                                ?.selection =
-                                                const TextSelection.collapsed(
-                                                    offset: 0);
-                                          });
-                                        });
+                                        _focusEmptyPointB();
                                       },
                                       child: Container(
                                         decoration: BoxDecoration(),
@@ -1040,32 +1033,16 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                           placeId: selectedPlaceId,
                                           mainText: selectedMain,
                                         );
-                                        if (!resolved.ok) {
-                                          safeSetState(() {});
-                                          return;
-                                        }
-
-                                        if (resolved.needsHouseNumber) {
-                                          debugPrint(
-                                            '[Search.B] needHouse → keep focus on B',
-                                          );
+                                        if (resolved.addressLabel.isNotEmpty) {
                                           safeSetState(() {
                                             _model.pointBTextController?.text =
-                                                '${resolved.addressLabel} ';
-                                            _model.pointBFocusNode
-                                                ?.requestFocus();
-                                            WidgetsBinding.instance
-                                                .addPostFrameCallback((_) {
-                                              _model.pointBTextController
-                                                  ?.selection =
-                                                  TextSelection.collapsed(
-                                                offset: _model
-                                                    .pointBTextController!
-                                                    .text
-                                                    .length,
-                                              );
-                                            });
+                                                resolved.addressLabel;
                                           });
+                                        }
+                                        if (!resolved.ok) {
+                                          debugPrint(
+                                            '[Search.B] FAIL — label shown, point not set',
+                                          );
                                           return;
                                         }
 
@@ -1073,63 +1050,69 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                         debugPrint(
                                           '[Search.B] apply label="${resolved.addressLabel}"',
                                         );
-                                        safeSetState(() {
-                                          _model.pointBTextController?.text =
-                                              resolved.addressLabel;
-                                        });
 
                                         if (!mounted) return;
                                         final ordersBloc =
                                             context.read<OrdersBloc>();
-                                        // Сначала только шторка — главный экран не pop.
-                                        _closeSearchSheet();
                                         FFAppState().pointB = point;
                                         FFAppState().update(() {});
-                                        if (FFAppState().pointA.latlng !=
-                                                null &&
-                                            FFAppState().pointB.latlng !=
-                                                null) {
-                                          ordersBloc.add(
-                                            OrdersEvent.getPrices(
-                                              userLocation: LocationEntity(
-                                                lat: FFAppState()
-                                                    .pointA
-                                                    .latlng!
-                                                    .latitude,
-                                                lng: FFAppState()
-                                                    .pointA
-                                                    .latlng!
-                                                    .longitude,
-                                              ),
-                                              destLocation: LocationEntity(
-                                                lat: FFAppState()
-                                                    .pointB
-                                                    .latlng!
-                                                    .latitude,
-                                                lng: FFAppState()
-                                                    .pointB
-                                                    .latlng!
-                                                    .longitude,
-                                              ),
-                                              intermediate: FFAppState()
-                                                      .pointC
-                                                      .address
-                                                      .isNotEmpty
-                                                  ? LocationEntity(
-                                                      lat: FFAppState()
-                                                          .pointC
-                                                          .latlng!
-                                                          .latitude,
-                                                      lng: FFAppState()
-                                                          .pointC
-                                                          .latlng!
-                                                          .longitude,
-                                                    )
-                                                  : null,
-                                              movers: FFAppState().movers,
-                                            ),
+
+                                        // Откуда уже выбран → закрыть шторку.
+                                        // Иначе перескочить на пустое «Откуда».
+                                        if (_pointAFilled) {
+                                          debugPrint(
+                                            '[Search.B] both filled → close sheet',
                                           );
+                                          _closeSearchSheet();
+                                          if (FFAppState().pointA.latlng !=
+                                                  null &&
+                                              FFAppState().pointB.latlng !=
+                                                  null) {
+                                            ordersBloc.add(
+                                              OrdersEvent.getPrices(
+                                                userLocation: LocationEntity(
+                                                  lat: FFAppState()
+                                                      .pointA
+                                                      .latlng!
+                                                      .latitude,
+                                                  lng: FFAppState()
+                                                      .pointA
+                                                      .latlng!
+                                                      .longitude,
+                                                ),
+                                                destLocation: LocationEntity(
+                                                  lat: FFAppState()
+                                                      .pointB
+                                                      .latlng!
+                                                      .latitude,
+                                                  lng: FFAppState()
+                                                      .pointB
+                                                      .latlng!
+                                                      .longitude,
+                                                ),
+                                                intermediate: FFAppState()
+                                                        .pointC
+                                                        .address
+                                                        .isNotEmpty
+                                                    ? LocationEntity(
+                                                        lat: FFAppState()
+                                                            .pointC
+                                                            .latlng!
+                                                            .latitude,
+                                                        lng: FFAppState()
+                                                            .pointC
+                                                            .latlng!
+                                                            .longitude,
+                                                      )
+                                                    : null,
+                                                movers: FFAppState().movers,
+                                              ),
+                                            );
+                                          }
+                                          return;
                                         }
+
+                                        _focusEmptyPointA();
                                       },
                                       child: Container(
                                         decoration: BoxDecoration(),
@@ -1291,99 +1274,134 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                       hoverColor: Colors.transparent,
                                       highlightColor: Colors.transparent,
                                       onTap: () async {
-                                        var _shouldSetState = false;
                                         if (_model.currentPoint == 1) {
-                                          if (_model.pointBTextController
-                                              .text !=
-                                              null &&
-                                              _model.pointBTextController
-                                                  .text !=
-                                                  '') {
-                                            context.read<OrdersBloc>().add(OrdersEvent.getEtas(userLocation: LocationEntity(lat: addressItem.latlng!.latitude, lng: addressItem.latlng!.longitude)));
-
-                                            FFAppState().pointA = addressItem;
-                                            FFAppState().update(() {});
-
-                                            final ordersBloc = context.read<OrdersBloc>();
+                                          FFAppState().pointA = addressItem;
+                                          FFAppState().update(() {});
+                                          safeSetState(() {
+                                            _model.pointATextController?.text =
+                                                addressItem.address;
+                                          });
+                                          if (!mounted) return;
+                                          context.read<OrdersBloc>().add(
+                                                OrdersEvent.getEtas(
+                                                  userLocation: LocationEntity(
+                                                    lat: addressItem
+                                                        .latlng!.latitude,
+                                                    lng: addressItem
+                                                        .latlng!.longitude,
+                                                  ),
+                                                ),
+                                              );
+                                          if (_pointBFilled) {
+                                            debugPrint(
+                                              '[Search.saved.A] both filled → close',
+                                            );
+                                            final ordersBloc =
+                                                context.read<OrdersBloc>();
                                             _closeSearchSheet();
                                             ordersBloc.add(
-                                                OrdersEvent.getPrices(
-                                                    userLocation: LocationEntity(
-                                                        lat: FFAppState().pointA
-                                                            .latlng!.latitude,
-                                                        lng: FFAppState().pointA
-                                                            .latlng!.longitude),
-                                                    destLocation: LocationEntity(
-                                                        lat: FFAppState().pointB
-                                                            .latlng!.latitude,
-                                                        lng: FFAppState().pointB
-                                                            .latlng!.longitude),
-                                                    intermediate: FFAppState().pointC.address.isNotEmpty ? LocationEntity(
-                                                        lat: FFAppState().pointC
-                                                            .latlng!.latitude,
-                                                        lng: FFAppState().pointC
-                                                            .latlng!.longitude) : null,
-                                                    movers: FFAppState().movers));
-                                            if (_shouldSetState)
-                                              safeSetState(() {});
-                                            return;
-                                          } else {
-                                            context.read<OrdersBloc>().add(OrdersEvent.getEtas(userLocation: LocationEntity(lat: addressItem.latlng!.latitude, lng: addressItem.latlng!.longitude)));
-
-                                            FFAppState().pointA = addressItem;
-                                            FFAppState().update(() {});
-                                            safeSetState(() {
-                                              _model.pointATextController
-                                                  ?.text =
-                                                  addressItem.address;
-                                            });
-                                            safeSetState(() {
-                                              _model.pointBTextController
-                                                  ?.text =
-                                              '';
-                                              _model.pointBFocusNode
-                                                  ?.requestFocus();
-                                              WidgetsBinding.instance
-                                                  .addPostFrameCallback((_) {
-                                                _model.pointBTextController
-                                                    ?.selection =
-                                                const TextSelection.collapsed(
-                                                    offset: 0);
-                                              });
-                                            });
-                                            if (_shouldSetState)
-                                              safeSetState(() {});
+                                              OrdersEvent.getPrices(
+                                                userLocation: LocationEntity(
+                                                  lat: FFAppState()
+                                                      .pointA
+                                                      .latlng!
+                                                      .latitude,
+                                                  lng: FFAppState()
+                                                      .pointA
+                                                      .latlng!
+                                                      .longitude,
+                                                ),
+                                                destLocation: LocationEntity(
+                                                  lat: FFAppState()
+                                                      .pointB
+                                                      .latlng!
+                                                      .latitude,
+                                                  lng: FFAppState()
+                                                      .pointB
+                                                      .latlng!
+                                                      .longitude,
+                                                ),
+                                                intermediate: FFAppState()
+                                                        .pointC
+                                                        .address
+                                                        .isNotEmpty
+                                                    ? LocationEntity(
+                                                        lat: FFAppState()
+                                                            .pointC
+                                                            .latlng!
+                                                            .latitude,
+                                                        lng: FFAppState()
+                                                            .pointC
+                                                            .latlng!
+                                                            .longitude,
+                                                      )
+                                                    : null,
+                                                movers: FFAppState().movers,
+                                              ),
+                                            );
                                             return;
                                           }
-                                        } else {
-                                          FFAppState().pointB = addressItem;
-                                          FFAppState().update(() {});
-
-                                          final ordersBloc = context.read<OrdersBloc>();
-                                          _closeSearchSheet();
-                                          ordersBloc.add(
-                                              OrdersEvent.getPrices(
-                                                  userLocation: LocationEntity(
-                                                      lat: FFAppState().pointA
-                                                          .latlng!.latitude,
-                                                      lng: FFAppState().pointA
-                                                          .latlng!.longitude),
-                                                  destLocation: LocationEntity(
-                                                      lat: FFAppState().pointB
-                                                          .latlng!.latitude,
-                                                      lng: FFAppState().pointB
-                                                          .latlng!.longitude),
-                                                  intermediate: FFAppState().pointC.address.isNotEmpty ? LocationEntity(
-                                                      lat: FFAppState().pointC
-                                                          .latlng!.latitude,
-                                                      lng: FFAppState().pointC
-                                                          .latlng!.longitude) : null,
-                                                  movers: FFAppState().movers));
-                                          if (_shouldSetState) safeSetState(() {});
+                                          _focusEmptyPointB();
                                           return;
                                         }
 
-                                        if (_shouldSetState) safeSetState(() {});
+                                        FFAppState().pointB = addressItem;
+                                        FFAppState().update(() {});
+                                        safeSetState(() {
+                                          _model.pointBTextController?.text =
+                                              addressItem.address;
+                                        });
+                                        if (!mounted) return;
+                                        if (_pointAFilled) {
+                                          debugPrint(
+                                            '[Search.saved.B] both filled → close',
+                                          );
+                                          final ordersBloc =
+                                              context.read<OrdersBloc>();
+                                          _closeSearchSheet();
+                                          ordersBloc.add(
+                                            OrdersEvent.getPrices(
+                                              userLocation: LocationEntity(
+                                                lat: FFAppState()
+                                                    .pointA
+                                                    .latlng!
+                                                    .latitude,
+                                                lng: FFAppState()
+                                                    .pointA
+                                                    .latlng!
+                                                    .longitude,
+                                              ),
+                                              destLocation: LocationEntity(
+                                                lat: FFAppState()
+                                                    .pointB
+                                                    .latlng!
+                                                    .latitude,
+                                                lng: FFAppState()
+                                                    .pointB
+                                                    .latlng!
+                                                    .longitude,
+                                              ),
+                                              intermediate: FFAppState()
+                                                      .pointC
+                                                      .address
+                                                      .isNotEmpty
+                                                  ? LocationEntity(
+                                                      lat: FFAppState()
+                                                          .pointC
+                                                          .latlng!
+                                                          .latitude,
+                                                      lng: FFAppState()
+                                                          .pointC
+                                                          .latlng!
+                                                          .longitude,
+                                                    )
+                                                  : null,
+                                              movers: FFAppState().movers,
+                                            ),
+                                          );
+                                          return;
+                                        }
+                                        _focusEmptyPointA();
                                       },
                                       child: Container(
                                         decoration: BoxDecoration(),

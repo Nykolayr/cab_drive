@@ -4,12 +4,13 @@ import '/backend/api_requests/api_calls.dart';
 import '/backend/schema/structs/point_struct.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 
-/// Единый резолв выбора адреса (Suggest uri → координаты + подпись).
-/// Использовать во всех экранах с AutocompleteCall / GeocodePlaceIDCall.
+/// Результат тапа по подсказке адреса.
+///
+/// REGRESSION GUARD: тап по пункту списка ВСЕГДА либо `ok`+координаты+label,
+/// либо явный fail. Запрещено оставлять «тихий» return без записи в поле.
 class ResolvedPlaceSelection {
   const ResolvedPlaceSelection({
     required this.ok,
-    required this.needsHouseNumber,
     required this.addressLabel,
     this.street,
     this.number,
@@ -22,8 +23,6 @@ class ResolvedPlaceSelection {
   });
 
   final bool ok;
-  /// Улица без дома — оставить фокус в поле и дописать номер.
-  final bool needsHouseNumber;
   final String addressLabel;
   final String? street;
   final String? number;
@@ -44,14 +43,11 @@ class ResolvedPlaceSelection {
       region: region,
     );
   }
-
-  static const fail = ResolvedPlaceSelection(
-    ok: false,
-    needsHouseNumber: false,
-    addressLabel: '',
-  );
 }
 
+/// Единый резолв выбора адреса для A / B / karta.
+///
+/// Не дублировать логику в виджетах. Не возвращать «needHouse» — тап = выбор.
 class AddressPlaceSelection {
   AddressPlaceSelection._();
 
@@ -68,56 +64,77 @@ class AddressPlaceSelection {
 
     if (id.isEmpty && main.isEmpty) {
       debugPrint('[Search.$fieldTag] FAIL empty placeId+main');
-      return ResolvedPlaceSelection.fail;
+      return const ResolvedPlaceSelection(ok: false, addressLabel: '');
     }
 
     final response = await GeocodePlaceIDCall.call(
       placeId: id.isNotEmpty ? id : main,
     );
-    final body = response.jsonBody ?? '';
-    final status = response.statusCode;
-    final lat = GeocodePlaceIDCall.lat(body);
-    final lng = GeocodePlaceIDCall.lng(body);
-    final street = GeocodePlaceIDCall.street(body);
-    final number = GeocodePlaceIDCall.number(body);
-    final address = GeocodePlaceIDCall.address(body);
-    final city = GeocodePlaceIDCall.areal2(body) ?? GeocodePlaceIDCall.city(body);
-    final region = GeocodePlaceIDCall.areal(body);
+    var body = response.jsonBody ?? '';
+    var status = response.statusCode;
+    var lat = GeocodePlaceIDCall.lat(body);
+    var lng = GeocodePlaceIDCall.lng(body);
+    var street = GeocodePlaceIDCall.street(body);
+    var number = GeocodePlaceIDCall.number(body);
+    var address = GeocodePlaceIDCall.address(body);
+    var city = GeocodePlaceIDCall.areal2(body) ?? GeocodePlaceIDCall.city(body);
+    var region = GeocodePlaceIDCall.areal(body);
 
     debugPrint(
       '[Search.$fieldTag] http=$status street="$street" number="$number" '
       'lat=$lat lng=$lng addr="${_short(address ?? '')}"',
     );
 
+    if ((lat == null || lng == null) &&
+        main.isNotEmpty &&
+        id.isNotEmpty &&
+        id != main) {
+      debugPrint('[Search.$fieldTag] no coords — retry mainText');
+      final retry = await GeocodePlaceIDCall.call(placeId: main);
+      body = retry.jsonBody ?? '';
+      status = retry.statusCode;
+      lat = GeocodePlaceIDCall.lat(body);
+      lng = GeocodePlaceIDCall.lng(body);
+      street = GeocodePlaceIDCall.street(body);
+      number = GeocodePlaceIDCall.number(body);
+      address = GeocodePlaceIDCall.address(body);
+      city = GeocodePlaceIDCall.areal2(body) ?? GeocodePlaceIDCall.city(body);
+      region = GeocodePlaceIDCall.areal(body);
+      debugPrint(
+        '[Search.$fieldTag] retry http=$status lat=$lat lng=$lng',
+      );
+    }
+
     if (lat == null || lng == null) {
-      debugPrint('[Search.$fieldTag] FAIL no coords — field text NOT updated');
-      return ResolvedPlaceSelection.fail;
+      // Даже при fail отдаём текст подсказки — UI обязан записать его в поле.
+      debugPrint(
+        '[Search.$fieldTag] FAIL no coords — UI must still show main="$main"',
+      );
+      return ResolvedPlaceSelection(
+        ok: false,
+        addressLabel: main.isNotEmpty ? main : (address ?? ''),
+      );
     }
 
     final hasNumber = number != null && number.isNotEmpty;
     final hasStreet = street != null && street.isNotEmpty;
-    final label = hasNumber && hasStreet
-        ? '$street, $number'
-        : (hasStreet
-            ? street!
-            : (address?.isNotEmpty == true
-                ? address!
-                : (main.isNotEmpty ? main : '')));
+    // Как в списке: сначала то, что видел пользователь (main).
+    final label = main.isNotEmpty
+        ? main
+        : (hasNumber && hasStreet
+            ? '$street, $number'
+            : (hasStreet
+                ? street!
+                : (address?.isNotEmpty == true ? address! : '')));
 
     if (label.isEmpty) {
       debugPrint('[Search.$fieldTag] FAIL empty label');
-      return ResolvedPlaceSelection.fail;
+      return const ResolvedPlaceSelection(ok: false, addressLabel: '');
     }
 
-    final needsHouse = !hasNumber;
-    debugPrint(
-      '[Search.$fieldTag] OK branch=${needsHouse ? "needHouse" : "complete"} '
-      'label="$label"',
-    );
-
+    debugPrint('[Search.$fieldTag] OK apply label="$label"');
     return ResolvedPlaceSelection(
       ok: true,
-      needsHouseNumber: needsHouse,
       addressLabel: label,
       street: street,
       number: number,

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:yandex_mapkit/yandex_mapkit.dart';
 
 import '/custom_code/yandex/yandex_config.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -36,14 +37,19 @@ class YandexGeocodeResult {
   final String titleOverride;
   final String subtitleOverride;
 
-  /// place_id: uri Suggest + текст/дом для резолва, либо lat,lng / текст.
-  /// Формат Suggest: `uri\\ttext\\thouse\\tstreet`
+  /// place_id: uri Suggest + метаданные для резолва, либо lat,lng / текст.
+  /// Разделитель — ASCII Unit Separator (не ломается в JSON/логах как таб).
+  static const placeIdSep = '\u001f';
+
   String get placeId {
-    if (uri.isNotEmpty) {
-      return '$uri\t$text\t$house\t$street';
-    }
+    // Координаты из MapKit Suggest важнее uri: uri требует HTTP Geocoder (у нас 403).
     if (lat.abs() > 0.01 || lon.abs() > 0.01) {
-      return '$lat,$lon';
+      return '$lat,$lon$placeIdSep$text$placeIdSep$house$placeIdSep$street'
+          '$placeIdSep$cityOnly';
+    }
+    if (uri.isNotEmpty) {
+      return '$uri$placeIdSep$text$placeIdSep$house$placeIdSep$street'
+          '$placeIdSep$cityOnly';
     }
     return text;
   }
@@ -116,6 +122,9 @@ class YandexGeocoderService {
   static const _geocodeUrl = 'https://geocode-maps.yandex.ru/1.x/';
   static const _suggestUrl = 'https://suggest-maps.yandex.ru/v1/suggest';
 
+  /// Последний HTTP-код geocode-maps (для логов UI: 403 ≠ «адрес не найден»).
+  static int? lastResolveHttpStatus;
+
   static String get _geocodeApiKey {
     if (YandexConfig.geocoderKey.isNotEmpty) {
       return YandexConfig.geocoderKey;
@@ -140,8 +149,19 @@ class YandexGeocoderService {
   static const minSuggestChars = 4;
 
   static bool isSuggestUri(String? value) {
-    final v = (value?.trim() ?? '').split('\t').first;
+    final v = _placeIdHead(value);
     return v.startsWith('ymapsbm1://') || v.startsWith('yandexmaps://');
+  }
+
+  static String _placeIdHead(String? value) {
+    final raw = value?.trim() ?? '';
+    if (raw.isEmpty) return '';
+    // Новый sep + старый tab (на случай кэша/старых ответов).
+    return raw.split(RegExp('[\u001f\t]')).first.trim();
+  }
+
+  static List<String> _placeIdParts(String id) {
+    return id.split(RegExp('[\u001f\t]'));
   }
 
   /// Нормализация для сравнения префикса с названием улицы.
@@ -205,7 +225,8 @@ class YandexGeocoderService {
         return const [];
       }
 
-      // Основной путь — Geosuggest (префикс), как в Яндекс Такси.
+      // Список адресов — как раньше: HTTP Geosuggest types=street,house
+      // (MapKit Suggest сыпет сёла/реки — не для UI списка).
       var list = await _suggest(
         text: q,
         lang: lang.startsWith('ru') ? 'ru' : 'en',
@@ -214,17 +235,38 @@ class YandexGeocoderService {
         lat: bias.lat,
       );
       list = list.where((r) => _titleMatchesQuery(r, q)).toList(growable: false);
+
+      // Подтянуть center с MapKit по совпадению title (без смены состава списка).
+      if (list.isNotEmpty) {
+        list = await _attachMapKitCenters(
+          list,
+          query: q,
+          lon: bias.lon,
+          lat: bias.lat,
+        );
+      }
+
       if (list.isEmpty) {
-        // Fallback: геокодер street/house, если Suggest недоступен по ключу.
+        // Fallback: только house/street из MapKit, дома первыми.
+        list = await _suggestMapKit(
+          text: q,
+          lon: bias.lon,
+          lat: bias.lat,
+          results: results,
+        );
+        list = list.where((r) => _titleMatchesQuery(r, q)).toList(growable: false);
+      }
+      if (list.isEmpty) {
         list = await _geocodeStreetFallback(q, lang, results, bias);
         list = list.where((r) => _titleMatchesQuery(r, q)).toList(growable: false);
       }
 
       if (kDebugMode) {
-        debugPrint(
-          '[Geocoder] suggest q="$q" n=${list.length}'
-          ' first=${list.isEmpty ? "-" : "${list.first.taxiTitle} | ${list.first.taxiSubtitle}"}',
-        );
+        final first = list.isEmpty
+            ? '-'
+            : '${list.first.taxiTitle} | ${list.first.taxiSubtitle}'
+                ' lat=${list.first.lat} lng=${list.first.lon}';
+        debugPrint('[Geocoder] suggest q="$q" n=${list.length} first=$first');
       }
       return list.take(_maxSuggestions).toList(growable: false);
     } catch (e, st) {
@@ -266,7 +308,160 @@ class YandexGeocoderService {
         .toList(growable: false);
   }
 
-  /// Geosuggest: types=street,house — только адреса.
+  /// Нативный MapKit Suggest — только street/house + center.
+  static Future<List<YandexGeocodeResult>> _suggestMapKit({
+    required String text,
+    required double lon,
+    required double lat,
+    required int results,
+  }) async {
+    try {
+      final sessionPair = await YandexSuggest.getSuggestions(
+        text: text,
+        boundingBox: BoundingBox(
+          southWest: Point(latitude: lat - 0.35, longitude: lon - 0.45),
+          northEast: Point(latitude: lat + 0.35, longitude: lon + 0.45),
+        ),
+        suggestOptions: SuggestOptions(
+          suggestType: SuggestType.geo,
+          suggestWords: true,
+          userPosition: Point(latitude: lat, longitude: lon),
+        ),
+      );
+      final session = sessionPair.$1;
+      final result = await sessionPair.$2;
+      await session.close();
+
+      if (result.error != null) {
+        debugPrint('[Geocoder] MapKitSuggest error: ${result.error}');
+        return const [];
+      }
+      final items = result.items;
+      if (items == null || items.isEmpty) {
+        if (kDebugMode) {
+          debugPrint('[Geocoder] MapKitSuggest empty');
+        }
+        return const [];
+      }
+
+      final out = <YandexGeocodeResult>[];
+      for (final item in items) {
+        if (item.type == SuggestItemType.business ||
+            item.type == SuggestItemType.transit) {
+          continue;
+        }
+        final tags =
+            item.tags.map((e) => e.toString().toLowerCase()).toList(growable: false);
+        final isHouse = tags.contains('house');
+        final isStreet = tags.contains('street');
+        // Как HTTP Geosuggest: только улица и дом — без сёл/рек/районов.
+        if (!isHouse && !isStreet) continue;
+
+        final title = item.title.trim();
+        final subtitle = (item.subtitle ?? '').trim();
+        var house = '';
+        var street = '';
+        if (isHouse || RegExp(r',\s*\d').hasMatch(title)) {
+          final houseMatch =
+              RegExp(r'(\d+[а-яА-Яa-zA-Z]?)\s*$').firstMatch(title);
+          house = houseMatch?.group(1) ?? '';
+          street = title
+              .replaceAll(RegExp(r',\s*\d+[а-яА-Яa-zA-Z]?\s*$'), '')
+              .trim();
+        } else {
+          street = title;
+        }
+
+        String city = '';
+        if (subtitle.isNotEmpty) {
+          final parts = subtitle.split(',').map((e) => e.trim()).toList();
+          city = parts.isNotEmpty ? parts.last : subtitle;
+        }
+
+        final center = item.center;
+        final display = item.displayText.trim().isNotEmpty
+            ? item.displayText.trim()
+            : title;
+        out.add(
+          YandexGeocodeResult(
+            lat: center?.latitude ?? 0,
+            lon: center?.longitude ?? 0,
+            text: display,
+            city: city,
+            street: street,
+            house: house,
+            kind: isHouse ? 'house' : 'street',
+            titleOverride: title.isNotEmpty ? title : display,
+            subtitleOverride: subtitle,
+          ),
+        );
+      }
+
+      // Дома выше улиц; с координатами выше без.
+      out.sort((a, b) {
+        final aHouse = a.kind == 'house' || a.house.isNotEmpty;
+        final bHouse = b.kind == 'house' || b.house.isNotEmpty;
+        if (aHouse != bHouse) return aHouse ? -1 : 1;
+        final aOk = a.lat.abs() > 0.01 || a.lon.abs() > 0.01;
+        final bOk = b.lat.abs() > 0.01 || b.lon.abs() > 0.01;
+        if (aOk == bOk) return 0;
+        return aOk ? -1 : 1;
+      });
+
+      if (kDebugMode) {
+        final withCenter =
+            out.where((r) => r.lat.abs() > 0.01 || r.lon.abs() > 0.01).length;
+        debugPrint(
+          '[Geocoder] MapKitSuggest n=${out.length} withCenter=$withCenter'
+          ' (street/house only)',
+        );
+      }
+      return out.take(results.clamp(1, _maxSuggestions)).toList(growable: false);
+    } catch (e, st) {
+      debugPrint('[Geocoder] MapKitSuggest failed: $e\n$st');
+      return const [];
+    }
+  }
+
+  /// К HTTP-подсказкам (uri) приклеить lat/lng из MapKit при совпадении названия.
+  static Future<List<YandexGeocodeResult>> _attachMapKitCenters(
+    List<YandexGeocodeResult> httpList, {
+    required String query,
+    required double lon,
+    required double lat,
+  }) async {
+    final mk = await _suggestMapKit(
+      text: query,
+      lon: lon,
+      lat: lat,
+      results: _maxSuggestions,
+    );
+    if (mk.isEmpty) return httpList;
+
+    return httpList.map((h) {
+      if (h.lat.abs() > 0.01 || h.lon.abs() > 0.01) return h;
+      final hKey = _normalizeStreetQuery(h.taxiTitle);
+      final hStreet = _normalizeStreetQuery(h.street);
+      for (final m in mk) {
+        if (m.lat.abs() < 0.01 && m.lon.abs() < 0.01) continue;
+        final mKey = _normalizeStreetQuery(m.taxiTitle);
+        final mStreet = _normalizeStreetQuery(m.street);
+        final titleHit = hKey.isNotEmpty && (hKey == mKey || mKey.contains(hKey) || hKey.contains(mKey));
+        final streetHit = hStreet.isNotEmpty &&
+            mStreet.isNotEmpty &&
+            (hStreet == mStreet) &&
+            (h.house.isEmpty ||
+                m.house.isEmpty ||
+                h.house.toLowerCase() == m.house.toLowerCase());
+        if (titleHit || streetHit) {
+          return h.copyWith(lat: m.lat, lon: m.lon);
+        }
+      }
+      return h;
+    }).toList(growable: false);
+  }
+
+  /// Geosuggest HTTP: types=street,house — только адреса (без координат).
   static Future<List<YandexGeocodeResult>> _suggest({
     required String text,
     required String lang,
@@ -436,6 +631,7 @@ class YandexGeocoderService {
     }
     final requestUri = Uri.parse(_geocodeUrl).replace(queryParameters: params);
     final response = await http.get(requestUri);
+    lastResolveHttpStatus = response.statusCode;
     if (response.statusCode != 200) {
       debugPrint('[Geocoder] geocode HTTP ${response.statusCode}');
       return [];
@@ -446,16 +642,116 @@ class YandexGeocoderService {
     );
   }
 
+  /// Когда HTTP Geocoder 403 (ключ без Geocoder API), координаты берём через MapKit.
+  static Future<YandexGeocodeResult?> _resolveViaMapKit(String query) async {
+    final q = query.trim();
+    if (q.isEmpty) return null;
+    try {
+      if (kDebugMode) {
+        debugPrint('[Geocoder] MapKit searchByText q="${q.length > 64 ? '${q.substring(0, 64)}…' : q}"');
+      }
+      final sessionPair = await YandexSearch.searchByText(
+        searchText: q,
+        geometry: Geometry.fromPoint(
+          const Point(latitude: _moscowLat, longitude: _moscowLon),
+        ),
+        searchOptions: const SearchOptions(
+          searchType: SearchType.geo,
+          geometry: false,
+          resultPageSize: 5,
+        ),
+      );
+      final session = sessionPair.$1;
+      final result = await sessionPair.$2;
+      await session.close();
+      if (result.error != null) {
+        debugPrint('[Geocoder] MapKit error: ${result.error}');
+        return null;
+      }
+      final items = result.items;
+      if (items == null || items.isEmpty) {
+        debugPrint('[Geocoder] MapKit empty');
+        return null;
+      }
+      final item = items.first;
+      Point? point = item.toponymMetadata?.balloonPoint;
+      if (point == null) {
+        for (final g in item.geometry) {
+          final p = g.point;
+          if (p != null) {
+            point = p;
+            break;
+          }
+        }
+      }
+      if (point == null) {
+        debugPrint('[Geocoder] MapKit no point');
+        return null;
+      }
+      final comps = item.toponymMetadata?.address.addressComponents ?? const {};
+      final street = comps[SearchComponentKind.street] ?? '';
+      final house = comps[SearchComponentKind.house] ?? '';
+      final city = comps[SearchComponentKind.locality] ?? '';
+      final province = comps[SearchComponentKind.province] ?? '';
+      final text = item.toponymMetadata?.address.formattedAddress ?? item.name;
+      if (kDebugMode) {
+        debugPrint(
+          '[Geocoder] MapKit OK lat=${point.latitude} lng=${point.longitude} '
+          'street=$street house=$house',
+        );
+      }
+      return YandexGeocodeResult(
+        lat: point.latitude,
+        lon: point.longitude,
+        text: text,
+        city: city,
+        province: province,
+        street: street,
+        house: house,
+        kind: house.isNotEmpty ? 'house' : 'street',
+      );
+    } catch (e, st) {
+      debugPrint('[Geocoder] MapKit failed: $e\n$st');
+      return null;
+    }
+  }
+
+  static String _composeAddressQuery({
+    required String textHint,
+    required String houseHint,
+    required String streetHint,
+    required String cityHint,
+    required String headFallback,
+  }) {
+    if (streetHint.isNotEmpty) {
+      final streetPart = houseHint.isNotEmpty
+          ? '$streetHint, $houseHint'
+          : streetHint;
+      if (cityHint.isNotEmpty) return '$cityHint, $streetPart';
+      return streetPart;
+    }
+    if (textHint.isNotEmpty) {
+      if (cityHint.isNotEmpty &&
+          !textHint.toLowerCase().contains(cityHint.toLowerCase())) {
+        return '$cityHint, $textHint';
+      }
+      return textHint;
+    }
+    return headFallback;
+  }
+
   /// Разрешить Suggest uri (или lat,lng / текст) в точку с координатами.
   static Future<YandexGeocodeResult?> resolvePlaceId(String placeId) async {
     final id = placeId.trim();
     if (id.isEmpty) return null;
+    lastResolveHttpStatus = null;
 
-    final parts = id.split('\t');
+    final parts = _placeIdParts(id);
     final head = parts.first.trim();
     final textHint = parts.length > 1 ? parts[1].trim() : '';
     final houseHint = parts.length > 2 ? parts[2].trim() : '';
     final streetHint = parts.length > 3 ? parts[3].trim() : '';
+    final cityHint = parts.length > 4 ? parts[4].trim() : '';
 
     YandexGeocodeResult? enrich(YandexGeocodeResult? r) {
       if (r == null) return null;
@@ -465,6 +761,9 @@ class YandexGeocoderService {
       }
       if (out.street.isEmpty && streetHint.isNotEmpty) {
         out = out.copyWith(street: streetHint);
+      }
+      if (out.city.isEmpty && cityHint.isNotEmpty) {
+        out = out.copyWith(city: cityHint);
       }
       if (out.text.isEmpty && textHint.isNotEmpty) {
         out = out.copyWith(text: textHint);
@@ -492,38 +791,86 @@ class YandexGeocoderService {
         }
         return enrich(list.first);
       }
-      if (textHint.isNotEmpty) {
+      final query = _composeAddressQuery(
+        textHint: textHint,
+        houseHint: houseHint,
+        streetHint: streetHint,
+        cityHint: cityHint,
+        headFallback: '',
+      );
+      if (query.isNotEmpty) {
         if (kDebugMode) {
           debugPrint('[Geocoder] resolve uri empty → geocode text');
         }
         list = await _geocode(
-          geocode: textHint,
+          geocode: query,
           lang: 'ru_RU',
           results: 1,
           lon: _moscowLon,
           lat: _moscowLat,
         );
         if (list.isNotEmpty) return enrich(list.first);
+        final viaMapKit = await _resolveViaMapKit(query);
+        if (viaMapKit != null) return enrich(viaMapKit);
       }
-      debugPrint('[Geocoder] resolve uri failed');
+      debugPrint(
+        '[Geocoder] resolve uri failed http=$lastResolveHttpStatus',
+      );
       return null;
     }
 
     final coords = parseLatLngPair(head);
     if (coords != null) {
+      final reversed = await reverseGeocode(
+        lat: coords.latitude,
+        lon: coords.longitude,
+      );
+      if (reversed != null) return enrich(reversed);
+      // Координаты уже из MapKit Suggest — reverse может дать 403, не теряем точку.
+      final label = textHint.isNotEmpty
+          ? textHint
+          : _composeAddressQuery(
+              textHint: '',
+              houseHint: houseHint,
+              streetHint: streetHint,
+              cityHint: cityHint,
+              headFallback: head,
+            );
+      if (kDebugMode) {
+        debugPrint(
+          '[Geocoder] resolve latlng from suggest '
+          'lat=${coords.latitude} lng=${coords.longitude} (no reverse)',
+        );
+      }
       return enrich(
-        await reverseGeocode(lat: coords.latitude, lon: coords.longitude),
+        YandexGeocodeResult(
+          lat: coords.latitude,
+          lon: coords.longitude,
+          text: label,
+          city: cityHint,
+          street: streetHint,
+          house: houseHint,
+          kind: houseHint.isNotEmpty ? 'house' : 'street',
+        ),
       );
     }
-    // Текст адреса — прямой геокод.
+    // Текст адреса — прямой геокод, затем MapKit.
+    final query = _composeAddressQuery(
+      textHint: textHint.isNotEmpty ? textHint : head,
+      houseHint: houseHint,
+      streetHint: streetHint,
+      cityHint: cityHint,
+      headFallback: head,
+    );
     final list = await _geocode(
-      geocode: head,
+      geocode: query,
       lang: 'ru_RU',
       results: 1,
       lon: _moscowLon,
       lat: _moscowLat,
     );
-    return enrich(list.isEmpty ? null : list.first);
+    if (list.isNotEmpty) return enrich(list.first);
+    return enrich(await _resolveViaMapKit(query));
   }
 
   static ({double lat, double lon}) _parseBias(String? raw) {
