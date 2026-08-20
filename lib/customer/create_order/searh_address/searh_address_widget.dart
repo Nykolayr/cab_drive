@@ -6,6 +6,8 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
+import '/custom_code/services/address_place_selection.dart';
+import '/custom_code/services/safe_modal_pop.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -13,6 +15,7 @@ import '/flutter_flow/flutter_flow_widgets.dart';
 import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:easy_debounce/easy_debounce.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -39,18 +42,9 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
 
   LatLng? currentUserLocationValue;
 
-  /// Закрывает шторку поиска, не снимая единственный экран go_router.
+  /// Закрывает только шторку поиска — главный экран go_router не трогаем.
   void _closeSearchSheet() {
-    if (!mounted) return;
-    final route = ModalRoute.of(context);
-    if (route is PopupRoute && _navigatorCanPopSafe()) {
-      Navigator.of(context).pop();
-    }
-  }
-
-  bool _navigatorCanPopSafe() {
-    final navigator = Navigator.maybeOf(context);
-    return navigator != null && navigator.canPop();
+    safePopModal(context, tag: 'Search.close');
   }
 
   @override
@@ -613,7 +607,11 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                               final point = _model.currentPoint ?? 1;
                               final rootNavigator =
                                   Navigator.of(context, rootNavigator: true);
+                              // Только шторка; главный экран остаётся под MapPicker.
                               _closeSearchSheet();
+                              await Future<void>.delayed(
+                                const Duration(milliseconds: 280),
+                              );
                               await rootNavigator.push(
                                 MaterialPageRoute(
                                   builder: (_) =>
@@ -701,68 +699,34 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                       hoverColor: Colors.transparent,
                                       highlightColor: Colors.transparent,
                                       onTap: () async {
-                                        var _shouldSetState = false;
-                                        _model.geocodeAAA =
-                                        await GeocodePlaceIDCall.call(
-                                          placeId: AutocompleteCall.placeid(
-                                            (_model.apiResult1veA?.jsonBody ??
-                                                ''),
-                                          )?.elementAtOrNull(aAAListIndex),
+                                        final selectedPlaceId =
+                                            AutocompleteCall.placeid(
+                                          (_model.apiResult1veA?.jsonBody ??
+                                              ''),
+                                        )?.elementAtOrNull(aAAListIndex);
+                                        final selectedMain =
+                                            AutocompleteCall.addresses(
+                                          (_model.apiResult1veA?.jsonBody ??
+                                              ''),
+                                        )?.elementAtOrNull(aAAListIndex);
+                                        final resolved =
+                                            await AddressPlaceSelection.resolve(
+                                          fieldTag: 'A',
+                                          placeId: selectedPlaceId,
+                                          mainText: selectedMain,
                                         );
+                                        if (!resolved.ok) {
+                                          safeSetState(() {});
+                                          return;
+                                        }
 
-                                        _shouldSetState = true;
-                                        if (('${GeocodePlaceIDCall.street(
-                                          (_model.geocodeAAA
-                                              ?.jsonBody ??
-                                              ''),
-                                        ) != null && GeocodePlaceIDCall.street(
-                                          (_model.geocodeAAA
-                                              ?.jsonBody ??
-                                              ''),
-                                        ) != '' ? GeocodePlaceIDCall.street(
-                                          (_model.geocodeAAA
-                                              ?.jsonBody ??
-                                              ''),
-                                        ) : GeocodePlaceIDCall.address(
-                                          (_model.geocodeAAA
-                                              ?.jsonBody ??
-                                              ''),
-                                        )} ' !=
-                                            _model.pointATextController
-                                                .text) &&
-                                            (GeocodePlaceIDCall.number(
-                                              (_model.geocodeAAA
-                                                  ?.jsonBody ??
-                                                  ''),
-                                            ) ==
-                                                null ||
-                                                GeocodePlaceIDCall.number(
-                                                  (_model.geocodeAAA
-                                                      ?.jsonBody ??
-                                                      ''),
-                                                ) ==
-                                                    '')) {
+                                        if (resolved.needsHouseNumber) {
+                                          debugPrint(
+                                            '[Search.A] needHouse → keep focus on A',
+                                          );
                                           safeSetState(() {
                                             _model.pointATextController?.text =
-                                            '${GeocodePlaceIDCall.street(
-                                              (_model.geocodeAAA
-                                                  ?.jsonBody ??
-                                                  ''),
-                                            ) != null &&
-                                                GeocodePlaceIDCall.street(
-                                                  (_model.geocodeAAA
-                                                      ?.jsonBody ??
-                                                      ''),
-                                                ) != '' ? GeocodePlaceIDCall
-                                                .street(
-                                              (_model.geocodeAAA
-                                                  ?.jsonBody ??
-                                                  ''),
-                                            ) : GeocodePlaceIDCall.address(
-                                              (_model.geocodeAAA
-                                                  ?.jsonBody ??
-                                                  ''),
-                                            )} ';
+                                                '${resolved.addressLabel} ';
                                             _model.pointAFocusNode
                                                 ?.requestFocus();
                                             WidgetsBinding.instance
@@ -770,246 +734,127 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                               _model.pointATextController
                                                   ?.selection =
                                                   TextSelection.collapsed(
-                                                    offset: _model
-                                                        .pointATextController!
-                                                        .text
-                                                        .length,
-                                                  );
+                                                offset: _model
+                                                    .pointATextController!
+                                                    .text
+                                                    .length,
+                                              );
                                             });
                                           });
-                                          if (_shouldSetState)
-                                            safeSetState(() {});
                                           return;
-                                        } else {
-                                          if (_model.pointBTextController
-                                              .text !=
-                                              null &&
-                                              _model.pointBTextController
-                                                  .text !=
-                                                  '') {
-                                            final latlng = functions
-                                                .convertLatLngFromStrings(
-                                                GeocodePlaceIDCall.lat(
-                                                  (_model.geocodeAAA
-                                                      ?.jsonBody ??
-                                                      ''),
-                                                )!
-                                                    .toString(),
-                                                GeocodePlaceIDCall.lng(
-                                                  (_model.geocodeAAA
-                                                      ?.jsonBody ??
-                                                      ''),
-                                                )!
-                                                    .toString());
-                                            context.read<OrdersBloc>().add(OrdersEvent.getEtas(userLocation: LocationEntity(lat: latlng.latitude, lng: latlng.longitude)));
-
-                                            FFAppState().pointA = PointStruct(
-                                              latlng: latlng,
-                                              placeID: AutocompleteCall.placeid(
-                                                (_model.apiResult1veA
-                                                    ?.jsonBody ??
-                                                    ''),
-                                              )?.elementAtOrNull(aAAListIndex),
-                                              address: GeocodePlaceIDCall
-                                                  .number(
-                                                (_model.geocodeAAA
-                                                    ?.jsonBody ??
-                                                    ''),
-                                              ) !=
-                                                  null &&
-                                                  GeocodePlaceIDCall.number(
-                                                    (_model.geocodeAAA
-                                                        ?.jsonBody ??
-                                                        ''),
-                                                  ) !=
-                                                      ''
-                                                  ? '${GeocodePlaceIDCall
-                                                  .street(
-                                                (_model.geocodeAAA
-                                                    ?.jsonBody ??
-                                                    ''),
-                                              )}, ${GeocodePlaceIDCall.number(
-                                                (_model.geocodeAAA
-                                                    ?.jsonBody ??
-                                                    ''),
-                                              )}'
-                                                  : (GeocodePlaceIDCall.street(
-                                                (_model.geocodeAAA
-                                                    ?.jsonBody ??
-                                                    ''),
-                                              ) !=
-                                                  null &&
-                                                  GeocodePlaceIDCall
-                                                      .street(
-                                                    (_model.geocodeAAA
-                                                        ?.jsonBody ??
-                                                        ''),
-                                                  ) !=
-                                                      ''
-                                                  ? GeocodePlaceIDCall
-                                                  .street(
-                                                (_model.geocodeAAA
-                                                    ?.jsonBody ??
-                                                    ''),
-                                              )
-                                                  : GeocodePlaceIDCall
-                                                  .address(
-                                                (_model.geocodeAAA
-                                                    ?.jsonBody ??
-                                                    ''),
-                                              )),
-                                              fullAddress:
-                                              GeocodePlaceIDCall.address(
-                                                (_model.geocodeAAA?.jsonBody ??
-                                                    ''),
-                                              ),
-                                              city: GeocodePlaceIDCall.areal2(
-                                                (_model.geocodeAAA?.jsonBody ??
-                                                    ''),
-                                              ) ?? GeocodePlaceIDCall.city(
-                                                (_model.geocodeAAA?.jsonBody ??
-                                                    ''),
-                                              ),
-                                              region: GeocodePlaceIDCall.areal(
-                                                (_model.geocodeAAA?.jsonBody ??
-                                                    ''),
-                                              ),
-                                            );
-                                            safeSetState(() {});
-                                            final ordersBloc = context.read<OrdersBloc>();
-                                            _closeSearchSheet();
-                                            ordersBloc.add(
-                                                OrdersEvent.getPrices(
-                                                    userLocation: LocationEntity(
-                                                        lat: FFAppState().pointA
-                                                            .latlng!.latitude,
-                                                        lng: FFAppState().pointA
-                                                            .latlng!.longitude),
-                                                    destLocation: LocationEntity(
-                                                        lat: FFAppState().pointB
-                                                            .latlng!.latitude,
-                                                        lng: FFAppState().pointB
-                                                            .latlng!.longitude),
-                                                    intermediate: FFAppState().pointC.address.isNotEmpty ? LocationEntity(
-                                                        lat: FFAppState().pointC
-                                                            .latlng!.latitude,
-                                                        lng: FFAppState().pointC
-                                                            .latlng!.longitude) : null,
-                                                    movers: 0));
-                                            if (_shouldSetState)
-                                              safeSetState(() {});
-                                            return;
-                                          } else {
-                                            final latlng = functions
-                                                .convertLatLngFromStrings(
-                                                GeocodePlaceIDCall.lat(
-                                                  (_model.geocodeAAA
-                                                      ?.jsonBody ??
-                                                      ''),
-                                                )!
-                                                    .toString(),
-                                                GeocodePlaceIDCall.lng(
-                                                  (_model.geocodeAAA
-                                                      ?.jsonBody ??
-                                                      ''),
-                                                )!
-                                                    .toString());
-                                            context.read<OrdersBloc>().add(OrdersEvent.getEtas(userLocation: LocationEntity(lat: latlng.latitude, lng: latlng.longitude)));
-
-                                            FFAppState().pointA = PointStruct(
-                                              latlng: latlng,
-                                              placeID: AutocompleteCall.placeid(
-                                                (_model.apiResult1veA
-                                                    ?.jsonBody ??
-                                                    ''),
-                                              )?.elementAtOrNull(aAAListIndex),
-                                              address: GeocodePlaceIDCall
-                                                  .number(
-                                                (_model.geocodeAAA
-                                                    ?.jsonBody ??
-                                                    ''),
-                                              ) !=
-                                                  null &&
-                                                  GeocodePlaceIDCall.number(
-                                                    (_model.geocodeAAA
-                                                        ?.jsonBody ??
-                                                        ''),
-                                                  ) !=
-                                                      ''
-                                                  ? '${GeocodePlaceIDCall
-                                                  .street(
-                                                (_model.geocodeAAA
-                                                    ?.jsonBody ??
-                                                    ''),
-                                              )}, ${GeocodePlaceIDCall.number(
-                                                (_model.geocodeAAA
-                                                    ?.jsonBody ??
-                                                    ''),
-                                              )}'
-                                                  : (GeocodePlaceIDCall.street(
-                                                (_model.geocodeAAA
-                                                    ?.jsonBody ??
-                                                    ''),
-                                              ) !=
-                                                  null &&
-                                                  GeocodePlaceIDCall
-                                                      .street(
-                                                    (_model.geocodeAAA
-                                                        ?.jsonBody ??
-                                                        ''),
-                                                  ) !=
-                                                      ''
-                                                  ? GeocodePlaceIDCall
-                                                  .street(
-                                                (_model.geocodeAAA
-                                                    ?.jsonBody ??
-                                                    ''),
-                                              )
-                                                  : GeocodePlaceIDCall
-                                                  .address(
-                                                (_model.geocodeAAA
-                                                    ?.jsonBody ??
-                                                    ''),
-                                              )),
-                                              fullAddress:
-                                              GeocodePlaceIDCall.address(
-                                                (_model.geocodeAAA?.jsonBody ??
-                                                    ''),
-                                              ),
-                                              city: GeocodePlaceIDCall.areal2(
-                                                (_model.geocodeAAA?.jsonBody ??
-                                                    ''),
-                                              ) ?? GeocodePlaceIDCall.city(
-                                                (_model.geocodeAAA?.jsonBody ??
-                                                    ''),
-                                              ),
-                                              region: GeocodePlaceIDCall.areal(
-                                                (_model.geocodeAAA?.jsonBody ??
-                                                    ''),
-                                              ),
-                                            );
-                                            FFAppState().update(() {});
-                                            safeSetState(() {
-                                              _model.pointBTextController
-                                                  ?.text = '';
-                                              _model.pointBFocusNode
-                                                  ?.requestFocus();
-                                              WidgetsBinding.instance
-                                                  .addPostFrameCallback((_) {
-                                                _model.pointBTextController
-                                                    ?.selection =
-                                                const TextSelection
-                                                    .collapsed(offset: 0);
-                                              });
-                                            });
-                                            if (_shouldSetState)
-                                              safeSetState(() {});
-                                            return;
-                                          }
                                         }
 
-                                        if (_shouldSetState)
-                                          safeSetState(() {});
+                                        final point = resolved.toPoint();
+                                        debugPrint(
+                                          '[Search.A] apply label="${resolved.addressLabel}"',
+                                        );
+                                        safeSetState(() {
+                                          _model.pointATextController?.text =
+                                              resolved.addressLabel;
+                                        });
+
+                                        final bFilled = (_model
+                                                    .pointBTextController
+                                                    ?.text ??
+                                                '')
+                                            .trim()
+                                            .isNotEmpty;
+                                        if (!mounted) return;
+                                        final ordersBloc =
+                                            context.read<OrdersBloc>();
+
+                                        if (bFilled) {
+                                          // Сначала шторка, потом state/цены —
+                                          // не трогаем главный экран и карту под шторкой.
+                                          _closeSearchSheet();
+                                          FFAppState().pointA = point;
+                                          FFAppState().update(() {});
+                                          final latlng = point.latlng;
+                                          if (latlng != null) {
+                                            ordersBloc.add(
+                                              OrdersEvent.getEtas(
+                                                userLocation: LocationEntity(
+                                                  lat: latlng.latitude,
+                                                  lng: latlng.longitude,
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                          if (FFAppState().pointA.latlng !=
+                                                  null &&
+                                              FFAppState().pointB.latlng !=
+                                                  null) {
+                                            ordersBloc.add(
+                                              OrdersEvent.getPrices(
+                                                userLocation: LocationEntity(
+                                                  lat: FFAppState()
+                                                      .pointA
+                                                      .latlng!
+                                                      .latitude,
+                                                  lng: FFAppState()
+                                                      .pointA
+                                                      .latlng!
+                                                      .longitude,
+                                                ),
+                                                destLocation: LocationEntity(
+                                                  lat: FFAppState()
+                                                      .pointB
+                                                      .latlng!
+                                                      .latitude,
+                                                  lng: FFAppState()
+                                                      .pointB
+                                                      .latlng!
+                                                      .longitude,
+                                                ),
+                                                intermediate: FFAppState()
+                                                        .pointC
+                                                        .address
+                                                        .isNotEmpty
+                                                    ? LocationEntity(
+                                                        lat: FFAppState()
+                                                            .pointC
+                                                            .latlng!
+                                                            .latitude,
+                                                        lng: FFAppState()
+                                                            .pointC
+                                                            .latlng!
+                                                            .longitude,
+                                                      )
+                                                    : null,
+                                                movers: 0,
+                                              ),
+                                            );
+                                          }
+                                          return;
+                                        }
+
+                                        // B пустой — остаёмся в шторке, главный экран на месте.
+                                        FFAppState().pointA = point;
+                                        FFAppState().update(() {});
+                                        final latlng = point.latlng;
+                                        if (latlng != null) {
+                                          ordersBloc.add(
+                                            OrdersEvent.getEtas(
+                                              userLocation: LocationEntity(
+                                                lat: latlng.latitude,
+                                                lng: latlng.longitude,
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                        safeSetState(() {
+                                          _model.pointBTextController?.text =
+                                              '';
+                                          _model.pointBFocusNode
+                                              ?.requestFocus();
+                                          WidgetsBinding.instance
+                                              .addPostFrameCallback((_) {
+                                            _model.pointBTextController
+                                                ?.selection =
+                                                const TextSelection.collapsed(
+                                                    offset: 0);
+                                          });
+                                        });
                                       },
                                       child: Container(
                                         decoration: BoxDecoration(),
@@ -1179,103 +1024,34 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                       hoverColor: Colors.transparent,
                                       highlightColor: Colors.transparent,
                                       onTap: () async {
-                                        _model.geocodeBBB =
-                                        await GeocodePlaceIDCall.call(
-                                          placeId: AutocompleteCall.placeid(
-                                            (_model.apiResult1veB?.jsonBody ??
-                                                ''),
-                                          )?.elementAtOrNull(bBBListIndex),
+                                        final selectedPlaceId =
+                                            AutocompleteCall.placeid(
+                                          (_model.apiResult1veB?.jsonBody ??
+                                              ''),
+                                        )?.elementAtOrNull(bBBListIndex);
+                                        final selectedMain =
+                                            AutocompleteCall.addresses(
+                                          (_model.apiResult1veB?.jsonBody ??
+                                              ''),
+                                        )?.elementAtOrNull(bBBListIndex);
+                                        final resolved =
+                                            await AddressPlaceSelection.resolve(
+                                          fieldTag: 'B',
+                                          placeId: selectedPlaceId,
+                                          mainText: selectedMain,
                                         );
+                                        if (!resolved.ok) {
+                                          safeSetState(() {});
+                                          return;
+                                        }
 
-                                        FFAppState().pointB = PointStruct(
-                                            latlng: functions
-                                                .convertLatLngFromStrings(
-                                                GeocodePlaceIDCall.lat(
-                                                  (_model.geocodeBBB
-                                                      ?.jsonBody ??
-                                                      ''),
-                                                )!
-                                                    .toString(),
-                                                GeocodePlaceIDCall.lng(
-                                                  (_model.geocodeBBB
-                                                      ?.jsonBody ??
-                                                      ''),
-                                                )!
-                                                    .toString()),);
-                                        if( FFAppState().pointB
-                                            .latlng != null)
-                                        context.read<OrdersBloc>().add(
-                                            OrdersEvent.getPrices(
-                                                userLocation: LocationEntity(
-                                                    lat: FFAppState().pointA
-                                                        .latlng!.latitude,
-                                                    lng: FFAppState().pointA
-                                                        .latlng!.longitude),
-                                                destLocation: LocationEntity(
-                                                    lat: FFAppState().pointB
-                                                        .latlng!.latitude,
-                                                    lng: FFAppState().pointB
-                                                        .latlng!.longitude),
-                                                intermediate: FFAppState().pointC.latlng != null ? LocationEntity(
-                                                    lat: FFAppState().pointC
-                                                        .latlng!.latitude,
-                                                    lng: FFAppState().pointC
-                                                        .latlng!.longitude) : null,
-                                                movers: 0));
-
-
-                                        if (('${GeocodePlaceIDCall.street(
-                                          (_model.geocodeBBB
-                                              ?.jsonBody ??
-                                              ''),
-                                        ) != null && GeocodePlaceIDCall.street(
-                                          (_model.geocodeBBB
-                                              ?.jsonBody ??
-                                              ''),
-                                        ) != '' ? GeocodePlaceIDCall.street(
-                                          (_model.geocodeBBB
-                                              ?.jsonBody ??
-                                              ''),
-                                        ) : GeocodePlaceIDCall.address(
-                                          (_model.geocodeBBB
-                                              ?.jsonBody ??
-                                              ''),
-                                        )} ' !=
-                                            _model.pointBTextController
-                                                .text) &&
-                                            (GeocodePlaceIDCall.number(
-                                              (_model.geocodeBBB
-                                                  ?.jsonBody ??
-                                                  ''),
-                                            ) ==
-                                                null ||
-                                                GeocodePlaceIDCall.number(
-                                                  (_model.geocodeBBB
-                                                      ?.jsonBody ??
-                                                      ''),
-                                                ) ==
-                                                    '')) {
+                                        if (resolved.needsHouseNumber) {
+                                          debugPrint(
+                                            '[Search.B] needHouse → keep focus on B',
+                                          );
                                           safeSetState(() {
                                             _model.pointBTextController?.text =
-                                            '${GeocodePlaceIDCall.street(
-                                              (_model.geocodeBBB
-                                                  ?.jsonBody ??
-                                                  ''),
-                                            ) != null &&
-                                                GeocodePlaceIDCall.street(
-                                                  (_model.geocodeBBB
-                                                      ?.jsonBody ??
-                                                      ''),
-                                                ) != '' ? GeocodePlaceIDCall
-                                                .street(
-                                              (_model.geocodeBBB
-                                                  ?.jsonBody ??
-                                                  ''),
-                                            ) : GeocodePlaceIDCall.address(
-                                              (_model.geocodeBBB
-                                                  ?.jsonBody ??
-                                                  ''),
-                                            )} ';
+                                                '${resolved.addressLabel} ';
                                             _model.pointBFocusNode
                                                 ?.requestFocus();
                                             WidgetsBinding.instance
@@ -1283,120 +1059,77 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                               _model.pointBTextController
                                                   ?.selection =
                                                   TextSelection.collapsed(
-                                                    offset: _model
-                                                        .pointBTextController!
-                                                        .text
-                                                        .length,
-                                                  );
+                                                offset: _model
+                                                    .pointBTextController!
+                                                    .text
+                                                    .length,
+                                              );
                                             });
                                           });
-                                        } else {
-                                          FFAppState().pointB = PointStruct(
-                                            latlng: functions
-                                                .convertLatLngFromStrings(
-                                                GeocodePlaceIDCall.lat(
-                                                  (_model.geocodeBBB
-                                                      ?.jsonBody ??
-                                                      ''),
-                                                )!
-                                                    .toString(),
-                                                GeocodePlaceIDCall.lng(
-                                                  (_model.geocodeBBB
-                                                      ?.jsonBody ??
-                                                      ''),
-                                                )!
-                                                    .toString()),
-                                            placeID: AutocompleteCall.placeid(
-                                              (_model.apiResult1veB?.jsonBody ??
-                                                  ''),
-                                            )?.elementAtOrNull(bBBListIndex),
-                                            address: GeocodePlaceIDCall.number(
-                                              (_model.geocodeBBB
-                                                  ?.jsonBody ??
-                                                  ''),
-                                            ) !=
-                                                null &&
-                                                GeocodePlaceIDCall.number(
-                                                  (_model.geocodeBBB
-                                                      ?.jsonBody ??
-                                                      ''),
-                                                ) !=
-                                                    ''
-                                                ? '${GeocodePlaceIDCall.street(
-                                              (_model.geocodeBBB
-                                                  ?.jsonBody ??
-                                                  ''),
-                                            )}, ${GeocodePlaceIDCall.number(
-                                              (_model.geocodeBBB
-                                                  ?.jsonBody ??
-                                                  ''),
-                                            )}'
-                                                : (GeocodePlaceIDCall.street(
-                                              (_model.geocodeBBB
-                                                  ?.jsonBody ??
-                                                  ''),
-                                            ) !=
-                                                null &&
-                                                GeocodePlaceIDCall
-                                                    .street(
-                                                  (_model.geocodeBBB
-                                                      ?.jsonBody ??
-                                                      ''),
-                                                ) !=
-                                                    ''
-                                                ? GeocodePlaceIDCall.street(
-                                              (_model.geocodeBBB
-                                                  ?.jsonBody ??
-                                                  ''),
-                                            )
-                                                : GeocodePlaceIDCall
-                                                .address(
-                                              (_model.geocodeBBB
-                                                  ?.jsonBody ??
-                                                  ''),
-                                            )),
-                                            fullAddress:
-                                            GeocodePlaceIDCall.address(
-                                              (_model.geocodeBBB?.jsonBody ??
-                                                  ''),
-                                            ),
-                                            city: GeocodePlaceIDCall.areal2(
-                                              (_model.geocodeBBB?.jsonBody ??
-                                                  ''),
-                                            ) ?? GeocodePlaceIDCall.city(
-                                              (_model.geocodeBBB?.jsonBody ??
-                                                  ''),
-                                            ),
-                                            region: GeocodePlaceIDCall.areal(
-                                              (_model.geocodeBBB?.jsonBody ??
-                                                  ''),
-                                            ),
-                                          );
-                                          FFAppState().update(() {});
-                                          final ordersBloc = context.read<OrdersBloc>();
-                                          _closeSearchSheet();
-                                          ordersBloc.add(
-                                              OrdersEvent.getPrices(
-                                                  userLocation: LocationEntity(
-                                                      lat: FFAppState().pointA
-                                                          .latlng!.latitude,
-                                                      lng: FFAppState().pointA
-                                                          .latlng!.longitude),
-                                                  destLocation: LocationEntity(
-                                                      lat: FFAppState().pointB
-                                                          .latlng!.latitude,
-                                                      lng: FFAppState().pointB
-                                                          .latlng!.longitude),
-                                                  intermediate: FFAppState().pointC.address.isNotEmpty ? LocationEntity(
-                                                      lat: FFAppState().pointC
-                                                          .latlng!.latitude,
-                                                      lng: FFAppState().pointC
-                                                          .latlng!.longitude) : null,
-                                                  movers: FFAppState().movers));
-
+                                          return;
                                         }
 
-                                        safeSetState(() {});
+                                        final point = resolved.toPoint();
+                                        debugPrint(
+                                          '[Search.B] apply label="${resolved.addressLabel}"',
+                                        );
+                                        safeSetState(() {
+                                          _model.pointBTextController?.text =
+                                              resolved.addressLabel;
+                                        });
+
+                                        if (!mounted) return;
+                                        final ordersBloc =
+                                            context.read<OrdersBloc>();
+                                        // Сначала только шторка — главный экран не pop.
+                                        _closeSearchSheet();
+                                        FFAppState().pointB = point;
+                                        FFAppState().update(() {});
+                                        if (FFAppState().pointA.latlng !=
+                                                null &&
+                                            FFAppState().pointB.latlng !=
+                                                null) {
+                                          ordersBloc.add(
+                                            OrdersEvent.getPrices(
+                                              userLocation: LocationEntity(
+                                                lat: FFAppState()
+                                                    .pointA
+                                                    .latlng!
+                                                    .latitude,
+                                                lng: FFAppState()
+                                                    .pointA
+                                                    .latlng!
+                                                    .longitude,
+                                              ),
+                                              destLocation: LocationEntity(
+                                                lat: FFAppState()
+                                                    .pointB
+                                                    .latlng!
+                                                    .latitude,
+                                                lng: FFAppState()
+                                                    .pointB
+                                                    .latlng!
+                                                    .longitude,
+                                              ),
+                                              intermediate: FFAppState()
+                                                      .pointC
+                                                      .address
+                                                      .isNotEmpty
+                                                  ? LocationEntity(
+                                                      lat: FFAppState()
+                                                          .pointC
+                                                          .latlng!
+                                                          .latitude,
+                                                      lng: FFAppState()
+                                                          .pointC
+                                                          .latlng!
+                                                          .longitude,
+                                                    )
+                                                  : null,
+                                              movers: FFAppState().movers,
+                                            ),
+                                          );
+                                        }
                                       },
                                       child: Container(
                                         decoration: BoxDecoration(),

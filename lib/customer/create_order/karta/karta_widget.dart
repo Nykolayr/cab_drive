@@ -1,4 +1,5 @@
 import 'package:easy_debounce/easy_debounce.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +12,8 @@ import '../../create_map_page/presentation/bloc/orders_bloc.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
+import '/custom_code/services/address_place_selection.dart';
+import '/custom_code/services/safe_modal_pop.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -331,280 +334,120 @@ class _KartaWidgetState extends State<KartaWidget> {
                           hoverColor: Colors.transparent,
                           highlightColor: Colors.transparent,
                           onTap: () async {
-                            var _shouldSetState = false;
-                            _model.geocode = await GeocodePlaceIDCall.call(
-                              placeId: AutocompleteCall.placeid(
-                                (_model.apiResult1ve?.jsonBody ?? ''),
-                              )?.elementAtOrNull(pointIndex),
+                            final tag = 'karta.${widget.point ?? "?"}';
+                            final selectedPlaceId = AutocompleteCall.placeid(
+                              (_model.apiResult1ve?.jsonBody ?? ''),
+                            )?.elementAtOrNull(pointIndex);
+                            final selectedMain = AutocompleteCall.addresses(
+                              (_model.apiResult1ve?.jsonBody ?? ''),
+                            )?.elementAtOrNull(pointIndex);
+                            final resolved =
+                                await AddressPlaceSelection.resolve(
+                              fieldTag: tag,
+                              placeId: selectedPlaceId,
+                              mainText: selectedMain,
                             );
+                            if (!resolved.ok) {
+                              safeSetState(() {});
+                              return;
+                            }
 
-                            _shouldSetState = true;
-                            if (('${GeocodePlaceIDCall.street(
-                                          (_model.geocode?.jsonBody ?? ''),
-                                        ) != null && GeocodePlaceIDCall.street(
-                                          (_model.geocode?.jsonBody ?? ''),
-                                        ) != '' ? GeocodePlaceIDCall.street(
-                                        (_model.geocode?.jsonBody ?? ''),
-                                      ) : GeocodePlaceIDCall.address(
-                                        (_model.geocode?.jsonBody ?? ''),
-                                      )} ' !=
-                                    _model.pointTextController.text) &&
-                                (GeocodePlaceIDCall.number(
-                                          (_model.geocode?.jsonBody ?? ''),
-                                        ) ==
-                                        null ||
-                                    GeocodePlaceIDCall.number(
-                                          (_model.geocode?.jsonBody ?? ''),
-                                        ) ==
-                                        '')) {
+                            if (resolved.needsHouseNumber) {
+                              debugPrint(
+                                '[Search.$tag] needHouse → keep focus',
+                              );
                               safeSetState(() {
                                 _model.pointTextController?.text =
-                                    '${GeocodePlaceIDCall.street(
-                                          (_model.geocode?.jsonBody ?? ''),
-                                        ) != null && GeocodePlaceIDCall.street(
-                                          (_model.geocode?.jsonBody ?? ''),
-                                        ) != '' ? GeocodePlaceIDCall.street(
-                                        (_model.geocode?.jsonBody ?? ''),
-                                      ) : GeocodePlaceIDCall.address(
-                                        (_model.geocode?.jsonBody ?? ''),
-                                      )} ';
+                                    '${resolved.addressLabel} ';
                                 _model.pointFocusNode?.requestFocus();
                                 WidgetsBinding.instance
                                     .addPostFrameCallback((_) {
                                   _model.pointTextController?.selection =
                                       TextSelection.collapsed(
-                                    offset:
-                                        _model.pointTextController!.text.length,
+                                    offset: _model
+                                        .pointTextController!.text.length,
                                   );
                                 });
                               });
-                              if (_shouldSetState) safeSetState(() {});
-                              return;
-                            } else {
-                              if (widget!.point == 'A') {
-                                final latlng = functions.convertLatLngFromStrings(
-                                    GeocodePlaceIDCall.lat(
-                                      (_model.geocode?.jsonBody ?? ''),
-                                    )!
-                                        .toString(),
-                                    GeocodePlaceIDCall.lng(
-                                      (_model.geocode?.jsonBody ?? ''),
-                                    )!
-                                        .toString());
-                                print('point a $latlng');
-                                context.read<OrdersBloc>().add(OrdersEvent.getEtas(userLocation: LocationEntity(lat: latlng!.latitude, lng: latlng!.longitude)));
-
-                                FFAppState().pointA = PointStruct(
-                                  latlng: latlng,
-                                  placeID: GeocodePlaceIDCall.placeId(
-                                    (_model.geocode?.jsonBody ?? ''),
-                                  ),
-                                  address: GeocodePlaceIDCall.number(
-                                                (_model.geocode?.jsonBody ??
-                                                    ''),
-                                              ) !=
-                                              null &&
-                                          GeocodePlaceIDCall.number(
-                                                (_model.geocode?.jsonBody ??
-                                                    ''),
-                                              ) !=
-                                              ''
-                                      ? '${GeocodePlaceIDCall.street(
-                                          (_model.geocode?.jsonBody ?? ''),
-                                        )}, ${GeocodePlaceIDCall.number(
-                                          (_model.geocode?.jsonBody ?? ''),
-                                        )}'
-                                      : (GeocodePlaceIDCall.street(
-                                                    (_model.geocode?.jsonBody ??
-                                                        ''),
-                                                  ) !=
-                                                  null &&
-                                              GeocodePlaceIDCall.street(
-                                                    (_model.geocode?.jsonBody ??
-                                                        ''),
-                                                  ) !=
-                                                  ''
-                                          ? GeocodePlaceIDCall.street(
-                                              (_model.geocode?.jsonBody ?? ''),
-                                            )
-                                          : GeocodePlaceIDCall.address(
-                                              (_model.geocode?.jsonBody ?? ''),
-                                            )),
-                                  fullAddress: GeocodePlaceIDCall.address(
-                                    (_model.geocode?.jsonBody ?? ''),
-                                  ),
-                                  city: GeocodePlaceIDCall.areal2(
-                                    (_model.geocode?.jsonBody ?? ''),
-                                  ) ?? GeocodePlaceIDCall.city(
-                                    (_model.geocode?.jsonBody ?? ''),
-                                  ),
-                                  region: GeocodePlaceIDCall.areal(
-                                    (_model.geocode?.jsonBody ?? ''),
-                                  ),
-                                );
-                                safeSetState(() {});
-                              } else if (widget!.point == 'C') {
-                                FFAppState().pointC = PointStruct(
-                                  latlng: functions.convertLatLngFromStrings(
-                                      GeocodePlaceIDCall.lat(
-                                        (_model.geocode?.jsonBody ?? ''),
-                                      )!
-                                          .toString(),
-                                      GeocodePlaceIDCall.lng(
-                                        (_model.geocode?.jsonBody ?? ''),
-                                      )!
-                                          .toString()),
-                                  placeID: GeocodePlaceIDCall.placeId(
-                                    (_model.geocode?.jsonBody ?? ''),
-                                  ),
-                                  address: GeocodePlaceIDCall.number(
-                                                (_model.geocode?.jsonBody ??
-                                                    ''),
-                                              ) !=
-                                              null &&
-                                          GeocodePlaceIDCall.number(
-                                                (_model.geocode?.jsonBody ??
-                                                    ''),
-                                              ) !=
-                                              ''
-                                      ? '${GeocodePlaceIDCall.street(
-                                          (_model.geocode?.jsonBody ?? ''),
-                                        )}, ${GeocodePlaceIDCall.number(
-                                          (_model.geocode?.jsonBody ?? ''),
-                                        )}'
-                                      : (GeocodePlaceIDCall.street(
-                                                    (_model.geocode?.jsonBody ??
-                                                        ''),
-                                                  ) !=
-                                                  null &&
-                                              GeocodePlaceIDCall.street(
-                                                    (_model.geocode?.jsonBody ??
-                                                        ''),
-                                                  ) !=
-                                                  ''
-                                          ? GeocodePlaceIDCall.street(
-                                              (_model.geocode?.jsonBody ?? ''),
-                                            )
-                                          : GeocodePlaceIDCall.address(
-                                              (_model.geocode?.jsonBody ?? ''),
-                                            )),
-                                  fullAddress: GeocodePlaceIDCall.address(
-                                    (_model.geocode?.jsonBody ?? ''),
-                                  ),
-                                  city: GeocodePlaceIDCall.areal2(
-                                    (_model.geocode?.jsonBody ?? ''),
-                                  ) ?? GeocodePlaceIDCall.city(
-                                    (_model.geocode?.jsonBody ?? ''),
-                                  ),
-                                  region: GeocodePlaceIDCall.areal(
-                                    (_model.geocode?.jsonBody ?? ''),
-                                  ),
-                                );
-                                safeSetState(() {});
-
-                                context.read<OrdersBloc>().add(
-                                    OrdersEvent.getPrices(
-                                        userLocation: LocationEntity(
-                                            lat: FFAppState().pointA
-                                                .latlng!.latitude,
-                                            lng: FFAppState().pointA
-                                                .latlng!.longitude),
-                                        destLocation: LocationEntity(
-                                            lat: FFAppState().pointB
-                                                .latlng!.latitude,
-                                            lng: FFAppState().pointB
-                                                .latlng!.longitude),
-                                        intermediate: FFAppState().pointC.address.isNotEmpty ? LocationEntity(
-                                            lat: FFAppState().pointC
-                                                .latlng!.latitude,
-                                            lng: FFAppState().pointC
-                                                .latlng!.longitude) : null,
-                                        movers: FFAppState().movers));
-
-                              } else {
-                                FFAppState().pointB = PointStruct(
-                                  latlng: functions.convertLatLngFromStrings(
-                                      GeocodePlaceIDCall.lat(
-                                        (_model.geocode?.jsonBody ?? ''),
-                                      )!
-                                          .toString(),
-                                      GeocodePlaceIDCall.lng(
-                                        (_model.geocode?.jsonBody ?? ''),
-                                      )!
-                                          .toString()),
-                                  placeID: GeocodePlaceIDCall.placeId(
-                                    (_model.geocode?.jsonBody ?? ''),
-                                  ),
-                                  address: GeocodePlaceIDCall.number(
-                                                (_model.geocode?.jsonBody ??
-                                                    ''),
-                                              ) !=
-                                              null &&
-                                          GeocodePlaceIDCall.number(
-                                                (_model.geocode?.jsonBody ??
-                                                    ''),
-                                              ) !=
-                                              ''
-                                      ? '${GeocodePlaceIDCall.street(
-                                          (_model.geocode?.jsonBody ?? ''),
-                                        )}, ${GeocodePlaceIDCall.number(
-                                          (_model.geocode?.jsonBody ?? ''),
-                                        )}'
-                                      : (GeocodePlaceIDCall.street(
-                                                    (_model.geocode?.jsonBody ??
-                                                        ''),
-                                                  ) !=
-                                                  null &&
-                                              GeocodePlaceIDCall.street(
-                                                    (_model.geocode?.jsonBody ??
-                                                        ''),
-                                                  ) !=
-                                                  ''
-                                          ? GeocodePlaceIDCall.street(
-                                              (_model.geocode?.jsonBody ?? ''),
-                                            )
-                                          : GeocodePlaceIDCall.address(
-                                              (_model.geocode?.jsonBody ?? ''),
-                                            )),
-                                  fullAddress: GeocodePlaceIDCall.address(
-                                    (_model.geocode?.jsonBody ?? ''),
-                                  ),
-                                  city: GeocodePlaceIDCall.areal2(
-                                    (_model.geocode?.jsonBody ?? ''),
-                                  ) ?? GeocodePlaceIDCall.city(
-                                    (_model.geocode?.jsonBody ?? ''),
-                                  ),
-                                  region: GeocodePlaceIDCall.areal(
-                                    (_model.geocode?.jsonBody ?? ''),
-                                  ),
-                                );
-                                safeSetState(() {});
-                              }
-
-                              Navigator.pop(context);
-                              context.read<OrdersBloc>().add(
-                                  OrdersEvent.getPrices(
-                                      userLocation: LocationEntity(
-                                          lat: FFAppState().pointA
-                                              .latlng!.latitude,
-                                          lng: FFAppState().pointA
-                                              .latlng!.longitude),
-                                      destLocation: LocationEntity(
-                                          lat: FFAppState().pointB
-                                              .latlng!.latitude,
-                                          lng: FFAppState().pointB
-                                              .latlng!.longitude),
-                                      intermediate: FFAppState().pointC.address.isNotEmpty ? LocationEntity(
-                                          lat: FFAppState().pointC
-                                              .latlng!.latitude,
-                                          lng: FFAppState().pointC
-                                              .latlng!.longitude) : null,
-                                      movers: FFAppState().movers));
-                              if (_shouldSetState) safeSetState(() {});
                               return;
                             }
 
-                            if (_shouldSetState) safeSetState(() {});
+                            final point = resolved.toPoint();
+                            debugPrint(
+                              '[Search.$tag] apply label="${resolved.addressLabel}"',
+                            );
+                            safeSetState(() {
+                              _model.pointTextController?.text =
+                                  resolved.addressLabel;
+                            });
+
+                            if (widget.point == 'A') {
+                              FFAppState().pointA = point;
+                            } else if (widget.point == 'C') {
+                              FFAppState().pointC = point;
+                            } else {
+                              FFAppState().pointB = point;
+                            }
+
+                            if (!mounted) return;
+                            final ordersBloc = context.read<OrdersBloc>();
+                            // Только шторка karta — не главный экран.
+                            safePopModal(context, tag: 'karta.close');
+                            FFAppState().update(() {});
+
+                            if (widget.point == 'A' && point.latlng != null) {
+                              ordersBloc.add(
+                                OrdersEvent.getEtas(
+                                  userLocation: LocationEntity(
+                                    lat: point.latlng!.latitude,
+                                    lng: point.latlng!.longitude,
+                                  ),
+                                ),
+                              );
+                            }
+                            if (FFAppState().pointA.latlng != null &&
+                                FFAppState().pointB.latlng != null) {
+                              ordersBloc.add(
+                                    OrdersEvent.getPrices(
+                                      userLocation: LocationEntity(
+                                        lat: FFAppState()
+                                            .pointA
+                                            .latlng!
+                                            .latitude,
+                                        lng: FFAppState()
+                                            .pointA
+                                            .latlng!
+                                            .longitude,
+                                      ),
+                                      destLocation: LocationEntity(
+                                        lat: FFAppState()
+                                            .pointB
+                                            .latlng!
+                                            .latitude,
+                                        lng: FFAppState()
+                                            .pointB
+                                            .latlng!
+                                            .longitude,
+                                      ),
+                                      intermediate: FFAppState()
+                                              .pointC
+                                              .address
+                                              .isNotEmpty
+                                          ? LocationEntity(
+                                              lat: FFAppState()
+                                                  .pointC
+                                                  .latlng!
+                                                  .latitude,
+                                              lng: FFAppState()
+                                                  .pointC
+                                                  .latlng!
+                                                  .longitude,
+                                            )
+                                          : null,
+                                      movers: FFAppState().movers,
+                                    ),
+                                  );
+                            }
                           },
                           child: Container(
                             decoration: BoxDecoration(),

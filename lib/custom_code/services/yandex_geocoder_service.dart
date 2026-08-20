@@ -36,10 +36,48 @@ class YandexGeocodeResult {
   final String titleOverride;
   final String subtitleOverride;
 
-  /// place_id: uri Suggest или lat,lng.
+  /// place_id: uri Suggest + текст/дом для резолва, либо lat,lng / текст.
+  /// Формат Suggest: `uri\\ttext\\thouse\\tstreet`
   String get placeId {
-    if (uri.isNotEmpty) return uri;
-    return '$lat,$lon';
+    if (uri.isNotEmpty) {
+      return '$uri\t$text\t$house\t$street';
+    }
+    if (lat.abs() > 0.01 || lon.abs() > 0.01) {
+      return '$lat,$lon';
+    }
+    return text;
+  }
+
+  YandexGeocodeResult copyWith({
+    double? lat,
+    double? lon,
+    String? text,
+    String? country,
+    String? city,
+    String? province,
+    String? street,
+    String? house,
+    String? district,
+    String? kind,
+    String? uri,
+    String? titleOverride,
+    String? subtitleOverride,
+  }) {
+    return YandexGeocodeResult(
+      lat: lat ?? this.lat,
+      lon: lon ?? this.lon,
+      text: text ?? this.text,
+      country: country ?? this.country,
+      city: city ?? this.city,
+      province: province ?? this.province,
+      street: street ?? this.street,
+      house: house ?? this.house,
+      district: district ?? this.district,
+      kind: kind ?? this.kind,
+      uri: uri ?? this.uri,
+      titleOverride: titleOverride ?? this.titleOverride,
+      subtitleOverride: subtitleOverride ?? this.subtitleOverride,
+    );
   }
 
   String get streetLine {
@@ -102,8 +140,43 @@ class YandexGeocoderService {
   static const minSuggestChars = 4;
 
   static bool isSuggestUri(String? value) {
-    final v = value?.trim() ?? '';
+    final v = (value?.trim() ?? '').split('\t').first;
     return v.startsWith('ymapsbm1://') || v.startsWith('yandexmaps://');
+  }
+
+  /// Нормализация для сравнения префикса с названием улицы.
+  static String _normalizeStreetQuery(String raw) {
+    var s = raw.toLowerCase().trim();
+    s = s.replaceAll(RegExp(r'\s+'), ' ');
+    s = s.replaceFirst(
+      RegExp(
+        r'^(улица|ул\.?|проспект|пр-т|пр\.?|переулок|пер\.?|проезд|площадь|пл\.?|бульвар|б-р|набережная|наб\.?)\s+',
+      ),
+      '',
+    );
+    return s.trim();
+  }
+
+  /// Префикс должен цепляться за улицу/дом в title, а не только за село в subtitle.
+  static bool _titleMatchesQuery(YandexGeocodeResult r, String query) {
+    final q = _normalizeStreetQuery(query);
+    if (q.length < 2) return true;
+    final title = _normalizeStreetQuery(
+      r.titleOverride.isNotEmpty ? r.titleOverride : r.streetLine,
+    );
+    final street = _normalizeStreetQuery(r.street);
+    final house = r.house.toLowerCase().trim();
+    if (title.contains(q) || street.contains(q)) return true;
+    // «елизаровых 56» — дом в title уже в title; отдельно дом как запрос.
+    if (house.isNotEmpty && q.contains(house) && street.isNotEmpty) {
+      final withoutHouse = q.replaceAll(house, '').trim();
+      if (withoutHouse.isEmpty ||
+          street.contains(withoutHouse) ||
+          title.contains(withoutHouse)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   static Future<List<YandexGeocodeResult>> searchByAddress({
@@ -140,9 +213,11 @@ class YandexGeocoderService {
         lon: bias.lon,
         lat: bias.lat,
       );
+      list = list.where((r) => _titleMatchesQuery(r, q)).toList(growable: false);
       if (list.isEmpty) {
         // Fallback: геокодер street/house, если Suggest недоступен по ключу.
         list = await _geocodeStreetFallback(q, lang, results, bias);
+        list = list.where((r) => _titleMatchesQuery(r, q)).toList(growable: false);
       }
 
       if (kDebugMode) {
@@ -210,6 +285,10 @@ class YandexGeocoderService {
       'countries': 'ru',
       'll': '$lon,$lat',
       'ull': '$lon,$lat',
+      // Окно вокруг пользователя (~город), чтобы сёла с похожим именем не доминировали.
+      'spn': '0.45,0.45',
+      'bbox': '${lon - 0.45},${lat - 0.35}~${lon + 0.45},${lat + 0.35}',
+      'strict_bounds': '0',
       'highlight': '0',
     });
     final response = await http.get(uri);
@@ -219,10 +298,13 @@ class YandexGeocoderService {
     }
     final data = jsonDecode(response.body);
     if (data is! Map<String, dynamic>) return [];
-    return _parseSuggest(data);
+    return _parseSuggest(data, query: text);
   }
 
-  static List<YandexGeocodeResult> _parseSuggest(Map<String, dynamic> data) {
+  static List<YandexGeocodeResult> _parseSuggest(
+    Map<String, dynamic> data, {
+    String query = '',
+  }) {
     final results = data['results'] as List<dynamic>?;
     if (results == null || results.isEmpty) return [];
 
@@ -242,7 +324,7 @@ class YandexGeocoderService {
       final uri = item['uri']?.toString() ?? '';
       final address = item['address'] as Map<String, dynamic>?;
       final formatted = address?['formatted_address']?.toString() ?? title;
-      final components = address?['component'] as List<dynamic>? ?? const [];
+      final components = address?['component'] as List<dynamic> ?? const [];
 
       String city = '';
       String province = '';
@@ -261,27 +343,35 @@ class YandexGeocoderService {
         if (kinds.contains('house') && house.isEmpty) house = name;
       }
 
-      out.add(
-        YandexGeocodeResult(
-          lat: 0,
-          lon: 0,
-          text: formatted,
-          city: city,
-          province: province,
-          street: street,
-          house: house,
-          kind: isHouse ? 'house' : 'street',
-          uri: uri,
-          titleOverride: title.isNotEmpty
-              ? title
-              : (street.isNotEmpty
-                  ? [street, if (house.isNotEmpty) house].join(', ')
-                  : formatted),
-          subtitleOverride: subtitle.isNotEmpty
-              ? subtitle
-              : (city.isNotEmpty ? city : province),
-        ),
+      // Дом из title, если в components нет (часто у Suggest).
+      if (house.isEmpty) {
+        final houseMatch = RegExp(r'(\d+[а-яА-Яa-zA-Z]?)\s*$').firstMatch(title);
+        if (houseMatch != null && isHouse) {
+          house = houseMatch.group(1) ?? '';
+        }
+      }
+
+      final parsed = YandexGeocodeResult(
+        lat: 0,
+        lon: 0,
+        text: formatted.isNotEmpty ? formatted : title,
+        city: city,
+        province: province,
+        street: street,
+        house: house,
+        kind: isHouse ? 'house' : 'street',
+        uri: uri,
+        titleOverride: title.isNotEmpty
+            ? title
+            : (street.isNotEmpty
+                ? [street, if (house.isNotEmpty) house].join(', ')
+                : formatted),
+        subtitleOverride: subtitle.isNotEmpty
+            ? subtitle
+            : (city.isNotEmpty ? city : province),
       );
+      if (!_titleMatchesQuery(parsed, query)) continue;
+      out.add(parsed);
     }
     return out;
   }
@@ -356,34 +446,84 @@ class YandexGeocoderService {
     );
   }
 
-  /// Разрешить Suggest uri (или lat,lng) в точку с координатами.
+  /// Разрешить Suggest uri (или lat,lng / текст) в точку с координатами.
   static Future<YandexGeocodeResult?> resolvePlaceId(String placeId) async {
     final id = placeId.trim();
     if (id.isEmpty) return null;
-    if (isSuggestUri(id)) {
-      final list = await _geocode(
+
+    final parts = id.split('\t');
+    final head = parts.first.trim();
+    final textHint = parts.length > 1 ? parts[1].trim() : '';
+    final houseHint = parts.length > 2 ? parts[2].trim() : '';
+    final streetHint = parts.length > 3 ? parts[3].trim() : '';
+
+    YandexGeocodeResult? enrich(YandexGeocodeResult? r) {
+      if (r == null) return null;
+      var out = r;
+      if (out.house.isEmpty && houseHint.isNotEmpty) {
+        out = out.copyWith(house: houseHint);
+      }
+      if (out.street.isEmpty && streetHint.isNotEmpty) {
+        out = out.copyWith(street: streetHint);
+      }
+      if (out.text.isEmpty && textHint.isNotEmpty) {
+        out = out.copyWith(text: textHint);
+      }
+      return out;
+    }
+
+    if (isSuggestUri(head)) {
+      if (kDebugMode) {
+        debugPrint('[Geocoder] resolve uri=${head.length > 48 ? '${head.substring(0, 48)}…' : head}');
+      }
+      var list = await _geocode(
         geocode: '',
         lang: 'ru_RU',
         results: 1,
         lon: _moscowLon,
         lat: _moscowLat,
-        uri: id,
+        uri: head,
       );
-      return list.isEmpty ? null : list.first;
+      if (list.isNotEmpty) {
+        if (kDebugMode) {
+          debugPrint(
+            '[Geocoder] resolve uri ok street=${list.first.street} house=${list.first.house}',
+          );
+        }
+        return enrich(list.first);
+      }
+      if (textHint.isNotEmpty) {
+        if (kDebugMode) {
+          debugPrint('[Geocoder] resolve uri empty → geocode text');
+        }
+        list = await _geocode(
+          geocode: textHint,
+          lang: 'ru_RU',
+          results: 1,
+          lon: _moscowLon,
+          lat: _moscowLat,
+        );
+        if (list.isNotEmpty) return enrich(list.first);
+      }
+      debugPrint('[Geocoder] resolve uri failed');
+      return null;
     }
-    final coords = parseLatLngPair(id);
+
+    final coords = parseLatLngPair(head);
     if (coords != null) {
-      return reverseGeocode(lat: coords.latitude, lon: coords.longitude);
+      return enrich(
+        await reverseGeocode(lat: coords.latitude, lon: coords.longitude),
+      );
     }
     // Текст адреса — прямой геокод.
     final list = await _geocode(
-      geocode: id,
+      geocode: head,
       lang: 'ru_RU',
       results: 1,
       lon: _moscowLon,
       lat: _moscowLat,
     );
-    return list.isEmpty ? null : list.first;
+    return enrich(list.isEmpty ? null : list.first);
   }
 
   static ({double lat, double lon}) _parseBias(String? raw) {

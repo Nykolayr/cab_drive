@@ -7,6 +7,7 @@ import 'package:yandex_mapkit/yandex_mapkit.dart';
 
 import '/backend/api_requests/api_calls.dart';
 import '/backend/schema/structs/index.dart';
+import '/custom_code/services/safe_modal_pop.dart';
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -200,7 +201,7 @@ class _MapPickerWidgetState extends State<MapPickerWidget> {
     }
 
     if (!mounted) return;
-    Navigator.of(context).pop(picked);
+    safePopPage(context, tag: 'MapPicker', result: picked);
   }
 
   @override
@@ -275,7 +276,7 @@ class _MapPickerWidgetState extends State<MapPickerWidget> {
               elevation: 2,
               child: InkWell(
                 customBorder: const CircleBorder(),
-                onTap: () => Navigator.of(context).pop(),
+                onTap: () => safePopPage(context, tag: 'MapPicker.back'),
                 child: const SizedBox(
                   width: 48,
                   height: 48,

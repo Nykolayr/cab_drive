@@ -224,6 +224,10 @@ class GeocodePlaceIDCall {
         final body = YandexGeocoderService.googleStyleGeocodeBody(result);
         return ApiCallResponse(body, {}, 200);
       }
+      // Suggest uri / яндекс place_id нельзя слать в Google — пустой ответ.
+      if (YandexGeocoderService.isSuggestUri(placeId)) {
+        return ApiCallResponse({'results': <dynamic>[]}, {}, 404);
+      }
     }
 
     return ApiManager.instance.makeApiCall(
