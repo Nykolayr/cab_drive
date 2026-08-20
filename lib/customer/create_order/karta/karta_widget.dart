@@ -299,6 +299,20 @@ class _KartaWidgetState extends State<KartaWidget> {
                         )?.toList() ??
                         [];
 
+                    if (point.isEmpty) {
+                      return const Padding(
+                        padding: EdgeInsets.fromLTRB(24, 24, 24, 0),
+                        child: Text(
+                          'Ничего не найдено',
+                          style: TextStyle(
+                            fontFamily: 'SF',
+                            color: Color(0xFFA4A6B2),
+                            fontSize: 15.0,
+                          ),
+                        ),
+                      );
+                    }
+
                     return ListView.builder(
                       padding: EdgeInsets.fromLTRB(
                         0,

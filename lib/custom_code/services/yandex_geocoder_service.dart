@@ -124,6 +124,7 @@ class YandexGeocoderService {
     final forLocality = types.contains('locality');
     try {
       final bias = _parseBias(location);
+      // Ищем по РФ; ll — только приоритет, не отсечение.
       var list = await _geocode(
         geocode: q,
         lang: lang,
@@ -131,7 +132,6 @@ class YandexGeocoderService {
         lon: bias.lon,
         lat: bias.lat,
         kind: forLocality ? 'locality' : null,
-        nearbyOnly: !forLocality,
       );
       if (list.isEmpty) {
         list = await _geocode(
@@ -141,7 +141,6 @@ class YandexGeocoderService {
           lon: bias.lon,
           lat: bias.lat,
           kind: forLocality ? 'locality' : null,
-          nearbyOnly: !forLocality,
         );
       }
       if (!forLocality && !_hasStreetLevel(list)) {
@@ -152,18 +151,18 @@ class YandexGeocoderService {
           lon: bias.lon,
           lat: bias.lat,
           kind: 'street',
-          nearbyOnly: true,
         );
         list = _mergeUnique([...streets, ...list]);
       }
       list = _filterAndSort(list, forLocality: forLocality);
+      // 20 км — только порядок: сначала ближние, потом остальные.
       if (!forLocality) {
-        list = _withinRadius(list, bias.lat, bias.lon, _nearbyRadiusKm);
+        list = _sortNearbyFirst(list, bias.lat, bias.lon, _nearbyRadiusKm);
       }
       if (kDebugMode) {
         debugPrint(
           '[Geocoder] q="$q" types=$types n=${list.length}'
-          ' radiusKm=${forLocality ? "-" : _nearbyRadiusKm}'
+          ' preferNearKm=$_nearbyRadiusKm'
           ' first=${list.isEmpty ? "-" : "${list.first.taxiTitle} | ${list.first.taxiSubtitle}"}',
         );
       }
@@ -181,7 +180,6 @@ class YandexGeocoderService {
     required double lon,
     required double lat,
     String? kind,
-    bool nearbyOnly = false,
   }) async {
     final params = <String, String>{
       'apikey': _apiKey,
@@ -190,14 +188,11 @@ class YandexGeocoderService {
       'lang': lang,
       'results': '$results',
       'll': '$lon,$lat',
-      'rspn': '1',
+      'spn': '2.5,2.5',
+      'bbox': _russiaBbox,
+      // rspn=0: не ограничивать окном ll/spn, иначе дальние города пропадают.
+      'rspn': '0',
     };
-    if (nearbyOnly) {
-      params['spn'] = _spanForRadiusKm(lat, _nearbyRadiusKm);
-    } else {
-      params['spn'] = '2.5,2.5';
-      params['bbox'] = _russiaBbox;
-    }
     if (kind != null && kind.isNotEmpty) {
       params['kind'] = kind;
     }
@@ -241,24 +236,23 @@ class YandexGeocoderService {
     return lat >= 41 && lat <= 82 && lon >= 19 && lon <= 180;
   }
 
-  /// spn Яндекса: ширина/высота окна в градусах ≈ радиус.
-  static String _spanForRadiusKm(double lat, double radiusKm) {
-    const kmPerDegLat = 111.32;
-    final latSpan = (2 * radiusKm / kmPerDegLat).clamp(0.05, 2.0);
-    final cosLat = math.cos(lat * math.pi / 180).abs().clamp(0.2, 1.0);
-    final lonSpan = (2 * radiusKm / (kmPerDegLat * cosLat)).clamp(0.05, 4.0);
-    return '${lonSpan.toStringAsFixed(4)},${latSpan.toStringAsFixed(4)}';
-  }
-
-  static List<YandexGeocodeResult> _withinRadius(
+  /// Сначала результаты в [radiusKm], затем остальные; внутри групп — по дистанции.
+  static List<YandexGeocodeResult> _sortNearbyFirst(
     List<YandexGeocodeResult> list,
     double lat,
     double lon,
     double radiusKm,
   ) {
-    return list
-        .where((r) => _distanceKm(lat, lon, r.lat, r.lon) <= radiusKm)
+    final scored = list
+        .map((r) => (r: r, km: _distanceKm(lat, lon, r.lat, r.lon)))
         .toList();
+    scored.sort((a, b) {
+      final aNear = a.km <= radiusKm;
+      final bNear = b.km <= radiusKm;
+      if (aNear != bNear) return aNear ? -1 : 1;
+      return a.km.compareTo(b.km);
+    });
+    return scored.map((e) => e.r).toList();
   }
 
   static double _distanceKm(
