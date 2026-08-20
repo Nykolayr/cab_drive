@@ -15,7 +15,8 @@ alwaysApply: true
 2. Если менялись **карты / плагины / нативка** — чеклист:
    - `pubspec.yaml` — `yandex_mapkit` есть, `google_maps_flutter` **нет**
    - `android/app/build.gradle` — `maps.mobile`, `BuildConfig.YANDEX_MAPS_API_KEY`, `minSdk 26`
-   - `MainActivity.kt` — `MapKitFactory.setApiKey` **до** `super.configureFlutterEngine`
+   - `MainActivity.kt` — кэш engine / `shouldDestroyEngineWithHost=false`; MapKit key в `CabDriveApplication` **до** engine
+   - `CabDriveApplication.kt` — `FlutterEngineCache` + `MapKitFactory.setApiKey`
    - `ios/Runner/AppDelegate.swift` — `YMKMapKit.setApiKey` **до** `GeneratedPluginRegistrant`
    - `lib/main.dart` — `AndroidYandexMap.useAndroidViewSurface` на Android
    - `grep` по `google_maps_flutter` / `FlutterFlowGoogleMap` в экранах заказа — не должно остаться

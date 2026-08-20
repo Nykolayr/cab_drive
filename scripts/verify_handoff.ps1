@@ -14,8 +14,14 @@ Write-Host "==> 1/4 Yandex MapKit configured"
 if (-not (Select-String -Path "pubspec.yaml" -Pattern "yandex_mapkit" -Quiet)) {
   throw "pubspec.yaml: missing yandex_mapkit"
 }
-if (-not (Select-String -Path "android\app\src\main\kotlin\com\example\my_project\MainActivity.kt" -Pattern "MapKitFactory.setApiKey" -Quiet)) {
-  throw "MainActivity.kt: MapKitFactory.setApiKey before super.configureFlutterEngine"
+if (-not (Select-String -Path "android\app\src\main\kotlin\com\example\my_project\CabDriveApplication.kt" -Pattern "MapKitFactory.setApiKey" -Quiet)) {
+  throw "CabDriveApplication.kt: MapKitFactory.setApiKey before FlutterEngine"
+}
+if (-not (Select-String -Path "android\app\src\main\kotlin\com\example\my_project\MainActivity.kt" -Pattern "FlutterEngineCache" -Quiet)) {
+  throw "MainActivity.kt: must reuse FlutterEngineCache (resume from background)"
+}
+if (-not (Select-String -Path "android\app\src\main\kotlin\com\example\my_project\MainActivity.kt" -Pattern "shouldDestroyEngineWithHost" -Quiet)) {
+  throw "MainActivity.kt: shouldDestroyEngineWithHost must return false"
 }
 if (Select-String -Path "pubspec.yaml" -Pattern "google_maps_flutter" -Quiet) {
   throw "pubspec.yaml: remove google_maps_flutter"

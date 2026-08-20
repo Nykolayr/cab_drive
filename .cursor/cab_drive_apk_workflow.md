@@ -2,6 +2,8 @@
 
 > Правило: `.cursor/rules/cab-drive-apk-workflow.mdc`
 
+**APK/AAB только по явной просьбе.** После фикса — сначала проверка через `flutter run`. Не собирать релиз «на всякий случай» и не предлагать отдавать заказчику без команды пользователя.
+
 ## Первый раз на машине
 
 ```powershell
@@ -17,11 +19,11 @@ flutter pub get
 
 ## Когда пользователь пишет «сделай апк»
 
-1. **Повысить версию** в `pubspec.yaml` (`+build` на 1).
+1. **Поднять версию** в `pubspec.yaml` (`+build` на 1), если не сказал «без bump».
 2. **`dart run tool/sync_env.dart`** (если меняли `.env`).
 3. **`flutter build apk --release`**
 4. **Скопировать** в `D:\Temp\cabdrive_{build}.apk`
-5. **Git:** commit + push
+5. **Git:** commit + push — если просил в том же запросе / полном сценарии.
 
 ## iOS (Mac)
 

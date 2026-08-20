@@ -24,8 +24,14 @@ alwaysApply: true
 - Жёсткие соглашения (DI, BLoC, логи, **feasibility research**) дублируй в **каноническом шаблоне** `D:\Projects\_my_template\digitalsquare` (см. `AGENTS.md`); продуктовый репо **наследует** — иначе следующий клон снова **без** фиксов.
 - Новые фичи: **`feature-feasibility-research.mdc`** — research до плана и кода.
 
+## 6. Cab Drive: фон / MapKit / FlutterEngine (не ломать)
+- После фона Activity может умереть при живом процессе. Без **кэша FlutterEngine** UI стартует с нуля (выбор роли, FCM.init снова).
+- **Не трогать** `MainActivity.kt` / `CabDriveApplication.kt` / MapKit `setApiKey`, если задача не про resume/краш карт. См. `cab-drive-do-not-touch.mdc`.
+- Критерий: Home → назад → тот же экран; в логах нет FATAL `setApiKey`.
+
 ## Чек-лист фичи с рисками
 - [ ] Порядок `await` / навигации / флага сессии **осмыслен** и, при сомнении, с тегами `AppLog.trace`
 - [ ] `Stack` с `Expanded` — не «случайно» `loose` + `shrink`
 - [ ] Списки: без лишнего `PageView`, constraints осмыслены
+- [ ] Не тронуты «священные» зоны (MapKit/Engine/подпись/APK), если задача не про них
 - [ ] `flutter analyze` зелёный; ручной прогон критичного пути (вход, демо, список, выход)
