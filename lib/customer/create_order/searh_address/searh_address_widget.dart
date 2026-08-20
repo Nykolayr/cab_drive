@@ -257,7 +257,7 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                   onChanged: (_) =>
                                       EasyDebounce.debounce(
                                         '_model.pointATextController',
-                                        Duration(milliseconds: 0),
+                                        Duration(milliseconds: 250),
                                             () async {
                                           currentUserLocationValue =
                                           await getCurrentUserLocation(
@@ -461,7 +461,7 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                   onChanged: (_) =>
                                       EasyDebounce.debounce(
                                         '_model.pointBTextController',
-                                        Duration(milliseconds: 0),
+                                        Duration(milliseconds: 250),
                                             () async {
                                           currentUserLocationValue =
                                           await getCurrentUserLocation(
@@ -666,6 +666,11 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                     [];
 
                                 if (aAAList.isEmpty) {
+                                  final typed =
+                                      _model.pointATextController.text.trim();
+                                  if (typed.length < 4) {
+                                    return const SizedBox.shrink();
+                                  }
                                   return const Padding(
                                     padding: EdgeInsets.fromLTRB(24, 24, 24, 0),
                                     child: Text(
@@ -1139,6 +1144,11 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                     [];
 
                                 if (bBBList.isEmpty) {
+                                  final typed =
+                                      _model.pointBTextController.text.trim();
+                                  if (typed.length < 4) {
+                                    return const SizedBox.shrink();
+                                  }
                                   return const Padding(
                                     padding: EdgeInsets.fromLTRB(24, 24, 24, 0),
                                     child: Text(

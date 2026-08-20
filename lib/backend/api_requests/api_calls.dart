@@ -218,17 +218,11 @@ class GeocodePlaceIDCall {
     String? placeId = '',
   }) async {
     if (YandexGeocoderService.hasApiKey) {
-      final coords = YandexGeocoderService.parseLatLngPair(placeId ?? '');
-      if (coords != null) {
-        final result = await YandexGeocoderService.reverseGeocode(
-          lat: coords.latitude,
-          lon: coords.longitude,
-        );
-        if (result != null) {
-          final body =
-              YandexGeocoderService.googleStyleGeocodeBody(result);
-          return ApiCallResponse(body, {}, 200);
-        }
+      final result =
+          await YandexGeocoderService.resolvePlaceId(placeId ?? '');
+      if (result != null) {
+        final body = YandexGeocoderService.googleStyleGeocodeBody(result);
+        return ApiCallResponse(body, {}, 200);
       }
     }
 

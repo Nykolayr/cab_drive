@@ -8,6 +8,9 @@ class YandexConfig {
 
   static String get geocoderKey => AppEnv.get('YANDEX_GEOCODER_KEY');
 
+  /// Geosuggest (префиксный поиск). Если пусто — берётся geocoder/mapkit key.
+  static String get suggestKey => AppEnv.get('YANDEX_SUGGEST_KEY');
+
   static bool get hasMapkitKey => mapkitKey.isNotEmpty;
 
   static bool get hasGeocoderKey =>
