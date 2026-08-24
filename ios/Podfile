@@ -1,5 +1,5 @@
 # Uncomment this line to define a global platform for your project
-platform :ios, '14.0.0'
+platform :ios, '15.0.0'
 
 # Suggest/Search с координатами — full YandexMapsMobile (см. yandex_mapkit.podspec).
 ENV['YANDEX_MAPKIT_VARIANT'] = 'full'
@@ -45,6 +45,8 @@ target 'Runner' do
   use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+  # Align with Android 16 KB MapKit (Unact yandex_mapkit v4.2.1).
+  pod 'YandexMapsMobile', '4.22.0-full'
   pod 'FirebaseFirestore', :git => 'https://github.com/invertase/firestore-ios-sdk-frameworks.git', :tag => '11.13.0'
 end
 

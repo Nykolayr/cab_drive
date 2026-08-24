@@ -133,5 +133,7 @@ flutter {
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.1.0"
-    implementation 'com.yandex.android:maps.mobile:4.6.1-full'
+    // 4.11.0+ required for Google Play 16 KB page size (libmaps-mobile.so).
+    // Keep in sync with yandex_mapkit (Unact v4.2.1 → maps.mobile 4.22.0).
+    implementation 'com.yandex.android:maps.mobile:4.22.0-full'
 }

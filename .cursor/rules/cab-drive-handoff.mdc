@@ -14,7 +14,8 @@ alwaysApply: true
 1. **`scripts/verify_handoff.ps1`** — агент запускает сам (`powershell -File scripts/verify_handoff.ps1`).
 2. Если менялись **карты / плагины / нативка** — чеклист:
    - `pubspec.yaml` — `yandex_mapkit` есть, `google_maps_flutter` **нет**
-   - `android/app/build.gradle` — `maps.mobile`, `BuildConfig.YANDEX_MAPS_API_KEY`, `minSdk 26`
+   - `android/app/build.gradle` — `maps.mobile` **≥ 4.11** (16 KB pages; сейчас `4.22.0-full` с Unact `yandex_mapkit` v4.2.1), `BuildConfig.YANDEX_MAPS_API_KEY`, `minSdk 26`
+   - Сборка Android: **JDK 21** (`JAVA_HOME` / `org.gradle.java.home`) — AAR MapKit 4.22+ это class file 65; на JDK 17 javac падает
    - `MainActivity.kt` — кэш engine / `shouldDestroyEngineWithHost=false`; MapKit key в `CabDriveApplication` **до** engine
    - `CabDriveApplication.kt` — `FlutterEngineCache` + `MapKitFactory.setApiKey`
    - `ios/Runner/AppDelegate.swift` — `YMKMapKit.setApiKey` **до** `GeneratedPluginRegistrant`
