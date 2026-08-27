@@ -1,0 +1,56 @@
+---
+description: Cab Drive — APK/AAB только по явной просьбе пользователя
+alwaysApply: true
+---
+
+# APK / AAB — только с ведома пользователя
+
+## Жёсткий запрет
+
+- **Не** собирать `apk` / `appbundle` / копировать в `D:\Temp` / предлагать «отдай заказчику», пока пользователь **явно** не попросил: «сделай апк», «сделай aab», «собери релиз» и т.п.
+- После фикса бага / фичи — **сначала** `flutter run` (или что попросил проверить), **APK не делать сам**.
+- Commit/push кода ≠ разрешение на APK. APK — отдельная явная команда.
+
+## Пакеты по сторам (обязательно)
+
+| Артефакт | Стор | `applicationId` | Как собрать |
+|----------|------|-----------------|-------------|
+| **AAB** | Google Play | **`com.cab.drive`** | `flutter build appbundle --release` (**без** rustore-флага) |
+| **APK** | RuStore | **`com.appwawe.YDrive`** | `$env:CAB_DRIVE_RUSTORE='true'; flutter build apk --release` |
+
+- Переключение в `android/app/build.gradle` по `CAB_DRIVE_RUSTORE` / `ORG_GRADLE_PROJECT_rustore` / `-Prustore`.
+- «Сделай апк» / «для рустор» → **всегда** `CAB_DRIVE_RUSTORE=true`, проверить badging = `com.appwawe.YDrive`.
+- «Сделай aab» / Play → **всегда** `com.cab.drive`, env rustore **сбросить**.
+- `google-services.json` уже содержит оба `package_name`.
+
+## Когда пользователь пишет «сделай апк» (RuStore)
+
+1. **Поднять версию** в `pubspec.yaml` (если не сказал «без bump» / «без поднятия»).
+2. **`dart run tool/sync_env.dart`**
+3. **`$env:CAB_DRIVE_RUSTORE='true'; flutter build apk --release`**
+4. Проверить `aapt dump badging` → `package: name='com.appwawe.YDrive'`
+5. **Скопировать** в `D:\Temp\cabdrive_{buildNumber}_rustore.apk`
+6. Сбросить `$env:CAB_DRIVE_RUSTORE`
+7. **Git:** commit + push — только если пользователь просил
+
+## Когда пользователь пишет «сделай aab» (Google Play)
+
+1. Bump (если не «без bump»).
+2. `dart run tool/sync_env.dart`
+3. Убедиться, что `CAB_DRIVE_RUSTORE` не задан
+4. **`flutter build appbundle --release`**
+5. Проверить package = `com.cab.drive`
+6. Копировать в `D:\Temp\cabdrive_{buildNumber}.aab`
+
+## Ключи
+
+- Один файл **`.env`** в корне (шаблон **`.env.example`**).
+- **Не** просить `--dart-define` для ключей.
+- RuStore и Play — **один и тот же** upload-keystore (не плодить отдельный «только для RuStore»).
+
+## Запрещено
+
+- Сборка без `.env` на машине.
+- APK «на всякий случай» после правок без запроса.
+- Грузить в RuStore APK с `com.cab.drive` или в Play AAB с `com.appwawe.YDrive`.
+- Пропускать bump / push / копирование в `D:\Temp`, когда пользователь **явно** заказал полный сценарий (кроме явного «без bump»).

@@ -1,0 +1,57 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ config.PROJECT_NAME }} - Коды авторизаций{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-12">
+            <h4>Коды авторизаций</h4>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-body">
+                <div class="row">
+                    <div class="col-12 table-responsive" style="border: none">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Дата</th>
+                                    <th>Телефон/почта</th>
+                                    <th>Код</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for auth_code in auth_codes %}
+                                <tr>
+                                    <td>{{ auth_code.id }}</td>
+                                    <td>{{ auth_code.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                                    <td>{{ auth_code.identity }}</td>
+                                    <td>{{ auth_code.code }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block script %}
+
+    <script>
+
+        let table = new DataTable($('.table'), {
+            "pageLength": 25,
+            order: [[0, 'desc']]
+        })
+
+    </script>
+
+{% endblock %}

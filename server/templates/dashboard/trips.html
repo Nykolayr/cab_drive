@@ -1,0 +1,159 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ config.PROJECT_NAME }} - Поездки{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-12">
+            <h4>Управление поездками</h4>
+            <div class="card card-body">
+                <div class="row">
+                    <div class="col-12 col-sm-2">
+                        <label for="status_id">Статус поездки</label>
+                        <select id="status_id" class="form-select">
+                            <option value="-100" {% if status_id == None %}selected{% endif %}>Любой</option>
+                            <option value="0" {% if status_id == 0 %}selected{% endif %}>Поиск машины</option>
+                            <option value="1" {% if status_id == 1 %}selected{% endif %}>Ожидаем ответ водителя</option>
+                            <option value="2" {% if status_id == 2 %}selected{% endif %}>Водитель едет на заказ</option>
+                            <option value="3" {% if status_id == 3 %}selected{% endif %}>Ожидание клиента</option>
+                            <option value="4" {% if status_id == 4 %}selected{% endif %}>Клиент в машине</option>
+                            <option value="10" {% if status_id == 10 %}selected{% endif %}>Поездка завершена</option>
+                            <option value="-10" {% if status_id == -10 %}selected{% endif %}>Поездка отменена</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-sm-2 mt-3 mt-sm-0">
+                        <label for="is_finished">Поездка завершена</label>
+                        <select id="is_finished" class="form-select">
+                            <option value="-100" {% if is_finished == None %}selected{% endif %}>Любая</option>
+                            <option value="0" {% if is_finished == False %}selected{% endif %}>Активная поездка</option>
+                            <option value="1" {% if is_finished == True %}selected{% endif %}>Поездка завершена</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-sm-3 mt-3 mt-sm-0">
+                        <label for="user_id">Клиент</label>
+                        <select id="user_id" class="form-select">
+                            <option value="0" {% if user_id == None %}selected{% endif %}>Любой</option>
+                            {% for client in users_list %}
+                                <option value="{{ client.id }}" {% if user_id == client.id %}selected{% endif %}>{{ client.id }} | [+7{{ client.phone }}] {{ client.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12 col-sm-3 mt-3 mt-sm-0">
+                        <label for="driver_id">Водитель</label>
+                        <select id="driver_id" class="form-select">
+                            <option value="0" {% if driver_id == None %}selected{% endif %}>Любой</option>
+                            {% for driver in drivers_list %}
+                                {% if driver.is_blocked == False %}
+                                    <option value="{{ driver.id }}" {% if driver_id == driver.id %}selected{% endif %}>{{ driver.id }} | [+7{{ driver.phone }}] {{ driver.fio() }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12 col-sm-2 mt-3 mt-sm-0">
+                        <label for="tariff_id">Тариф</label>
+                        <select id="tariff_id" class="form-select">
+                            <option value="0" {% if tariff_id == None %}selected{% endif %}>Любой</option>
+                            {% for tariff in tariffs_list %}
+                                {% if tariff.is_removed == False %}
+                                    <option value="{{ tariff.id }}" {% if tariff_id == tariff.id %}selected{% endif %}>{{ tariff.id }} | {{ tariff.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12 col-sm-2">
+                        <label for="price_from">Цена от</label>
+                        <input type="number" step="0.01" min="0" class="form-control" id="price_from" {% if price_from != None %}value="{{ price_from }}"{% endif %}>
+                    </div>
+                    <div class="col-12 col-sm-2 mt-3 mt-sm-0">
+                        <label for="price_to">Цена до</label>
+                        <input type="number" step="0.01" min="0" class="form-control" id="price_to" {% if price_to != None %}value="{{ price_to }}"{% endif %}>
+                    </div>
+                    <div class="col-12 col-sm-2 mt-3 mt-sm-0">
+                        <label for="distance_from">Дистанция от (км)</label>
+                        <input type="number" step="0.1" min="0" class="form-control" id="distance_from" {% if distance_from != None %}value="{{ distance_from }}"{% endif %}>
+                    </div>
+                    <div class="col-12 col-sm-2 mt-3 mt-sm-0">
+                        <label for="distance_to">Дистанция до (км)</label>
+                        <input type="number" step="0.1" min="0" class="form-control" id="distance_to" {% if distance_to != None %}value="{{ distance_to }}"{% endif %}>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12 col-sm-2">
+                        <label for="start_date">Дата с</label>
+                        <input type="datetime-local" class="form-control" id="start_date" {% if start_date != None %}value="{{ start_date.strftime('%Y-%m-%dT%H:%M') }}" {% endif %}>
+                    </div>
+                    <div class="col-12 col-sm-2 mt-3 mt-sm-0">
+                        <label for="finish_date">Дата до</label>
+                        <input type="datetime-local" class="form-control" id="finish_date" {% if finish_date != None %}value="{{ finish_date.strftime('%Y-%m-%dT%H:%M') }}" {% endif %}>
+                    </div>
+                    <div class="col-12 col-sm-2 offset-md-6 mt-3 mt-sm-0">
+                        <label> </label>
+                        <button class="btn btn-primary w-100" onclick="filterus()">Применить</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-2 d-none d-sm-block">
+                <div class="col-12">
+                    <div class="card card-body">
+                        <div class="row">
+                            <div class="col-12">
+                                <div id="tableContainer"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-sm-none" id="mobileContainer"></div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block script %}
+
+    <script>
+
+        let table;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            table = new AdaptiveTable({
+                endpoint: '/api/trips/list',
+                container: document.getElementById('tableContainer'),
+                additionalParams: getParams(),
+                mobileContainer: document.getElementById('mobileContainer')
+            })
+        });
+
+        function filterus(){
+            updateFilters();
+        }
+
+        function updateFilters(){
+            table.updateParams(getParams())
+            table.reload();
+        }
+
+        function getParams(){
+            return {
+                status_id: $('#status_id').val(),
+                is_finished: $('#is_finished').val(),
+                user_id: $('#user_id').val(),
+                driver_id: $('#driver_id').val(),
+                tariff_id: $('#tariff_id').val(),
+                start_date: $('#start_date').val(),
+                finish_date: $('#finish_date').val(),
+                price_from: $('#price_from').val(),
+                price_to: $('#price_to').val(),
+                distance_from: $('#distance_from').val(),
+                distance_to: $('#distance_to').val(),
+            };
+        }
+
+    </script>
+
+{% endblock %}

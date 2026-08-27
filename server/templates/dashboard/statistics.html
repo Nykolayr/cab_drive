@@ -1,0 +1,205 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ config.PROJECT_NAME }} - Статистика{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-12">
+
+            <div class="card card-body">
+                <div class="row">
+                    <div class="col-12 col-sm-3 mt-3 mt-sm-0">
+                        <label for="user_id">Клиент</label>
+                        <select id="user_id" class="form-select">
+                            <option value="" {% if user_id == None %}selected{% endif %}>{{Любой if user_id == None else user_id}}</option>
+                            {% for client in users_list %}
+                                <option value="{{ client.id }}" {% if user_id == client.id %}selected{% endif %}>{{ client.id }} {{ client.display_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                        <div class="col-12 col-sm-3 mt-3 mt-sm-0">
+                        <label for="driver_id">Водитель</label>
+                        <select id="driver_id" class="form-select">
+                            <option value="" {% if driver_id == None %}selected{% endif %}>{{Любой if driver_id == None else driver_id}}</option>
+                            {% for client in driver_list %}
+                                <option value="{{ client.id }}" {% if user_id == client.id %}selected{% endif %}>{{ client.id }} {{ client.display_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12 col-sm-2">
+                        <label for="city">Город</label>
+                        <input type="text" class="form-control" id="city" {% if city != None %}value="{{ city }}" {% endif %}>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12 col-sm-2">
+                        <label for="start_date">Дата с</label>
+                        <input type="datetime-local" class="form-control" id="start_date" {% if start_date != None %}value="{{ start_date.strftime('%Y-%m-%dT%H:%M') }}" {% endif %}>
+                    </div>
+                    <div class="col-12 col-sm-2 mt-3 mt-sm-0">
+                        <label for="finish_date">Дата до</label>
+                        <input type="datetime-local" class="form-control" id="finish_date" {% if finish_date != None %}value="{{ finish_date.strftime('%Y-%m-%dT%H:%M') }}" {% endif %}>
+                    </div>
+                    <div class="col-12 col-sm-2 offset-md-6 mt-3 mt-sm-0">
+                        <label> </label>
+                        <button class="btn btn-primary w-100" onclick="filterus()">Применить</button>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="mt-5">Общая статистика</h2>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card text-white bg-primary mb-3">
+                        <div class="card-header" style="background-color: #343a40;">Заказы</div>
+                        <div class="card-body">
+                            <h5 class="card-title">Последний день: {{ order_stats[0] }}</h5>
+                            <h5 class="card-title">Последняя неделя: {{ order_stats[1] }}</h5>
+                            <h5 class="card-title">Последний месяц: {{ order_stats[2] }}</h5>
+                            <h5 class="card-title">Всего: {{ order_stats[3] }}</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card text-white bg-success mb-3">
+                        <div class="card-header" style="background-color: #343a40;">Заработок</div>
+                        <div class="card-body">
+                            <h5 class="card-title">Последний день: {{ order_stats[4] }} ₽</h5>
+                            <h5 class="card-title">Последняя неделя: {{ order_stats[5] }} ₽</h5>
+                            <h5 class="card-title">Последний месяц: {{ order_stats[6] }} ₽</h5>
+                            <h5 class="card-title">Всего: {{ order_stats[7] }} ₽</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card text-white bg-warning mb-3">
+                        <div class="card-header" style="background-color: #343a40;">Комиссия</div>
+                        <div class="card-body">
+                            <h5 class="card-title">Последний день: {{ order_stats[8] }} ₽</h5>
+                            <h5 class="card-title">Последняя неделя: {{ order_stats[9] }} ₽</h5>
+                            <h5 class="card-title">Последний месяц: {{ order_stats[10] }} ₽</h5>
+                            <h5 class="card-title">Всего: {{ order_stats[11] }} ₽</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="mt-5">Статистика по статусам заказов в режиме реального времени</h2>
+            <div class="card">
+                <div class="card-header" style="background-color: #343a40; color: white;">Статусы заказов</div>
+                <div class="card-body">
+                    {% for status, count in order_stats[13].items() %}
+                        <p>{{ status }}: {{ count }} шт</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <h2 class="mt-5">График заработка</h2>
+            <canvas id="earningsChart" width="400" height="200"></canvas>
+
+           <div class="mt-3">
+                <a class="btn btn-primary" id="exportStatistics" >Экспортировать статистику</a>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+
+            document.getElementById('exportStatistics').addEventListener('click', function() {
+        const orderCounts = {{ order_stats[0:4] | tojson }};
+        const earnings = {{ order_stats[4:8] | tojson }};
+        const commissionEarnings = {{ order_stats[8:12] | tojson }};
+        const monthlyEarnings = {{ order_stats[12] | tojson }};
+        const statusCounts = {{ order_stats[13] | tojson }};
+
+        fetch("/d/api/orders/export_statistics", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                order_counts: orderCounts,
+                earnings: earnings,
+                commission_earnings: commissionEarnings,
+                monthly_earnings: monthlyEarnings,
+                status_counts: statusCounts
+            })
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.blob();
+            } else {
+                throw new Error('Network response was not ok.');
+            }
+        })
+        .then(blob => {
+            // Создание ссылки для скачивания файла
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'order_statistics.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        })
+        .catch(error => console.error('Error:', error));
+    });
+
+
+        const ctx = document.getElementById('earningsChart').getContext('2d');
+        const monthlyEarningsData = [{{ order_stats[12][0] }}, {{ order_stats[12][1] }}, {{ order_stats[12][2] }}, {{ order_stats[12][3] }}, {{ order_stats[12][4] }}, {{ order_stats[12][5] }}, {{ order_stats[12][6] }}, {{ order_stats[12][7] }}, {{ order_stats[12][8] }}, {{ order_stats[12][9] }}, {{ order_stats[12][10] }}, {{ order_stats[12][11] }}];
+
+        const earningsChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+            datasets: [{
+              label: 'Заработок по месяцам',
+              data: monthlyEarningsData,
+              backgroundColor: 'rgba(75, 192, 192, 0.2)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+
+            function filterus() {
+            updateFilters();
+
+            const queryParams = getParams();
+            const queryString = $.param(queryParams); // Преобразуем параметры в строку запроса
+            window.location.search = queryString; // Обновляем URL с новыми параметрами
+        }
+        function updateFilters(){
+
+
+        }
+
+        function getParams(){
+            return {
+                user_id: $('#user_id').val(),
+                driver_id: $('#driver_id').val(),
+                start_date: $('#start_date').val(),
+                finish_date: $('#finish_date').val(),
+                city: $('#city').val(),
+
+            };
+        }
+
+    </script>
+{% endblock %}

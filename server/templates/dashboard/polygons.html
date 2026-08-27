@@ -1,0 +1,121 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ config.PROJECT_NAME }} - Редактор зон{% endblock %}
+
+{% block style %}
+    <style>
+        #map{
+            width: 100%;
+            height: 650px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+
+    <div class="row">
+        <div class="col-12">
+            <h4>Редактор зон | Зоны работы</h4>
+            <div class="card card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <button class="btn btn-primary" id="addPolygonBtn">Добавить полигон</button>
+                        <button class="btn btn-primary ms-3" id="savePolygonsBtn">Сохранить</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card card-body mt-3">
+                <div class="row">
+                    <div class="col-12">
+                        <div id="map"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+
+{% block script %}
+
+    <script>
+
+        let map;
+        let polygons = [];
+
+        ymaps.ready(init);
+
+        function init() {
+            map = new ymaps.Map("map", {
+                center: [51.804106, 107.469829],
+                zoom: 7,
+                controls: ['zoomControl']
+            });
+
+            const savedPolygons = {{ polygons_json|safe }}; // [{coords: [[lat,lng],...]}]
+
+            // Отрисовываем сохранённые полигоны
+            savedPolygons.forEach(poly => {
+                const polygon = createPolygon(poly.coords);
+                map.geoObjects.add(polygon);
+                polygon.editor.startEditing();
+                polygons.push(polygon);
+            });
+
+            // Кнопка "Добавить полигон"
+            document.getElementById('addPolygonBtn').onclick = function () {
+                const polygon = createPolygon([]);
+                map.geoObjects.add(polygon);
+                polygon.editor.startDrawing();
+                polygons.push(polygon);
+            };
+
+            // Кнопка "Сохранить"
+            document.getElementById('savePolygonsBtn').onclick = function () {
+                const data = polygons.map(poly => ({
+                    coords: poly.geometry.getCoordinates()[0] // первый контур
+                }));
+
+                sendRequest({
+                    url: '/kek/settings/polygons',
+                    method: 'POST',
+                    data: data,
+                    is_json: true,
+                    success_callback: function (r){
+                        if(r['status'] !== 'ok') return showError(r['message']);
+                        showSuccess('Сохранение', 'Рабочие зоны успешно обновлены')
+                    }
+                })
+            };
+        }
+
+        // Функция создания полигона с блокировкой "внутренних контуров"
+        function createPolygon(coords) {
+            const polygon = new ymaps.Polygon(
+                [coords], // только один контур
+                {},
+                {
+                    editorDrawingCursor: "crosshair",
+                    fillColor: '#31b05355',
+                    strokeColor: '#31b053',
+                    strokeWidth: 2
+                }
+            );
+
+            // Убираем кнопку "Добавить контур" из меню редактора
+            polygon.events.add('editorstatechange', function () {
+                const menu = polygon.editor._menu;
+                if (menu && menu.items) {
+                    menu.items = menu.items.filter(item => item.id !== 'AddContour');
+                }
+            });
+
+            return polygon;
+        }
+
+    </script>
+
+{% endblock %}

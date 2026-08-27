@@ -1,0 +1,189 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ config.PROJECT_NAME }} - Водители{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-12">
+            <h4>Управление водителями</h4>
+            <div class="card card-body">
+                <div class="row">
+                    <div class="col-12 col-sm-2">
+                        <label for="driverStatus">Статус водителя</label>
+                        <select id="driverStatus" class="form-select" onchange="filterus()">
+                            <option value="" {% if status == None %}selected{% endif %}>Любой</option>
+                            {% for driver_status in DriverStatus %}
+                                <option value="{{ driver_status.value }}" {% if status == driver_status %}selected{% endif %}>{{ driver_status.value }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12 col-sm-2 mt-3 mt-sm-0">
+                        <label for="is_blocked">Статус аккаунта</label>
+                        <select id="is_blocked" class="form-select" onchange="filterus()">
+                            <option value="0" {% if is_blocked == False %}selected{% endif %}>Активный</option>
+                            <option value="1" {% if is_blocked == True %}selected{% endif %}>Заблокированный</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-sm-2 offset-sm-6 mt-5 mt-sm-0">
+                        <label for=""> </label>
+                        <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#createDriverModal">Добавить водителя</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card card-body">
+                <div class="row">
+                    <div class="col-12 table-responsive" style="border: none">
+                        <table class="table table-condensed table-striped table-sm">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Телефон</th>
+                                <th>ФИО</th>
+                                <th>Автомобиль</th>
+                                <th>Гос. Номер авто</th>
+                                <th>Статус</th>
+                                <th>Заблокирован</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for driver in drivers_list %}
+                                <tr>
+                                    <td>{{ driver.id }}</td>
+                                    <td>+7{{ driver.phone }}</td>
+                                    <td>{{ driver.fio() }}</td>
+                                    <td>{{ driver.car_brand }} {{ driver.car_model }}</td>
+                                    <td>{{ driver.car_numberplate }}</td>
+                                    <td>{{ driver.status.value }}</td>
+                                    <td>
+                                        {% if driver.is_blocked %}
+                                            <span class="text-danger">Да</span>
+                                        {% else %}
+                                            Нет
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="/d/driver?id={{ driver.id }}">
+                                            <button class="btn btn-secondary btn-sm">Управление</button>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="createDriverModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Добавление водителя</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <label for="driverPhone">Номер телефона</label>
+                            <input type="text" class="form-control" id="driverPhone">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-4">
+                            <label for="driverSurname">Фамилия</label>
+                            <input type="text" class="form-control" id="driverSurname">
+                        </div>
+                        <div class="col-4">
+                            <label for="driverName">Имя</label>
+                            <input type="text" class="form-control" id="driverName">
+                        </div>
+                        <div class="col-4">
+                            <label for="driverSecondName">Отчество</label>
+                            <input type="text" class="form-control" id="driverSecondName">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <label for="carBrand">Марка авто</label>
+                            <input type="text" class="form-control" id="carBrand">
+                        </div>
+                        <div class="col-6">
+                            <label for="carModel">Модель</label>
+                            <input type="text" class="form-control" id="carModel">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <label for="carNumberplate">Гос.номер авто</label>
+                            <input type="text" class="form-control" id="carNumberplate">
+                        </div>
+                        <div class="col-6">
+                            <label for="carColor">Цвет</label>
+                            <input type="text" class="form-control" id="carColor">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary" onclick="createDriver()">Добавить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block script %}
+
+    <script>
+
+        function filterus(){
+            location.href = `/d/drivers?status=${driverStatus.value}&is_blocked=${is_blocked.value}`;
+        }
+
+        IMask(document.getElementById('driverPhone'),
+            {
+                mask: '+{7} (000) 000-00-00'
+            }
+        )
+
+        let table = new DataTable($('.table'), {
+            "pageLength": 25,
+            order: [[0, 'desc']]
+        })
+
+        function createDriver(){
+            let data = {
+                'name': $('#driverName').val(),
+                'surname': $('#driverSurname').val(),
+                'second_name': $('#driverSecondName').val(),
+                'phone': $('#driverPhone').val(),
+                'car': {
+                    'brand': $('#carBrand').val(),
+                    'model': $('#carModel').val(),
+                    'numberplate': $('#carNumberplate').val(),
+                    'color': $('#carColor').val(),
+                }
+            }
+
+            sendRequest({
+                url: '/api/drivers/create',
+                method: 'post',
+                is_json: true,
+                data: data,
+                success_callback: function (r){
+                    if(r['status'] !== 'ok') return showError(r['message']);
+
+                    location.href = '/d/driver?id=' + r['driver']['id'];
+                }
+            })
+        }
+
+    </script>
+
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ config.PROJECT_NAME }} - Общие настройки поездок{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 col-sm-6">
+        <h4>Время до удаления нового заказа</h4>
+        <div class="card card-body">
+            <div class="row">
+                <div class="col-12">
+                    <label for="minutes_for_remove">В минутах</label>
+                    <input type="number"
+                           class="form-control saved"
+                           id="minutes_for_remove"
+                           value="{{ minutes }}"
+                           placeholder="15">
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <button class="btn btn-primary w-100" onclick="saveMinutes()">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6"> <!-- Новая карточка -->
+        <h4>Время до окончания заказа</h4>
+        <div class="card card-body">
+            <div class="row">
+                <div class="col-12">
+                    <label for="minutes_for_deadline">В минутах</label>
+                    <input type="number"
+                           class="form-control saved"
+                           id="minutes_for_deadline"
+                           value="{{ deadline_minutes }}"
+                           placeholder="30"> <!-- Замените на нужное значение по умолчанию -->
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <button class="btn btn-primary w-100" onclick="saveDeadline()">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    function saveMinutes() {
+        let value = document.getElementById('minutes_for_remove').value;
+
+        sendRequest({
+            url: '/kek/settings/edit_minutes',
+            method: 'post',
+            is_json: true,
+            data: {
+                'minutes': value
+            },
+            success_callback: function (r) {
+                if(r['status'] !== 'ok') return showError(r['message']);
+                showSuccess('Сохранение', r['message']);
+            }
+        });
+    }
+
+    function saveDeadline() {
+        let value = document.getElementById('minutes_for_deadline').value;
+
+        sendRequest({
+            url: '/kek/settings/edit_deadlines', // Новый URL для сохранения
+            method: 'post',
+            is_json: true,
+            data: {
+                'minutes': value
+            },
+            success_callback: function (r) {
+                if(r['status'] !== 'ok') return showError(r['message']);
+                showSuccess('Сохранение', r['message']);
+            }
+        });
+    }
+</script>
+{% endblock %}

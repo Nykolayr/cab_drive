@@ -1,0 +1,78 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ config.PROJECT_NAME }} - Чаты{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-12">
+            <h4>Управление чатами</h4>
+            <div class="card card-body">
+
+                <div class="row">
+                    <div class="col-12 table-responsive" style="border: none">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Дата создания</a></th>
+                                    <th>Пользователь</th>
+                                    <th><a href="?sort=unread_count">Не прочитанные сообщения</a></th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for chat in chat_list %}
+                                <tr>
+                                    <td>{{ chat.date_created.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    <td>
+                                        {% for user in chat.users %}
+                                            {{ user }}{% if not loop.last %}, {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    <td>{{ chat.unread_count }}</td>
+                                    <td>
+                                        <a href="/d/chat?chat_id={{ chat.id }}&user_id={{ chat.user_id|default('') }}&user_name={{ chat.users[0]|default('') }}">
+                                            <button class="btn btn-sm btn-secondary">Перейти в чат</button>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="col-md-12 text-center">
+                        <nav>
+                            <ul class="pagination">
+                                {% if page > 1 %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page - 1 }}&sort={{ sort }}">Назад</a>
+                                </li>
+                                {% endif %}
+                                {% for p in range(1, total_pages + 1) %}
+                                <li class="page-item {% if p == page %}active{% endif %}">
+                                    <a class="page-link" href="?page={{ p }}&sort={{ sort }}">{{ p }}</a>
+                                </li>
+                                {% endfor %}
+                                {% if page < total_pages %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page + 1 }}&sort={{ sort }}">Вперед</a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        function sortChats() {
+            const sortValue = document.getElementById('sort_by').value;
+            window.location.href = `?sort=${sortValue}`;
+        }
+    </script>
+{% endblock %}

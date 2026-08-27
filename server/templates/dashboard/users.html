@@ -1,0 +1,207 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ config.PROJECT_NAME }} - Пользователи{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-12">
+            <h4>Управление пользователями</h4>
+            <div class="d-flex gap-3 mb-3">
+                <div class="form-group" style="width: 200px;">
+                    <label for="userTypeFilter">Фильтр пользователей:</label>
+                    <select id="userTypeFilter" class="form-control" onchange="filterUsers(this.value)">
+                        <option value="all" {% if filter == 'all' %}selected{% endif %}>Все</option>
+                        <option value="driver" {% if filter == "driver" %}selected{% endif %}>Водители</option>
+                        <option value="client" {% if filter == 'client' %}selected{% endif %}>Клиенты</option>
+                        <option value="verification" {% if filter == 'verification' %}selected{% endif %}>Новые заявки</option>
+                    </select>
+                </div>
+                <div class="form-group" style="width: 300px;">
+                    <label for="searchInput">Поиск:</label>
+                    <div class="input-group">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Email, имя или телефон" value="{{ search or '' }}" onkeypress="if(event.key==='Enter') searchUsers()">
+                        <button class="btn btn-primary" type="button" onclick="searchUsers()">Найти</button>
+                        {% if search %}
+                        <button class="btn btn-outline-secondary" type="button" onclick="clearSearch()">✕</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-body">
+                <div class="row">
+                    <div class="col-12 table-responsive" style="border: none">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Email</th>
+                                <th>Имя</th>
+                                <th>Дата регистрации</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for _user in users_list %}
+                                <tr>
+                                    <td>{{ _user['id'] }}</td>
+                                    <td data-order="{{ _user['email'] }}">{{ _user['email'] }}</td>
+                                    <td>{{ _user['display_name'] }}</td>
+                                    <td data-order="{{ _user['created_time'] }}">{{ _user['created_time'].strftime('%d.%m.%Y %H:%M') }}</td>
+                                    <td>
+                                        <a href="/d/user?id={{ _user.id }}">
+                                            <button class="btn btn-sm btn-secondary">{% if _user.is_driver %}Водитель{% else %}Клиент{% endif %}</button>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+
+                        <!-- Pagination block -->
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div>
+                                <small>Всего: {{ total_users or 0 }} записей</small>
+                            </div>
+                            <div>
+                                {% set tp = total_pages or 1 %}
+                                {% if tp < 1 %}
+                                    {% set tp = 1 %}
+                                {% endif %}
+                                <nav aria-label="Страницы">
+                                    <ul class="pagination mb-0">
+                                        <li class="page-item {% if current_page <= 1 %}disabled{% endif %}">
+                                            <a class="page-link" href="javascript:void(0)" onclick="goToPage({{ (current_page - 1) if current_page and current_page > 1 else 1 }})">Prev</a>
+                                        </li>
+
+                                        {% set start_page = current_page - 2 if current_page and current_page-2 > 1 else 1 %}
+                                        {% set end_page = start_page + 4 %}
+                                        {% if end_page > tp %}
+                                            {% set end_page = tp %}
+                                            {% set start_page = end_page - 4 if end_page-4 > 1 else 1 %}
+                                        {% endif %}
+
+                                        {% for p in range(start_page, end_page + 1) %}
+                                            <li class="page-item {% if p == current_page %}active{% endif %}">
+                                                <a class="page-link" href="javascript:void(0)" onclick="goToPage({{ p }})">{{ p }}</a>
+                                            </li>
+                                        {% endfor %}
+
+                                        <li class="page-item {% if current_page >= tp %}disabled{% endif %}">
+                                            <a class="page-link" href="javascript:void(0)" onclick="goToPage({{ (current_page + 1) if current_page and current_page < tp else tp }})">Next</a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                        <!-- /Pagination block -->
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+
+    <script>
+        // Инициализация текущей страницы из контекста (если нет - 1)
+        const currentPage = {{ current_page or 1 }};
+        const totalPages = {{ total_pages or 1 }};
+
+        function filterUsers(userType) {
+            const queryParams = new URLSearchParams(window.location.search);
+            queryParams.set('filter', userType);
+            queryParams.set('page', 1);
+            window.location.search = queryParams.toString();
+        }
+
+        function searchUsers() {
+            const searchValue = document.getElementById('searchInput').value.trim();
+            const queryParams = new URLSearchParams(window.location.search);
+            if (searchValue) {
+                queryParams.set('search', searchValue);
+            } else {
+                queryParams.delete('search');
+            }
+            queryParams.set('page', 1);
+            window.location.search = queryParams.toString();
+        }
+
+        function clearSearch() {
+            const queryParams = new URLSearchParams(window.location.search);
+            queryParams.delete('search');
+            queryParams.set('page', 1);
+            window.location.search = queryParams.toString();
+        }
+
+        function getParams(){
+            const params = new URLSearchParams(window.location.search);
+            return {
+                filter: params.get('filter') || '{{ filter or "all" }}',
+                page: currentPage
+            };
+        }
+
+        function goToPage(page){
+            if (!page || page < 1) page = 1;
+            if (totalPages && page > totalPages) page = totalPages;
+            const queryParams = new URLSearchParams(window.location.search);
+            queryParams.set('page', page);
+            window.location.search = queryParams.toString();
+        }
+
+        // Отключаем встроенную пагинацию DataTables чтобы использовать серверную пагинацию
+        let table = $(`.table`).DataTable({
+            "pageLength": 25,
+            "paging": false,
+            "info": false,
+            order: [[0, 'desc']]
+        });
+
+        function removeUser(user_id, el){
+            showConfirm('Блокировка', 'Вы действительно хотите заблокировать этого пользователя?', 'Да', function (){
+                sendRequest({
+                    url: '/api/users/remove',
+                    method: 'post',
+                    data: {
+                        id: user_id,
+                    },
+                    success_callback: function (r){
+                        if(r['status'] !== 'ok') return showError(r['message']);
+                        showSuccess(r['message']);
+
+                        // Обновляем страницу после блокировки
+                        window.location.reload();
+                    }
+                })
+            })
+        }
+
+        function unremoveUser(user_id, el){
+            showConfirm('Разблокировка', 'Вы действительно хотите разблокировать этого пользователя?', 'Да', function (){
+                sendRequest({
+                    url: '/api/users/unremove',
+                    method: 'post',
+                    data: {
+                        id: user_id,
+                    },
+                    success_callback: function (r){
+                        if(r['status'] !== 'ok') return showError(r['message']);
+                        showSuccess(r['message']);
+
+                        // Обновляем страницу после разблокировки
+                        window.location.reload();
+                    }
+                })
+            })
+        }
+    </script>
+
+{% endblock %}

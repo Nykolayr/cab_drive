@@ -1,0 +1,396 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ config.PROJECT_NAME }} - {{ driver.fio() }}{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-12 col-sm-4">
+            <h4>Управление водителем</h4>
+            <div class="card card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <label for="photo_uuid">Фотография</label>
+                        <div id="userPhotoRow" class="photoBox mb-3" {% if driver.photo_uuid == None %}style="display: none" {% endif %}>
+                            <img src="/kek/files/get?uuid={{ driver.photo_uuid }}" alt="" {% if driver.photo_uuid != None %}uuid="{{ driver.photo_uuid }}"{% endif %} id="photo_uuid">
+                        </div>
+                        <button class="btn btn-outline-primary btn-sm w-100" onclick="loadPhoto();">Загрузить фотографию</button>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-6">
+                        <label for="">ID водителя</label>
+                        <input type="text" class="form-control" value="{{ driver.id }}" disabled>
+                    </div>
+                    <div class="col-6">
+                        <label for="">Рейтинг</label>
+                        <input type="text" class="form-control" value="{{ driver.rating }}" disabled>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <label for="phone">Номер телефона</label>
+                        <input type="text" class="form-control saved" id="phone" value="{{ driver.phone }}">
+                    </div>
+                    <div class="col-6">
+                        <label for="password">Пароль</label>
+                        <input type="text" class="form-control saved" id="password" value="{{ driver.password }}">
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-4">
+                        <label for="surname">Фамилия</label>
+                        <input type="text" class="form-control saved" id="surname" value="{{ driver.surname }}">
+                    </div>
+                    <div class="col-4">
+                        <label for="name">Имя</label>
+                        <input type="text" class="form-control saved" id="name" value="{{ driver.name }}">
+                    </div>
+                    <div class="col-4">
+                        <label for="second_name">Отчество</label>
+                        <input type="text" class="form-control saved" id="second_name" value="{{ driver.second_name }}">
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <label for="createdAt">Дата регистрации</label>
+                        <input type="text" class="form-control" value="{{ driver.created_at.strftime('%d.%m.%Y %H:%M') }}" disabled>
+                    </div>
+                    <div class="col-6">
+                        <label>Статус</label>
+                        <input type="text" class="form-control" value="{{ driver.status.value }}" disabled>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <label for="subscribe_expiration">Срок действия тарифа</label>
+                        <input id='subscribe_expiration' type="datetime-local" class="form-control saved" value="{% if driver.subscribe_expiration != None %}{{ driver.subscribe_expiration.strftime('%Y-%m-%dT%H:%M') }}{% endif %}">
+                    </div>
+                    <div class="col-6">
+                        <label>Заблокирован</label>
+                        <select id="is_blocked" class="form-select saved">
+                            <option value="1" {% if driver.is_blocked == True %}selected{% endif %}>Да</option>
+                            <option value="0" {% if driver.is_blocked == False %}selected{% endif %}>Нет</option>
+                        </select>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-6">
+                        <label for="car_brand">Марка авто</label>
+                        <input type="text" class="form-control saved" id="car_brand" value="{{ driver.car_brand }}">
+                    </div>
+                    <div class="col-6">
+                        <label for="car_model">Модель авто</label>
+                        <input type="text" class="form-control saved" id="car_model" value="{{ driver.car_model }}">
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <label for="car_numberplate">Гос. номер</label>
+                        <input type="text" class="form-control saved" id="car_numberplate" value="{{ driver.car_numberplate }}">
+                    </div>
+                    <div class="col-6">
+                        <label for="car_color">Цвет</label>
+                        <input type="text" class="form-control saved" id="car_color" value="{{ driver.car_color }}">
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <button class="btn btn-primary w-100" onclick="saveDriver()">Сохранить</button>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <button class="btn btn-danger w-100" onclick="removeDriver()">Удалить водителя</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-3 mt-3 mt-sm-0">
+            <div class="row">
+                <div class="col-12">
+                    <h4>Доступные тарифы</h4>
+                    <div class="card card-body">
+                        <div class="row">
+                            <div class="col-12 table-responsive" style="border: none">
+                                <table class="table table-sm">
+                                    <thead>
+                                    <tr>
+                                        <th>Название тарифа</th>
+                                        <th>Доступность</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for tariff in tariffs_list %}
+                                        <tr>
+                                            <td>
+                                                <label for="tariff_{{ tariff.id }}">{{ tariff.name }}</label>
+                                            </td>
+                                            <td>
+                                                <input type="checkbox" class="tariffCheck form-check" tariff_id="{{ tariff.id }}" {% if tariff.id in tariffs_dict and tariffs_dict[tariff.id] == True %}checked{% endif %} id="tariff_{{ tariff.id }}" onchange="saveTariffs()">
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4>Документы</h4>
+                    <div class="card card-body">
+                        <div id="accordion" class="mb-3">
+                            {% for doc in driver.documents %}
+                                <div class="card mb-0 docBox" doc_id="{{ doc.id }}">
+                                    <div class="card-header" id="heading_{{ doc.id }}">
+                                        <h5 class="m-0 font-size-14 d-flex justify-content-between">
+                                            <a data-bs-toggle="collapse" data-parent="#accordion" href="#collapse_{{ doc.id }}" aria-expanded="true" aria-controls="collapse_{{ doc.id }}" class="text-dark">
+                                                {{ doc.name }}
+                                            </a>
+                                            <i class="mdi mdi-trash-can" style="cursor: pointer" onclick="$(this.parentNode.parentNode.parentNode).remove();"></i>
+                                        </h5>
+                                    </div>
+
+                                    <div id="collapse_{{ doc.id }}" class="collapse" aria-labelledby="heading_{{ doc.id }}" data-parent="#accordion">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-12">
+                                                    <label for="">Название документа</label>
+                                                    <input type="text" class="form-control docName" oninput="changeDocName(this)" value="{{ doc.name }}">
+                                                </div>
+                                            </div>
+                                            <div class="row mt-3">
+                                                <div class="col-6">
+                                                    <label for="">Серия</label>
+                                                    <input type="text" class="form-control docSerial" value="{{ doc.serial }}">
+                                                </div>
+                                                <div class="col-6">
+                                                    <label for="">Номер</label>
+                                                    <input type="text" class="form-control docNumber" value="{{ doc.number }}">
+                                                </div>
+                                            </div>
+                                            <div class="row mt-3">
+                                                <div class="col-12">
+                                                    <label for="">Дата документа</label>
+                                                    <input type="date" class="form-control docDate" {% if doc.date != None %}value="{{ doc.date.strftime('%Y-%m-%d') }}" {% endif %}>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-3">
+                                                <div class="col-12">
+                                                    <label for="">Дополнительная информация</label>
+                                                    <textarea rows="3" class="form-control docAdditional">{{ doc.additional_info }}</textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <button class="btn btn-sm btn-primary w-100" onclick="addDocument()">Добавить документ</button>
+                            </div>
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <button class="btn btn-sm btn-success w-100" onclick="saveDocs()">Сохранить документы</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block script %}
+
+    <script>
+
+        IMask(document.getElementById('phone'),
+            {
+                mask: '+{7} (000) 000-00-00'
+            }
+        )
+
+        function loadPhoto(){
+            LoadFile(function (uuid){
+                photo_uuid.src = '/kek/files/get?uuid=' + uuid;
+                photo_uuid.setAttribute('uuid', uuid);
+                userPhotoRow.style.display = 'flex';
+            })
+        }
+
+        function saveDriver(){
+            let data = {
+                'photo_uuid': photo_uuid.getAttribute('uuid'),
+                'id': {{ driver.id }},
+            }
+
+            $('.saved').each(function (index, el){
+                data[el.id] = el.value;
+            })
+
+            if(data['subscribe_expiration'].length === 0) data['subscribe_expiration'] = null;
+
+            sendRequest({
+                url: '/api/drivers/edit',
+                method: 'post',
+                is_json: true,
+                data: data,
+                success_callback: function (r){
+                    if(r['status'] !== 'ok') return showError(r['message']);
+
+                    showSuccess('Сохранение водителя', r['message']);
+                }
+            })
+        }
+
+        function removeDriver(){
+            showConfirm('Удаление', 'Вы действительно хотите удалить этого водителя?', 'Да', function (){
+                sendRequest({
+                    url: '/api/drivers/remove',
+                    method: 'post',
+                    data: {
+                        id: {{ driver.id }}
+                    },
+                    success_callback: function (r){
+                        if(r['status'] !== 'ok') return showError(r['message']);
+                        showSuccess('Удаление', 'Водитель успешно удалён', function (){
+                            location.href = '/d/drivers'
+                        })
+                    }
+                })
+            })
+        }
+
+        function saveTariffs(){
+            let data = {};
+            $('.tariffCheck').each(function (index, el){
+                data[el.getAttribute('tariff_id')] = el.checked;
+            })
+
+            sendRequest({
+                url: '/api/drivers/tariffs',
+                method: 'post',
+                is_json: true,
+                data: {
+                    'tariffs': data,
+                    'id': {{ driver.id }}
+                },
+                success_callback: function (r){
+                    if(r['status'] !== 'ok') return showError(r['message']);
+                }
+            })
+        }
+
+        function changeDocName(el){
+            let row = el.parentNode.parentNode.parentNode.parentNode.parentNode;
+            let a = row.querySelector('a');
+            a.innerText = el.value;
+        }
+
+        function saveDocs(){
+            let docs = [];
+            $('.docBox').each(function (index, el){
+                let id = el.getAttribute('doc_id');
+
+                docs.push({
+                    id: id,
+                    name: el.querySelector('.docName').value,
+                    serial: el.querySelector('.docSerial').value,
+                    number: el.querySelector('.docNumber').value,
+                    additional_info: el.querySelector('.docAdditional').value,
+                    date: el.querySelector('.docDate').value.length > 0 ? el.querySelector('.docDate').value : null,
+                })
+            })
+
+            sendRequest({
+                url: '/api/drivers/docs',
+                method: 'post',
+                is_json: true,
+                data: {
+                    'docs': docs,
+                    'id': {{ driver.id }}
+                },
+                success_callback: function (r){
+                    if(r['status'] !== 'ok') return showError(r['message']);
+                    showSuccess('Сохранение документов', 'Документы успешно сохранены')
+                }
+            })
+        }
+
+        function addDocument(){
+            let doc_id = getRandomString(8);
+
+            let row = $(`<div class="card mb-0 docBox" doc_id="${doc_id}">
+                                <div class="card-header" id="heading_${doc_id}">
+                                    <h5 class="m-0 font-size-14 d-flex justify-content-between">
+                                        <a data-bs-toggle="collapse" data-parent="#accordion" href="#collapse_${doc_id}" aria-expanded="true" aria-controls="collapse_${doc_id}" class="text-dark">
+                                            Новый документ
+                                        </a>
+                                        <i class="mdi mdi-trash-can" style="cursor: pointer" onclick="$(this.parentNode.parentNode.parentNode).remove();"></i>
+                                    </h5>
+                                </div>
+
+                                <div id="collapse_${doc_id}" class="collapse show" aria-labelledby="heading_${doc_id}" data-parent="#accordion">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <label for="">Название документа</label>
+                                                <input type="text" class="form-control docName" oninput="changeDocName(this)">
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col-6">
+                                                <label for="">Серия</label>
+                                                <input type="text" class="form-control docSerial">
+                                            </div>
+                                            <div class="col-6">
+                                                <label for="">Номер</label>
+                                                <input type="text" class="form-control docNumber">
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col-12">
+                                                <label for="">Дата документа</label>
+                                                <input type="date" class="form-control docDate">
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col-12">
+                                                <label for="">Дополнительная информация</label>
+                                                <textarea rows="3" class="form-control docAdditional"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>`)[0];
+
+            accordion.append(row);
+        }
+
+        function getRandomString(length) {
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+            const chars = letters + '0123456789';
+
+            if (length < 1) return '';
+
+            let result = letters.charAt(Math.floor(Math.random() * letters.length));
+
+            for (let i = 1; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+
+            return result;
+        }
+
+    </script>
+
+{% endblock %}

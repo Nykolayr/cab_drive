@@ -1,0 +1,12 @@
+[Unit]
+Description=troika
+After=multi-user.target
+
+[Service]
+Type=idle
+ExecStart=/root/projects/troika/venv/bin/python /root/projects/troika/app.py
+Restart=always
+TasksMax=5000
+
+[Install]
+WantedBy=multi-user.target

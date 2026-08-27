@@ -1,0 +1,214 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ config.PROJECT_NAME }} - Поездки{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-12">
+            <h4>Управление поездками</h4>
+            <div class="card card-body">
+                <div class="row">
+                    <div class="col-12 col-sm-2">
+                        <label for="status_id">Статус поездки</label>
+                        <select id="status_id" class="form-select">
+                            <option value="" {% if status_id == None %}selected{% endif %}>Любой</option>
+                            <option value="newOrder" {% if status_id == "newOrder" %}selected{% endif %}>Новый</option>
+                            <option value="cancelled" {% if status_id == "canceled" %}selected{% endif %}>Отменённые</option>
+                            <option value="completed" {% if status_id == "completed" %}selected{% endif %}>Завершено</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-sm-3 mt-3 mt-sm-0">
+                        <label for="user_id">Клиент</label>
+                        <select id="user_id" class="form-select">
+                            <option value="" {% if user_id == None %}selected{% endif %}>Любой</option>
+                            {% for client in users_list %}
+                                <option value="{{ client.id }}" {% if user_id == client.id %}selected{% endif %}>{{ client.id }} {{ client.display_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                        <div class="col-12 col-sm-3 mt-3 mt-sm-0">
+                        <label for="driver_id">Водитель</label>
+                        <select id="driver_id" class="form-select">
+                            <option value="" {% if driver_id == None %}selected{% endif %}>Любой</option>
+                            {% for client in driver_list %}
+                                <option value="{{ client.id }}" {% if driver_id == client.id %}selected{% endif %}>{{ client.id }} {{ client.display_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12 col-sm-2">
+                        <label for="price_from">Цена от</label>
+                        <input type="number" step="0.01" min="0" class="form-control" id="price_from" {% if price_from != None %}value="{{ price_from }}"{% endif %}>
+                    </div>
+                    <div class="col-12 col-sm-2 mt-3 mt-sm-0">
+                        <label for="price_to">Цена до</label>
+                        <input type="number" step="0.01" min="0" class="form-control" id="price_to" {% if price_to != None %}value="{{ price_to }}"{% endif %}>
+                    </div>
+                    <div class="col-12 col-sm-2 mt-3 mt-sm-0">
+                        <label for="distance_from">Дистанция от (км)</label>
+                        <input type="number" step="0.1" min="0" class="form-control" id="distance_from" {% if distance_from != None %}value="{{ distance_from }}"{% endif %}>
+                    </div>
+                    <div class="col-12 col-sm-2 mt-3 mt-sm-0">
+                        <label for="distance_to">Дистанция до (км)</label>
+                        <input type="number" step="0.1" min="0" class="form-control" id="distance_to" {% if distance_to != None %}value="{{ distance_to }}"{% endif %}>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12 col-sm-2">
+                        <label for="start_date">Дата с</label>
+                        <input type="datetime-local" class="form-control" id="start_date" {% if start_date != None %}value="{{ start_date.strftime('%Y-%m-%dT%H:%M') }}" {% endif %}>
+                    </div>
+                    <div class="col-12 col-sm-2 mt-3 mt-sm-0">
+                        <label for="finish_date">Дата до</label>
+                        <input type="datetime-local" class="form-control" id="finish_date" {% if finish_date != None %}value="{{ finish_date.strftime('%Y-%m-%dT%H:%M') }}" {% endif %}>
+                    </div>
+                    <div class="col-12 col-sm-2 offset-md-6 mt-3 mt-sm-0">
+                        <label> </label>
+                        <button class="btn btn-primary w-100" onclick="filterus()">Применить</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="card card-body">
+                            <div class="row">
+                                <div class="col-12 table-responsive" style="border: none">
+                                    <table class="table">
+                                        <thead>
+                                        <tr>
+                                           <th>ID</th>
+                                            <th>Дата</th>
+                                            <th>ВОД</th>
+                                            <th>КЛИ</th>
+                                            <th>Откуда</th>
+                                            <th>Куда</th>
+                                            <th>Цена</th>
+                                            <th>Бюджет</th>
+                                            <th>Расстояние</th>
+                                            <th>Статус</th>
+                                            <th></th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for _user in order_list %}
+                                            <tr>
+                                                <td>{{ _user['id'] }}</td>
+                                                <td>{{ _user['dateTime_created'] }}</td>
+                                                <td>{{ _user['selected_driver'] }}</td>
+                                                <td>{{ _user['user_customer'] }}</td>
+                                                <td>{{ _user['pointA']['address'] }}</td>
+                                                <td>{{ _user['pointB']['address'] }}</td>
+                                                <td>{{ _user['currentPrice'] }}</td>
+                                                <td>{{ _user['budget'] }}</td>
+                                                <td>{{ _user['distance'] }} м</td>
+                                                <td>{{ _user['status'] }}</td>
+                                                <td>
+                                                    <a href="/d/trip?id={{ _user['id'] }}">
+                                                        <button class="btn btn-sm btn-secondary">Управление</button>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+
+                                    <!-- Pagination block -->
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <div>
+                                            <small>Всего: {{ total_orders or 0 }} записей</small>
+                                        </div>
+                                        <div>
+                                            {% set tp = total_pages or 1 %}
+                                            {% if tp < 1 %}
+                                                {% set tp = 1 %}
+                                            {% endif %}
+                                            <nav aria-label="Страницы">
+                                                <ul class="pagination mb-0">
+                                                    <li class="page-item {% if current_page <= 1 %}disabled{% endif %}">
+                                                        <a class="page-link" href="javascript:void(0)" onclick="goToPage({{ (current_page - 1) if current_page and current_page > 1 else 1 }})">Prev</a>
+                                                    </li>
+
+                                                    {% set start_page = current_page - 2 if current_page and current_page-2 > 1 else 1 %}
+                                                    {% set end_page = start_page + 4 %}
+                                                    {% if end_page > tp %}
+                                                        {% set end_page = tp %}
+                                                        {% set start_page = end_page - 4 if end_page-4 > 1 else 1 %}
+                                                    {% endif %}
+
+                                                    {% for p in range(start_page, end_page + 1) %}
+                                                        <li class="page-item {% if p == current_page %}active{% endif %}">
+                                                            <a class="page-link" href="javascript:void(0)" onclick="goToPage({{ p }})">{{ p }}</a>
+                                                        </li>
+                                                    {% endfor %}
+
+                                                    <li class="page-item {% if current_page >= tp %}disabled{% endif %}">
+                                                        <a class="page-link" href="javascript:void(0)" onclick="goToPage({{ (current_page + 1) if current_page and current_page < tp else tp }})">Next</a>
+                                                    </li>
+                                                </ul>
+                                            </nav>
+                                        </div>
+                                    </div>
+                                    <!-- /Pagination block -->
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+{% endblock %}
+
+
+{% block script %}
+
+    <script>
+        // Инициализация текущей страницы из контекста (если нет - 1)
+        const currentPage = {{ current_page or 1 }};
+        const totalPages = {{ total_pages or 1 }};
+
+        function filterus() {
+            // При применении фильтров сбрасываем страницу на 1
+            const params = getParams();
+            params.page = 1;
+            const queryString = $.param(params);
+            window.location.search = queryString;
+        }
+        function updateFilters(){
+            // Заготовка, при необходимости можно заполнить
+        }
+
+        function getParams(){
+            return {
+                status_id: $('#status_id').val(),
+                is_finished: $('#is_finished').val(),
+                user_id: $('#user_id').val(),
+                driver_id: $('#driver_id').val(),
+                tariff_id: $('#tariff_id').val(),
+                start_date: $('#start_date').val(),
+                finish_date: $('#finish_date').val(),
+                price_from: $('#price_from').val(),
+                price_to: $('#price_to').val(),
+                distance_from: $('#distance_from').val(),
+                distance_to: $('#distance_to').val(),
+            };
+        }
+
+        function goToPage(page){
+            if (!page || page < 1) page = 1;
+            if (totalPages && page > totalPages) page = totalPages;
+            const params = getParams();
+            params.page = page;
+            const queryString = $.param(params);
+            window.location.search = queryString;
+        }
+    </script>
+
+{% endblock %}
+

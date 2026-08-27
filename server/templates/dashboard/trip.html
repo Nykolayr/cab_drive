@@ -1,0 +1,680 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ config.PROJECT_NAME }} - Поездка № {{ trip.id }}{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-12 col-sm-4">
+            <h4>Информация о поездке</h4>
+            <div class="card card-body">
+                <div class="row">
+                    <label class="col-md-4 col-form-label">ID поездки</label>
+                    <div class="col-md-8">
+                        <input class="form-control" type="text" value="{{ trip['id'] }}" disabled>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <label class="col-md-4 col-form-label">Статус</label>
+                    <div class="col-md-8">
+                        <input class="form-control" type="text" value="{{ trip['status'] | default('') }}" disabled>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <label class="col-md-4 col-form-label">Начальная точка</label>
+                    <div class="col-md-8">
+                        <input id="input-pointA" class="form-control" type="text"
+                               value="{{ trip.pointA.address | default('Не задано') }}"
+                               onclick="openYandexMap('pointA', {{ trip.pointA.latlng | default(None) | tojson }}, 'input-pointA')"
+                               readonly>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <label class="col-md-4 col-form-label">Конечная точка</label>
+                    <div class="col-md-8">
+                        <input id="input-pointB" class="form-control" type="text"
+                               value="{{ trip.pointB.address | default('Не задано') }}"
+                               onclick="openYandexMap('pointB', {{ trip.pointB.latlng  | default(None) | tojson }}, 'input-pointB')"
+                               readonly>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <label class="col-md-4 col-form-label">Клиент</label>
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <input class="form-control" type="text"
+                                   value="{{ client.id | default('') }} | [+7{{ client.phone | default('') }}] {{ client.name | default('') }}"
+                                   disabled>
+                            <div class="input-group-btn">
+                                <a href="/d/user?id={{ client.id }}" target="_blank">
+                                    <button type="button" class="btn btn-secondary">Перейти</button>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <label class="col-md-4 col-form-label">Водитель</label>
+                    <div class="col-md-8">
+                        {% if driver is not none %}
+                            <div class="input-group">
+                                <input class="form-control" type="text" value="{{ driver.id | default('') }} | {{ driver.name | default('') }}" disabled>
+                                <div class="input-group-btn">
+                                    <a href="/d/user?id={{ driver.id }}" target="_blank">
+                                        <button type="button" class="btn btn-secondary">Перейти</button>
+                                    </a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <input type="text" class="form-control" value="Не назначен" disabled>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <label class="col-md-4 col-form-label">Способ оплаты</label>
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" value="{{ 'наличкой' if trip.payMethod == 'cahs' else 'картой' }}" disabled>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <label class="col-md-4 col-form-label">Расстояние, общее</label>
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <input id="input-distance" type="text" step="0.01" class="form-control" value="{{ trip['distance'] | default('0') }}">
+                            <div class="input-group-append">
+                                <span class="input-group-text">км</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <label class="col-md-4 col-form-label">Бюджет</label>
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <input id="input-budget" type="number" step="0.01" class="form-control" value="{{ trip['budget'] | default('0') }}">
+                            <div class="input-group-append">
+                                <span class="input-group-text">₽</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                   <div class="row mt-3">
+                    <label class="col-md-4 col-form-label">Цена</label>
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <input id="input-currentPrice" type="number" step="0.01" class="form-control" value="{{ trip['currentPrice'] | default('0') }}">
+                            <div class="input-group-append">
+                                <span class="input-group-text">₽</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <label class="col-md-4 col-form-label">Дата создания</label>
+                    <div class="col-md-8">
+                        <input type="text" class="form-control"
+                            value="{{ (trip.dateTime_created) if trip.dateTime_created else '-' }}" disabled>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <label class="col-md-4 col-form-label">Комментарий</label>
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" value="{{ trip['description'] | default('') }}" disabled>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <button id="saveTripBtn" type="button" class="btn btn-primary w-100" onclick="saveTripEdits()">Сохранить</button>
+                    </div>
+                    {% if trip.status not in ['completed', 'cancelled'] %}
+                        <div class="col-6">
+                            <button type="button" class="btn btn-danger w-100" onclick="removeTrip()">Отменить поездку</button>
+                        </div>
+                    {% else %}
+                        <div class="col-6">
+                            <!-- пустое место для выравнивания -->
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}
+
+{% block script %}
+
+    <style>
+        /* Простая стилизация модального окна карты */
+        #yandexMapModal {
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #yandexMapModal .modal-content {
+            width: 90%;
+            max-width: 900px;
+            height: 80%;
+            background: #fff;
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        #yandexMapModal .modal-header, #yandexMapModal .modal-footer {
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        #yandexMapModal .modal-body {
+            flex: 1 1 auto;
+            position: relative;
+        }
+        #yandexMapModal #yandex-map {
+            width: 100%;
+            height: 100%;
+        }
+        #yandexMapModal .controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        #yandexMapModal .info {
+            margin-left: auto;
+            font-size: 13px;
+            color: #555;
+        }
+    </style>
+<script>
+    // Используем tojson-значение trip.id для корректного вставления (строка/число)
+    const TRIP_ID = {{ trip.id | tojson }};
+
+    function removeTrip(){
+        showConfirm('Отмена поездки', 'Вы действительно хотите отменить эту поездку?', 'Да', function (){
+            sendRequest({
+                url: '/api/orders/cancel',
+                data: {
+                    id: TRIP_ID
+                },
+                success_callback: function (r){
+                    if(r['status'] !== 'ok') return showError(r['message']);
+                    showSuccess('Отмена поездки', r['message'], function (){
+                        location.reload();
+                    })
+                }
+            })
+        })
+    }
+
+    // Функция сохранения полей budget, currentPrice, distance
+    function saveTripEdits() {
+        // Считать значения из полей
+        const distanceEl = document.getElementById('input-distance');
+        const budgetEl = document.getElementById('input-budget');
+        const currentPriceEl = document.getElementById('input-currentPrice');
+
+        if (!distanceEl || !budgetEl || !currentPriceEl) {
+            return showError('Поля для сохранения не найдены');
+        }
+
+        let distance = distanceEl.value;
+        let budget = budgetEl.value;
+        let currentPrice = currentPriceEl.value;
+
+        // Простая валидация и приведение к числам
+        if (budget === '' || isNaN(budget)) budget = 0;
+        if (currentPrice === '' || isNaN(currentPrice)) currentPrice = 0;
+
+        // Сформируем URL с query-параметрами (GET)
+        const params = new URLSearchParams({
+            order_id: TRIP_ID,
+            distance: distance,
+            budget: budget,
+            currentPrice: currentPrice
+        });
+        const url = '/api/orders/edit?' + params.toString();
+
+        // Отправим GET-запрос
+        fetch(url, {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: {
+                'Accept': 'application/json'
+            }
+        }).then(function(resp){
+            return resp.json();
+        }).then(function(json){
+            if (!json || json['status'] !== 'ok') {
+                const msg = (json && json['message']) ? json['message'] : 'Ошибка при сохранении';
+                return showError(msg);
+            }
+            // Если открыт модал карты — закрываем его (требование)
+            try { closeYandexModal(); } catch (e) { /* ignore */ }
+
+            showSuccess('Сохранено', json['message'] || 'Данные успешно сохранены', function(){
+                // Опционально обновим поля значениями сервера (если пришли)
+                // Если сервер вернул обновлённые значения - использовать их
+                try {
+                    if (json.data) {
+                        if (json.data.distance !== undefined && distanceEl) distanceEl.value = json.data.distance;
+                        if (json.data.budget !== undefined && budgetEl) budgetEl.value = json.data.budget;
+                        if (json.data.currentPrice !== undefined && currentPriceEl) currentPriceEl.value = json.data.currentPrice;
+                    }
+                } catch (e) { /* ignore */ }
+            });
+        }).catch(function(err){
+            console.error(err);
+            showError('Не удалось сохранить данные');
+        });
+    }
+
+    // Загрузка Yandex Maps API (если еще не загружен)
+    function loadYandexMaps(callback) {
+        if (window.ymaps) {
+            return callback();
+        }
+        // если уже происходит загрузка, подождём
+        if (window._ymaps_loading_callbacks) {
+            window._ymaps_loading_callbacks.push(callback);
+            return;
+        }
+        window._ymaps_loading_callbacks = [callback];
+
+        const script = document.createElement('script');
+        let src = 'https://api-maps.yandex.ru/2.1/?lang=ru_RU';
+        {% if config.YANDEX_MAPS_API_KEY %}
+        src += '&apikey={{ config.YANDEX_MAPS_API_KEY }}';
+        {% endif %}
+        script.src = src;
+        script.onload = function () {
+            ymaps.ready(function () {
+                // Выполнить все отложенные callbacks
+                window._ymaps_loading_callbacks.forEach(function(cb){ try{ cb(); }catch(e){console.error(e);} });
+                window._ymaps_loading_callbacks = null;
+            });
+        };
+        script.onerror = function () {
+            showError('Не удалось загрузить Яндекс.Карты');
+            window._ymaps_loading_callbacks = null;
+        };
+        document.head.appendChild(script);
+    }
+
+    // Открыть модальное окно с картой и дать возможность выбрать точку
+    function openYandexMap(point, data, targetInputId) {
+        let parsedData = null;
+        // data может быть объектом (если мы вставили tojson без кавычек) или строкой (если пришло так)
+        if (typeof data === 'string') {
+            try {
+                parsedData = data ? JSON.parse(data) : null;
+            } catch (e) {
+                parsedData = null;
+            }
+        } else {
+            parsedData = data || null;
+        }
+        createYandexMapModal(point, parsedData, targetInputId);
+    }
+
+    // Создает и показывает модал с картой
+    function createYandexMapModal(pointKey, positionData, targetInputId) {
+        // Если модал уже есть — удалить
+        const existing = document.getElementById('yandexMapModal');
+        if (existing) existing.remove();
+
+        // Создаем разметку модального окна
+        const modal = document.createElement('div');
+        modal.id = 'yandexMapModal';
+        modal.innerHTML = ''
+            + '<div class="modal-content">'
+            +   '<div class="modal-header d-flex align-items-center">'
+            +       '<strong id="modalTitle">Выбор точки</strong>'
+            +       '<div class="controls" style="margin-left:12px;">'
+            +           '<button id="centerHereBtn" class="btn btn-sm btn-outline-secondary" type="button">Центрировать</button>'
+            +       '</div>'
+            +       '<div class="info" id="modalInfo"></div>'
+            +   '</div>'
+            +   '<div class="modal-body">'
+            +       '<div id="yandex-map" style="width:100%;height:400px;"></div>'
+            +   '</div>'
+            +   '<div class="modal-footer d-flex justify-content-end">'
+            +       '<button id="cancelMapBtn" class="btn btn-secondary" type="button">Отмена</button>'
+            +       '<button id="saveMapBtn" class="btn btn-primary" type="button">Сохранить</button>'
+            +   '</div>'
+            + '</div>';
+        document.body.appendChild(modal);
+
+        // Отключаем скролл фона
+        document.body.style.overflow = 'hidden';
+
+        // Инициализация карты после загрузки API
+        loadYandexMaps(function () {
+            initYandexMap(pointKey, positionData, targetInputId);
+        });
+
+        // Обработчики кнопок
+        modal.querySelector('#cancelMapBtn').addEventListener('click', closeYandexModal);
+        modal.querySelector('#centerHereBtn').addEventListener('click', function () {
+            zoomToIncludeAll();
+        });
+
+        // Сохранение
+        modal.querySelector('#saveMapBtn').addEventListener('click', function () {
+            if (!marker || !marker.geometry) return showError('Точка не выбрана');
+            const coords = marker.geometry.getCoordinates();
+            // Получаем описание (адрес) и город если есть
+            reverseGeocode(coords, function(result){
+                const addr = result && result.address ? result.address : (coords[0].toFixed(6) + ', ' + coords[1].toFixed(6));
+                const city = result && result.city ? result.city : null;
+                // Подготовим данные для отправки на сервер
+                const positionPayload = {
+                    lat: coords[0],
+                    lon: coords[1],
+                    city: city,
+                    // Дополнительно передаём latlng как список [lat, lon]
+                    latlng: [coords[0], coords[1]]
+                };
+                const payload = {
+                    id: TRIP_ID,
+                    point: pointKey,
+                    position_data: JSON.stringify(positionPayload),
+                    description: addr,
+                    city: city
+                };
+                sendRequest({
+                    url: '/api/orders/update_point',
+                    data: payload,
+                    success_callback: function (r) {
+                        if (r['status'] !== 'ok') return showError(r['message'] || 'Ошибка обновления точки');
+                        // Обновить поле ввода в интерфейсе (targetInputId)
+                        const input = document.getElementById(targetInputId);
+                        if (input) {
+                            input.value = addr;
+                        }
+                        // Закрываем модал сразу после успешного ответа
+                        try { closeYandexModal(); } catch (e) { /* ignore */ }
+                        showSuccess('Точка обновлена', r['message'] || 'Точка успешно обновлена на сервере', function(){
+                            // Опционально можно обновить страницу или данные на странице
+                        });
+                    }
+                })
+            });
+        });
+    }
+
+    // Переменные карты/маркер на уровне скрипта
+    let map = null, marker = null, mapCenter = null, startMarker = null;
+
+    function initYandexMap(pointKey, positionData, targetInputId) {
+        const container = document.getElementById('yandex-map');
+        if (!container) return showError('Не найден контейнер карты');
+
+        // Очистить контейнер
+        container.innerHTML = '';
+
+        // Определим возможные источники координат:
+        // - positionData.lat & positionData.lon
+        // - positionData.latlng (список [lat, lon])
+        // - positionData как массив [lat, lon]
+        let startCoords = [55.76, 37.64]; // Москва по умолчанию
+        let startZoom = 10;
+        let editableCoords = null; // координаты, которые будут использоваться для редактируемого маркера
+        let startPointCoordsFromlatlng = null; // дополнительная "стартовая" точка из поля latlng
+
+        if (positionData && typeof positionData === 'object') {
+            if (Array.isArray(positionData) && positionData.length === 2) {
+                // Если positionData передали как массив [lat, lon]
+                editableCoords = [positionData[0], positionData[1]];
+                startCoords = editableCoords.slice();
+                startZoom = 16;
+                startPointCoordsFromlatlng = editableCoords.slice();
+            } else {
+                // Объектный формат
+                if (positionData.lat !== undefined && positionData.lon !== undefined) {
+                    editableCoords = [positionData.lat, positionData.lon];
+                    startCoords = editableCoords.slice();
+                    startZoom = 16;
+                }
+                // Если есть поле latlng как список — это наша "стартовая" (фиксированная) точка
+                if (Array.isArray(positionData.latlng) && positionData.latlng.length === 2) {
+                    startPointCoordsFromlatlng = [positionData.latlng[0], positionData.latlng[1]];
+                    // Если нет editableCoords — используем latlng для центра
+                    if (!editableCoords) {
+                        startCoords = startPointCoordsFromlatlng.slice();
+                        startZoom = 16;
+                    }
+                }
+            }
+        }
+
+        // Создаем карту
+        map = new ymaps.Map(container, {
+            center: startCoords,
+            zoom: startZoom,
+            controls: ['zoomControl', 'geolocationControl']
+        });
+
+        map.behaviors.enable('drag');
+
+        // Сброс маркеров
+        marker = null;
+        startMarker = null;
+
+        // Если есть "стартовая" точка в поле latlng — добавим её как фиксированный маркер синего цвета
+        if (startPointCoordsFromlatlng) {
+            startMarker = createPlacemark(startPointCoordsFromlatlng, { preset: 'islands#blueDotIcon', draggable: false });
+            map.geoObjects.add(startMarker);
+        }
+
+        // Если есть editableCoords — создаём редактируемый маркер
+        if (editableCoords) {
+            marker = createPlacemark(editableCoords, { preset: 'islands#redDotIcon', draggable: true });
+            map.geoObjects.add(marker);
+            marker.events.add('dragend', function (ev) {
+                const pos = ev.get('target').geometry.getCoordinates();
+                updateModalInfo(pos);
+            });
+        }
+
+        mapCenter = startCoords.slice();
+
+        // При клике по карте — ставим/перемещаем редактируемый маркер
+        map.events.add('click', function (e) {
+            const coords = e.get('coords');
+            if (!coords) return;
+            if (!marker) {
+                marker = createPlacemark(coords, { preset: 'islands#redDotIcon', draggable: true });
+                map.geoObjects.add(marker);
+                marker.events.add('dragend', function (ev) {
+                    const pos = ev.get('target').geometry.getCoordinates();
+                    updateModalInfo(pos);
+                });
+            } else {
+                marker.geometry.setCoordinates(coords);
+            }
+            updateModalInfo(coords);
+        });
+
+        // При загрузке показать адрес для существующей точки
+        if (marker) {
+            updateModalInfo(marker.geometry.getCoordinates());
+            // если есть и стартовая точка — подстроим вид чтобы показать обе точки
+            if (startMarker) {
+                zoomToIncludeAll();
+            }
+        } else {
+            // Если есть целевой input и он содержит текст адреса — отобразим его в заголовке
+            const inputEl = document.getElementById(targetInputId);
+            if (inputEl && inputEl.value) {
+                document.getElementById('modalInfo').innerText = inputEl.value;
+            }
+            // центрируем на стартовой точке, если она есть
+            if (startMarker) {
+                map.setCenter(startPointCoordsFromlatlng);
+                map.setZoom(14);
+            }
+        }
+    }
+
+    // Создаёт Placemark с возможностью задать preset и draggable
+    function createPlacemark(coords, options) {
+        options = options || {};
+        const preset = options.preset || 'islands#redDotIcon';
+        const draggable = options.draggable !== undefined ? options.draggable : true;
+        return new ymaps.Placemark(coords, {}, {
+            preset: preset,
+            draggable: draggable
+        });
+    }
+
+    // Центрирование и масштабирование чтобы включить все маркеры (редактируемый и стартовый)
+    function zoomToIncludeAll() {
+        if (!map) return;
+        const points = [];
+        if (startMarker && startMarker.geometry) {
+            const sc = startMarker.geometry.getCoordinates();
+            if (Array.isArray(sc)) points.push(sc);
+        }
+        if (marker && marker.geometry) {
+            const mc = marker.geometry.getCoordinates();
+            if (Array.isArray(mc)) points.push(mc);
+        }
+        if (points.length === 0) {
+            if (mapCenter) {
+                map.setCenter(mapCenter);
+                map.setZoom(10);
+            }
+            return;
+        }
+        if (points.length === 1) {
+            map.setCenter(points[0]);
+            map.setZoom(16);
+            return;
+        }
+        // вычисляем bounding box
+        let minLat = points[0][0], maxLat = points[0][0], minLon = points[0][1], maxLon = points[0][1];
+        for (let i = 1; i < points.length; i++) {
+            const p = points[i];
+            if (p[0] < minLat) minLat = p[0];
+            if (p[0] > maxLat) maxLat = p[0];
+            if (p[1] < minLon) minLon = p[1];
+            if (p[1] > maxLon) maxLon = p[1];
+        }
+        try {
+            map.setBounds([[minLat, minLon], [maxLat, maxLon]], { checkZoomRange: true, zoomMargin: 30 });
+        } catch (e) {
+            // fallback
+            const cx = (minLat + maxLat) / 2;
+            const cy = (minLon + maxLon) / 2;
+            map.setCenter([cx, cy]);
+            map.setZoom(12);
+        }
+    }
+
+    function updateModalInfo(coords) {
+        const infoEl = document.getElementById('modalInfo');
+        if (!infoEl) return;
+        infoEl.innerText = 'Определение адреса...';
+        reverseGeocode(coords, function(result){
+            if (result && result.address) {
+                infoEl.innerText = result.address;
+            } else {
+                infoEl.innerText = coords[0].toFixed(6) + ', ' + coords[1].toFixed(6);
+            }
+        });
+    }
+
+    // Reverse geocode через ymaps.geocode
+    // callback получает объект { address: string|null, city: string|null } или null
+    function reverseGeocode(coords, callback) {
+        try {
+            ymaps.geocode(coords).then(function (res) {
+                const first = res.geoObjects.get(0);
+                if (!first) return callback(null);
+                // Стандартная строка адреса
+                let address = null;
+                try {
+                    address = first.getAddressLine() || null;
+                } catch (e) {
+                    address = null;
+                }
+                // Попробуем извлечь город из metaDataProperty
+                let city = null;
+                try {
+                    const meta = first.properties.get('metaDataProperty');
+                    if (meta && meta.GeocoderMetaData && meta.GeocoderMetaData.Address && Array.isArray(meta.GeocoderMetaData.Address.Components)) {
+                        const comps = meta.GeocoderMetaData.Address.Components;
+                        // Ищем locality, затем район/населённый пункт, затем province
+                        const kindsPriority = ['locality', 'area', 'province'];
+                        for (let kp of kindsPriority) {
+                            for (let i = 0; i < comps.length; i++) {
+                                const c = comps[i];
+                                if (c.kind === kp) {
+                                    city = c.name;
+                                    break;
+                                }
+                            }
+                            if (city) break;
+                        }
+                        // Если не найдено, пробуем найти любой компонент с kind === 'locality' более явно
+                        if (!city) {
+                            for (let i = 0; i < comps.length; i++) {
+                                const c = comps[i];
+                                if (c.kind === 'locality' || c.kind === 'district' || c.kind === 'settlement') {
+                                    city = c.name;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Не удалось извлечь город из metaDataProperty', e);
+                    city = null;
+                }
+                // Дополнительная попытка через getLocalities (если есть)
+                try {
+                    if (!city && typeof first.getLocalities === 'function') {
+                        const locs = first.getLocalities();
+                        if (Array.isArray(locs) && locs.length) {
+                            city = locs[0];
+                        }
+                    }
+                } catch (e) {
+                    // ignore
+                }
+                callback({ address: address, city: city });
+            }, function (err){
+                console.error(err);
+                callback(null);
+            });
+        } catch (e) {
+            console.error(e);
+            callback(null);
+        }
+    }
+
+    function closeYandexModal() {
+        const modal = document.getElementById('yandexMapModal');
+        if (modal) modal.remove();
+        document.body.style.overflow = '';
+        // Сбросим глобальные переменные
+        map = null;
+        marker = null;
+        startMarker = null;
+        mapCenter = null;
+    }
+
+</script>
+
+{% endblock %}

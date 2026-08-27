@@ -1,0 +1,75 @@
+# Local backup of old nested Flutter repo — do not commit
+/cab_drive/
+/cab_drive_old/
+/__MACOSX/
+/build/
+/car_drive_txt.txt
+
+# One-off transfer archives
+*.tgz
+*.tar.gz
+*.zip
+
+# Dependencies everywhere
+**/node_modules/
+
+# Secrets / signing (keep on disk only)
+.env
+.env.*
+!.env.example
+key.properties
+*.jks
+*.keystore
+*.p12
+*.pem
+pepk_out.zip
+google-services.json.bak
+
+# Flutter / Dart (app)
+cab_drive_app/.dart_tool/
+cab_drive_app/.flutter-plugins
+cab_drive_app/.flutter-plugins-dependencies
+cab_drive_app/.packages
+cab_drive_app/.pub-cache/
+cab_drive_app/.pub/
+cab_drive_app/build/
+cab_drive_app/**/doc/api/
+cab_drive_app/**/android/.gradle/
+cab_drive_app/**/android/local.properties
+cab_drive_app/**/android/key.properties
+cab_drive_app/**/android/captures/
+cab_drive_app/**/.cxx/
+cab_drive_app/**/ios/Pods/
+cab_drive_app/**/ios/.symlinks/
+cab_drive_app/**/ios/Flutter/ephemeral/
+cab_drive_app/**/ios/Flutter/Generated.xcconfig
+cab_drive_app/**/ios/Flutter/flutter_export_environment.sh
+cab_drive_app/firebase/functions/node_modules/
+cab_drive_app/**/node_modules/
+
+# Server runtime / local
+server/venv/
+server/.venv/
+server/storage/
+server/logs/
+server/**/__pycache__/
+server/**/*.pyc
+server/.env
+server/*.log
+server/config.py
+server/.claude/
+server/s.json
+server/*.db
+server/site.db
+server/log.txt
+server/troika.zip
+server/**/*.zip
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+.ai-factory/
+.claude/

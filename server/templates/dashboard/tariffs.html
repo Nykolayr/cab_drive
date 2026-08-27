@@ -1,0 +1,341 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ config.PROJECT_NAME }} - Тарифы{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-12 d-flex justify-content-between">
+            <h4>Управление тарифами</h4>
+            <button class="btn btn-sm btn-secondary" onclick="openCreateModal();">Добавить тариф</button>
+        </div>
+    </div>
+
+    <div class="row" id="tariffsList">
+        {% for tariff in tariffs_list %}
+            <div class="col-12 col-sm-3 mt-3 tariffRow" tariff_id="{{ tariff.id }}">
+                <div class="card card-body">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <img src="/kek/files/get?uuid={{ tariff.icon_uuid }}" alt="" style="height: 100px; width: auto" uuid="{{ tariff.icon_uuid }}">
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-12">
+                            <h4 class="card-title">{{ tariff.name }}</h4>
+                            <div class="d-flex justify-content-between">
+                                <span>Посадка</span>
+                                <span class="tariffBase" distance="{{ tariff.base_distance }}" cost="{{ tariff.base_cost }}">{{ tariff.base_distance }} км / {{ tariff.base_cost }} ₽</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Посадка (ночь)</span>
+                                <span class="tariffBaseNight" distance="{{ tariff.base_distance_night }}" cost="{{ tariff.base_cost_night }}">{{ tariff.base_distance_night }} км / {{ tariff.base_cost_night }} ₽</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Цена за км | Межгород</span>
+                                <span class="tariffCost" day="{{ tariff.cost_by_km_day }}" night="{{ tariff.cost_by_km_night }}">{{ tariff.cost_by_km_day }} ₽ / {{ tariff.cost_by_km_night }} ₽</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Цена за км | Город</span>
+                                <span class="tariffCostCity" day="{{ tariff.cost_city_by_km_day }}" night="{{ tariff.cost_city_by_km_night }}">{{ tariff.cost_city_by_km_day }} ₽ / {{ tariff.cost_city_by_km_night }} ₽</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Бесплатное ожидание</span>
+                                <span class="tariffFreeWaiting" value="{{ tariff.free_waiting }}">{{ tariff.free_waiting }} мин</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Цена платного ожидания</span>
+                                <span class="tariffCostWaiting" value="{{ tariff.cost_waiting }}">{{ tariff.cost_waiting }} ₽ / мин</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12 d-flex">
+                            <button class="btn btn-light" style="cursor: grab">
+                                <i class="mdi mdi-menu"></i>
+                            </button>
+                            <button class="btn btn-primary w-100 ms-3" onclick="openEditor({{ tariff.id }}, this)">
+                                Управление
+                            </button>
+                            <button class="btn btn-danger ms-3" onclick="removeTariff({{ tariff.id }})">
+                                <i class="mdi mdi-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="modal fade" id="createTariffModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Добавление тарифа</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <div id="iconRow" style="display: none" class="mb-2">
+                                <img src="" alt="" id="tariffIcon">
+                            </div>
+                            <button class="btn btn-sm btn-secondary" onclick="loadIcon();">Загрузить иконку</button>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <label for="">Название тарифа</label>
+                            <input type="text" class="form-control tariffInput" id="name">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <label for="">Посадка, км</label>
+                            <input type="number" class="form-control tariffInput" id="base_distance">
+                        </div>
+                        <div class="col-6">
+                            <label for="">Посадка, цена</label>
+                            <input type="number" class="form-control tariffInput" id="base_cost">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <label for="">Посадка (ночь), км</label>
+                            <input type="number" class="form-control tariffInput" id="base_distance_night">
+                        </div>
+                        <div class="col-6">
+                            <label for="">Посадка (ночь), цена</label>
+                            <input type="number" class="form-control tariffInput" id="base_cost_night">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <label for="">Цена за 1 км (межгород), днём</label>
+                            <input type="number" class="form-control tariffInput" id="cost_day">
+                        </div>
+                        <div class="col-6">
+                            <label for="">Цена за 1 км (межгород), ночью</label>
+                            <input type="number" class="form-control tariffInput" id="cost_night">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <label for="">Цена за 1 км (город), днём</label>
+                            <input type="number" class="form-control tariffInput" id="cost_city_day">
+                        </div>
+                        <div class="col-6">
+                            <label for="">Цена за 1 км (город), ночью</label>
+                            <input type="number" class="form-control tariffInput" id="cost_city_night">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <label for="">Ко-во минут бесплатного ожидания</label>
+                            <input type="number" class="form-control tariffInput" id="free_waiting">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <label for="">Стоимость 1 минуты платного ожидания</label>
+                            <input type="number" class="form-control tariffInput" id="cost_waiting">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary" id="modalButton">Добавить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block script %}
+
+    <script>
+
+        let editorId = null;
+
+        new Sortable(document.getElementById('tariffsList'), {
+            handle: '.btn-light',
+            animation: 150,
+            onSort: function (event){
+                updateIndexes();
+            }
+        });
+
+        function getTariffsIds(){
+            let els = document.getElementsByClassName('tariffRow');
+            let ids = [];
+
+            for(let i = 0; i < els.length; i++) ids.push(Number(els[i].getAttribute('tariff_id')));
+            return ids;
+        }
+
+        function updateIndexes(){
+            let data = {
+                'ids': getTariffsIds(),
+            }
+
+            $.ajax({
+                url: '/api/tariffs/indexes',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                data: JSON.stringify(data),
+                success: function (msg) {
+                    if(msg['status'] !== 'ok'){
+                        showError(msg['message'])
+                    }
+                }
+            });
+        }
+
+        function openCreateModal(){
+            $('.tariffInput').val('');
+            $('#iconRow').css('display', 'none');
+            $('#tariffIcon').attr('uuid', null);
+            $('#modalButton').text('Добавить тариф')
+            $('#exampleModalLabel').text('Добавление тарифа')
+            modalButton.onclick = function (){
+                createTariff();
+            }
+
+            $('#createTariffModal').modal('show');
+        }
+
+        function loadIcon(){
+            LoadFile(function (uuid){
+                tariffIcon.src = '/kek/files/get?uuid=' + uuid;
+                tariffIcon.setAttribute('uuid', uuid);
+                iconRow.style.display = 'block';
+            })
+        }
+
+        function createTariff(){
+            let uuid = tariffIcon.getAttribute('uuid');
+            if(uuid === null) return showError('Загрузите иконку');
+
+            let data = {
+                'icon_uuid': uuid
+            }
+
+            let check = true;
+
+            $('.tariffInput').each(function (index, el){
+                if(el.value.length === 0) check = false;
+                data[el.id] = el.value;
+            })
+
+            if(!check) return showError('Заполните все поля');
+
+            sendRequest({
+                url: '/api/tariffs/create',
+                method: 'post',
+                data: data,
+                success_callback: function (r){
+                    if(r['status'] !== 'ok') return showError(r['message']);
+                    location.reload();
+                }
+            })
+        }
+
+        function openEditor(tariffId, el){
+            editorId = tariffId;
+
+            let box = el.parentNode.parentNode.parentNode;
+
+            let base = box.querySelector('.tariffBase');
+            let cost = box.querySelector('.tariffCost');
+            let base_night = box.querySelector('.tariffBaseNight');
+            let cost_city = box.querySelector('.tariffCostCity');
+            let free_waiting = box.querySelector('.tariffFreeWaiting').getAttribute('value');
+            let cost_waiting = box.querySelector('.tariffCostWaiting').getAttribute('value');
+
+            let name = box.querySelector('.card-title').innerText;
+            let base_distance = base.getAttribute('distance');
+            let base_cost = base.getAttribute('cost');
+            let base_distance_night = base_night.getAttribute('distance');
+            let base_cost_night = base_night.getAttribute('cost');
+            let cost_day = cost.getAttribute('day');
+            let cost_night = cost.getAttribute('night');
+            let uuid = box.querySelector('img').getAttribute('uuid');
+            let cost_city_day = cost_city.getAttribute('day');
+            let cost_city_night = cost_city.getAttribute('night');
+
+            tariffIcon.setAttribute('uuid', uuid);
+            tariffIcon.src = '/kek/files/get?uuid=' + uuid;
+            iconRow.style.display = 'block';
+
+            $('#name').val(name);
+            $('#base_distance').val(base_distance);
+            $('#base_cost').val(base_cost);
+            $('#base_distance_night').val(base_distance_night);
+            $('#base_cost_night').val(base_cost_night);
+            $('#cost_day').val(cost_day);
+            $('#cost_night').val(cost_night);
+            $('#cost_city_day').val(cost_city_day);
+            $('#cost_city_night').val(cost_city_night);
+            $('#free_waiting').val(free_waiting);
+            $('#cost_waiting').val(cost_waiting);
+
+            modalButton.onclick = function (){
+                saveTariff();
+            }
+            $('#exampleModalLabel').text('Изменение тарифа ' + name)
+            $('#modalButton').text('Сохранить')
+
+            $('#createTariffModal').modal('show');
+        }
+
+        function removeTariff(tariff_id){
+            showConfirm('Удаление тарифа', 'Вы действительно хотите удалить этот тариф?', 'Да', function (){
+                sendRequest({
+                    url: '/api/tariffs/remove',
+                    method: 'post',
+                    data: {
+                        id: tariff_id,
+                    },
+                    success_callback: function (r){
+                        if(r['status'] !== 'ok') return showError(r['message']);
+                        location.reload();
+                    }
+                })
+            })
+        }
+
+        function saveTariff(){
+            let uuid = tariffIcon.getAttribute('uuid');
+            if(uuid === null) return showError('Загрузите иконку');
+
+            let data = {
+                'icon_uuid': uuid,
+                'id': editorId
+            }
+
+            let check = true;
+
+            $('.tariffInput').each(function (index, el){
+                if(el.value.length === 0) check = false;
+                data[el.id] = el.value;
+            })
+
+            if(!check) return showError('Заполните все поля');
+
+            sendRequest({
+                url: '/api/tariffs/edit',
+                method: 'post',
+                data: data,
+                success_callback: function (r){
+                    if(r['status'] !== 'ok') return showError(r['message']);
+                    location.reload();
+                }
+            })
+        }
+
+    </script>
+
+{% endblock %}

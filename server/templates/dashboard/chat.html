@@ -1,0 +1,370 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ config.PROJECT_NAME }} - Чат с пользователем{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <h4>Чат с: {{ user_name }}</h4>
+    <div class="card card-body" style="height: 70vh; display:flex; flex-direction: column;">
+      <!-- Messages area -->
+      <div id="messagesContainer" style="flex:1; overflow-y:auto; padding:10px; border:1px solid #eaeaea; border-radius:4px; background:#fafafa;">
+        <!-- Сообщения будут добавляться сюда -->
+      </div>
+
+      <!-- Input area -->
+      <div style="margin-top:10px; display:flex; gap:8px;">
+        <textarea id="messageInput" placeholder="Введите сообщение..." style="flex:1; resize: none;" rows="2" class="form-control"></textarea>
+        <button id="sendBtn" class="btn btn-primary">Отправить</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+/* Динамическая подгрузка Firebase SDK v8 (если не подключены) и инициализация.
+   Скрипт сам подтянет firebase-app.js и firebase-firestore.js перед выполнением основного кода. */
+
+function loadScript(url) {
+  return new Promise((resolve, reject) => {
+    // Если уже есть такой <script> с таким src — считаем загруженным
+    const existing = Array.from(document.getElementsByTagName('script')).find(s => s.src === url);
+    if (existing) {
+      if (existing.getAttribute('data-loaded') === 'true') return resolve();
+      existing.addEventListener('load', () => resolve());
+      existing.addEventListener('error', (e) => reject(e));
+      return;
+    }
+    const s = document.createElement('script');
+    s.src = url;
+    s.async = false;
+    s.onload = () => {
+      s.setAttribute('data-loaded', 'true');
+      resolve();
+    };
+    s.onerror = (e) => reject(new Error('Не удалось загрузить скрипт ' + url));
+    document.head.appendChild(s);
+  });
+}
+
+async function ensureFirebaseV8() {
+  // Используем стабильную версию v8, совместимую с кодом (namespaced API)
+  const base = 'https://www.gstatic.com/firebasejs/8.10.0/';
+  const appUrl = base + 'firebase-app.js';
+  const firestoreUrl = base + 'firebase-firestore.js';
+
+  if (typeof firebase === 'undefined') {
+    try {
+      await loadScript(appUrl);
+      await loadScript(firestoreUrl);
+      console.log('Firebase SDK v8 загружен динамически');
+    } catch (e) {
+      throw new Error('Не удалось подгрузить Firebase SDK: ' + e.message);
+    }
+  } else {
+    // Возможно firebase есть, но firestore не подключён
+    if (typeof firebase.firestore === 'undefined') {
+      try {
+        await loadScript(firestoreUrl);
+        console.log('Firebase Firestore SDK загружен динамически');
+      } catch (e) {
+        throw new Error('Не удалось подгрузить firebase-firestore.js: ' + e.message);
+      }
+    }
+  }
+}
+
+/* --- Основной код чата (тот же, который был) --- */
+/* Параметры с сервера */
+const CHAT_ID = "{{ chat_id }}";
+const USER_ID = "{{ user_id }}";
+const USER_NAME = "{{ user_name|e }}";
+const SUPPORT_SENDER_ID = "MEkzqxquE2OqdVEZi4NrxZ9K8F03";
+
+const messagesContainer = document.getElementById('messagesContainer');
+const textEl = document.getElementById('messageInput');
+const sendBtn = document.getElementById('sendBtn');
+
+function formatTimestamp(ts) {
+  if (!ts) return '';
+  if (ts.toDate) return ts.toDate().toLocaleString();
+  if (ts instanceof Date) return ts.toLocaleString();
+  return String(ts);
+}
+
+function renderMessage(msgId, data) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'mb-2';
+  wrapper.dataset.messageId = msgId;
+
+  let senderName = 'Неизвестный';
+  try {
+    if (data.sender && data.sender.id) {
+      senderName = (data.sender.id === SUPPORT_SENDER_ID) ? 'Поддержка' : USER_NAME;
+    }
+  } catch (e) {
+    senderName = USER_NAME;
+  }
+
+  const isSupport = data.sender && data.sender.id === SUPPORT_SENDER_ID;
+  const bubble = document.createElement('div');
+  bubble.style.maxWidth = '75%';
+  bubble.style.padding = '8px 10px';
+  bubble.style.borderRadius = '8px';
+  bubble.style.background = isSupport ? '#e1f0ff' : '#f1f1f1';
+  bubble.style.alignSelf = isSupport ? 'flex-start' : 'flex-end';
+  bubble.style.margin = '4px 0';
+
+  const meta = document.createElement('div');
+  meta.style.fontSize = '12px';
+  meta.style.color = '#666';
+  meta.style.marginBottom = '4px';
+  meta.textContent = senderName + ' · ' + formatTimestamp(data.date_created);
+
+  const text = document.createElement('div');
+  text.style.whiteSpace = 'pre-wrap';
+  text.textContent = data.text || '';
+
+  bubble.appendChild(meta);
+  bubble.appendChild(text);
+  wrapper.appendChild(bubble);
+
+  return wrapper;
+}
+
+function clearMessages() {
+  messagesContainer.innerHTML = '';
+}
+
+function renderSnapshot(snapshot) {
+  clearMessages();
+  // snapshot can be QuerySnapshot from onSnapshot or get()
+  snapshot.forEach(doc => {
+    const d = doc.data();
+    messagesContainer.appendChild(renderMessage(doc.id, d));
+  });
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+/* Простое диалоговое окно ошибки в UI */
+function showErrorDialog(title, message) {
+  // если уже есть диалог — обновим текст
+  let dlg = document.getElementById('firebaseErrorDialog');
+  if (!dlg) {
+    dlg = document.createElement('div');
+    dlg.id = 'firebaseErrorDialog';
+    dlg.style.position = 'fixed';
+    dlg.style.left = '50%';
+    dlg.style.top = '20%';
+    dlg.style.transform = 'translateX(-50%)';
+    dlg.style.zIndex = 9999;
+    dlg.style.background = '#fff';
+    dlg.style.border = '1px solid #ccc';
+    dlg.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+    dlg.style.padding = '16px';
+    dlg.style.maxWidth = '600px';
+    dlg.style.width = '90%';
+    dlg.style.borderRadius = '6px';
+    dlg.innerHTML = `
+      <h5 id="firebaseErrorTitle" style="margin:0 0 8px 0"></h5>
+      <pre id="firebaseErrorMsg" style="white-space:pre-wrap; max-height:240px; overflow:auto; background:#f8f8f8; padding:8px; border-radius:4px;"></pre>
+      <div style="margin-top:10px; text-align:right;">
+        <button id="firebaseRetryBtn" class="btn btn-sm btn-primary" style="margin-right:8px;">Перезагрузить</button>
+        <button id="firebaseCloseBtn" class="btn btn-sm btn-secondary">Закрыть</button>
+      </div>
+    `;
+    document.body.appendChild(dlg);
+    document.getElementById('firebaseRetryBtn').addEventListener('click', () => location.reload());
+    document.getElementById('firebaseCloseBtn').addEventListener('click', () => dlg.remove());
+  }
+  document.getElementById('firebaseErrorTitle').textContent = title || 'Ошибка';
+  document.getElementById('firebaseErrorMsg').textContent = message || '';
+}
+
+/* Основная логика: получить конфиг с сервера, инициализировать Firebase и подписаться на сообщения.
+   Выполняется после ensureFirebaseV8(). */
+async function initChat() {
+  try {
+    const resp = await fetch('/api/chats/firebase-config', { credentials: 'same-origin' });
+    if (!resp.ok) throw new Error('Не удалось получить конфигурацию Firebase: ' + resp.status);
+    const config = await resp.json();
+    if (!config || !config.apiKey) throw new Error('Некорректная конфигурация Firebase с сервера.');
+
+    if (typeof firebase === 'undefined') {
+      showErrorDialog('Firebase SDK не найден', 'На странице не обнаружен SDK Firebase. Убедитесь, что подключены firebase-app.js и firebase-firestore.js перед этим скриптом.');
+      console.error('Firebase SDK не найден.');
+      return;
+    }
+
+    try {
+      if (!firebase.apps || firebase.apps.length === 0) {
+        firebase.initializeApp(config);
+      }
+    } catch (e) {
+      showErrorDialog('Ошибка инициализации Firebase', e.message || String(e));
+      console.error('Ошибка инициализации Firebase', e);
+      return;
+    }
+
+    if (!firebase.firestore) {
+      showErrorDialog('Firestore не доступен', 'Firebase Firestore SDK не обнаружен. Убедитесь, что подключён firebase-firestore.js.');
+      console.error('Firestore не доступен.');
+      return;
+    }
+
+    const db = firebase.firestore();
+    const chatRef = db.collection('chats').doc(CHAT_ID);
+
+    // Попытка 1: сообщения привязанные DocumentReference в поле chatRef
+    let primarySubscribed = false;
+
+    try {
+      const qRef = db.collection('messages')
+                     .where('chatRef', '==', chatRef)
+                     .orderBy('date_created');
+
+      qRef.onSnapshot(snapshot => {
+        // Если получили документы — используем их
+        if (!snapshot.empty) {
+          primarySubscribed = true;
+          renderSnapshot(snapshot);
+          return;
+        }
+        // Если пустая выборка — пробуем запасной вариант (строковый chat_id)
+        if (!primarySubscribed) {
+          db.collection('messages')
+            .where('chat_id', '==', CHAT_ID)
+            .orderBy('date_created')
+            .get()
+            .then(fb => {
+              if (!fb.empty) {
+                primarySubscribed = true;
+                renderSnapshot(fb);
+              } else {
+                clearMessages();
+              }
+            })
+            .catch(err => {
+              db.collection('messages')
+                .where('chat_id', '==', CHAT_ID)
+                .get()
+                .then(fb2 => {
+                  if (!fb2.empty) {
+                    primarySubscribed = true;
+                    renderSnapshot(fb2);
+                  } else {
+                    clearMessages();
+                  }
+                }).catch(e2 => {
+                  console.error('Fallback get error:', e2);
+                });
+            });
+        }
+      }, err => {
+        console.warn('Ошибка подписки по chatRef:', err);
+        try {
+          const fallbackQ = db.collection('messages').where('chat_id', '==', CHAT_ID).orderBy('date_created');
+          fallbackQ.onSnapshot(snap2 => {
+            renderSnapshot(snap2);
+          }, err2 => {
+            console.warn('Ошибка подписки fallback с orderBy:', err2);
+            db.collection('messages').where('chat_id', '==', CHAT_ID).onSnapshot(snap3 => {
+              renderSnapshot(snap3);
+            }, err3 => {
+              console.error('Ошибка подписки на сообщения (последняя попытка):', err3);
+              showErrorDialog('Ошибка подписки на сообщения', err3 && err3.message ? err3.message : String(err3));
+            });
+          });
+        } catch (e) {
+          console.error('Ошибка при попытке fallback-подписки:', e);
+          showErrorDialog('Ошибка подписки на сообщения', e && e.message ? e.message : String(e));
+        }
+      });
+    } catch (e) {
+      console.warn('Ошибка при создании primary-запроса:', e);
+      try {
+        db.collection('messages').where('chat_id', '==', CHAT_ID).onSnapshot(snap => {
+          renderSnapshot(snap);
+        }, err => {
+          console.error('Ошибка подписки fallback (без orderBy):', err);
+          showErrorDialog('Ошибка подписки на сообщения', err && err.message ? err.message : String(err));
+        });
+      } catch (e2) {
+        console.error('Ошибка fallback:', e2);
+        showErrorDialog('Ошибка подписки на сообщения', e2 && e2.message ? e2.message : String(e2));
+      }
+    }
+
+    /* Отправка сообщения через ваш эндпоинт */
+    let sending = false;
+    async function sendMessage() {
+      if (sending) return;
+      const text = textEl.value.trim();
+      if (!text) return;
+
+      sending = true;
+      const payload = { chat_id: CHAT_ID, text: text };
+
+      try {
+        // Отправляем сообщение на сервер
+        const resp = await fetch('/api/chats/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify(payload),
+        });
+
+        const json = await resp.json();
+        if (json && (json.success === true || json.answer || json.message === 'Сохранено' || json.answer === 'Сохранено')) {
+          // Отправка сообщения успешна, очищаем ввод
+          textEl.value = '';
+
+          // Отправляем запрос на отметку сообщений как прочитанных
+          const markAsReadPayload = { chat_id: CHAT_ID };
+          await fetch('/api/chats/mark_as_read', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify(markAsReadPayload),
+          });
+
+        } else {
+          console.warn('Ответ сервера:', json);
+        }
+      } catch (err) {
+        console.error('Ошибка при отправке сообщения:', err);
+        showErrorDialog('Ошибка отправки', err && err.message ? err.message : String(err));
+      } finally {
+        sending = false;
+      }
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    textEl.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+  } catch (err) {
+    console.error('Ошибка при получении или инициализации Firebase:', err);
+    showErrorDialog('Ошибка получения конфигурации Firebase', err && err.message ? err.message : String(err));
+  }
+}
+
+/* Запуск: сначала обеспечиваем SDK, затем инициализируем чат */
+(async function() {
+  try {
+    await ensureFirebaseV8();
+  } catch (e) {
+    console.error(e);
+    showErrorDialog('Firebase SDK не загружен', e.message || String(e));
+    return;
+  }
+  // После успешной подгрузки SDK запускаем инициализацию чата
+  initChat();
+})();
+</script>
+{% endblock %}

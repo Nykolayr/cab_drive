@@ -1,0 +1,59 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ config.PROJECT_NAME }} - Рассылка{% endblock %}
+
+{% block content %}
+
+
+    <div class="row">
+        <div class="col-12 col-sm-5">
+            <h4>Рассылка</h4>
+            <div class="card card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <label for="title">Заголовок уведомления</label>
+                        <input type="text" class="form-control" id="title">
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <label for="text">Текст уведомления</label>
+                        <textarea id="text" rows="10" class="form-control"></textarea>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <button class="btn btn-success w-100" onclick="sendPush(this)">Отправить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+
+{% block script %}
+
+    <script>
+
+        function sendPush(el){
+            sendRequest({
+                url: '/kek/users/send_push',
+                method: 'post',
+                is_json: true,
+                data: {
+                    title: $('#title').val(),
+                    text: $('#text').val(),
+                },
+                btn: el,
+                success_callback: function (r){
+                    if(r['status'] !== 'ok') return showError(r['message']);
+                    showSuccess('Рассылка', 'Уведомление успешно отправлено')
+                }
+            })
+        }
+
+    </script>
+
+{% endblock %}

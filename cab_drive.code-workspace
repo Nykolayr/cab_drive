@@ -1,0 +1,22 @@
+{
+  "folders": [
+    {
+      "name": "cab_drive (root)",
+      "path": "."
+    },
+    {
+      "name": "app",
+      "path": "cab_drive_app"
+    },
+    {
+      "name": "server",
+      "path": "server"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/cab_drive_old/**": true,
+      "**/__MACOSX/**": true
+    }
+  }
+}

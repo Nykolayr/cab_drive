@@ -1,0 +1,186 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ config.PROJECT_NAME }} - Главная{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-12 col-sm-8">
+            <div class="d-flex justify-content-between">
+                <h4>Управление тарифами</h4>
+                <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#createTariffModal">Добавить тариф</button>
+            </div>
+            <div class="card card-body mt-2">
+                <div id="tariffRows">
+                    {% for tariff in tariffs_list %}
+                        <div class="tariffRow d-flex mb-3" id="{{ tariff.id }}">
+                            <button class="btn btn-light" style="cursor: grab;">
+                                <i class="mdi mdi-menu"></i>
+                            </button>
+                            <div class="form-floating form w-100 ms-3">
+                                <input type="text" class="form-control tariffName" placeholder="Название" value="{{ tariff.name }}">
+                                <label for="floatingInput">Название</label>
+                            </div>
+                            <div class="form-floating form w-100 ms-3">
+                                <input type="text" class="form-control tariffHours" placeholder="Кол-во часов" value="{{ tariff.hours }}">
+                                <label for="floatingInput">Кол-во часов</label>
+                            </div>
+                            <div class="form-floating form w-100 ms-3">
+                                <input type="text" class="form-control tariffCost" placeholder="Цена" value="{{ tariff.cost }}">
+                                <label for="floatingInput">Цена</label>
+                            </div>
+                            <select class="form-select tariffIsDiscount w-100 ms-3">
+                                <option value="0" {% if tariff.is_discount == False %}selected{% endif %}>Без скидки</option>
+                                <option value="1" {% if tariff.is_discount == True %}selected{% endif %}>Со скидкой</option>
+                            </select>
+                            <button class="btn btn-danger ms-3" onclick="$(this.parentNode).remove();">
+                                <i class="mdi mdi-trash-can"></i>
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <button class="btn btn-primary w-100" onclick="saveTariffs()">Сохранить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="createTariffModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Добавление тарифа</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <label for="tName">Название тарифа</label>
+                            <input type="text" class="form-control tRow" id="tName">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <label for="tHours">Срок действия, в часах</label>
+                            <input type="number" class="form-control tRow" id="tHours">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <label for="tCost">Цена</label>
+                            <input type="number" class="form-control tRow" id="tCost">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <label for="tIsDiscount">Выделить как скидку</label>
+                            <select id="tIsDiscount" class="form-select">
+                                <option value="0" selected>Нет</option>
+                                <option value="1">Да</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary" onclick="createTariff();">Добавить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block script %}
+
+    <script>
+
+        new Sortable(document.getElementById('tariffRows'), {
+            handle: '.btn-light',
+            animation: 150,
+        });
+
+        function createTariff(){
+            let discount_0 = '';
+            let discount_1 = '';
+            if(tIsDiscount.value === '0') discount_0 = 'selected';
+            if(tIsDiscount.value === '1') discount_1 = 'selected';
+            let row = $(`<div class="tariffRow d-flex mb-3" id="${getRandomString(8)}">
+                    <button class="btn btn-light" style="cursor: grab;">
+                        <i class="mdi mdi-menu"></i>
+                    </button>
+                    <div class="form-floating form w-100 ms-3">
+                      <input type="text" class="form-control tariffName" placeholder="Название" value="${tName.value}">
+                      <label for="floatingInput">Название</label>
+                    </div>
+                    <div class="form-floating form w-100 ms-3">
+                      <input type="text" class="form-control tariffHours" placeholder="Кол-во часов" value="${tHours.value}">
+                      <label for="floatingInput">Кол-во часов</label>
+                    </div>
+                    <div class="form-floating form w-100 ms-3">
+                      <input type="text" class="form-control tariffCost" placeholder="Цена" value="${tCost.value}">
+                      <label for="floatingInput">Цена</label>
+                    </div>
+                    <select class="form-select tariffIsDiscount w-100 ms-3">
+                        <option value="0" ${discount_0}>Без скидки</option>
+                        <option value="1" ${discount_1}>Со скидкой</option>
+                    </select>
+                    <button class="btn btn-danger ms-3" onclick="$(this.parentNode).remove();">
+                        <i class="mdi mdi-trash-can"></i>
+                    </button>
+                </div>`)[0];
+            $('.tRow').val('');
+            $('#createTariffModal').modal('hide')
+            tariffRows.append(row);
+        }
+
+        function getTariffs(){
+            let tariffs = [];
+            $('.tariffRow').each(function (index, el){
+                tariffs.push({
+                    id: el.id,
+                    name: el.querySelector('.tariffName').value,
+                    hours: el.querySelector('.tariffHours').value,
+                    cost: el.querySelector('.tariffCost').value,
+                    is_discount: el.querySelector('.tariffIsDiscount').value === '1',
+                })
+            })
+            return tariffs;
+        }
+
+        function getRandomString(length) {
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+            const chars = letters + '0123456789';
+
+            if (length < 1) return '';
+
+            let result = letters.charAt(Math.floor(Math.random() * letters.length));
+
+            for (let i = 1; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+
+            return result;
+        }
+
+        function saveTariffs(){
+            sendRequest({
+                url: '/kek/settings/edit',
+                method: 'post',
+                is_json: true,
+                data: {
+                    driver_tariffs: getTariffs()
+                },
+                success_callback: function (r){
+                    if(r['status'] !== 'ok') return showError(r['message']);
+                    showSuccess('Сохранение', r['message']);
+                }
+            })
+        }
+
+    </script>
+
+{% endblock %}

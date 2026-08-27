@@ -1,0 +1,909 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ config.PROJECT_display_name }} - Пользователь {{ client.id }}{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-12 col-md-5">
+            <div class="row">
+                <div class="col-12">
+                    <h4>Пользователь #{{ client.id }}</h4>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+
+                        {% if client.is_driver and client.on_verif_now %}
+                            <div id="verification-request-banner" class="alert alert-warning d-flex align-items-center justify-content-between" role="alert">
+                                <div><strong>Пользователь подал заявку на верификацию водителя</strong></div>
+                                <div>
+                                    <button id="verifApproveBtn" class="btn btn-sm btn-success" style="margin-bottom: 10px;" onclick="handleVerifAction('approve')">Одобрить</button>
+                                    <button id="verifRejectBtn" class="btn btn-sm btn-danger" onclick="handleVerifAction('reject')">Отклонить</button>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                    <div class="card card-body">
+                        <div class="row">
+                            {% if client.photo_url != None %}
+                                <img src="{% if client.photo_url.startswith('http') %}{{ client.photo_url }}{% else %}/kek/files/get?uuid={{ client.photo_url }}{% endif %}" alt="" id="photo" uuid="{{ client.photo_url }}" style="max-width: 100%; height: auto">
+                            {% else %}
+                                <img src="" alt="" id="photo" style="display: none; max-width: 100%; height: auto">
+                            {% endif %}
+
+                            <div class="mt-2">
+                                <button class="btn btn-sm btn-danger" id="removePhotoBtn" onclick="removePhoto()" {% if client.photo_url == None %}style="display: none"{% endif %}>Удалить аватарку</button>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <label for="user_id">ID</label>
+                                <input type="text" class="form-control" value="{{ client.id }}" disabled id="user_id">
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <label for="">Email</label>
+                                <input type="text" class="form-control" value="{{ (client.email) }}" disabled>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <label for="display_name">Имя</label>
+                                <input type="text" class="form-control" value="{% if client.display_name != None %}{{ client.display_name }}{% endif %}" id="display_name">
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <label for="phone_number">Номер</label>
+                                <input type="text" class="form-control" value="{{ client.phone_number }}" id="phone_number">
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <label for="">Дата регистрации</label>
+                                <input type="text" class="form-control" value="{{ client.created_time.strftime('%d.%m.%Y %H:%M') }}" disabled>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <label for="is_driver">Водитель:</label>
+                                <select id="is_driver" class="form-control" onchange="toggleBalanceSection()">
+                                    <option value="true" {% if client.is_driver %}selected{% endif %}>Да</option>
+                                    <option value="false" {% if not client.is_driver %}selected{% endif %}>Нет</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <label for="is_blocked">Заблокирован:</label>
+                                <input type="checkbox" id="is_blocked" {% if client.is_blocked %}checked{% endif %} onchange="toggleBlockComment()">
+                            </div>
+                        </div>
+                        <div class="row mt-3" id="block-comment-section" style="display: {% if client.is_blocked %}block{% else %}none{% endif %};">
+                            <div class="col-12">
+                                <label for="block_comment">Комментарий по блокировке:</label>
+                                <input type="text" class="form-control" id="block_comment" value="{{ client.block_comment }}">
+                            </div>
+                        </div>
+
+
+
+                       <div id="balance-section" class="mt-3">
+
+                            <div class="col-6">
+                                <label for="balance">Текущий баланс:</label>
+                                <input type="text" class="form-control" id="balance" value="{{ client.balance }}">
+                            </div>
+
+                            {% if client.is_driver %}
+                            <div class="col-6">
+                                <label for="commission">Комиссия (%):</label>
+                                <input type="text" class="form-control" id="commission" value="{{ client.commission if client.commission else 15 }}" placeholder="Введите комиссию">
+                            </div>
+                            {% endif %}
+
+                            {% if client.is_driver %}
+                            <div class="col-12 mt-3">
+                                <label for="bonus_balance_current">Доп. баланс (только для списания):</label>
+                                <input type="text" class="form-control" id="bonus_balance_current" value="{{ client.bonus_balance or 0 }}" disabled>
+                                <small class="form-text text-muted">Эта сумма не выводится — только тратится на комиссию.</small>
+                            </div>
+                            <div class="col-12 mt-2">
+                                <label for="bonus_balance_delta">Изменить доп. баланс (дельта):</label>
+                                <input type="text" class="form-control" id="bonus_balance_delta" value="" placeholder="+100 для начисления, -50 для списания">
+                            </div>
+                            {% endif %}
+
+                        </div>
+
+                       <div class="row mt-3">
+                            <div class="col-12">
+                                <button class="btn btn-success w-100" onclick="saveUser()">Сохранить</button>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <button class="btn btn-primary w-100" onclick="openSendMessageDialog()">Отправить уведомление</button>
+                            </div>
+                        </div>
+
+                        {% if client.is_driver %}
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h5 class="font-weight-bold">Статистика за месяц:</h5>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-6 mb-3">
+                                <div class="card card-body d-flex flex-column" style="height: 100%;">
+                                    <h5>Всего заказов</h5>
+                                    <p id="total_orders">{{statistics.total_orders}}</p>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="card card-body d-flex flex-column" style="height: 100%;">
+                                    <h5>Завершённые заказы</h5>
+                                    <p id="completed_orders">{{statistics.completed_orders}}</p>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="card card-body d-flex flex-column" style="height: 100%;">
+                                    <h5>Пополнения</h5>
+                                    <p id="current_balance">{{statistics.monthly_balance}}</p>
+                                </div>
+                            </div>
+
+                            <div class="col-6 mb-3">
+                                <div class="card card-body d-flex flex-column" style="height: 100%;">
+                                    <h5>Дата последней транзакции</h5>
+                                    <p id="last_transaction_date">{{statistics.last_transaction_date}}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <a href="{% if client.is_driver %}/d/trips?driver_id={{ client.id }}{% else %}/d/trips?user_id={{ client.id }}{% endif %}">
+                                    <button class="btn btn-sm btn-secondary">История заказов</button>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if client.is_driver %}
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card card-body">
+                        <h5>Данные верификации</h5>
+
+                        {# make safe access consistent: use dot-notation guarded by checks #}
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <label>Avatar</label>
+                                <div class="d-flex align-items-center">
+                                    {% if verification_data and verification_data.avatar %}
+                                        <img id="verification_data_avatar_img" src="{% if verification_data.avatar.startswith('http') %}{{ verification_data.avatar }}{% else %}/kek/files/get?uuid={{ verification_data.avatar }}{% endif %}" data-uuid="{{ verification_data.avatar }}" style="max-width:120px; max-height:80px; margin-right:10px;">
+                                    {% else %}
+                                        <img id="verification_data_avatar_img" src="" data-uuid="" style="display:none; max-width:120px; max-height:80px; margin-right:10px;">
+                                    {% endif %}
+                                    <div>
+                                        <button class="btn btn-sm btn-primary" onclick="loadVerificationFile('avatar')">Загрузить</button>
+                                        <button class="btn btn-sm btn-danger" id="verification_data_avatar_remove" onclick="removeVerificationFile('avatar')" {% if not verification_data or not verification_data.avatar %}style="display:none"{% endif %}>Удалить</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-6">
+                                <label>Имя</label>
+                                <input id="verification_data_name" class="form-control" value="{% if verification_data and verification_data.name %}{{ verification_data.name }}{% endif %}">
+                            </div>
+                            <div class="col-6">
+                                <label>Фамилия</label>
+                                <input id="verification_data_surname" class="form-control" value="{% if verification_data and verification_data.surname %}{{ verification_data.surname }}{% endif %}">
+                            </div>
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-6">
+                                <label>Email (верификация)</label>
+                                <input id="verification_data_email" class="form-control" value="{% if verification_data and verification_data.email %}{{ verification_data.email }}{% endif %}">
+                            </div>
+                            <div class="col-6">
+                                <label>Телефон (верификация)</label>
+                                <input id="verification_data_phone_number" class="form-control" value="{% if verification_data and verification_data.phone_number %}{{ verification_data.phone_number }}{% endif %}">
+                            </div>
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-6">
+                                <label>Город</label>
+                                <input id="verification_data_city" class="form-control" value="{% if verification_data and verification_data.city %}{{ verification_data.city }}{% endif %}">
+                            </div>
+                            <div class="col-6">
+                                <label>Статус</label>
+                                <input id="verification_data_status" class="form-control" value="{% if verification_data and verification_data.status %}{{ verification_data.status }}{% endif %}">
+                            </div>
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-6">
+                                <label for="verification_data_marka">Марка</label>
+                                <input type="text" class="form-control" id="verification_data_marka" value="{% if verification_data and verification_data.marka %}{{ verification_data.marka }}{% endif %}">
+                            </div>
+                            <div class="col-6">
+                                <label for="verification_data_marka_avto">Марка авто</label>
+                                <input type="text" class="form-control" id="verification_data_marka_avto" value="{% if verification_data and verification_data.marka_avto %}{{ verification_data.marka_avto }}{% endif %}">
+                            </div>
+
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-6">
+                                <label>Номер авто</label>
+                                <input id="verification_data_number_avto" class="form-control" value="{% if verification_data and verification_data.number_avto %}{{ verification_data.number_avto }}{% endif %}">
+                            </div>
+                            <div class="col-6">
+                                <label>Номер документа (ID)</label>
+                                <input id="verification_data_number_id" class="form-control" value="{% if verification_data and verification_data.number_id %}{{ verification_data.number_id }}{% endif %}">
+                            </div>
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-6">
+                                <label>Дата создания (verification)</label>
+                                <input id="verification_data_dateCreated" class="form-control" data-timestamp="{% if verification_data and verification_data.dateCreated %}{{ verification_data.dateCreated }}{% endif %}" value="{% if verification_data and verification_data.dateCreated %}{{ verification_data.dateCreated }}{% endif %}">
+                            </div>
+                            <div class="col-6">
+                                <label>Дата рождения (dfb)</label>
+                                <input id="verification_data_dfb" class="form-control" data-timestamp="{% if verification_data and verification_data.dfb %}{{ verification_data.dfb }}{% endif %}" value="{% if verification_data and verification_data.dfb %}{{ verification_data.dfb }}{% endif %}">
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <label>Photo Avto (фото авто) — можно добавить/удалить</label>
+                                <div id="verification_data_photo_avto_list" class="d-flex flex-wrap">
+                                    {% if verification_data and verification_data.photo_avto %}
+                                        {% for p in verification_data.photo_avto %}
+                                            <div class="verification_data-photo-item mr-2 mb-2" data-uuid="{{ p }}">
+                                                <img src="{% if p.startswith('http') %}{{ p }}{% else %}/kek/files/get?uuid={{ p }}{% endif %}" style="max-width:120px; max-height:80px; display:block;">
+                                                <div class="mt-1">
+                                                    <button class="btn btn-sm btn-primary" onclick="replaceVerificationFile(event, 'photo_avto', {{ loop.index0 }})">Заменить</button>
+                                                    <button class="btn btn-sm btn-danger" onclick="removeVerificationFileFromArray(event, 'photo_avto', {{ loop.index0 }})">Удалить</button>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                                <div class="mt-2">
+                                    <button class="btn btn-sm btn-secondary" onclick="addVerificationFileToArray('photo_avto')">Добавить фото авто</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <label>Photo Doc (документы) — можно добавить/удалить</label>
+                                <div id="verification_data_photo_doc_list" class="d-flex flex-wrap">
+                                    {% if verification_data and verification_data.photo_doc %}
+                                        {% for p in verification_data.photo_doc %}
+                                            <div class="verification_data-photo-item mr-2 mb-2" data-uuid="{{ p }}">
+                                                <img src="{% if p.startswith('http') %}{{ p }}{% else %}/kek/files/get?uuid={{ p }}{% endif %}" style="max-width:120px; max-height:80px; display:block;">
+                                                <div class="mt-1">
+                                                    <button class="btn btn-sm btn-primary" onclick="replaceVerificationFile(event, 'photo_doc', {{ loop.index0 }})">Заменить</button>
+                                                    <button class="btn btn-sm btn-danger" onclick="removeVerificationFileFromArray(event, 'photo_doc', {{ loop.index0 }})">Удалить</button>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                                <div class="mt-2">
+                                    <button class="btn btn-sm btn-secondary" onclick="addVerificationFileToArray('photo_doc')">Добавить фото документа</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <button class="btn btn-success w-100" onclick="saveVerificationData()">Сохранить данные верификации</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Image Preview Modal -->
+    <div id="imagePreviewModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; cursor:pointer;" onclick="closeImagePreview()">
+        <span style="position:absolute; top:20px; right:30px; color:#fff; font-size:40px; font-weight:bold; cursor:pointer;" onclick="closeImagePreview()">&times;</span>
+        <img id="imagePreviewImg" src="" style="max-width:90%; max-height:90%; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); object-fit:contain;">
+    </div>
+
+    <!-- Send Message Modal -->
+    <div class="modal fade" id="sendMessageModal" tabindex="-1" role="dialog" aria-labelledby="sendMessageModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="sendMessageModalLabel">Отправить уведомление пользователю #{{ client.id }}</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть" onclick="closeSendMessageDialog()">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="send_message_text">Сообщение</label>
+              <textarea class="form-control" id="send_message_text" rows="4" placeholder="Введите текст уведомления"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeSendMessageDialog()">Закрыть</button>
+            <button type="button" class="btn btn-primary" id="sendMessageBtn" onclick="sendMessageToUser()">Отправить</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+    <!-- Script for handling statistics display and verification data -->
+    <script>
+        // Image preview functions (global scope)
+        window.openImagePreview = function(src) {
+            if (!src) return;
+            const modal = document.getElementById('imagePreviewModal');
+            const img = document.getElementById('imagePreviewImg');
+            if (modal && img) {
+                img.src = src;
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+        };
+
+        window.closeImagePreview = function() {
+            const modal = document.getElementById('imagePreviewModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+        };
+
+        // Close on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeImagePreview();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // helper to safely get elements
+            const $id = id => document.getElementById(id);
+
+            // Add click handlers to all images for preview
+            function makeImageClickable(img) {
+                if (!img) return;
+                img.style.cursor = 'pointer';
+                img.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (this.src && this.style.display !== 'none') {
+                        openImagePreview(this.src);
+                    }
+                });
+            }
+
+            // Main user photo
+            const mainPhoto = $id('photo');
+            if (mainPhoto) makeImageClickable(mainPhoto);
+
+            // Verification avatar
+            const verifAvatar = $id('verification_data_avatar_img');
+            if (verifAvatar) makeImageClickable(verifAvatar);
+
+            // Photo avto and photo doc lists
+            function addClickToPhotoList(listId) {
+                const container = document.getElementById(listId);
+                if (!container) return;
+                const imgs = container.querySelectorAll('img');
+                imgs.forEach(function(img) {
+                    makeImageClickable(img);
+                });
+            }
+
+            addClickToPhotoList('verification_data_photo_avto_list');
+            addClickToPhotoList('verification_data_photo_doc_list');
+
+            // Observer to handle dynamically added images
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1) {
+                            if (node.tagName === 'IMG') {
+                                makeImageClickable(node);
+                            } else {
+                                const imgs = node.querySelectorAll ? node.querySelectorAll('img') : [];
+                                imgs.forEach(function(img) {
+                                    makeImageClickable(img);
+                                });
+                            }
+                        }
+                    });
+                });
+            });
+
+            const photoAvtoList = $id('verification_data_photo_avto_list');
+            const photoDocList = $id('verification_data_photo_doc_list');
+            if (photoAvtoList) observer.observe(photoAvtoList, { childList: true, subtree: true });
+            if (photoDocList) observer.observe(photoDocList, { childList: true, subtree: true });
+
+            // Format timestamp fields to readable date
+            function formatTimestampField(fieldId) {
+                const field = $id(fieldId);
+                if (!field) return;
+                const timestamp = field.getAttribute('data-timestamp');
+                if (timestamp && !isNaN(timestamp)) {
+                    const ts = parseInt(timestamp);
+                    // Handle both seconds and milliseconds timestamps
+                    const date = new Date(ts > 9999999999 ? ts : ts * 1000);
+                    if (!isNaN(date.getTime())) {
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const year = date.getFullYear();
+                        field.value = day + '.' + month + '.' + year;
+                    }
+                }
+            }
+
+            formatTimestampField('verification_data_dateCreated');
+            formatTimestampField('verification_data_dfb');
+
+            function getPhotoEl() {
+                return $id('photo');
+            }
+            function getRemovePhotoBtn() {
+                return $id('removePhotoBtn');
+            }
+
+            window.loadPhoto = function () {
+                LoadFile(function (uuid) {
+                    const photo = getPhotoEl();
+                    const removeBtn = getRemovePhotoBtn();
+                    if (!photo) return;
+                    photo.setAttribute('uuid', uuid);
+                    photo.src = '/kek/files/get?uuid=' + uuid;
+                    photo.style.display = 'block';
+                    if (removeBtn) removeBtn.style.display = 'inline-block';
+                });
+            };
+
+            window.removePhoto = function () {
+                const photo = getPhotoEl();
+                const removeBtn = getRemovePhotoBtn();
+                if (!photo) return;
+                photo.removeAttribute('uuid');
+                photo.style.display = 'none';
+                photo.src = '';
+                if (removeBtn) removeBtn.style.display = 'none';
+            };
+
+            window.toggleBlockComment = function () {
+                const isBlocked = document.getElementById('is_blocked').checked;
+                document.getElementById('block-comment-section').style.display = isBlocked ? 'block' : 'none';
+            };
+
+            window.saveUser = function () {
+                const bonusDeltaRaw = $('#bonus_balance_delta').val();
+                const bonusDelta = (bonusDeltaRaw || '').trim();
+
+                let data = {
+                    'user_id': $('#user_id').val(),
+                    'display_name': $('#display_name').val(),
+                    'photo_url': (getPhotoEl() ? getPhotoEl().getAttribute("uuid") : null),
+                    'is_driver': $('#is_driver').val() === 'true',
+                    'is_blocked': $('#is_blocked').is(':checked'),
+                    'phone_number': $('#phone_number').val(),
+                    'block_comment': $('#block_comment').val(),
+                    'balance': $('#balance').val(),
+                    'commission': $('#commission').val(),
+                    'bonus_balance': bonusDelta === '' ? null : bonusDelta,
+                };
+                if (bonusDelta !== '') {
+                    console.log('[user.html] sending bonus_balance delta:', bonusDelta);
+                }
+                console.log("Отправка данных:", JSON.stringify(data)); // Логируем данные
+
+                $.ajax({
+                    url: '/api/users/edit',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function (msg) {
+                        console.log(msg);
+                        if(msg['status'] !== 'ok'){
+                            return showError(msg['message']);
+                        }
+                        if (bonusDelta !== '') {
+                            const currentEl = document.getElementById('bonus_balance_current');
+                            if (currentEl) {
+                                const prev = parseInt(currentEl.value || '0', 10) || 0;
+                                const delta = parseInt(bonusDelta, 10) || 0;
+                                currentEl.value = String(prev + delta);
+                            }
+                            $('#bonus_balance_delta').val('');
+                        }
+                        showSuccess('Изменение пользователя', msg['message']);
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.error("Ошибка при запросе:", textStatus, errorThrown);
+                        if(jqXHR.responseJSON && jqXHR.responseJSON.message) {
+                            showError('Ошибка: ' + jqXHR.responseJSON.message);
+                        } else {
+                            showError('Произошла неожиданная ошибка. Пожалуйста, попробуйте снова.');
+                        }
+                    }
+                });
+            };
+
+            // ==== Send message dialog helpers ====
+            window.openSendMessageDialog = function () {
+                try {
+                    // clear previous content
+                    $('#send_message_text').val('');
+                    const modalEl = $('#sendMessageModal');
+                    if (modalEl && modalEl.modal) {
+                        modalEl.modal('show');
+                    } else {
+                        const el = document.getElementById('sendMessageModal');
+                        if (el) el.style.display = 'block';
+                    }
+                } catch (e) {
+                    console.error('openSendMessageDialog error', e);
+                }
+            };
+
+            window.closeSendMessageDialog = function () {
+                try {
+                    const modalEl = $('#sendMessageModal');
+                    if (modalEl && modalEl.modal) {
+                        modalEl.modal('hide');
+                    } else {
+                        const el = document.getElementById('sendMessageModal');
+                        if (el) el.style.display = 'none';
+                    }
+                } catch (e) {
+                    console.error('closeSendMessageDialog error', e);
+                }
+            };
+
+            window.sendMessageToUser = function () {
+                const message = $('#send_message_text').val() ? $('#send_message_text').val().trim() : '';
+                if (!message) {
+                    return showError('Введите сообщение для отправки');
+                }
+                const userId = $('#user_id').val();
+                // Construct URL as requested: /api/users/send_message?user_id=[id]&message=[message]
+                const url = '/api/users/send_message?user_id=' + encodeURIComponent(userId) + '&message=' + encodeURIComponent(message);
+                $('#sendMessageBtn').prop('disabled', true);
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    success: function (msg) {
+                        $('#sendMessageBtn').prop('disabled', false);
+                        console.log('send message response', msg);
+                        if (msg && msg.status && msg.status !== 'ok') {
+                            return showError(msg.message || 'Ошибка при отправке сообщения');
+                        }
+                        showSuccess('Уведомление отправлено', (msg && msg.message) ? msg.message : 'Сообщение успешно отправлено');
+                        // close modal
+                        try {
+                            const modalEl = $('#sendMessageModal');
+                            if (modalEl && modalEl.modal) {
+                                modalEl.modal('hide');
+                            } else {
+                                const el = document.getElementById('sendMessageModal');
+                                if (el) el.style.display = 'none';
+                            }
+                        } catch (e) {
+                            console.error('error closing modal', e);
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        $('#sendMessageBtn').prop('disabled', false);
+                        console.error("Ошибка при отправке сообщения:", textStatus, errorThrown);
+                        if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+                            showError('Ошибка: ' + jqXHR.responseJSON.message);
+                        } else {
+                            showError('Произошла ошибка при отправке сообщения. Пожалуйста, попробуйте снова.');
+                        }
+                    }
+                });
+            };
+
+            // ==== Verification data helpers ====
+
+            // Generic loader to upload a single file and attach to a particular field (single)
+            window.loadVerificationFile = function (field) {
+                LoadFile(function (uuid) {
+                    if (field === 'avatar') {
+                        const el = $id('verification_data_avatar_img');
+                        if (!el) return;
+                        el.setAttribute('data-uuid', uuid);
+                        el.src = '/kek/files/get?uuid=' + uuid;
+                        el.style.display = 'block';
+                        const removeBtn = $id('verification_data_avatar_remove');
+                        if (removeBtn) removeBtn.style.display = 'inline-block';
+                    }
+                });
+            };
+
+            window.removeVerificationFile = function (field) {
+                if (field === 'avatar') {
+                    const el = $id('verification_data_avatar_img');
+                    if (!el) return;
+                    el.removeAttribute('data-uuid');
+                    el.src = '';
+                    el.style.display = 'none';
+                    const removeBtn = $id('verification_data_avatar_remove');
+                    if (removeBtn) removeBtn.style.display = 'none';
+                }
+            };
+
+            // Add a new placeholder item to an array (photo_avto / photo_doc) and immediately open file loader to fill it
+            window.addVerificationFileToArray = function (field) {
+                const listId = field === 'photo_avto' ? 'verification_data_photo_avto_list' : 'verification_data_photo_doc_list';
+                const container = document.getElementById(listId);
+                if (!container) return;
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'verification_data-photo-item mr-2 mb-2';
+                wrapper.setAttribute('data-uuid', '');
+                const img = document.createElement('img');
+                img.src = '';
+                img.style.maxWidth = '120px';
+                img.style.maxHeight = '80px';
+                img.style.display = 'none';
+
+                const controls = document.createElement('div');
+                controls.className = 'mt-1';
+
+                const replaceBtn = document.createElement('button');
+                replaceBtn.className = 'btn btn-sm btn-primary';
+                replaceBtn.textContent = 'Заменить';
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'btn btn-sm btn-danger ml-1';
+                removeBtn.textContent = 'Удалить';
+
+                controls.appendChild(replaceBtn);
+                controls.appendChild(removeBtn);
+
+                wrapper.appendChild(img);
+                wrapper.appendChild(controls);
+
+                replaceBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    LoadFile(function (uuid) {
+                        wrapper.setAttribute('data-uuid', uuid);
+                        img.src = '/kek/files/get?uuid=' + uuid;
+                        img.style.display = 'block';
+                    });
+                });
+
+                removeBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    wrapper.remove();
+                });
+
+                container.appendChild(wrapper);
+
+                // Open upload dialog immediately so user can pick a file
+                replaceBtn.click();
+            };
+
+            // Replace existing item in array at given index (re-uploads)
+            window.replaceVerificationFile = function (event, field, index) {
+                if (event && event.preventDefault) event.preventDefault();
+                const listId = field === 'photo_avto' ? 'verification_data_photo_avto_list' : 'verification_data_photo_doc_list';
+                const container = document.getElementById(listId);
+                if (!container) return;
+                const items = container.querySelectorAll('.verification_data-photo-item');
+                const target = items[index];
+                if (!target) {
+                    return showError('Элемент не найден');
+                }
+                const img = target.querySelector('img');
+                LoadFile(function (uuid) {
+                    target.setAttribute('data-uuid', uuid);
+                    if (img) {
+                        img.src = '/kek/files/get?uuid=' + uuid;
+                        img.style.display = 'block';
+                    }
+                });
+            };
+
+            // Remove item from array at index
+            window.removeVerificationFileFromArray = function (event, field, index) {
+                if (event && event.preventDefault) event.preventDefault();
+                const listId = field === 'photo_avto' ? 'verification_data_photo_avto_list' : 'verification_data_photo_doc_list';
+                const container = document.getElementById(listId);
+                if (!container) return;
+                const items = container.querySelectorAll('.verification_data-photo-item');
+                const target = items[index];
+                if (target) {
+                    target.remove();
+                }
+            };
+
+            // Collect verification data from the form
+            window.collectVerificationData = function () {
+                const data = {};
+                data.user_id = $('#user_id').val();
+
+                data.avatar = (function () {
+                    const el = document.getElementById('verification_data_avatar_img');
+                    return el ? (el.getAttribute('data-uuid') || null) : null;
+                })();
+
+                data.name = $('#verification_data_name').val();
+                data.surname = $('#verification_data_surname').val();
+                data.email = $('#verification_data_email').val();
+                data.phone_number = $('#verification_data_phone_number').val();
+                data.city = $('#verification_data_city').val();
+                data.status = $('#verification_data_status').val();
+                data.marka = $('#verification_data_marka').val();
+                data.marka_avto = $('#verification_data_marka_avto').val();
+                data.number_avto = $('#verification_data_number_avto').val();
+                data.number_id = $('#verification_data_number_id').val();
+
+                // Parse date fields - convert from dd.mm.yyyy to timestamp or use original
+                function parseDateField(fieldId) {
+                    const field = document.getElementById(fieldId);
+                    if (!field) return null;
+                    const val = field.value.trim();
+                    if (!val) return null;
+                    // If it's a pure number, return as is (already timestamp)
+                    if (/^\d+$/.test(val)) {
+                        return parseInt(val);
+                    }
+                    // Try to parse dd.mm.yyyy format
+                    const parts = val.split('.');
+                    if (parts.length === 3) {
+                        const day = parseInt(parts[0]);
+                        const month = parseInt(parts[1]) - 1;
+                        const year = parseInt(parts[2]);
+                        const date = new Date(year, month, day);
+                        if (!isNaN(date.getTime())) {
+                            return Math.floor(date.getTime() / 1000);
+                        }
+                    }
+                    // Fallback to original timestamp if parsing failed
+                    const origTs = field.getAttribute('data-timestamp');
+                    return origTs ? parseInt(origTs) : null;
+                }
+
+                data.dateCreated = parseDateField('verification_data_dateCreated');
+                data.dfb = parseDateField('verification_data_dfb');
+
+                function collectArray(listId) {
+                    const arr = [];
+                    const container = document.getElementById(listId);
+                    if (!container) return arr;
+                    const items = container.querySelectorAll('.verification_data-photo-item');
+                    items.forEach(function (it) {
+                        const uuid = it.getAttribute('data-uuid');
+                        if (uuid) arr.push(uuid);
+                    });
+                    return arr;
+                }
+
+                data.photo_avto = collectArray('verification_data_photo_avto_list');
+                data.photo_doc = collectArray('verification_data_photo_doc_list');
+
+                // keep raw user field if needed
+                data.user = '{{ client.id }}';
+
+                return data;
+            };
+
+            // Send verification data to API
+            window.saveVerificationData = function () {
+                const data = collectVerificationData();
+                console.log('Отправка verification_data:', data);
+
+                $.ajax({
+                    url: '/api/users/verification_data/edit',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function (msg) {
+                        console.log(msg);
+                        if (msg.status !== 'ok') {
+                            return showError(msg.message || 'Ошибка при сохранении данных верификации');
+                        }
+                        showSuccess('Данные верификации сохранены', msg.message);
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.error("Ошибка при сохранении verification_data:", textStatus, errorThrown);
+                        if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+                            showError('Ошибка: ' + jqXHR.responseJSON.message);
+                        } else {
+                            showError('Произошла неожиданная ошибка. Пожалуйста, попробуйте снова.');
+                        }
+                    }
+                });
+            };
+
+
+
+window.handleVerifAction = function(action) {
+    try {
+        const userId = '{{ client.id }}';
+                const userUid = '{{ client.uid }}';
+
+        const approve = action === 'approve';
+        const confirmText = approve ? 'Точно одобрить заявку на верификацию водителя?' : 'Точно отклонить заявку на верификацию водителя?';
+        if (!confirm(confirmText)) return;
+
+        const approveBtn = document.getElementById('verifApproveBtn');
+        const rejectBtn = document.getElementById('verifRejectBtn');
+        if (approveBtn) approveBtn.disabled = true;
+        if (rejectBtn) rejectBtn.disabled = true;
+
+        const payload = {
+            user_id: userId,
+            on_verif_now: false,
+            verif_compl: true,
+            verif_ne_proidena: !approve
+        };
+
+        $.ajax({
+            url: '/api/users/edit',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(payload),
+            success: function (resp) {
+                console.log('verif action response', resp);
+                if (resp && resp.status && resp.status !== 'ok') {
+                    // если API возвращает статус ошибки
+                    if (approveBtn) approveBtn.disabled = false;
+                    if (rejectBtn) rejectBtn.disabled = false;
+                    return showError(resp.message || 'Ошибка при обработке запроса');
+                }
+                showSuccess(approve ? 'Заявка одобрена' : 'Заявка отклонена', (resp && resp.message) ? resp.message : '');
+                // скрываем баннер и обновляем элементы страницы при успехе
+                const banner = document.getElementById('verification-request-banner');
+                if (banner) banner.style.display = 'none';
+                // При необходимости обновляем UI: снять флаг on_verif_now, показать результат и т.д.
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.error('Ошибка при запросе /api/users/edit', textStatus, errorThrown);
+                if (approveBtn) approveBtn.disabled = false;
+                if (rejectBtn) rejectBtn.disabled = false;
+                if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+                    showError('Ошибка: ' + jqXHR.responseJSON.message);
+                } else {
+                    showError('Произошла ошибка при отправке запроса. Пожалуйста, попробуйте снова.');
+                }
+            }
+        });
+    } catch (e) {
+        console.error('handleVerifAction error', e);
+        showError('Произошла ошибка. Подробности в консоли.');
+    }
+};
+
+        });
+    </script>
+{% endblock %}

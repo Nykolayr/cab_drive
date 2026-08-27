@@ -1,0 +1,163 @@
+{
+   "driver_tariffs": [
+      {
+         "id": "eTR24yuj",
+         "name": "1 час",
+         "hours": 1,
+         "is_discount": false,
+         "cost": 49
+      },
+      {
+         "id": "Yzpcysvl",
+         "name": "3 часа",
+         "hours": 3,
+         "is_discount": false,
+         "cost": 99
+      },
+      {
+         "id": "YKpPuhcH",
+         "name": "5 часов",
+         "hours": 5,
+         "is_discount": false,
+         "cost": 165
+      },
+      {
+         "id": "LNXfBYEq",
+         "name": "8 часов",
+         "hours": 8,
+         "is_discount": false,
+         "cost": 264
+      },
+      {
+         "id": "D33UNoYT",
+         "name": "12 часов -15%",
+         "hours": 12,
+         "is_discount": true,
+         "cost": 336
+      },
+      {
+         "id": "vLORrUEy",
+         "name": "16 часов -20%",
+         "hours": 16,
+         "is_discount": true,
+         "cost": 422
+      },
+      {
+         "id": "Lc4UmLhd",
+         "name": "Безлимит на месяц -50%",
+         "hours": 720,
+         "is_discount": true,
+         "cost": 5940
+      }
+   ],
+   "polygons": [],
+   "cities": [
+      {
+         "coords": [
+            [
+               55.91,
+               37.595
+            ],
+            [
+               55.9044,
+               37.661
+            ],
+            [
+               55.8879,
+               37.7225
+            ],
+            [
+               55.8617,
+               37.7753
+            ],
+            [
+               55.8275,
+               37.8158
+            ],
+            [
+               55.7877,
+               37.8413
+            ],
+            [
+               55.745,
+               37.85
+            ],
+            [
+               55.7023,
+               37.8413
+            ],
+            [
+               55.6625,
+               37.8158
+            ],
+            [
+               55.6283,
+               37.7753
+            ],
+            [
+               55.6021,
+               37.7225
+            ],
+            [
+               55.5856,
+               37.661
+            ],
+            [
+               55.58,
+               37.595
+            ],
+            [
+               55.5856,
+               37.529
+            ],
+            [
+               55.6021,
+               37.4675
+            ],
+            [
+               55.6283,
+               37.4147
+            ],
+            [
+               55.6625,
+               37.3742
+            ],
+            [
+               55.7023,
+               37.3487
+            ],
+            [
+               55.745,
+               37.34
+            ],
+            [
+               55.7877,
+               37.3487
+            ],
+            [
+               55.8275,
+               37.3742
+            ],
+            [
+               55.8617,
+               37.4147
+            ],
+            [
+               55.8879,
+               37.4675
+            ],
+            [
+               55.9044,
+               37.529
+            ]
+         ]
+      }
+   ],
+   "minutes_for_delete_order": "15",
+   "deadline_minutes": 15,
+   "extra_order_max_extra_distance_km": 5.0,
+   "extra_order_max_extra_time_min": 10.0,
+   "extra_order_search_radius_km": 5.0,
+   "driver_max_queue_size": 2,
+   "extra_order_notify_cooldown_sec": 30
+}

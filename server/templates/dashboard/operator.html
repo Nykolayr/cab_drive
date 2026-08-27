@@ -1,0 +1,436 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ config.PROJECT_NAME }} - Диспетчер{% endblock %}
+{% block style %}
+    <style>
+        #searchResults{
+            margin-top: 12px;
+            max-height: 450px;
+            overflow-y: auto;
+        }
+
+        .resultRow{
+            padding: 12px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #ced4da;
+        }
+        .resultRow:last-child{
+            border-bottom: none;
+        }
+        .resultRow:hover, .resultRow.active{
+            background: #cdcdcd;
+        }
+        .resultRow > small{
+            display: block;
+        }
+
+        /* Дополнительная стилизация для таблицы */
+        .table-responsive { overflow-x: auto; }
+        .table thead th { vertical-align: middle; }
+        .table td, .table th { white-space: nowrap; }
+        .table td.text-right { text-align: right; }
+        .no-wrap { white-space: nowrap; }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="tab-content">
+                        <div class="tab-pane active show" id="trips" role="tabpanel" aria-labelledby="trips-tab">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card card-body p-0 border-0">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-striped table-hover mb-0">
+                                                <thead class="thead-light">
+                                                    <tr>
+                                                        <th class="no-wrap">ID</th>
+                                                        <th class="no-wrap">Дата</th>
+                                                        <th>Водитель</th>
+                                                        <th>Клиент</th>
+                                                        <th>Откуда</th>
+                                                        <th>Куда</th>
+                                                        <th class="no-wrap">Цена</th>
+                                                        <th class="no-wrap">Бюджет</th>
+                                                        <th class="no-wrap">Расстояние</th>
+                                                        <th class="no-wrap">Статус</th>
+                                                        <th class="no-wrap"></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% if order_list %}
+                                                        {% for _user in order_list %}
+                                                            <tr role="row">
+                                                                <td>{{ _user.id|default('-') }}</td>
+                                                                <td>{{ _user.dateTime_created|default('-') }}</td>
+                                                                <td>{{ _user.selected_driver|default('-') }}</td>
+                                                                <td>{{ _user.user_customer|default('-') }}</td>
+                                                                <td>{{ _user.pointA.address|default('-') }}</td>
+                                                                <td>{{ _user.pointB.address|default('-') }}</td>
+                                                                <td>{{ _user.currentPrice|default('-') }}</td>
+                                                                <td>{{ _user.budget|default('-') }}</td>
+                                                                <td>{{ _user.distance|default('-') }}</td>
+                                                                <td>{{ _user.status|default('-') }}</td>
+                                                                <td class="text-right">
+                                                                    <a href="/d/trip?id={{ _user.id }}" class="btn btn-sm btn-secondary">Управление</a>
+                                                                </td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        <tr>
+                                                            <td colspan="11" class="text-center py-4 text-muted">Нет заказов для отображения</td>
+                                                        </tr>
+                                                    {% endif %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+
+    <script>
+
+        let table;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            table = new AdaptiveTable({
+                endpoint: '/api/trips/list',
+                container: document.getElementById('tableContainer'),
+                additionalParams: getParams(),
+                mobileContainer: document.getElementById('mobileContainer')
+            })
+        });
+
+        function getParams(){
+            return {};
+        }
+
+        let direction = null;
+        let searchTimer = null;
+
+        let pointsMap = null;
+        let pointsPlaceMark = null;
+
+        let calcMap = null;
+
+        let calc_start_point = null;
+        let calc_finish_point = null;
+
+        let calc_life = 0;
+        let calc_timer = null;
+
+        let phoneMask = IMask(document.getElementById('clientPhone'), { mask: '+{7} (000) 000-00-00' });
+        $('#clientPhone').on('input', function (){
+            checkCalcBtn();
+        })
+        ymaps.ready(init);
+
+        function init() {
+            pointsMap = new ymaps.Map("mapBox", {
+                center: [51.804106, 107.469829],
+                zoom: 12,
+                controls: ['zoomControl']
+            });
+
+            {% if trip != None %}
+                phoneMask.value = '{{ trip.client_phone }}';
+
+                calc_start_point = {
+                    'latitude': {{ trip.s_position.latitude }},
+                    'longitude': {{ trip.s_position.longitude }}
+                }
+                calc_finish_point = {
+                    'latitude': {{ trip.f_position.latitude }},
+                    'longitude': {{ trip.f_position.longitude }},
+                }
+
+                $('#startPoint').val('{{ trip.start_position_description }}');
+                $('#finishPoint').val('{{ trip.finish_position_description }}');
+
+                checkCalcBtn();
+            {% endif %}
+        }
+
+        function showPointMenu(_direction){
+            $('#search').val('');
+            $('.resultRow').remove();
+
+            pointsMap.setCenter([51.804106, 107.469829], 12, {
+                duration: 500, // анимация в мс
+                timingFunction: 'ease-in-out'
+            });
+            removePlacemark();
+
+            direction = _direction;
+            $('#positionModal').modal('show');
+        }
+
+        $('#search').on('input', function (){
+            if(searchTimer !== null) {
+                clearTimeout(searchTimer);
+                searchTimer = null;
+            }
+            let text = this.value
+            searchTimer = setTimeout(function (){
+                searchPoint(text)
+            }, 600)
+        })
+
+        function searchPoint(text){
+            $('.resultRow:not(.active)').remove();
+            if(text.length === 0) return;
+            sendRequest({
+                url: '/kek/geo/suggest_2gis',
+                method: 'post',
+                data: {
+                    point: {
+                        latitude: 51.804106,
+                        longitude: 107.469829,
+                    },
+                    query: text
+                },
+                is_json: true,
+                token: '{{ user.get_access_token() }}',
+                success_callback: function (r){
+                    if(r['status'] !== 'ok') return showError(r['message']);
+
+                    $.each(r['suggestions'], function (index, res){
+                        let addr = res['address_name'];
+                        if(addr === null) addr = res['location']
+
+                        let full_name = res['full_name'];
+                        if(full_name === null) full_name = res['name'];
+
+                        let row = $(`<div class="resultRow" lat="${res['point']['latitude']}" lng="${res['point']['longitude']}">
+                                    <b>${full_name}</b>
+                                    <small class="text-muted">${addr}</small>
+                                </div>`)[0];
+                        searchResults.append(row);
+                    })
+
+                    $('.resultRow').on('click', function(){
+                        let v = this.getElementsByTagName('b')[0];
+                        $('.resultRow').removeClass('active');
+                        $(this).addClass('active');
+                        $('#search').val(v.innerText).trigger('input');
+
+                        let coords = [Number(this.getAttribute('lat')), Number(this.getAttribute('lng'))];
+                        addOrMovePlacemark(coords, v.innerText)
+                    })
+                }
+            })
+        }
+
+        function addOrMovePlacemark(coords, text) {
+            if (pointsPlaceMark) {
+                pointsPlaceMark.geometry.setCoordinates(coords);
+            } else {
+                pointsPlaceMark = new ymaps.Placemark(coords, {
+                    hintContent: text,
+                    balloonContent: text
+                }, {
+                    preset: 'islands#redDotIcon' // стиль
+                });
+
+                pointsMap.geoObjects.add(pointsPlaceMark);
+            }
+
+            pointsMap.setCenter(coords, 12, {
+                duration: 500, // анимация в мс
+                timingFunction: 'ease-in-out'
+            });
+        }
+
+        function removePlacemark() {
+            if (pointsPlaceMark) {
+                pointsMap.geoObjects.remove(pointsPlaceMark);
+                pointsPlaceMark = null;
+            }
+        }
+
+        function setPoint(){
+            if(direction === null) return showError('Укажите direction');
+            let active = $('.resultRow.active');
+            if(active.length === 0) return showError('Выберите точку');
+
+            let v = active[0].getElementsByTagName('b')[0].innerText;
+
+            if(direction === 'start'){
+                calc_start_point = {'latitude': Number(active.attr('lat')), 'longitude': Number(active.attr('lng'))};
+                $('#startPoint').val(v)
+            }
+            else{
+                calc_finish_point = {'latitude': Number(active.attr('lat')), 'longitude': Number(active.attr('lng'))};
+                $('#finishPoint').val(v)
+            }
+
+            $('#positionModal').modal('hide');
+            checkCalcBtn();
+        }
+
+        function checkCalcBtn(){
+            let check = true;
+            if(clientPhone.value.length !== 18) check = false;
+            if(calc_start_point === null) check = false;
+            if(calc_finish_point === null) check = false;
+
+            if(check) $('#calcBtn').prop('disabled', false);
+            else $('#calcBtn').prop('disabled', true);
+
+            $('#calcResult').css('display', 'none');
+        }
+
+        function calculation(){
+            if(calc_start_point === null) return showError('Укажите начальную точку');
+            if(calc_finish_point === null) return showError('Укажите конечную точку');
+            if(clientPhone.value.length !== 18) return showError('Укажите телефон клиента');
+
+            sendRequest({
+                url: '/kek/trips/calculation',
+                method: 'post',
+                data: {
+                    start_point: calc_start_point,
+                    finish_point: calc_finish_point
+                },
+                is_json: true,
+                token: '{{ user.get_access_token() }}',
+                btn: calcBtn,
+                success_callback: function (r){
+                    if(r['status'] !== 'ok') return showError(r['message']);
+
+                    drawCalculations(r['calculations']);
+                }
+            })
+        }
+
+        function drawCalculations(calcs){
+            if(calcs.length === 0) return showError('Нет доступных тарифов');
+            $('.tripBox').remove();
+
+            calc_life = 60;
+            if(calc_timer !== null) {
+                clearTimeout(calc_timer);
+                calc_timer = null;
+            }
+            calc_timer = setTimeout(calcTimer, 1000);
+            $('#calcPeriod').text(`01:00`);
+
+            $('#calcDistance').text(`${(calcs[0]['trip_info']['distance'] / 1000).toFixed(2)} км.`)
+            $('#calcDuration').text(`${(calcs[0]['trip_info']['duration'] / 60).toFixed(2)} мин.`)
+
+            $.each(calcs, function (index, calc){
+                let p_time = calc['pickup_time'];
+                if(p_time === null) p_time = 'Нет машин';
+                else p_time = (calc['pickup_time'] / 60).toFixed(0) + ' мин.';
+
+                let row = $(`<div class="col tripBox">
+                                        <div class="form-control">
+                                            <b>${calc['tariff_name']}</b>
+                                            <div class="d-flex justify-content-between mt-2">
+                                                <span>Время подачи</span>
+                                                <b>${p_time}</b>
+                                            </div>
+                                            <div class="d-flex justify-content-between mt-2">
+                                                <span>Цена</span>
+                                                <b>${calc['cost']} ₽</b>
+                                            </div>
+                                            <button class="btn btn-success w-100 mt-2 createTripBtn" onclick="createTrip('${calc['calculation_token']}', this)">Заказать</button>
+                                        </div>
+                                    </div>`)[0];
+                tariffs.append(row);
+
+                $('#calcResult').css('display', 'block');
+            })
+        }
+
+        function calcTimer(){
+            if(calc_life >= 1){
+                calc_life -= 1;
+                let v = calc_life;
+                if(v < 10) v = '0' + v;
+
+                $('#calcPeriod').text(`00:${v}`);
+                calc_timer = setTimeout(calcTimer, 1000);
+            }
+            else{
+                $('.createTripBtn').prop('disabled', true);
+            }
+        }
+
+        function createTrip(calc_token, btn){
+            $('.createTripBtn').prop('disabled', true);
+            sendRequest({
+                url: '/kek/trips/create',
+                method: 'post',
+                data: {
+                    'calculation_token': calc_token,
+                    'comment': $('#comment').val(),
+                    'payment_method': $('#payment_method').val(),
+                    'client_phone': $('#clientPhone').val()
+                },
+                is_json: true,
+                token: '{{ user.get_access_token() }}',
+                btn: btn,
+                success_callback: function (r){
+                    if(calc_life > 0) $('.createTripBtn').prop('disabled', false);
+                    if(r['status'] !== 'ok') return showError(r['message']);
+
+                    showSuccess('Создание заказа', 'Заказ успешно создан', function () {
+                        location.reload();
+                    })
+                }
+            })
+        }
+
+        function blockUser(user_id, el){
+            showConfirm('Блокировка', 'Вы действительно хотите заблокировать этого пользователя?', 'Да', function (){
+                sendRequest({
+                    url: '/api/users/remove',
+                    method: 'post',
+                    data: {
+                        id: user_id,
+                    },
+                    btn: el,
+                    success_callback: function (r){
+                        if(r['status'] !== 'ok') return showError(r['message']);
+
+                        showSuccess(r['message']);
+                    }
+                })
+            })
+        }
+
+        function unblockUser(user_id, el){
+            showConfirm('Разблокировка', 'Вы действительно хотите разблокировать этого пользователя?', 'Да', function (){
+                sendRequest({
+                    url: '/api/users/unremove',
+                    method: 'post',
+                    data: {
+                        id: user_id,
+                    },
+                    btn: el,
+                    success_callback: function (r){
+                        if(r['status'] !== 'ok') return showError(r['message']);
+
+                        showSuccess(r['message']);
+                    }
+                })
+            })
+        }
+
+    </script>
+
+{% endblock %}
