@@ -1,0 +1,32 @@
+---
+description: Надёжная release-сборка Android (без локов Gradle и повторных часовых фейлов)
+alwaysApply: true
+---
+
+# Release Android — собирать правильно с первого раза
+
+## Обязательно
+
+- Для полного релиза (RuStore APK + Play AAB) **сначала** запускать:
+  `powershell -File scripts/release_android.ps1`
+  (из `cab_drive_app`). Не изобретать цепочку заново в чате.
+- **До** `flutter build`: gate ключей (не `your-*`) → `dart run tool/sync_env.dart` → `android/gradlew --stop` → снести залоченный `build/app/intermediates/desugar_lib_dex` при необходимости.
+- **Запрещено** перед `--stop` гонять холостой `flutter build` «чтобы прогреть».
+- APK (RuStore) и AAB (Play) — **строго по очереди**, не параллельно.
+- После APK: `aapt dump badging` → `com.appwawe.YDrive`, versionCode = build из pubspec.
+- После AAB: файл в `D:\Temp\cabdrive_{N}.aab`, rustore-env **сброшен**.
+- `flutter clean` — только после lock/OOM/битого cache, не «на всякий случай» перед каждой сборкой.
+
+## Типичные фейлы и фиксация в скрипте
+
+| Симптом | Действие |
+|---------|----------|
+| `l8DexDesugarLibRelease` / файл занят | `gradlew --stop`, удалить `desugar_lib_dex`, повторить **один** раз |
+| Out of memory | не плодить второй build; один worker, перезапуск daemon |
+| Placeholder в `.env` | **стоп**, не собирать стор |
+
+## Не делать
+
+- Собирать час, упасть на lock, начать всё с нуля без `--stop`.
+- Забыть сбросить `CAB_DRIVE_RUSTORE` перед AAB.
+- Отдавать в `D:\Temp` артефакт без проверки package/version.

@@ -32,26 +32,34 @@ alwaysApply: true
 - Не делать `1.1.2+87` / `1.1.88+87` и т.п.
 - При bump увеличивать **оба** числа на 1: `1.1.{N+1}+{N+1}`.
 
-## Когда пользователь пишет «сделай апк» (RuStore)
+## Полный релиз (APK RuStore + AAB Play) — предпочтительно
+
+0. **`powershell -File scripts/pre_apk_regression.ps1`** — exit 0.
+1. Bump `1.1.{N}+{N}` (если не «без bump»).
+2. **`powershell -File scripts/release_android.ps1`** — gate ключей, sync_env, gradle stop, APK+AAB, копии в `D:\Temp` (см. `cab-drive-release-build.mdc`).
+3. Git commit/push — только если просил.
+
+## Когда пользователь пишет только «сделай апк» (RuStore)
 
 0. **`powershell -File scripts/pre_apk_regression.ps1`** — exit 0 (см. `docs/ARCHITECTURE_AND_FLOWS.md`, правило `cab-drive-pre-apk-regression.mdc`).
 1. **Поднять версию** по схеме `1.1.{N}+{N}` (если не сказал «без bump» / «без поднятия»).
-2. **`dart run tool/sync_env.dart`**
-3. **`$env:CAB_DRIVE_RUSTORE='true'; flutter build apk --release`**
-4. Проверить `aapt dump badging` → `package: name='com.appwawe.YDrive'`
-5. **Скопировать** в `D:\Temp\cabdrive_{buildNumber}_rustore.apk`
-6. Сбросить `$env:CAB_DRIVE_RUSTORE`
-7. **Git:** commit + push — только если пользователь просил
+2. Либо полный `scripts/release_android.ps1`, либо вручную:
+   - **`dart run tool/sync_env.dart`**
+   - **`$env:CAB_DRIVE_RUSTORE='true'; flutter build apk --release`**
+   - Проверить `aapt dump badging` → `package: name='com.appwawe.YDrive'`
+   - **Скопировать** в `D:\Temp\cabdrive_{buildNumber}_rustore.apk`
+   - Сбросить `$env:CAB_DRIVE_RUSTORE`
+3. **Git:** commit + push — только если пользователь просил
 
-## Когда пользователь пишет «сделай aab» (Google Play)
+## Когда пользователь пишет только «сделай aab» (Google Play)
 
 0. **`powershell -File scripts/pre_apk_regression.ps1`** — exit 0.
 1. Bump по схеме `1.1.{N}+{N}` (если не «без bump»).
-2. `dart run tool/sync_env.dart`
-3. Убедиться, что `CAB_DRIVE_RUSTORE` не задан
-4. **`flutter build appbundle --release`**
-5. Проверить package = `com.cab.drive`
-6. Копировать в `D:\Temp\cabdrive_{buildNumber}.aab`
+2. Либо `scripts/release_android.ps1`, либо вручную:
+   - `dart run tool/sync_env.dart`
+   - Убедиться, что `CAB_DRIVE_RUSTORE` не задан
+   - **`flutter build appbundle --release`**
+   - Копировать в `D:\Temp\cabdrive_{buildNumber}.aab`
 
 ## Ключи
 
