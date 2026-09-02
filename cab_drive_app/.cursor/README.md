@@ -36,6 +36,8 @@
 | `android_release.md` | Сборка AAB/APK, копирование в `D:\Temp`, подпись |
 | `rustore_aab_signature.md` | PEPK + PEM для RuStore (тот же keystore, что Play) |
 | `edge_to_edge_play_checklist.md` | Google Play: system bars |
+| `cab_drive_ios_testflight.md` | iOS / Xcode / TestFlight (UIScene, Flutter 3.47+) |
+| `cab_drive_apk_workflow.md` | Android APK/AAB по запросу |
 
 ## Использование как шаблона
 1. Скопируй проект целиком (в т.ч. `lib/`, `android/`, `ios/`, `.cursor/`).

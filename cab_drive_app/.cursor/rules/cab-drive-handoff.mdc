@@ -18,7 +18,8 @@ alwaysApply: true
    - Сборка Android: **JDK 21** (`JAVA_HOME` / `org.gradle.java.home`) — AAR MapKit 4.22+ это class file 65; на JDK 17 javac падает
    - `MainActivity.kt` — кэш engine / `shouldDestroyEngineWithHost=false`; MapKit key в `CabDriveApplication` **до** engine
    - `CabDriveApplication.kt` — `FlutterEngineCache` + `MapKitFactory.setApiKey`
-   - `ios/Runner/AppDelegate.swift` — `YMKMapKit.setApiKey` **до** `GeneratedPluginRegistrant`
+   - `ios/Runner/AppDelegate.swift` — UIScene: `FlutterImplicitEngineDelegate`; `YMKMapKit.setApiKey` **до** `super.application`; плагины в `didInitializeImplicitFlutterEngine` (см. `cab-drive-ios-testflight.mdc`)
+   - `ios/Runner/SceneDelegate.swift` + `UIApplicationSceneManifest` в `Info.plist`
    - `lib/main.dart` — `AndroidYandexMap.useAndroidViewSurface` на Android
    - `grep` по `google_maps_flutter` / `FlutterFlowGoogleMap` в экранах заказа — не должно остаться
 3. Если пользователь прислал **лог** — сначала строка с **первым `E/` / `Exception` / `AssertionError`**, потом правки.

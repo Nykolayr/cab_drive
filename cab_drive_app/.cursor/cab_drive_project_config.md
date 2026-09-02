@@ -357,3 +357,5 @@ In-memory (сессия заказа):
 | `android_release.md` | сборка AAB/APK |
 | **этот файл** | карта cab_drive |
 | `cab_drive_apk_workflow.md` | по запросу «сделай apk»: bump версии → `D:\Temp\cabdrive_{build}.apk` → push |
+| `cab_drive_ios_testflight.md` | Xcode / TestFlight (Flutter 3.47+, UIScene, iOS 15) |
+| `rules/cab-drive-ios-testflight.mdc` | жёсткое правило агента для iOS/TestFlight |

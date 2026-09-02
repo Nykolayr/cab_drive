@@ -16,6 +16,7 @@ alwaysApply: false
 | `android_release.md` | AAB/APK, D:\Temp, подпись |
 | `rustore_aab_signature.md` | PEPK + PEM для RuStore AAB |
 | `edge_to_edge_play_checklist.md` | Предупреждения Play по system bars |
+| `cab_drive_ios_testflight.md` | iOS / Xcode / TestFlight (Flutter 3.47+, UIScene) |
 
 ## Жёсткие правила релиза
 

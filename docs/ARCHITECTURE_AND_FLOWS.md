@@ -172,5 +172,7 @@ powershell -File scripts/pre_apk_regression.ps1
 
 - `cab_drive_app/.cursor/rules/cab-drive-do-not-touch.mdc`
 - `cab_drive_app/.cursor/rules/cab-drive-apk-workflow.mdc`
+- `cab_drive_app/.cursor/rules/cab-drive-ios-testflight.mdc`
+- `cab_drive_app/.cursor/cab_drive_ios_testflight.md`
 - `cab_drive_app/.cursor/rules/cab-drive-handoff.mdc`
 - `cab_drive_app/.cursor/rules/cab-drive-address-search.mdc`

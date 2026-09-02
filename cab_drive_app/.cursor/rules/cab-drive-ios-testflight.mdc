@@ -1,0 +1,78 @@
+---
+description: Cab Drive — iOS / Xcode / TestFlight (Flutter 3.47+)
+alwaysApply: true
+---
+
+# iOS / Xcode / TestFlight — только по явной просьбе
+
+## Когда применять
+
+Пользователь явно просит: «подготовь для Xcode», «TestFlight», «Archive», «выложи в TestFlight», «ios релиз».
+
+Не путать с Android APK/AAB (`cab-drive-apk-workflow.mdc`).
+
+## Канон Flutter 3.47+ (не «как раньше»)
+
+| Тема | Требование |
+|------|------------|
+| Мин. iOS | **15.0** (`Podfile` + `IPHONEOS_DEPLOYMENT_TARGET` в `project.pbxproj`) |
+| UIScene | Обязателен: `UIApplicationSceneManifest` в `Info.plist`, `SceneDelegate: FlutterSceneDelegate` |
+| AppDelegate | `FlutterAppDelegate, FlutterImplicitEngineDelegate` |
+| Плагины | `GeneratedPluginRegistrant` **только** в `didInitializeImplicitFlutterEngine` |
+| MapKit | `YMKMapKit.setApiKey` в `didFinishLaunching` **до** `super.application(...)` (до engine) |
+| CocoaPods | Оставить: `yandex_mapkit` и часть Firebase/плагинов **без SPM** |
+| SPM | **Не** включать насильно (`flutter config --enable-swift-package-manager`), пока MapKit/зависимости на pods |
+
+Документация Flutter: [UIScene adoption](https://docs.flutter.dev/release/breaking-changes/uiscenedelegate).
+
+Чеклист шагов: `.cursor/cab_drive_ios_testflight.md`.
+
+## Bundle / версия
+
+| Параметр | Значение |
+|----------|----------|
+| Bundle ID | `com.appwawe.YDrive` (+ extension `…ImageNotification`) |
+| Display name | Cab Drive |
+| Версия | `1.1.{N}+{N}` в `pubspec.yaml` (как Android) |
+| Firebase iOS | `GoogleService-Info.plist` → тот же `BUNDLE_ID` |
+
+## Подпись (частая ловушка)
+
+- В `project.pbxproj`: `DEVELOPMENT_TEAM = VR8CMD6LAY`, `CODE_SIGN_STYLE = Automatic`.
+- На машине может быть Distribution другого team (напр. `T24GH9MPR8`) — **не менять team в git** без явной просьбы.
+- При ошибке signing: пользователь в Xcode выбирает Team = тот, где приложение в **App Store Connect**.
+- Entitlements: `aps-environment` может быть `development` в файле; при Archive Automatic обычно подставляет production.
+
+## Секреты
+
+- MapKit ключ: только `.env` → `dart run tool/sync_env.dart` пишет в `Info.plist`.
+- **Никогда не коммитить** реальный `YandexMapsAPIKey` — в git placeholder `your-yandex-mapkit-key`.
+- Перед `git add` Info.plist: если ключ не placeholder — вернуть placeholder или не стейджить значение.
+
+## Порядок агента (обязательный)
+
+1. Проверить Flutter (`flutter --version` ≥ 3.47) и UIScene/iOS 15 уже на месте.
+2. `export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8` (иначе `pod` падает на ASCII-8BIT).
+3. `dart run tool/sync_env.dart`
+4. `flutter pub get`
+5. `cd ios && pod install` (при необходимости `--repo-update`)
+6. `flutter build ios --release --no-codesign` (проверка компиляции)
+7. Вернуть placeholder MapKit в `Info.plist` перед коммитом, если синкали ключ.
+8. `open -a Xcode ios/Runner.xcworkspace` (**не** `.xcodeproj`)
+9. Дальше Archive/Upload — пользователь в Xcode (или по явной просьбе `flutter build ipa` / `xcodebuild`).
+
+## Xcode UI (для пользователя / напоминание агенту)
+
+1. Signing & Capabilities → Team для Runner + ImageNotification.
+2. Product → Destination → Any iOS Device (arm64).
+3. Product → Archive.
+4. Organizer → Distribute App → App Store Connect → Upload (TestFlight).
+5. App Store Connect → TestFlight → дождаться обработки билда.
+
+## Запрещено
+
+- Готовить iOS «по старой схеме» без UIScene / с iOS 14.
+- Трогать MapKit engine / `MainActivity` «заодно» (см. `cab-drive-do-not-touch.mdc`).
+- Коммитить ключи из `.env`.
+- Собирать/заливать TestFlight без явной просьбы (как APK).
+- Форсировать SPM, пока `yandex_mapkit` без поддержки.
