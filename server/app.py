@@ -22,9 +22,26 @@ import trips
 import settings
 import json
 import payments
+import tinkoff
 from orders.api import check_order_status, notify_busy_drivers_about_new_orders
 
 init_db()
+
+# Миграция/сид суперадмина (безопасно при повторном старте)
+try:
+    from db import engine
+    from sqlalchemy import text
+    with engine.connect() as conn:
+        conn.execute(text(
+            "ALTER TABLE users ADD COLUMN is_super_admin TINYINT(1) NOT NULL DEFAULT 0"
+        ))
+        conn.commit()
+except Exception:
+    pass
+try:
+    users.api.ensure_bootstrap_super_admin()
+except Exception:
+    pass
 
 info = Info(title='CAB DRIVE API', version='1.0.0')
 security_schemes = {"jwt": utils.get_jwt()}
@@ -41,6 +58,9 @@ app.register_blueprint(trips.app)
 app.register_blueprint(settings.app)
 app.register_blueprint(chats.app)
 app.register_blueprint(orders.app, url_prefix='/d/api/orders')
+app.register_blueprint(tinkoff.app)
+# ЮKassa callback (подписки) — был импорт без register
+app.register_blueprint(payments.app)
 
 app.register_api_view(users.api_view)
 app.register_api_view(orders.api_view)

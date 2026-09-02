@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import '/backend/api_requests/api_manager.dart';
@@ -10,6 +11,11 @@ class PaymentInitError {
       'Напишите в «Чат с поддержкой» в меню приложения.';
 
   static String messageFromCall(ApiCallResponse? response) {
+    if (response?.exception is TimeoutException ||
+        (response?.exceptionMessage.toLowerCase().contains('timeout') ??
+            false)) {
+      return 'Платёжный сервис не ответил вовремя. Проверьте интернет и попробуйте снова. Если не поможет — $supportHint';
+    }
     final details = _detailsBlob(response);
     if (_looksLikeCertificate(details)) {
       return 'Ошибка сертификата платёжного сервиса. $supportHint';
@@ -29,11 +35,15 @@ class PaymentInitError {
 
   static String _detailsBlob(ApiCallResponse? response) {
     if (response == null) return '';
+    if (response.exception != null) {
+      return '${response.exceptionMessage} ${response.statusCode}';
+    }
     final body = response.jsonBody;
     if (body is Map) {
       final error = body['error']?.toString() ?? '';
       final details = body['details']?.toString() ?? '';
-      return '$error $details ${response.statusCode}';
+      final message = body['Message']?.toString() ?? '';
+      return '$error $details $message ${response.statusCode}';
     }
     if (body is String) {
       try {

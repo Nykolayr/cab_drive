@@ -362,7 +362,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                                                             '0',
                                                                         locale:
                                                                             '',
-                                                                      )} ₽ только для списания',
+                                                                      )} ₽ бонус на комиссию',
                                                                       style: FlutterFlowTheme.of(
                                                                               context)
                                                                           .bodySmall
@@ -412,7 +412,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                                             .showSnackBar(
                                                           SnackBar(
                                                             content: Text(
-                                                              'Доп. баланс не выводится. Доступно к выводу: ${withdrawable.toStringAsFixed(0)} ₽',
+                                                              'Бонус на комиссию не выводится. Доступно к выводу: ${withdrawable.toStringAsFixed(0)} ₽',
                                                               style: TextStyle(
                                                                 color: FlutterFlowTheme.of(
                                                                         context)
@@ -1133,11 +1133,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            if (responsiveVisibility(
-                                              context: context,
-                                              phone: false,
-                                            ))
-                                              InkWell(
+                                            InkWell(
                                                 splashColor: Colors.transparent,
                                                 focusColor: Colors.transparent,
                                                 hoverColor: Colors.transparent,

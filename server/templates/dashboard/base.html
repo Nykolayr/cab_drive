@@ -229,6 +229,14 @@
                                 <span>Статистика</span>
                             </a>
                         </li>
+                        {% if user.is_super_admin %}
+                        <li>
+                            <a href="{{ url_for('d.tinkoff_page') }}" class="waves-effect">
+                                <i class="mdi mdi-credit-card"></i>
+                                <span>Тинькофф</span>
+                            </a>
+                        </li>
+                        {% endif %}
                         <li>
                             <a href="{{ url_for('d.notify_page') }}" class="waves-effect">
                                 <i class="mdi mdi-telegram"></i>

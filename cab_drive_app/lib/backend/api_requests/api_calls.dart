@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import '../schema/structs/index.dart';
@@ -8,6 +9,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/custom_code/services/ors_route_service.dart';
 import '/custom_code/services/yandex_geocoder_service.dart';
 import 'api_manager.dart';
+import 'payments_api_config.dart';
 
 export 'api_manager.dart' show ApiCallResponse;
 
@@ -382,23 +384,30 @@ class InitPaymentCall {
   "orderId": "${escapeStringForJson(orderId)}",
   "customerKey": "${escapeStringForJson(customerKey)}"
 }''';
-    return ApiManager.instance.makeApiCall(
-      callName: 'Init Payment',
-      apiUrl: 'https://init-payment-1070996805603.us-central1.run.app',
-      callType: ApiCallType.POST,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      params: {},
-      body: ffApiRequestBody,
-      bodyType: BodyType.JSON,
-      returnBody: true,
-      encodeBodyUtf8: false,
-      decodeUtf8: false,
-      cache: false,
-      isStreamingApi: false,
-      alwaysAllowBody: false,
-    );
+    try {
+      return await ApiManager.instance
+          .makeApiCall(
+            callName: 'Init Payment',
+            apiUrl: PaymentsApiConfig.path('/api/tinkoff/init-payment'),
+            callType: ApiCallType.POST,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            params: {},
+            body: ffApiRequestBody,
+            bodyType: BodyType.JSON,
+            returnBody: true,
+            encodeBodyUtf8: false,
+            decodeUtf8: false,
+            cache: false,
+            isStreamingApi: false,
+            alwaysAllowBody: false,
+          )
+          .timeout(const Duration(seconds: 25));
+    } on TimeoutException {
+      return ApiCallResponse(null, {}, -1,
+          exception: TimeoutException('Init Payment timeout'));
+    }
   }
 
   static String? paymentUrl(dynamic response) =>
@@ -427,24 +436,30 @@ class InitRecurrentPaymentCall {
   "customerKey": "${escapeStringForJson(customerKey)}"
 
 }''';
-    return ApiManager.instance.makeApiCall(
-      callName: 'initRecurrentPayment',
-      apiUrl:
-          'https://init-recurrent-payment-1070996805603.us-central1.run.app',
-      callType: ApiCallType.POST,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      params: {},
-      body: ffApiRequestBody,
-      bodyType: BodyType.JSON,
-      returnBody: true,
-      encodeBodyUtf8: false,
-      decodeUtf8: false,
-      cache: false,
-      isStreamingApi: false,
-      alwaysAllowBody: false,
-    );
+    try {
+      return await ApiManager.instance
+          .makeApiCall(
+            callName: 'initRecurrentPayment',
+            apiUrl: PaymentsApiConfig.path('/api/tinkoff/init-recurrent-payment'),
+            callType: ApiCallType.POST,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            params: {},
+            body: ffApiRequestBody,
+            bodyType: BodyType.JSON,
+            returnBody: true,
+            encodeBodyUtf8: false,
+            decodeUtf8: false,
+            cache: false,
+            isStreamingApi: false,
+            alwaysAllowBody: false,
+          )
+          .timeout(const Duration(seconds: 25));
+    } on TimeoutException {
+      return ApiCallResponse(null, {}, -1,
+          exception: TimeoutException('initRecurrentPayment timeout'));
+    }
   }
 
   static String? paymentUrl(dynamic response) =>
@@ -470,8 +485,7 @@ class ChargeRecurrentPaymentCall {
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'chargeRecurrentPayment',
-      apiUrl:
-          'https://charge-recurrent-payment-1070996805603.us-central1.run.app',
+      apiUrl: PaymentsApiConfig.path('/api/tinkoff/charge-recurrent-payment'),
       callType: ApiCallType.POST,
       headers: {
         'Content-Type': 'application/json',
@@ -525,8 +539,7 @@ class PrepareRecurrentPaymentCall {
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'prepareRecurrentPayment',
-      apiUrl:
-          'https://prepare-recurrent-payment-1070996805603.us-central1.run.app',
+      apiUrl: PaymentsApiConfig.path('/api/tinkoff/prepare-recurrent-payment'),
       callType: ApiCallType.POST,
       headers: {
         'Content-Type': 'application/json',
@@ -559,7 +572,7 @@ class GetCardListCall {
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'GetCardList',
-      apiUrl: 'https://getcardlist-1070996805603.us-central1.run.app',
+      apiUrl: PaymentsApiConfig.path('/api/tinkoff/get-card-list'),
       callType: ApiCallType.POST,
       headers: {
         'Content-Type': 'application/json',

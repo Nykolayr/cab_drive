@@ -1,0 +1,29 @@
+---
+description: Перед release APK/AAB — обязательный pre_apk_regression + ARCHITECTURE_AND_FLOWS
+globs:
+alwaysApply: true
+---
+
+# Регрессия перед APK (жёстко)
+
+## Документ
+
+Канон архитектуры и флоу: **`docs/ARCHITECTURE_AND_FLOWS.md`** (корень монорепо).
+
+Перед изменениями auth / load / onboarding / server/users — прочитать §3 и §6 (влияние на флоу).
+
+## Перед «сделай apk» / «сделай aab»
+
+1. **`powershell -File cab_drive_app/scripts/pre_apk_regression.ps1`** — exit 0.
+2. Если менялся **`server/users/`** — деплой на VPS **до** отдачи APK.
+3. Только потом сборка по `cab-drive-apk-workflow.mdc`.
+
+## Запрещено
+
+- Release APK заказчику без `pre_apk_regression.ps1`.
+- Менять auth/email/LoadWidget «заодно» с другой задачей.
+- Два разных email-домена Firebase (`@ydrive.com` vs `@ydrive.appwave.com`).
+
+## При планировании задачи
+
+В плане обязателен блок **«Влияние на флоу»** (чеклист из ARCHITECTURE §6).

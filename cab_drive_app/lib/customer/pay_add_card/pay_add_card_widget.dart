@@ -1,6 +1,7 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
+import '/custom_code/services/payment_init_error.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -51,25 +52,48 @@ class _PayAddCardWidgetState extends State<PayAddCardWidget> {
 
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      _model.order = await PayOrderRecord.getDocumentOnce(widget!.payOrderRef!);
-      _model.aposdasdanfa23 = await InitRecurrentPaymentCall.call(
-        amount: 100,
-        description: 'Добавление карты',
-        orderId: _model.order?.orderId,
-        customerKey: currentUserReference?.id,
-      );
-
-      if ((_model.aposdasdanfa23?.succeeded ?? true)) {
-        unawaited(
-          () async {
-            await widget!.payOrderRef!.update(await createPayOrderRecordData(
-              paymentId: InitRecurrentPaymentCall.paymentId(
-                (_model.aposdasdanfa23?.jsonBody ?? ''),
-              ),
-            ));
-          }(),
+      try {
+        _model.order =
+            await PayOrderRecord.getDocumentOnce(widget!.payOrderRef!);
+        _model.aposdasdanfa23 = await InitRecurrentPaymentCall.call(
+          amount: 100,
+          description: 'Добавление карты',
+          orderId: _model.order?.orderId,
+          customerKey: currentUserReference?.id,
         );
-        _model.urlIsSet = true;
+
+        final response = _model.aposdasdanfa23;
+        final ok = response?.succeeded ?? false;
+        final paymentUrl = ok
+            ? InitRecurrentPaymentCall.paymentUrl(response?.jsonBody ?? '')
+            : null;
+
+        if (ok && paymentUrl != null && paymentUrl.isNotEmpty) {
+          unawaited(
+            () async {
+              await widget!.payOrderRef!.update(await createPayOrderRecordData(
+                paymentId: InitRecurrentPaymentCall.paymentId(
+                  (response?.jsonBody ?? ''),
+                ),
+              ));
+            }(),
+          );
+          _model.urlIsSet = true;
+          _model.paymentFailed = false;
+          _model.paymentErrorMessage = '';
+        } else {
+          _model.urlIsSet = false;
+          _model.paymentFailed = true;
+          _model.paymentErrorMessage =
+              PaymentInitError.messageFromCall(response);
+        }
+      } catch (e) {
+        _model.urlIsSet = false;
+        _model.paymentFailed = true;
+        _model.paymentErrorMessage =
+            'Не удалось открыть оплату. ${PaymentInitError.supportHint}';
+      }
+      if (mounted) {
         safeSetState(() {});
       }
     });
@@ -347,6 +371,70 @@ class _PayAddCardWidgetState extends State<PayAddCardWidget> {
                                   ),
                                 ),
                               ].divide(SizedBox(height: 5.0)),
+                            );
+                          } else if (_model.paymentFailed) {
+                            return Container(
+                              width: double.infinity,
+                              height: double.infinity,
+                              decoration: BoxDecoration(
+                                color: FlutterFlowTheme.of(context)
+                                    .secondaryBackground,
+                                borderRadius: BorderRadius.circular(5.0),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
+                                    24.0, 24.0, 24.0, 24.0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      _model.paymentErrorMessage.isNotEmpty
+                                          ? _model.paymentErrorMessage
+                                          : PaymentInitError.messageFromCall(
+                                              null),
+                                      textAlign: TextAlign.center,
+                                      style: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .override(
+                                            fontFamily: 'SF',
+                                            letterSpacing: 0.0,
+                                          ),
+                                    ),
+                                    const SizedBox(height: 24.0),
+                                    FFButtonWidget(
+                                      onPressed: () async {
+                                        Navigator.pop(context);
+                                      },
+                                      text: 'Закрыть',
+                                      options: FFButtonOptions(
+                                        width: double.infinity,
+                                        height: 56.0,
+                                        padding:
+                                            const EdgeInsetsDirectional.fromSTEB(
+                                                0.0, 0.0, 0.0, 0.0),
+                                        iconPadding:
+                                            const EdgeInsetsDirectional.fromSTEB(
+                                                0.0, 0.0, 0.0, 0.0),
+                                        color: FlutterFlowTheme.of(context)
+                                            .tertiary,
+                                        textStyle: FlutterFlowTheme.of(context)
+                                            .titleSmall
+                                            .override(
+                                              fontFamily: 'SF',
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .primaryBackground,
+                                              letterSpacing: 0.0,
+                                            ),
+                                        elevation: 0.0,
+                                        borderRadius:
+                                            BorderRadius.circular(16.0),
+                                      ),
+                                      showLoadingIndicator: false,
+                                    ),
+                                  ],
+                                ),
+                              ),
                             );
                           } else if (_model.urlIsSet) {
                             return ClipRRect(

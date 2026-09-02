@@ -8,7 +8,7 @@ from google.api_core.datetime_helpers import DatetimeWithNanoseconds
 from google.cloud.firestore_v1 import GeoPoint, DocumentReference
 from sqlalchemy.ext.declarative import DeclarativeMeta
 from string import ascii_uppercase, digits
-from typing import Union, Literal, List
+from typing import Union, Literal, List, Optional
 
 import config
 from users.entities import User
@@ -93,6 +93,22 @@ def get_user(account_types: List[int] | None = None) -> Union[User, None]:
     if user is None:
         return None
     if user.account_type not in account_types:
+        return None
+    return user
+
+
+def is_super_admin(user: Optional[User] = None) -> bool:
+    if user is None:
+        user = get_user()
+    if user is None:
+        return False
+    return bool(getattr(user, 'is_super_admin', False))
+
+
+def require_super_admin() -> Optional[User]:
+    """Текущий пользователь-суперадмин или None."""
+    user = get_user()
+    if user is None or not is_super_admin(user):
         return None
     return user
 

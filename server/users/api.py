@@ -102,32 +102,54 @@ def auth(model: AuthRequestModel) -> str:
 
 
 
+def _find_firebase_user_by_phone(phone: str):
+    from firebase_admin import auth
+
+    for domain in (AUTH_EMAIL_DOMAIN, 'ydrive.com'):
+        try:
+            return auth.get_user_by_email(f'{phone}@{domain}')
+        except Exception:
+            continue
+    return None
+
+
 def create_user_by_phone(phone):
-    from firebase_admin import credentials, auth
+    from firebase_admin import auth
 
     with Session() as session:
         check = get_user_by_phone(phone, session=session)
         if check is not None:
             raise IncorrectDataValue('This phone number is already registered.')
 
-        # Генерируем случайный пароль
-        generated_password = utils.generate_random_password(8)
+        email = auth_email(phone)
+        fb_user = _find_firebase_user_by_phone(phone)
 
-
-        email = f'{phone}@ydrive.com'
-        fb_user = None
-        try:
-            fb_user = auth.get_user_by_email(email)
-        except:
-            print("")
         if fb_user is None:
+            generated_password = utils.generate_random_password(8)
             fb_user = auth.create_user(
                 email=email,
                 password=generated_password,
-                display_name=f"{phone}"
+                display_name=f'{phone}',
             )
+        else:
+            # Старый OTP: пароль совпадал с email. Привязываем SQL без смены пароля в Firebase.
+            generated_password = email
+            if fb_user.email != email:
+                try:
+                    fb_user = auth.update_user(fb_user.uid, email=email)
+                except Exception as e:
+                    logger.warning(
+                        'create_user_by_phone: не удалось обновить email %s → %s: %s',
+                        fb_user.email,
+                        email,
+                        e,
+                    )
 
-        user = FirebaseUser(phone=phone, password=generated_password, firebase_id=fb_user.uid)
+        user = FirebaseUser(
+            phone=phone,
+            password=generated_password,
+            firebase_id=fb_user.uid,
+        )
 
         session.add(user)
         session.commit()
@@ -185,6 +207,80 @@ def authenticate(phone, password):
             return False
     flask_session['user_id'] = user.id
     return True
+
+
+def get_dashboard_super_admins() -> List[User]:
+    with Session() as session:
+        return (
+            session.query(User)
+            .filter(User.is_super_admin.is_(True), User.is_removed.is_(False))
+            .order_by(User.id.asc())
+            .all()
+        )
+
+
+def create_super_admin(phone: str, password: str, name: str = '') -> User:
+    phone_n = utils.telephone(phone)
+    if not phone_n:
+        raise IncorrectDataValue('Некорректный телефон')
+    if not password or len(str(password)) < 4:
+        raise IncorrectDataValue('Пароль слишком короткий')
+
+    with Session() as session:
+        existing = session.query(User).filter(User.phone == phone_n).first()
+        if existing is not None:
+            if existing.is_removed:
+                existing.is_removed = False
+            existing.password = str(password)
+            existing.is_super_admin = True
+            existing.is_admin = True
+            existing.account_type = 2
+            if name:
+                existing.name = name
+            session.commit()
+            uid = existing.id
+        else:
+            user = User(
+                phone=phone_n,
+                password=str(password),
+                name=name or phone_n,
+                is_admin=True,
+                is_super_admin=True,
+                account_type=2,
+            )
+            session.add(user)
+            session.commit()
+            uid = user.id
+    return get_user_by_id(uid)
+
+
+def ensure_bootstrap_super_admin():
+    """Стартовый суперадмин 9001112234 — создать/пометить при старте приложения."""
+    phone = '9001112234'
+    password = '2259'
+    try:
+        with Session() as session:
+            # колонка могла ещё не существовать — вызывающий делает ALTER
+            user = session.query(User).filter(User.phone == phone).first()
+            if user is None:
+                user = User(
+                    phone=phone,
+                    password=password,
+                    name='Super Admin',
+                    is_admin=True,
+                    is_super_admin=True,
+                    account_type=2,
+                )
+                session.add(user)
+            else:
+                user.is_super_admin = True
+                user.is_admin = True
+                user.account_type = 2
+                if not user.password:
+                    user.password = password
+            session.commit()
+    except Exception:
+        logger.error(f'[ensure_bootstrap_super_admin] {traceback.format_exc()}')
 
 
 def api_edit(user_id: int, model: EditUserRequest) -> User:

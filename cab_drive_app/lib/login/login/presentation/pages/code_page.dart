@@ -76,8 +76,16 @@ class CodePage extends StatelessWidget {
                               _user.password!,
                             );
 
-                            print(user);
                             if (user == null) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Не удалось войти. Проверьте код или попробуйте позже',
+                                    ),
+                                  ),
+                                );
+                              }
                               return;
                             }
                             bloc.add(AuthEvent.sendFcmToken());

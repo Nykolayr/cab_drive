@@ -21,6 +21,8 @@ class PayInitModel extends FlutterFlowModel<PayInitWidget> {
   ///  Local state fields for this component.
 
   bool urlIsSet = false;
+  bool paymentFailed = false;
+  String paymentErrorMessage = '';
 
   ///  State fields for stateful widgets in this component.
 

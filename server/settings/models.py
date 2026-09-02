@@ -36,6 +36,9 @@ class SiteModel(BaseModel):
     extra_order_search_radius_km: float = 5.0
     driver_max_queue_size: int = 2
     extra_order_notify_cooldown_sec: int = 30
+    # T‑Bank: режим терминала и базовый URL для МП (без секретов)
+    tinkoff_mode: str = 'test'  # test | prod
+    payments_base_url: str = 'https://cab.artean.ru'
 
     def is_point_in_polygons(self, point: models.PointModel):
         point = Point(point.longitude, point.latitude)

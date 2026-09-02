@@ -23,6 +23,21 @@ class Production:
     YOOKASSA_SHOP_ID = 'CHANGE_ME'
     YOOKASSA_TOKEN = 'CHANGE_ME'
 
+    # T‑Bank Acquiring
+    # Тест: терминал *DEMO + https://securepay.tinkoff.ru/v2
+    # Альтернатива теста: боевой TerminalKey (без DEMO) + https://rest-api-test.tinkoff.ru/v2
+    #   (IP сервера нужно добавить в whitelist в чате Т‑Бизнес)
+    # Бой: боевой TerminalKey + https://securepay.tinkoff.ru/v2
+    TINKOFF_TERMINAL_KEY = 'CHANGE_ME'
+    TINKOFF_PASSWORD = 'CHANGE_ME'
+    TINKOFF_TEST_TERMINAL_KEY = 'CHANGE_ME'
+    TINKOFF_TEST_PASSWORD = 'CHANGE_ME'
+    TINKOFF_PROD_TERMINAL_KEY = 'CHANGE_ME'
+    TINKOFF_PROD_PASSWORD = 'CHANGE_ME'
+    TINKOFF_API_URL = 'https://securepay.tinkoff.ru/v2'
+    # False, если на сервере нет Russian Trusted CA в store (иначе SSLCertVerificationError)
+    TINKOFF_SSL_VERIFY = False
+
     SMS_NUMBER = 'CHANGE_ME'
     SMS_TOKEN = 'Bearer CHANGE_ME'
 

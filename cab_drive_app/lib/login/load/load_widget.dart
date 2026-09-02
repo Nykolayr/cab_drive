@@ -68,9 +68,38 @@ class _LoadWidgetState extends State<LoadWidget> {
         return;
       } else {
         if (valueOrDefault<bool>(currentUserDocument?.loginComplete, false)) {
-          final isRoleSelected = FFAppState().roleSelected;
-          final isDriver = FFAppState().driver;
-          debugPrint('[LoadWidget] Navigation: roleSelected=$isRoleSelected, driver=$isDriver');
+          if (AppEnv.quickDriverLogin) {
+            FFAppState().roleSelected = true;
+            FFAppState().driver = true;
+            debugPrint('[LoadWidget] QUICK_DRIVER_LOGIN → MainDriverWidget');
+            context.goNamed(
+              MainDriverWidget.routeName,
+              extra: <String, dynamic>{
+                kTransitionInfoKey: TransitionInfo(
+                  hasTransition: true,
+                  transitionType: PageTransitionType.fade,
+                  duration: Duration(milliseconds: 0),
+                ),
+              },
+            );
+            return;
+          }
+
+          // Роль с сервера (Firestore) важнее локального FFAppState на новом устройстве.
+          final firestoreIsDriver =
+              valueOrDefault<bool>(currentUserDocument?.isDriver, false);
+          if (firestoreIsDriver) {
+            FFAppState().driver = true;
+            FFAppState().roleSelected = true;
+          }
+
+          final isRoleSelected =
+              FFAppState().roleSelected || firestoreIsDriver;
+          final isDriver = FFAppState().driver || firestoreIsDriver;
+          debugPrint(
+            '[LoadWidget] Navigation: roleSelected=$isRoleSelected, '
+            'driver=$isDriver, firestoreIsDriver=$firestoreIsDriver',
+          );
 
           if (isRoleSelected) {
             // Role already selected - go directly to main screen

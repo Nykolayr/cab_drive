@@ -8,6 +8,14 @@ import requests
 import utils
 
 
+AUTH_EMAIL_DOMAIN = 'ydrive.appwave.com'
+
+
+def auth_email(phone: str) -> str:
+    """Канонический Firebase-email: {10 цифр}@ydrive.appwave.com (как старый OTP)."""
+    return f'{phone}@{AUTH_EMAIL_DOMAIN}'
+
+
 class FirebaseUser(Base):
     __tablename__ = 'fb_users'
     id = Column(db.Integer, primary_key=True, autoincrement=True)
@@ -23,7 +31,7 @@ class FirebaseUser(Base):
             'id': self.id,
             'phone': '+7' + self.phone,
             'password': self.password,
-            'email': f'{self.phone}@ydrive.appwave.com',
+            'email': auth_email(self.phone),
             'firebase_id': self.firebase_id,
             'fcm_token': self.fcm_token,
             'user_id': self.user_id
@@ -39,6 +47,7 @@ class User(Base):
     created_at = Column(db.DateTime, default=datetime.datetime.now)
     password = Column(db.String(64))
     is_admin = Column(db.Boolean, default=False)
+    is_super_admin = Column(db.Boolean, default=False)
     photo_uuid = Column(db.String(64), default=None)
     is_removed = Column(db.Boolean, default=False)
     account_type = Column(db.Integer, default=0)

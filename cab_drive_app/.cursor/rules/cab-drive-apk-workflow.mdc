@@ -23,9 +23,19 @@ alwaysApply: true
 - «Сделай aab» / Play → **всегда** `com.cab.drive`, env rustore **сбросить**.
 - `google-services.json` уже содержит оба `package_name`.
 
+## Версии в `pubspec.yaml` (обязательно)
+
+Формат: `1.1.{N}+{N}` — **patch и buildNumber всегда одинаковые**, без расхождений.
+
+Примеры: `1.1.87+87` → следующий bump → `1.1.88+88`.
+
+- Не делать `1.1.2+87` / `1.1.88+87` и т.п.
+- При bump увеличивать **оба** числа на 1: `1.1.{N+1}+{N+1}`.
+
 ## Когда пользователь пишет «сделай апк» (RuStore)
 
-1. **Поднять версию** в `pubspec.yaml` (если не сказал «без bump» / «без поднятия»).
+0. **`powershell -File scripts/pre_apk_regression.ps1`** — exit 0 (см. `docs/ARCHITECTURE_AND_FLOWS.md`, правило `cab-drive-pre-apk-regression.mdc`).
+1. **Поднять версию** по схеме `1.1.{N}+{N}` (если не сказал «без bump» / «без поднятия»).
 2. **`dart run tool/sync_env.dart`**
 3. **`$env:CAB_DRIVE_RUSTORE='true'; flutter build apk --release`**
 4. Проверить `aapt dump badging` → `package: name='com.appwawe.YDrive'`
@@ -35,7 +45,8 @@ alwaysApply: true
 
 ## Когда пользователь пишет «сделай aab» (Google Play)
 
-1. Bump (если не «без bump»).
+0. **`powershell -File scripts/pre_apk_regression.ps1`** — exit 0.
+1. Bump по схеме `1.1.{N}+{N}` (если не «без bump»).
 2. `dart run tool/sync_env.dart`
 3. Убедиться, что `CAB_DRIVE_RUSTORE` не задан
 4. **`flutter build appbundle --release`**

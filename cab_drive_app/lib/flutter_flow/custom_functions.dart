@@ -317,7 +317,7 @@ double proc(double balance) {
 String formatDriverBalance(double balance, double bonusBalance) {
   final total = balance + bonusBalance;
   if (bonusBalance > 0) {
-    return '${total.toStringAsFixed(0)} ₽ (${bonusBalance.toStringAsFixed(0)} ₽ только для списания)';
+    return '${total.toStringAsFixed(0)} ₽ (${bonusBalance.toStringAsFixed(0)} ₽ бонус на комиссию)';
   }
   return '${balance.toStringAsFixed(0)} ₽';
 }

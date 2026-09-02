@@ -13,6 +13,7 @@ import trips
 import datetime
 import settings
 import payments
+import config
 
 app = blueprints.Blueprint('d', __name__, url_prefix='/d')
 
@@ -111,7 +112,23 @@ def users_page():
 
     users_list = users.api.get_firebase_users(query=search_query if search_query else None, is_driver=is_driver, on_verif_now=on_verif_now, page=page)
 
-    return render_template('dashboard/users.html', user=user, users_list=users_list['users'], f_phone=utils.format_phone, filter=filter_type, search=search_query, current_page=users_list['current_page'], total_pages=users_list['total_pages'], total_user=users_list['total_pages'])
+    super_admins = []
+    if utils.is_super_admin(user):
+        super_admins = users.api.get_dashboard_super_admins()
+
+    return render_template(
+        'dashboard/users.html',
+        user=user,
+        users_list=users_list['users'],
+        f_phone=utils.format_phone,
+        filter=filter_type,
+        search=search_query,
+        current_page=users_list['current_page'],
+        total_pages=users_list['total_pages'],
+        total_user=users_list['total_pages'],
+        super_admins=super_admins,
+        is_super_admin=utils.is_super_admin(user),
+    )
 
 
 @app.route('/user')
@@ -463,3 +480,50 @@ def orders_settings_page():
     settings_model= settings.get_model()
 
     return render_template('dashboard/order_settings.html', user=user, minutes=settings_model.minutes_for_delete_order, deadline_minutes=settings_model.deadline_minutes)
+
+
+@app.route('/tinkoff')
+def tinkoff_page():
+    user = utils.require_super_admin()
+    if user is None:
+        return redirect('/d/auth')
+
+    model = settings.get_model()
+    cfg = config.Production
+    return render_template(
+        'dashboard/tinkoff.html',
+        user=user,
+        mode=model.tinkoff_mode or 'test',
+        payments_base_url=model.payments_base_url or 'https://cab.artean.ru',
+        test_keys_set=bool(
+            getattr(cfg, 'TINKOFF_TEST_TERMINAL_KEY', None)
+            or getattr(cfg, 'TINKOFF_TERMINAL_KEY', None)
+        ),
+        prod_keys_set=bool(getattr(cfg, 'TINKOFF_PROD_TERMINAL_KEY', None)),
+    )
+
+
+@app.route('/super_admins', methods=['POST'])
+def create_super_admin_api():
+    user = utils.require_super_admin()
+    if user is None:
+        return abort(403)
+
+    data = request.json or {}
+    try:
+        created = users.api.create_super_admin(
+            phone=str(data.get('phone') or ''),
+            password=str(data.get('password') or ''),
+            name=str(data.get('name') or ''),
+        )
+    except IncorrectDataValue as e:
+        return utils.get_error(e.message, status=200)
+    except Exception as e:
+        return utils.get_error(str(e), status=200)
+
+    return utils.get_answer('Суперадмин сохранён', info={
+        'id': created.id,
+        'phone': created.phone,
+        'name': created.name,
+    })
+

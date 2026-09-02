@@ -3,6 +3,47 @@
 
 {% block content %}
 
+    {% if is_super_admin %}
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h4 class="mb-0">Суперадмины</h4>
+                <button type="button" class="btn btn-primary btn-sm" onclick="openAddSuperAdmin()">
+                    Добавить суперадмина
+                </button>
+            </div>
+            <div class="card card-body">
+                <div class="table-responsive" style="border: none">
+                    <table class="table mb-0">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Телефон</th>
+                            <th>Имя</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for sa in super_admins %}
+                            <tr>
+                                <td>{{ sa.id }}</td>
+                                <td>{{ sa.phone }}</td>
+                                <td>{{ sa.name or '—' }}</td>
+                                <td><span class="badge bg-danger">Суперадмин</span></td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="text-muted">Пока нет суперадминов</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="row">
         <div class="col-12">
             <h4>Управление пользователями</h4>
@@ -201,6 +242,51 @@
                     }
                 })
             })
+        }
+
+        function openAddSuperAdmin(){
+            Swal.fire({
+                title: 'Добавить суперадмина',
+                html:
+                    '<input id="sa_phone" class="swal2-input" placeholder="Телефон (900...)" maxlength="20">' +
+                    '<input id="sa_name" class="swal2-input" placeholder="Имя">' +
+                    '<input id="sa_password" type="password" class="swal2-input" placeholder="Пароль">',
+                showCancelButton: true,
+                confirmButtonText: 'Далее',
+                cancelButtonText: 'Отмена',
+                preConfirm: () => {
+                    const phone = document.getElementById('sa_phone').value.trim();
+                    const name = document.getElementById('sa_name').value.trim();
+                    const password = document.getElementById('sa_password').value;
+                    if (!phone || !password) {
+                        Swal.showValidationMessage('Телефон и пароль обязательны');
+                        return false;
+                    }
+                    return { phone, name, password };
+                }
+            }).then((result) => {
+                if (!result.isConfirmed || !result.value) return;
+                const payload = result.value;
+                showConfirm(
+                    'Подтверждение',
+                    'Выдать права <b>суперадмина</b> пользователю <b>' + payload.phone + '</b>?',
+                    'Подтвердить',
+                    function () {
+                        sendRequest({
+                            url: '/d/super_admins',
+                            method: 'post',
+                            is_json: true,
+                            data: payload,
+                            success_callback: function (r) {
+                                if (r['status'] !== 'ok') return showError(r['message']);
+                                showSuccess('Готово', r['message'], function () {
+                                    window.location.reload();
+                                });
+                            }
+                        });
+                    }
+                );
+            });
         }
     </script>
 

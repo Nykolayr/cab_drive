@@ -198,7 +198,7 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                                                 formatType: FormatType.custom,
                                                 format: '0',
                                                 locale: '',
-                                              )} ₽ доп. баланс не выводится',
+                                              )} ₽ бонус на комиссию (не выводится)',
                                               style: FlutterFlowTheme.of(context)
                                                   .bodySmall
                                                   .override(

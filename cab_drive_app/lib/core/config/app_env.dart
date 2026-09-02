@@ -36,12 +36,24 @@ class AppEnv {
 
   static bool has(String key) => get(key).isNotEmpty;
 
-  /// Debug-only: водитель + мок-заказ. Release всегда `false`.
-  static bool get isTest {
-    if (kReleaseMode) return false;
-    final raw = get('IS_TEST').toLowerCase();
+  static bool _boolFromEnv(String key, bool fallback) {
+    final raw = get(key).toLowerCase();
     if (raw == 'true' || raw == '1') return true;
     if (raw == 'false' || raw == '0') return false;
-    return TestFlags.isTest;
+    return fallback;
+  }
+
+  /// Debug-only: водитель + мок-заказ. Release всегда `false`.
+  /// `.env`: `IS_TEST=true`
+  static bool get isTest {
+    if (kReleaseMode) return false;
+    return _boolFromEnv('IS_TEST', TestFlags.isTest);
+  }
+
+  /// Debug-only: сразу MainDriver после логина (без мок-заказа).
+  /// Release всегда `false`. `.env`: `QUICK_DRIVER_LOGIN=true`
+  static bool get quickDriverLogin {
+    if (kReleaseMode) return false;
+    return _boolFromEnv('QUICK_DRIVER_LOGIN', TestFlags.quickDriverLogin);
   }
 }

@@ -1,8 +1,11 @@
-/// Тестовый вход водителем с мок-заказом.
+/// Тестовые флаги по умолчанию (если в `.env` не задано).
 ///
-/// `true` — после логина открывается экран водителя и тестовый заказ на карте.
-/// `false` — обычное поведение.
-/// В release-сборке флаг игнорируется (всегда выкл).
+/// В **release** `AppEnv.isTest` / `AppEnv.quickDriverLogin` всегда `false`.
 class TestFlags {
+  /// Debug: водитель + мок-заказ на карте. Переопределяется `IS_TEST` в `.env`.
   static const bool isTest = false;
+
+  /// Debug: сразу экран водителя после логина (без мок-заказа).
+  /// Переопределяется `QUICK_DRIVER_LOGIN` в `.env`.
+  static const bool quickDriverLogin = false;
 }

@@ -24,9 +24,14 @@ flutter pub get
 | RuStore | APK | `com.appwawe.YDrive` | `$env:CAB_DRIVE_RUSTORE='true'; flutter build apk --release` |
 | Google Play | AAB | `com.cab.drive` | `flutter build appbundle --release` |
 
+## Версии
+
+В `pubspec.yaml` всегда: **`1.1.{N}+{N}`** (patch = buildNumber).  
+Пример: `1.1.87+87` → следующий: `1.1.88+88`. Не допускать `1.1.2+87`.
+
 ## Когда пользователь пишет «сделай апк» (RuStore)
 
-1. **Поднять версию** в `pubspec.yaml` (`+build` на 1), если не сказал «без bump».
+1. **Поднять версию** (`1.1.{N}+{N}` → `1.1.{N+1}+{N+1}`), если не сказал «без bump».
 2. **`dart run tool/sync_env.dart`** (если меняли `.env`).
 3. **`$env:CAB_DRIVE_RUSTORE='true'; flutter build apk --release`**
 4. Проверить package = `com.appwawe.YDrive` (`aapt dump badging`)
@@ -36,7 +41,7 @@ flutter pub get
 
 ## Когда пользователь пишет «сделай aab» (Play)
 
-1. Bump (если не «без bump»).
+1. Bump по схеме `1.1.{N}+{N}` (если не «без bump»).
 2. `dart run tool/sync_env.dart`
 3. `flutter build appbundle --release` (без `-Prustore`)
 4. Копировать в `D:\Temp\cabdrive_{build}.aab`

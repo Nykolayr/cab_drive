@@ -107,14 +107,40 @@
                             {% endif %}
 
                             {% if client.is_driver %}
-                            <div class="col-12 mt-3">
-                                <label for="bonus_balance_current">Доп. баланс (только для списания):</label>
-                                <input type="text" class="form-control" id="bonus_balance_current" value="{{ client.bonus_balance or 0 }}" disabled>
-                                <small class="form-text text-muted">Эта сумма не выводится — только тратится на комиссию.</small>
-                            </div>
-                            <div class="col-12 mt-2">
-                                <label for="bonus_balance_delta">Изменить доп. баланс (дельта):</label>
-                                <input type="text" class="form-control" id="bonus_balance_delta" value="" placeholder="+100 для начисления, -50 для списания">
+                            <div class="col-12 mt-4">
+                                <div class="card border-primary">
+                                    <div class="card-body">
+                                        <h5 class="card-title mb-1">Бонус на комиссию</h5>
+                                        <p class="text-muted small mb-3">
+                                            Эти деньги водитель <b>не может вывести</b> — только списать на комиссию внутри приложения.
+                                        </p>
+                                        <div class="row align-items-end">
+                                            <div class="col-md-4 mb-2">
+                                                <label for="bonus_balance_current">Сейчас на бонусе:</label>
+                                                <input type="text" class="form-control form-control-lg" id="bonus_balance_current"
+                                                       value="{{ client.bonus_balance or 0 }}" disabled>
+                                            </div>
+                                            <div class="col-md-4 mb-2">
+                                                <label for="bonus_topup_amount">Сумма пополнения (₽):</label>
+                                                <input type="number" min="1" step="1" class="form-control" id="bonus_topup_amount"
+                                                       placeholder="например 500">
+                                            </div>
+                                            <div class="col-md-4 mb-2">
+                                                <button type="button" class="btn btn-primary w-100" onclick="topUpBonusBalance()">
+                                                    Пополнить бонус на комиссию
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <details class="mt-2">
+                                            <summary class="small text-muted">Расширенно: изменить дельтой</summary>
+                                            <div class="mt-2">
+                                                <label for="bonus_balance_delta">Дельта (+100 / -50):</label>
+                                                <input type="text" class="form-control" id="bonus_balance_delta" value=""
+                                                       placeholder="+100 или -50 (применится при «Сохранить»)">
+                                            </div>
+                                        </details>
+                                    </div>
+                                </div>
                             </div>
                             {% endif %}
 
@@ -554,6 +580,61 @@
                         }
                     }
                 });
+            };
+
+            window.topUpBonusBalance = function () {
+                const amountRaw = ($('#bonus_topup_amount').val() || '').trim();
+                const amount = parseInt(amountRaw, 10);
+                if (!amount || amount <= 0) {
+                    return showError('Укажите сумму пополнения больше 0');
+                }
+                const phone = $('#phone_number').val() || '';
+                const name = $('#display_name').val() || '';
+                showConfirm(
+                    'Пополнить бонус на комиссию?',
+                    'Водителю <b>' + (name || phone) + '</b> будет начислено <b>' + amount + ' ₽</b>.<br>' +
+                    'Эти деньги <b>нельзя вывести</b> — только на комиссию в приложении.',
+                    'Подтвердить пополнение',
+                    function () {
+                        const data = {
+                            'user_id': $('#user_id').val(),
+                            'display_name': $('#display_name').val(),
+                            'photo_url': (getPhotoEl() ? getPhotoEl().getAttribute("uuid") : null),
+                            'is_driver': true,
+                            'is_blocked': $('#is_blocked').is(':checked'),
+                            'phone_number': $('#phone_number').val(),
+                            'block_comment': $('#block_comment').val(),
+                            'balance': $('#balance').val(),
+                            'commission': $('#commission').val(),
+                            'bonus_balance': amount,
+                        };
+                        $.ajax({
+                            url: '/api/users/edit',
+                            method: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify(data),
+                            success: function (msg) {
+                                if (msg['status'] !== 'ok') {
+                                    return showError(msg['message']);
+                                }
+                                const currentEl = document.getElementById('bonus_balance_current');
+                                if (currentEl) {
+                                    const prev = parseInt(currentEl.value || '0', 10) || 0;
+                                    currentEl.value = String(prev + amount);
+                                }
+                                $('#bonus_topup_amount').val('');
+                                showSuccess('Бонус на комиссию', 'Начислено ' + amount + ' ₽');
+                            },
+                            error: function (jqXHR) {
+                                if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+                                    showError(jqXHR.responseJSON.message);
+                                } else {
+                                    showError('Ошибка пополнения');
+                                }
+                            }
+                        });
+                    }
+                );
             };
 
             // ==== Send message dialog helpers ====

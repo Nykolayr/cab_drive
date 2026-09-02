@@ -4,6 +4,7 @@ from .models import *
 import traceback
 import utils
 import settings
+import config
 
 
 app = blueprints.Blueprint('settings', __name__, url_prefix='/kek/settings')
@@ -103,6 +104,40 @@ def edit_settings():
         return utils.get_error(e.message, status=200)
     except Exception as e:
         print(traceback.format_exc())
+        return utils.get_error(str(e), status=200)
+
+    return utils.get_answer('Сохранено')
+
+
+@app.route('/tinkoff', methods=['GET', 'POST'])
+def tinkoff_settings():
+    """GET — текущие настройки; POST — сохранить (только суперадмин)."""
+    user = utils.require_super_admin()
+    if user is None:
+        return abort(403)
+
+    if request.method == 'GET':
+        model = settings.get_model()
+        cfg = config.Production
+        return utils.get_answer('ok', info={
+            'mode': model.tinkoff_mode or 'test',
+            'payments_base_url': model.payments_base_url or 'https://cab.artean.ru',
+            'test_keys_set': bool(
+                getattr(cfg, 'TINKOFF_TEST_TERMINAL_KEY', None)
+                or getattr(cfg, 'TINKOFF_TERMINAL_KEY', None)
+            ),
+            'prod_keys_set': bool(getattr(cfg, 'TINKOFF_PROD_TERMINAL_KEY', None)),
+        })
+
+    data = request.json or {}
+    try:
+        settings.update_tinkoff_settings(
+            mode=data.get('mode'),
+            payments_base_url=data.get('payments_base_url'),
+        )
+    except IncorrectDataValue as e:
+        return utils.get_error(e.message, status=200)
+    except Exception as e:
         return utils.get_error(str(e), status=200)
 
     return utils.get_answer('Сохранено')

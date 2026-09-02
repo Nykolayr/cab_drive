@@ -23,6 +23,7 @@ import '/core/config/app_env.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'auth/firebase_auth/auth_util.dart';
 import 'auth/firebase_auth/firebase_user_provider.dart';
+import 'backend/api_requests/payments_api_config.dart';
 import 'backend/firebase/firebase_config.dart';
 import 'backend/push_notifications/fb_messages.dart';
 import 'backend/push_notifications/push_notifications_util.dart';
@@ -74,6 +75,9 @@ void main() async {
 
 
   await initializeFirebaseRemoteConfig();
+
+  // Платёжный base URL с сервера (смена домена без обновления стора)
+  await PaymentsApiConfig.load();
 
   runApp(ChangeNotifierProvider(
     create: (context) => appState,

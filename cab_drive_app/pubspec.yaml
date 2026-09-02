@@ -18,7 +18,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 #version: 1.0.5+17
 
 #IOS
-version: 1.1.1+86
+version: 1.1.89+89
 
 
 environment:
@@ -255,7 +255,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - .env
-    - assets/fonts/
+    # fonts: only via fonts: section below (duplicate assets/fonts/ breaks Windows copy)
     - assets/images/
     - assets/videos/
     - assets/audios/

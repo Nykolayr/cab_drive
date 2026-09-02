@@ -1,0 +1,91 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ config.PROJECT_NAME }} - Тинькофф{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 col-lg-8">
+        <h4>Тинькофф / платежи</h4>
+        <p class="text-muted">Только для суперадмина. Любое изменение — через подтверждение.</p>
+
+        <div class="card card-body">
+            <div class="mb-3">
+                <label class="form-label">Режим терминала</label>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="tinkoff_prod_switch"
+                           {% if mode == 'prod' %}checked{% endif %}>
+                    <label class="form-check-label" for="tinkoff_prod_switch">
+                        <span id="mode_label">{% if mode == 'prod' %}ПРОД (боевой){% else %}ТЕСТ{% endif %}</span>
+                    </label>
+                </div>
+                <small class="text-muted">
+                    Ключи теста: {% if test_keys_set %}<span class="text-success">заданы</span>{% else %}<span class="text-danger">нет</span>{% endif %};
+                    боя: {% if prod_keys_set %}<span class="text-success">заданы</span>{% else %}<span class="text-danger">нет</span>{% endif %}
+                    (в config.py на сервере, не в UI).
+                </small>
+            </div>
+
+            <div class="mb-3">
+                <label for="payments_base_url" class="form-label">Базовый URL для МП (HTTPS)</label>
+                <input type="url" class="form-control" id="payments_base_url"
+                       value="{{ payments_base_url }}"
+                       placeholder="https://cab.artean.ru">
+                <small class="text-muted">МП запрашивает его при старте. Смена домена без обновления стора.</small>
+            </div>
+
+            <button type="button" class="btn btn-primary" onclick="saveTinkoffSettings()">Сохранить</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    const initialMode = '{{ mode or "test" }}';
+    const initialUrl = {{ payments_base_url|tojson }};
+
+    document.getElementById('tinkoff_prod_switch').addEventListener('change', function () {
+        const wantProd = this.checked;
+        const label = document.getElementById('mode_label');
+        // визуально сразу, но на сервер — только после Save + confirm
+        label.textContent = wantProd ? 'ПРОД (боевой)' : 'ТЕСТ';
+    });
+
+    function currentMode() {
+        return document.getElementById('tinkoff_prod_switch').checked ? 'prod' : 'test';
+    }
+
+    function saveTinkoffSettings() {
+        const mode = currentMode();
+        const url = document.getElementById('payments_base_url').value.trim();
+        if (!url) return showError('Укажите URL');
+
+        let title = 'Сохранить настройки?';
+        let msg = 'Режим: <b>' + (mode === 'prod' ? 'ПРОД' : 'ТЕСТ') + '</b><br>URL: <b>' + url + '</b>';
+        if (mode === 'prod' && initialMode !== 'prod') {
+            title = 'Включить ПРОД?';
+            msg = 'Будут использоваться <b>боевые</b> ключи T‑Банка. Реальные списания.<br><br>' + msg;
+        }
+        if (url !== initialUrl) {
+            msg += '<br><br>МП начнёт ходить на новый URL после следующей загрузки конфига.';
+        }
+
+        showConfirm(title, msg, 'Подтвердить', function () {
+            sendRequest({
+                url: '/kek/settings/tinkoff',
+                method: 'post',
+                is_json: true,
+                data: {
+                    mode: mode,
+                    payments_base_url: url
+                },
+                success_callback: function (r) {
+                    if (r['status'] !== 'ok') return showError(r['message']);
+                    showSuccess('Сохранено', r['message'], function () {
+                        window.location.reload();
+                    });
+                }
+            });
+        });
+    }
+</script>
+{% endblock %}

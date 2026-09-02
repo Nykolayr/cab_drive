@@ -60,3 +60,19 @@ def update_cities(polygons: List[Area]):
 
     model.cities = polygons
     save_model(model)
+
+
+def update_tinkoff_settings(*, mode: str | None = None, payments_base_url: str | None = None):
+    model = get_model()
+    if mode is not None:
+        mode = str(mode).strip().lower()
+        if mode not in ('test', 'prod'):
+            raise IncorrectDataValue('mode: test или prod')
+        model.tinkoff_mode = mode
+    if payments_base_url is not None:
+        url = str(payments_base_url).strip().rstrip('/')
+        if not url.startswith('https://') and not url.startswith('http://'):
+            raise IncorrectDataValue('URL должен начинаться с http:// или https://')
+        model.payments_base_url = url
+    save_model(model)
+    return model
