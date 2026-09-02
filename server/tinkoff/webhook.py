@@ -8,17 +8,76 @@ from typing import Any
 from firebase_admin import firestore
 
 import tinkoff.client as tinkoff_client
+import tinkoff.events_log as events_log
 import utils
 from logger import logger
 
 
 SUCCESS_STATUSES = {'CONFIRMED', 'AUTHORIZED'}
+FAIL_STATUSES = {'REJECTED', 'CANCELED', 'DEADLINE_EXPIRED', 'AUTH_FAIL', 'REVERSED'}
 
 
 def _verify_notification_token(data: dict[str, Any]) -> bool:
     incoming = str(data.get('Token') or '')
     payload = {k: v for k, v in data.items() if k != 'Token'}
     return tinkoff_client.token_matches(payload, incoming)
+
+
+def _find_pay_orders(client, payment_id: str):
+    docs = list(
+        client.collection('pay_order')
+        .where('paymentId', '==', payment_id)
+        .limit(5)
+        .stream()
+    )
+    if not docs:
+        try:
+            docs = list(
+                client.collection('pay_order')
+                .where('paymentId', '==', int(payment_id))
+                .limit(5)
+                .stream()
+            )
+        except Exception:
+            docs = []
+    return docs
+
+
+def _mark_failed(client, data: dict[str, Any], payment_id: str) -> list:
+    docs = _find_pay_orders(client, payment_id)
+    if not docs:
+        logger.error(
+            f'[tinkoff.webhook] fail: pay_order not found paymentId={payment_id}'
+        )
+        return []
+    results = []
+    patch = {
+        'tinkoff_status': str(data.get('Status') or ''),
+        'tinkoff_error_code': str(data.get('ErrorCode') or ''),
+        'tinkoff_message': str(
+            data.get('Message') or data.get('Details') or ''
+        )[:500],
+    }
+    for doc in docs:
+        body = doc.to_dict() or {}
+        if body.get('is_paid') is True:
+            results.append({'id': doc.id, 'skipped': 'already_paid'})
+            continue
+        try:
+            doc.reference.update(patch)
+            results.append({'id': doc.id, 'failed': True, **patch})
+            logger.info(
+                '[tinkoff.webhook] marked fail pay_order=%s status=%s code=%s',
+                doc.id,
+                patch['tinkoff_status'],
+                patch['tinkoff_error_code'],
+            )
+        except Exception:
+            logger.error(
+                f'[tinkoff.webhook] mark fail update error\n{traceback.format_exc()}'
+            )
+            results.append({'id': doc.id, 'error': 'update failed'})
+    return results
 
 
 def process_notification(data: dict[str, Any]) -> dict[str, Any]:
@@ -39,28 +98,40 @@ def process_notification(data: dict[str, Any]) -> dict[str, Any]:
         return {'ok': False, 'error': 'no PaymentId'}
 
     if status not in SUCCESS_STATUSES:
-        logger.info(
-            f'[tinkoff.webhook] ignore status={status} paymentId={payment_id}'
+        # FAILED / REJECTED / CANCELED — пишем в pay_order, чтобы МП показало overlay
+        logger.warning(
+            '[tinkoff.webhook] NON_SUCCESS Status=%s PaymentId=%s OrderId=%s '
+            'Amount=%s ErrorCode=%s Message=%s Details=%s Success=%s Pan=%s',
+            status,
+            payment_id,
+            data.get('OrderId'),
+            data.get('Amount'),
+            data.get('ErrorCode'),
+            data.get('Message'),
+            data.get('Details'),
+            data.get('Success'),
+            data.get('Pan'),
         )
-        return {'ok': True, 'ignored': True, 'status': status}
+        written = _mark_failed(
+            client=utils.init_firebase_client(),
+            data=data,
+            payment_id=payment_id,
+        )
+        events_log.append_event(
+            'webhook_reject',
+            level='warn',
+            message='notification non-success',
+            order_id=str(data.get('OrderId') or ''),
+            payment_id=payment_id,
+            amount=data.get('Amount'),
+            error_code=str(data.get('ErrorCode') or ''),
+            status=status,
+            extra={'written': len(written)},
+        )
+        return {'ok': True, 'ignored': True, 'status': status, 'written': written}
 
     client = utils.init_firebase_client()
-    docs = list(
-        client.collection('pay_order')
-        .where('paymentId', '==', payment_id)
-        .limit(5)
-        .stream()
-    )
-    if not docs:
-        try:
-            docs = list(
-                client.collection('pay_order')
-                .where('paymentId', '==', int(payment_id))
-                .limit(5)
-                .stream()
-            )
-        except Exception:
-            docs = []
+    docs = _find_pay_orders(client, payment_id)
 
     if not docs:
         logger.error(
@@ -141,6 +212,16 @@ def _apply_paid(client, doc, data: dict[str, Any]) -> dict[str, Any]:
 
     logger.info(
         f'[tinkoff.webhook] paid pay_order={doc_ref.id} amount={amount_rub} credited={credited}'
+    )
+    events_log.append_event(
+        'webhook_paid',
+        level='info',
+        message=f'paid pay_order={doc_ref.id}',
+        order_id=str(data.get('OrderId') or body.get('order_id') or ''),
+        payment_id=str(data.get('PaymentId') or body.get('paymentId') or ''),
+        amount=data.get('Amount') or body.get('amount_in_cop'),
+        status=str(data.get('Status') or ''),
+        extra={'credited': ','.join(credited) if credited else ''},
     )
     return {
         'id': doc_ref.id,

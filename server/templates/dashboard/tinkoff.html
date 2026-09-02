@@ -3,36 +3,120 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-12 col-lg-8">
+    <div class="col-12">
         <h4>Тинькофф / платежи</h4>
         <p class="text-muted">Только для суперадмина. Любое изменение — через подтверждение.</p>
 
-        <div class="card card-body">
-            <div class="mb-3">
-                <label class="form-label">Режим терминала</label>
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="tinkoff_prod_switch"
-                           {% if mode == 'prod' %}checked{% endif %}>
-                    <label class="form-check-label" for="tinkoff_prod_switch">
-                        <span id="mode_label">{% if mode == 'prod' %}ПРОД (боевой){% else %}ТЕСТ{% endif %}</span>
-                    </label>
+        <ul class="nav nav-tabs mb-3" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#tab-settings" role="tab">Настройки</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#tab-logs" role="tab" id="tab-logs-link">Логи</a>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="tab-settings" role="tabpanel">
+                <div class="card card-body col-lg-8">
+                    <div class="mb-3">
+                        <label class="form-label">Режим терминала</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="tinkoff_prod_switch"
+                                   {% if mode == 'prod' %}checked{% endif %}>
+                            <label class="form-check-label" for="tinkoff_prod_switch">
+                                <span id="mode_label">{% if mode == 'prod' %}ПРОД (боевой){% else %}ТЕСТ{% endif %}</span>
+                            </label>
+                        </div>
+                        <small class="text-muted">
+                            Ключи теста: {% if test_keys_set %}<span class="text-success">заданы</span>{% else %}<span class="text-danger">нет</span>{% endif %};
+                            боя: {% if prod_keys_set %}<span class="text-success">заданы</span>{% else %}<span class="text-danger">нет</span>{% endif %}
+                            (в config.py на сервере, не в UI).
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="payments_base_url" class="form-label">Базовый URL для МП (HTTPS)</label>
+                        <input type="url" class="form-control" id="payments_base_url"
+                               value="{{ payments_base_url }}"
+                               placeholder="https://cab.artean.ru">
+                        <small class="text-muted">МП запрашивает его при старте. Смена домена без обновления стора.</small>
+                    </div>
+
+                    <button type="button" class="btn btn-primary" onclick="saveTinkoffSettings()">Сохранить</button>
                 </div>
-                <small class="text-muted">
-                    Ключи теста: {% if test_keys_set %}<span class="text-success">заданы</span>{% else %}<span class="text-danger">нет</span>{% endif %};
-                    боя: {% if prod_keys_set %}<span class="text-success">заданы</span>{% else %}<span class="text-danger">нет</span>{% endif %}
-                    (в config.py на сервере, не в UI).
-                </small>
             </div>
 
-            <div class="mb-3">
-                <label for="payments_base_url" class="form-label">Базовый URL для МП (HTTPS)</label>
-                <input type="url" class="form-control" id="payments_base_url"
-                       value="{{ payments_base_url }}"
-                       placeholder="https://cab.artean.ru">
-                <small class="text-muted">МП запрашивает его при старте. Смена домена без обновления стора.</small>
-            </div>
+            <div class="tab-pane fade" id="tab-logs" role="tabpanel">
+                <div class="card card-body">
+                    <div class="row g-2 align-items-end mb-3">
+                        <div class="col-md-2">
+                            <label class="form-label">С</label>
+                            <input type="date" class="form-control form-control-sm" id="log_from">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">По</label>
+                            <input type="date" class="form-control form-control-sm" id="log_to">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Тип</label>
+                            <select class="form-select form-select-sm" id="log_type">
+                                <option value="">Все</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Level</label>
+                            <select class="form-select form-select-sm" id="log_level">
+                                <option value="">Все</option>
+                                <option value="info">info</option>
+                                <option value="warn">warn</option>
+                                <option value="error">error</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Поиск</label>
+                            <input type="text" class="form-control form-control-sm" id="log_q"
+                                   placeholder="orderId / paymentId / текст">
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox" id="log_fails">
+                                <label class="form-check-label" for="log_fails">Только fail</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-sm btn-primary" onclick="loadTinkoffLogs(true)">Применить</button>
+                        <button type="button" class="btn btn-sm btn-light" onclick="resetLogFilters()">Сбросить</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="loadTinkoffLogs(true)">Обновить</button>
+                        <span class="text-muted ms-2" id="log_total"></span>
+                    </div>
 
-            <button type="button" class="btn btn-primary" onclick="saveTinkoffSettings()">Сохранить</button>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle mb-0">
+                            <thead>
+                            <tr>
+                                <th>Время (UTC)</th>
+                                <th>Level</th>
+                                <th>Тип</th>
+                                <th>OrderId</th>
+                                <th>PaymentId</th>
+                                <th>Amount</th>
+                                <th>Code/Status</th>
+                                <th>Сообщение</th>
+                            </tr>
+                            </thead>
+                            <tbody id="log_tbody">
+                            <tr><td colspan="8" class="text-muted">Откройте вкладку или нажмите «Обновить»</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-sm btn-light" id="log_more_btn" style="display:none"
+                                onclick="loadTinkoffLogsMore()">Ещё</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -42,12 +126,18 @@
 <script>
     const initialMode = '{{ mode or "test" }}';
     const initialUrl = {{ payments_base_url|tojson }};
+    let logOffset = 0;
+    const logLimit = 100;
+    let logTypesLoaded = false;
 
     document.getElementById('tinkoff_prod_switch').addEventListener('change', function () {
         const wantProd = this.checked;
         const label = document.getElementById('mode_label');
-        // визуально сразу, но на сервер — только после Save + confirm
         label.textContent = wantProd ? 'ПРОД (боевой)' : 'ТЕСТ';
+    });
+
+    document.getElementById('tab-logs-link').addEventListener('shown.bs.tab', function () {
+        loadTinkoffLogs(true);
     });
 
     function currentMode() {
@@ -86,6 +176,120 @@
                 }
             });
         });
+    }
+
+    function resetLogFilters() {
+        document.getElementById('log_from').value = '';
+        document.getElementById('log_to').value = '';
+        document.getElementById('log_type').value = '';
+        document.getElementById('log_level').value = '';
+        document.getElementById('log_q').value = '';
+        document.getElementById('log_fails').checked = false;
+        loadTinkoffLogs(true);
+    }
+
+    function logQueryParams(offset) {
+        const p = new URLSearchParams();
+        const from = document.getElementById('log_from').value;
+        const to = document.getElementById('log_to').value;
+        const type = document.getElementById('log_type').value;
+        const level = document.getElementById('log_level').value;
+        const q = document.getElementById('log_q').value.trim();
+        if (from) p.set('from', from);
+        if (to) p.set('to', to);
+        if (type) p.set('type', type);
+        if (level) p.set('level', level);
+        if (q) p.set('q', q);
+        if (document.getElementById('log_fails').checked) p.set('fails_only', '1');
+        p.set('limit', String(logLimit));
+        p.set('offset', String(offset || 0));
+        return p.toString();
+    }
+
+    function levelBadge(level) {
+        const l = (level || '').toLowerCase();
+        if (l === 'error') return '<span class="badge bg-danger">error</span>';
+        if (l === 'warn' || l === 'warning') return '<span class="badge bg-warning text-dark">warn</span>';
+        return '<span class="badge bg-secondary">info</span>';
+    }
+
+    function rowClass(level, status) {
+        const l = (level || '').toLowerCase();
+        const st = (status || '').toUpperCase();
+        if (l === 'error' || st === 'REJECTED') return 'table-danger';
+        if (l === 'warn') return 'table-warning';
+        return '';
+    }
+
+    function formatTs(ts) {
+        if (!ts) return '';
+        return String(ts).replace('T', ' ').replace('+00:00', '').slice(0, 19);
+    }
+
+    function renderLogRows(events, append) {
+        const tbody = document.getElementById('log_tbody');
+        if (!append) tbody.innerHTML = '';
+        if (!events.length && !append) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-muted">Нет событий</td></tr>';
+            return;
+        }
+        events.forEach(function (ev) {
+            const tr = document.createElement('tr');
+            tr.className = rowClass(ev.level, ev.status);
+            const codeStatus = [ev.errorCode, ev.status].filter(Boolean).join(' / ');
+            tr.innerHTML =
+                '<td><small>' + formatTs(ev.ts) + '</small></td>' +
+                '<td>' + levelBadge(ev.level) + '</td>' +
+                '<td><code>' + (ev.type || '') + '</code></td>' +
+                '<td><small>' + (ev.orderId || '') + '</small></td>' +
+                '<td><small>' + (ev.paymentId || '') + '</small></td>' +
+                '<td>' + (ev.amount != null ? ev.amount : '') + '</td>' +
+                '<td><small>' + codeStatus + '</small></td>' +
+                '<td><small>' + (ev.message || '') + '</small></td>';
+            tr.title = JSON.stringify(ev);
+            tbody.appendChild(tr);
+        });
+    }
+
+    function fillTypeOptions(types) {
+        if (logTypesLoaded) return;
+        const sel = document.getElementById('log_type');
+        (types || []).forEach(function (t) {
+            if (!t) return;
+            const opt = document.createElement('option');
+            opt.value = t;
+            opt.textContent = t;
+            sel.appendChild(opt);
+        });
+        logTypesLoaded = true;
+    }
+
+    function loadTinkoffLogs(reset) {
+        if (reset) logOffset = 0;
+        sendRequest({
+            url: '/d/tinkoff/logs?' + logQueryParams(logOffset),
+            method: 'get',
+            success_callback: function (r) {
+                if (r['status'] !== 'ok') return showError(r['message'] || 'Ошибка');
+                const data = r;
+                const events = data.events || [];
+                const total = data.total || 0;
+                fillTypeOptions(data.types || []);
+                renderLogRows(events, !reset && logOffset > 0);
+                document.getElementById('log_total').textContent = 'Найдено: ' + total;
+                const more = document.getElementById('log_more_btn');
+                if (logOffset + events.length < total) {
+                    more.style.display = '';
+                } else {
+                    more.style.display = 'none';
+                }
+            }
+        });
+    }
+
+    function loadTinkoffLogsMore() {
+        logOffset += logLimit;
+        loadTinkoffLogs(false);
     }
 </script>
 {% endblock %}

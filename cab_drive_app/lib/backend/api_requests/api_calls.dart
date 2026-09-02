@@ -385,10 +385,16 @@ class InitPaymentCall {
   "customerKey": "${escapeStringForJson(customerKey)}"
 }''';
     try {
-      return await ApiManager.instance
+      final url = PaymentsApiConfig.path('/api/tinkoff/init-payment');
+      // ignore: avoid_print
+      print(
+        '[Pay.init] POST $url amount=$amount orderId=$orderId '
+        'customerKey=$customerKey desc=$description',
+      );
+      final result = await ApiManager.instance
           .makeApiCall(
             callName: 'Init Payment',
-            apiUrl: PaymentsApiConfig.path('/api/tinkoff/init-payment'),
+            apiUrl: url,
             callType: ApiCallType.POST,
             headers: {
               'Content-Type': 'application/json',
@@ -404,7 +410,15 @@ class InitPaymentCall {
             alwaysAllowBody: false,
           )
           .timeout(const Duration(seconds: 25));
-    } on TimeoutException {
+      // ignore: avoid_print
+      print(
+        '[Pay.init] status=${result.statusCode} succeeded=${result.succeeded} '
+        'body=${result.jsonBody} exception=${result.exceptionMessage}',
+      );
+      return result;
+    } on TimeoutException catch (e) {
+      // ignore: avoid_print
+      print('[Pay.init] TIMEOUT $e');
       return ApiCallResponse(null, {}, -1,
           exception: TimeoutException('Init Payment timeout'));
     }

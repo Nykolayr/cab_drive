@@ -10,6 +10,20 @@ import requests
 import config
 import settings
 from errors import IncorrectDataValue
+from logger import logger
+import tinkoff.events_log as events_log
+
+
+def _safe_log_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    """Копия тела без Token/Password для логов."""
+    skip = {'Token', 'Password', 'password'}
+    out: dict[str, Any] = {}
+    for key, value in payload.items():
+        if key in skip:
+            out[key] = '***'
+            continue
+        out[key] = value
+    return out
 
 
 def _mode() -> str:
@@ -127,28 +141,87 @@ def _post(method: str, body: dict[str, Any], *, allow_list: bool = False) -> Any
     payload['Token'] = build_token(payload)
 
     url = f'{_api_base()}/{method}'
+    logger.info(
+        '[tinkoff.%s] REQUEST mode=%s url=%s body=%s',
+        method,
+        _mode(),
+        url,
+        _safe_log_payload(payload),
+    )
     try:
         response = requests.post(
             url, json=payload, timeout=30, verify=_ssl_verify()
         )
     except requests.RequestException as e:
+        logger.error('[tinkoff.%s] NETWORK_ERROR %s', method, e)
         raise IncorrectDataValue(f'Tinkoff: сеть — {e}') from e
 
     try:
         data = response.json()
     except ValueError as e:
+        logger.error(
+            '[tinkoff.%s] BAD_JSON http=%s body=%s',
+            method,
+            response.status_code,
+            (response.text or '')[:500],
+        )
         raise IncorrectDataValue(
             f'Tinkoff: не JSON (HTTP {response.status_code})'
         ) from e
 
     if allow_list and isinstance(data, list):
+        logger.info('[tinkoff.%s] OK list_len=%s', method, len(data))
         return data
 
     if isinstance(data, dict) and not data.get('Success'):
         message = data.get('Message') or data.get('Details') or f'{method} failed'
         error_code = data.get('ErrorCode', '')
+        logger.error(
+            '[tinkoff.%s] BANK_FAIL ErrorCode=%s Message=%s Details=%s Status=%s PaymentId=%s raw=%s',
+            method,
+            error_code,
+            data.get('Message'),
+            data.get('Details'),
+            data.get('Status'),
+            data.get('PaymentId'),
+            data,
+        )
+        events_log.append_event(
+            'bank_fail',
+            level='error',
+            message=str(message),
+            payment_id=str(data.get('PaymentId') or ''),
+            order_id=str(body.get('OrderId') or ''),
+            amount=body.get('Amount'),
+            error_code=str(error_code or ''),
+            status=str(data.get('Status') or ''),
+            customer_key=str(body.get('CustomerKey') or ''),
+            mode=_mode(),
+        )
         raise IncorrectDataValue(f'Tinkoff {method} [{error_code}]: {message}')
 
+    if isinstance(data, dict):
+        logger.info(
+            '[tinkoff.%s] OK Success=%s Status=%s PaymentId=%s hasPaymentURL=%s ErrorCode=%s',
+            method,
+            data.get('Success'),
+            data.get('Status'),
+            data.get('PaymentId'),
+            bool(data.get('PaymentURL') or data.get('PaymentUrl')),
+            data.get('ErrorCode'),
+        )
+        if method == 'Init':
+            events_log.append_event(
+                'bank_ok',
+                level='info',
+                message='Init OK',
+                payment_id=str(data.get('PaymentId') or ''),
+                order_id=str(body.get('OrderId') or ''),
+                amount=body.get('Amount'),
+                status=str(data.get('Status') or ''),
+                customer_key=str(body.get('CustomerKey') or ''),
+                mode=_mode(),
+            )
     return data
 
 
@@ -165,14 +238,26 @@ def _payment_pair(data: dict[str, Any]) -> dict[str, str]:
     }
 
 
-def _notification_url() -> str:
+def _payments_base() -> str:
     try:
         base = (settings.get_model().payments_base_url or '').rstrip('/')
     except Exception:
         base = ''
     if not base:
         base = 'https://cab.artean.ru'
-    return f'{base}/api/tinkoff/notification'
+    return base
+
+
+def _notification_url() -> str:
+    return f'{_payments_base()}/api/tinkoff/notification'
+
+
+def _success_url() -> str:
+    return f'{_payments_base()}/api/tinkoff/return?result=success'
+
+
+def _fail_url() -> str:
+    return f'{_payments_base()}/api/tinkoff/return?result=fail'
 
 
 def init_payment(
@@ -192,6 +277,8 @@ def init_payment(
         'Amount': int(amount),
         'OrderId': str(order_id),
         'NotificationURL': _notification_url(),
+        'SuccessURL': _success_url(),
+        'FailURL': _fail_url(),
     }
     if description:
         body['Description'] = str(description)[:250]
@@ -204,10 +291,58 @@ def init_payment(
                 'Tinkoff: для recurrent нужен customerKey'
             )
 
-    data = _post('Init', body)
+    logger.info(
+        '[tinkoff.Init] start amount=%s orderId=%s customerKey=%s recurrent=%s '
+        'desc=%s notify=%s success=%s fail=%s',
+        amount,
+        order_id,
+        customer_key,
+        recurrent,
+        (description or '')[:80],
+        _notification_url(),
+        _success_url(),
+        _fail_url(),
+    )
+    events_log.append_event(
+        'init',
+        level='info',
+        message='Init request' + (' (recurrent)' if recurrent else ''),
+        order_id=order_id,
+        amount=amount,
+        customer_key=customer_key,
+        mode=_mode(),
+    )
+    try:
+        data = _post('Init', body)
+    except IncorrectDataValue as e:
+        events_log.append_event(
+            'init_fail',
+            level='error',
+            message=str(e.message),
+            order_id=order_id,
+            amount=amount,
+            customer_key=customer_key,
+            mode=_mode(),
+        )
+        raise
     result = _payment_pair(data)
     if not result['paymentUrl'] or not result['paymentId']:
+        logger.error('[tinkoff.Init] missing PaymentURL/PaymentId data=%s', data)
+        events_log.append_event(
+            'init_fail',
+            level='error',
+            message='missing PaymentURL/PaymentId',
+            order_id=order_id,
+            amount=amount,
+            customer_key=customer_key,
+            mode=_mode(),
+        )
         raise IncorrectDataValue('Tinkoff: в ответе нет PaymentURL / PaymentId')
+    logger.info(
+        '[tinkoff.Init] done paymentId=%s paymentUrl=%s',
+        result['paymentId'],
+        result['paymentUrl'][:120],
+    )
     return result
 
 

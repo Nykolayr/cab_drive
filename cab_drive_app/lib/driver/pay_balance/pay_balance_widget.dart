@@ -1,7 +1,10 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
+import '/backend/api_requests/payments_api_config.dart';
 import '/backend/backend.dart';
+import '/custom_code/services/payment_bank_error.dart';
 import '/custom_code/services/payment_init_error.dart';
+import '/custom_code/widgets/payment_result_overlay.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -53,8 +56,18 @@ class _PayBalanceWidgetState extends State<PayBalanceWidget> {
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       try {
+        // ignore: avoid_print
+        print(
+          '[Pay.balance] start amountCop=${widget.amountCop} '
+          'payOrder=${widget.payOrderRef?.id} user=${currentUserReference?.id}',
+        );
         _model.order =
             await PayOrderRecord.getDocumentOnce(widget!.payOrderRef!);
+        // ignore: avoid_print
+        print(
+          '[Pay.balance] pay_order orderId=${_model.order?.orderId} '
+          'amount_in_cop=${_model.order?.amountInCop}',
+        );
         _model.apiResultjrtURL = await InitPaymentCall.call(
           amount: widget!.amountCop,
           description: 'Пополнение баланса',
@@ -67,15 +80,24 @@ class _PayBalanceWidgetState extends State<PayBalanceWidget> {
         final paymentUrl = ok
             ? InitPaymentCall.paymentUrl(response?.jsonBody ?? '')
             : null;
+        final paymentId = ok
+            ? InitPaymentCall.paymentId(response?.jsonBody ?? '')
+            : null;
+
+        // ignore: avoid_print
+        print(
+          '[Pay.balance] init ok=$ok paymentId=$paymentId '
+          'url=${paymentUrl != null && paymentUrl.isNotEmpty ? paymentUrl.substring(0, paymentUrl.length.clamp(0, 80)) : null}',
+        );
 
         if (ok && paymentUrl != null && paymentUrl.isNotEmpty) {
           unawaited(
             () async {
               await widget!.payOrderRef!.update(await createPayOrderRecordData(
-                paymentId: InitPaymentCall.paymentId(
-                  (response?.jsonBody ?? ''),
-                ),
+                paymentId: paymentId,
               ));
+              // ignore: avoid_print
+              print('[Pay.balance] pay_order.paymentId saved=$paymentId');
             }(),
           );
           _model.urlIsSet = true;
@@ -86,12 +108,19 @@ class _PayBalanceWidgetState extends State<PayBalanceWidget> {
           _model.paymentFailed = true;
           _model.paymentErrorMessage =
               PaymentInitError.messageFromCall(response);
+          // ignore: avoid_print
+          print(
+            '[Pay.balance] FAIL status=${response?.statusCode} '
+            'body=${response?.jsonBody} msg=${_model.paymentErrorMessage}',
+          );
         }
-      } catch (e) {
+      } catch (e, st) {
         _model.urlIsSet = false;
         _model.paymentFailed = true;
         _model.paymentErrorMessage =
             'Не удалось открыть оплату. ${PaymentInitError.supportHint}';
+        // ignore: avoid_print
+        print('[Pay.balance] EXCEPTION $e\n$st');
       }
       if (mounted) {
         safeSetState(() {});
@@ -106,6 +135,49 @@ class _PayBalanceWidgetState extends State<PayBalanceWidget> {
         });
       });
     }
+  }
+
+  void _onPayNavigate(String url) {
+    // ignore: avoid_print
+    print('[Pay.balance] navigate $url');
+    if (PaymentBankError.isFailUrl(url)) {
+      _model.bankFailOverlay = true;
+      _model.bankFailMessage = PaymentBankError.message(
+        status: 'REJECTED',
+        mode: PaymentsApiConfig.mode,
+      );
+      // ignore: avoid_print
+      print('[Pay.balance] FailURL → overlay');
+      if (mounted) safeSetState(() {});
+    } else if (PaymentBankError.isSuccessUrl(url)) {
+      // ignore: avoid_print
+      print('[Pay.balance] SuccessURL (ждём is_paid из webhook)');
+    }
+  }
+
+  void _applyBankFailFromPayOrder(PayOrderRecord payOrder) {
+    if (payOrder.isPaid) return;
+    final status = payOrder.tinkoffStatus.toUpperCase();
+    const fails = {
+      'REJECTED',
+      'CANCELED',
+      'DEADLINE_EXPIRED',
+      'AUTH_FAIL',
+      'REVERSED',
+    };
+    if (!fails.contains(status)) return;
+    if (_model.bankFailOverlay &&
+        _model.bankFailMessage.contains(payOrder.tinkoffErrorCode) &&
+        payOrder.tinkoffErrorCode.isNotEmpty) {
+      return;
+    }
+    _model.bankFailOverlay = true;
+    _model.bankFailMessage = PaymentBankError.message(
+      errorCode: payOrder.tinkoffErrorCode,
+      status: status,
+      bankMessage: payOrder.tinkoffMessage,
+      mode: PaymentsApiConfig.mode,
+    );
   }
 
   @override
@@ -206,6 +278,7 @@ class _PayBalanceWidgetState extends State<PayBalanceWidget> {
                   }
 
                   final containerPayOrderRecord = snapshot.data!;
+                  _applyBankFailFromPayOrder(containerPayOrderRecord);
 
                   return ClipRRect(
                     borderRadius: BorderRadius.circular(5.0),
@@ -453,27 +526,49 @@ class _PayBalanceWidgetState extends State<PayBalanceWidget> {
                               ),
                             );
                           } else if (_model.urlIsSet) {
-                            return ClipRRect(
-                              borderRadius: BorderRadius.circular(5.0),
-                              child: Container(
-                                width: double.infinity,
-                                height: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryBackground,
+                            return Stack(
+                              children: [
+                                ClipRRect(
                                   borderRadius: BorderRadius.circular(5.0),
+                                  child: Container(
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    decoration: BoxDecoration(
+                                      color: FlutterFlowTheme.of(context)
+                                          .secondaryBackground,
+                                      borderRadius: BorderRadius.circular(5.0),
+                                    ),
+                                    child: FlutterFlowWebView(
+                                      content: InitPaymentCall.paymentUrl(
+                                        (_model.apiResultjrtURL?.jsonBody ??
+                                            ''),
+                                      )!,
+                                      bypass: false,
+                                      height: MediaQuery.sizeOf(context)
+                                              .height *
+                                          0.8,
+                                      verticalScroll: false,
+                                      horizontalScroll: false,
+                                      onNavigate: _onPayNavigate,
+                                    ),
+                                  ),
                                 ),
-                                child: FlutterFlowWebView(
-                                  content: InitPaymentCall.paymentUrl(
-                                    (_model.apiResultjrtURL?.jsonBody ?? ''),
-                                  )!,
-                                  bypass: false,
-                                  height:
-                                      MediaQuery.sizeOf(context).height * 0.8,
-                                  verticalScroll: false,
-                                  horizontalScroll: false,
-                                ),
-                              ),
+                                if (_model.bankFailOverlay)
+                                  Positioned.fill(
+                                    child: PaymentResultOverlay(
+                                      message: _model.bankFailMessage.isNotEmpty
+                                          ? _model.bankFailMessage
+                                          : PaymentBankError.message(
+                                              mode: PaymentsApiConfig.mode,
+                                            ),
+                                      onClose: () {
+                                        if (Navigator.of(context).canPop()) {
+                                          Navigator.pop(context);
+                                        }
+                                      },
+                                    ),
+                                  ),
+                              ],
                             );
                           } else {
                             return Container(

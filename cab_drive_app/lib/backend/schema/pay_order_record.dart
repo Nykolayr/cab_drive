@@ -68,6 +68,19 @@ class PayOrderRecord extends FirestoreRecord {
   double get summUpdBallance => _summUpdBallance ?? 0.0;
   bool hasSummUpdBallance() => _summUpdBallance != null;
 
+  // T‑Bank webhook / fail tracking (optional fields).
+  String? _tinkoffStatus;
+  String get tinkoffStatus => _tinkoffStatus ?? '';
+  bool hasTinkoffStatus() => _tinkoffStatus != null;
+
+  String? _tinkoffErrorCode;
+  String get tinkoffErrorCode => _tinkoffErrorCode ?? '';
+  bool hasTinkoffErrorCode() => _tinkoffErrorCode != null;
+
+  String? _tinkoffMessage;
+  String get tinkoffMessage => _tinkoffMessage ?? '';
+  bool hasTinkoffMessage() => _tinkoffMessage != null;
+
   void _initializeFields() {
     _orderId = snapshotData['order_id'] as String?;
     _amountInCop = castToType<int>(snapshotData['amount_in_cop']);
@@ -83,6 +96,9 @@ class PayOrderRecord extends FirestoreRecord {
     _listUsersUpdBallance =
         getDataList(snapshotData['list_users_upd_ballance']);
     _summUpdBallance = castToType<double>(snapshotData['summ_upd_ballance']);
+    _tinkoffStatus = snapshotData['tinkoff_status']?.toString();
+    _tinkoffErrorCode = snapshotData['tinkoff_error_code']?.toString();
+    _tinkoffMessage = snapshotData['tinkoff_message']?.toString();
   }
 
   static CollectionReference get collection =>

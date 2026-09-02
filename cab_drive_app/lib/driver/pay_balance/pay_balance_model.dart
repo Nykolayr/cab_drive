@@ -23,6 +23,9 @@ class PayBalanceModel extends FlutterFlowModel<PayBalanceWidget> {
   bool urlIsSet = false;
   bool paymentFailed = false;
   String paymentErrorMessage = '';
+  /// FailURL / webhook REJECTED — показываем overlay поверх WebView.
+  bool bankFailOverlay = false;
+  String bankFailMessage = '';
 
   ///  State fields for stateful widgets in this component.
 

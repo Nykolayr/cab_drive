@@ -21,6 +21,7 @@ class FlutterFlowWebView extends StatefulWidget {
     this.horizontalScroll = false,
     this.verticalScroll = false,
     this.html = false,
+    this.onNavigate,
   }) : super(key: key);
 
   final String content;
@@ -30,6 +31,8 @@ class FlutterFlowWebView extends StatefulWidget {
   final bool horizontalScroll;
   final bool verticalScroll;
   final bool html;
+  /// Вызывается при каждой навигации WebView (до решения navigate/prevent).
+  final void Function(String url)? onNavigate;
 
   @override
   _FlutterFlowWebViewState createState() => _FlutterFlowWebViewState();
@@ -59,17 +62,20 @@ class _FlutterFlowWebViewState extends State<FlutterFlowWebView> {
           }
         },
         navigationDelegate: (request) async {
+          final url = request.content.source;
+          widget.onNavigate?.call(url);
           if (isAndroid) {
-            if (request.content.source
-                .startsWith('https://api.whatsapp.com/send?phone')) {
-              String url = request.content.source;
-
+            if (url.startsWith('https://api.whatsapp.com/send?phone')) {
               await launchUrl(
                 Uri.parse(url),
                 mode: LaunchMode.externalApplication,
               );
               return NavigationDecision.prevent;
             }
+          }
+          // Наши return URL — не грузим HTML банка/страницу, обрабатываем в МП.
+          if (url.contains('/api/tinkoff/return')) {
+            return NavigationDecision.prevent;
           }
           return NavigationDecision.navigate;
         },

@@ -503,6 +503,38 @@ def tinkoff_page():
     )
 
 
+@app.route('/tinkoff/logs')
+def tinkoff_logs_api():
+    """JSON список событий T‑Bank для таба «Логи» (только суперадмин)."""
+    user = utils.require_super_admin()
+    if user is None:
+        return abort(403)
+
+    import tinkoff.events_log as events_log
+
+    fails = request.values.get('fails_only', '', str).lower() in ('1', 'true', 'yes')
+    try:
+        limit = int(request.values.get('limit', 100))
+    except ValueError:
+        limit = 100
+    try:
+        offset = int(request.values.get('offset', 0))
+    except ValueError:
+        offset = 0
+
+    data = events_log.query_events(
+        date_from=request.values.get('from', '', str),
+        date_to=request.values.get('to', '', str),
+        event_type=request.values.get('type', '', str),
+        level=request.values.get('level', '', str),
+        q=request.values.get('q', '', str),
+        fails_only=fails,
+        limit=limit,
+        offset=offset,
+    )
+    return utils.get_answer('', data)
+
+
 @app.route('/super_admins', methods=['POST'])
 def create_super_admin_api():
     user = utils.require_super_admin()
