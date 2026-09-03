@@ -106,16 +106,30 @@ def delete_request():
 
 
 
-driver_status_thread = threading.Thread(target=check_order_status)
-driver_status_thread.daemon = True
-driver_status_thread.start()
+def _start_bg_exclusive(target, name: str):
+    def _runner():
+        import fcntl
+        lock_path = f'/tmp/cab_drive_bg_{name}.lock'
+        try:
+            lock_f = open(lock_path, 'w')
+            fcntl.flock(lock_f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            return
+        try:
+            target()
+        finally:
+            try:
+                lock_f.close()
+            except Exception:
+                pass
 
-extra_notify_thread = threading.Thread(
-    target=notify_busy_drivers_about_new_orders,
-    name='extra_notify_loop',
-)
-extra_notify_thread.daemon = True
-extra_notify_thread.start()
+    t = threading.Thread(target=_runner, daemon=True, name=name)
+    t.start()
+    return t
+
+
+_start_bg_exclusive(check_order_status, 'check_order_status')
+_start_bg_exclusive(notify_busy_drivers_about_new_orders, 'extra_notify_loop')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=config.Production.PORT)

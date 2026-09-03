@@ -15,32 +15,46 @@ def fetch_firebase_chats(page: int = 1, per_page: int = 10, sort_by: Optional[st
         if not sort_by or len(sort_by) == 0:
             query = collection_ref.where('support', '==', True)
 
-            # Получаем все документы без ограничений
-            documents = query.limit(per_page).offset((page - 1) * per_page).stream()
+            documents = list(query.limit(per_page).offset((page - 1) * per_page).stream())
+
+            total_chats = None
+            try:
+                count_result = collection_ref.where('support', '==', True).count().get()
+                if hasattr(count_result, 'count'):
+                    total_chats = int(count_result.count)
+                else:
+                    try:
+                        total_chats = int(count_result[0][0].value)
+                    except Exception:
+                        total_chats = int(count_result[0])
+            except Exception:
+                total_chats = None
+            if total_chats is None:
+                total_chats = (page - 1) * per_page + len(documents)
+                if len(documents) >= per_page:
+                    total_chats += 1
+            total_pages = max(1, (total_chats + per_page - 1) // per_page)
 
             data = []
-            total_chats_query = collection_ref.where('support', '==',
-                                                     True)  # Повторный запрос для получения общего количества
-            total_chats = len(list(total_chats_query.stream()))  # Считаем количество
-            total_pages = (total_chats + per_page - 1) // per_page  # Общее количество страниц
-
             for doc in documents:
-                doc_data = doc.to_dict()
-                doc_data['id'] = doc.id  # добавляем id документа
-
+                doc_data = doc.to_dict() or {}
+                doc_data['id'] = doc.id
 
                 users_list = []
                 user_ids_list = []
 
                 for user_ref in doc_data.get('users', []):
                     user_data = get_firebase_user_by_id(user_ref.id)
-                    email = user_data.get('email')
+                    if not user_data:
+                        continue
+                    email = user_data.get('email') or ''
 
                     if email and '79031082211' not in email:
                         users_list.append(email.split('@')[0])
                         user_ids_list.append(user_ref.id)
 
-                messages = get_chat_messages(doc.reference)
+                # Список чатов: только unread_count, без полного stream сообщений.
+                unread_count = _chat_unread_count(doc.reference)
 
                 if len(user_ids_list) < 1:
                     continue
@@ -50,9 +64,9 @@ def fetch_firebase_chats(page: int = 1, per_page: int = 10, sort_by: Optional[st
                     "date_created": doc_data.get('date_created'),
                     "support": doc_data.get('support'),
                     "users": users_list,
-                    "messages": messages['messages'],
+                    "messages": [],
                     "user_id": user_ids_list[0],
-                    "unread_count": messages['unread_count']
+                    "unread_count": unread_count
                 }
 
                 if isinstance(chat_json["date_created"], (int, float)):
@@ -208,12 +222,37 @@ def fetch_firebase_chats(page: int = 1, per_page: int = 10, sort_by: Optional[st
     except Exception as e:
         raise IncorrectDataValue(f'Ошибка при получении чатов из Firebase: {e}')
 
+def _chat_unread_count(chat_ref, cap: int = 50) -> int:
+    """Считает непрочитанные без полного stream истории чата."""
+    db = firestore.client()
+    messages_ref = db.collection('messages')
+    try:
+        q = (
+            messages_ref
+            .where('chatRef', '==', chat_ref)
+            .where('read', '==', False)
+            .limit(cap)
+        )
+        return sum(1 for _ in q.stream())
+    except Exception:
+        # Без composite index — урезанный fallback
+        try:
+            q = messages_ref.where('chatRef', '==', chat_ref).limit(cap)
+            n = 0
+            for msg in q.stream():
+                if not (msg.to_dict() or {}).get('read', True):
+                    n += 1
+            return n
+        except Exception:
+            return 0
+
+
 def get_chat_messages(chat_ref):
     db = firestore.client()
     messages_ref = db.collection('messages')
 
     # Запрос на получение сообщений для указанного chatRef
-    query = messages_ref.where('chatRef', '==', chat_ref).order_by('date_created')
+    query = messages_ref.where('chatRef', '==', chat_ref).order_by('date_created').limit(200)
 
     messages = []
     unread_count = 0

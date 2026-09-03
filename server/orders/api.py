@@ -118,9 +118,10 @@ def fetch_firebase_orders(client_id: Optional[str] = None,
         except Exception:
             total_orders = None
 
-        # Получаем все документы без order_by (чтобы избежать composite индексов)
-        # Сортировка будет выполнена на стороне Python
-        documents = list(query.stream())
+        # Жёсткий потолок: полный stream коллекции сжигает Firestore quota (429).
+        # Сортировка по-прежнему на Python — но не больше hard_cap документов.
+        hard_cap = min(250, max(per_page * max(page, 1), per_page, 50))
+        documents = list(query.limit(hard_cap).stream())
 
         # Преобразуем в JSON и сортируем на клиенте
         data = []
@@ -326,133 +327,191 @@ def firebase_order_to_json(doc, is_dict_already: bool = False):
         logger.error("Источник ошибки:\n%s", traceback.format_exc())
 
 # New method to get order statistics
+def _is_firestore_quota_error(exc: BaseException) -> bool:
+    msg = str(exc).lower()
+    return (
+        "429" in msg
+        or "quota" in msg
+        or "resource_exhausted" in msg
+        or "resource exhausted" in msg
+    )
+
+
+def get_order_statistics_result(user_id, driver_id, start_date, end_date, city) -> dict:
+    """stats + флаг квоты Firestore. stats — прежний tuple для шаблона."""
+    empty = (
+        0, 0, 0, 0,
+        0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0,
+        [0.0] * 12,
+        {},
+    )
+    stats_doc_cap = 400
+    stats_days = 120
+
+    def _compute():
+        try:
+            db = utils.init_firebase_client()
+            order_collection_ref = db.collection("order")
+        except Exception as e:
+            logger.error(f'get_order_statistics init failed: {e}')
+            return {
+                "stats": empty,
+                "quota_exhausted": _is_firestore_quota_error(e),
+            }
+
+        today = datetime.utcnow()
+        yesterday = today - timedelta(days=1)
+        last_week = today - timedelta(weeks=1)
+        last_month = today - timedelta(days=30)
+
+        order_counts = {
+            "last_day": 0,
+            "last_week": 0,
+            "last_month": 0,
+            "all_time": 0,
+        }
+
+        earnings = {
+            "last_day": 0.0,
+            "last_week": 0.0,
+            "last_month": 0.0,
+            "all_time": 0.0,
+        }
+        commission_earnings = {
+            "last_day": 0.0,
+            "last_week": 0.0,
+            "last_month": 0.0,
+            "all_time": 0.0,
+        }
+
+        monthly_earnings = [0.0] * 12
+        status_counts = {}
+
+        try:
+            cutoff = today - timedelta(days=stats_days)
+            docs = []
+            try:
+                docs = list(
+                    order_collection_ref
+                    .where("dateTime_created", ">=", cutoff)
+                    .limit(stats_doc_cap)
+                    .stream()
+                )
+            except Exception as e:
+                if _is_firestore_quota_error(e):
+                    logger.error(f"get_order_statistics quota: {e}")
+                    return {"stats": empty, "quota_exhausted": True}
+                logger.warning(
+                    f"get_order_statistics date filter failed, limit-only: {e}"
+                )
+                docs = list(order_collection_ref.limit(stats_doc_cap).stream())
+
+            for doc in docs:
+                order_data = doc.to_dict() or {}
+                time_val = order_data.get('dateTime_created')
+                if time_val is None:
+                    continue
+                try:
+                    order_created = datetime.fromtimestamp(time_val.timestamp())
+                except Exception:
+                    continue
+                order_status = order_data.get('status')
+                add_to_currentPrice = order_status == 'completed'
+                json = firebase_order_to_json(order_data, is_dict_already=True)
+
+                if json is None:
+                    continue
+
+                if user_id and json.get('user_customer', {}) != user_id:
+                    continue
+                if driver_id and json.get('selected_driver', {}) != driver_id:
+                    continue
+                if start_date and json.get('dateTime_created') is not None:
+                    try:
+                        date_time_create = datetime.fromtimestamp(json['dateTime_created'])
+                    except Exception:
+                        date_time_create = datetime.fromisoformat(json['dateTime_created'])
+                    if date_time_create.timestamp() < start_date.timestamp():
+                        continue
+                if end_date and json.get('dateTime_created') is not None:
+                    try:
+                        date_time_create = datetime.fromtimestamp(json['dateTime_created'])
+                    except Exception:
+                        date_time_create = datetime.fromisoformat(json['dateTime_created'])
+                    if date_time_create.timestamp() > end_date.timestamp():
+                        continue
+                if city and json.get('pointA') and json.get('pointA').get('city').lower() != city.lower():
+                    continue
+
+                order_counts["all_time"] += 1
+                currentPrice = order_data.get('currentPrice', 0.0) or 0.0
+                commission_percent = order_data.get('commissionPercent') or 17.0
+                currentCommission = (currentPrice / 100) * commission_percent
+
+                if order_status in status_counts:
+                    status_counts[order_status] += 1
+                else:
+                    status_counts[order_status] = 1
+
+                if add_to_currentPrice:
+                    earnings['all_time'] += currentPrice
+                    commission_earnings["all_time"] += currentCommission
+                    monthly_earnings[order_created.month - 1] += currentPrice
+                if order_created >= yesterday:
+                    order_counts["last_day"] += 1
+                    if add_to_currentPrice:
+                        earnings["last_day"] += currentPrice
+                        commission_earnings["last_day"] += currentCommission
+                if order_created >= last_week:
+                    order_counts["last_week"] += 1
+                    if add_to_currentPrice:
+                        earnings["last_week"] += currentPrice
+                        commission_earnings["last_week"] += currentCommission
+                if order_created >= last_month:
+                    order_counts["last_month"] += 1
+                    if add_to_currentPrice:
+                        earnings["last_month"] += currentPrice
+                        commission_earnings["last_month"] += currentCommission
+        except Exception as e:
+            logger.error(f'get_order_statistics failed: {e}')
+            return {
+                "stats": empty,
+                "quota_exhausted": _is_firestore_quota_error(e),
+            }
+
+        return {
+            "stats": (
+                order_counts["last_day"],
+                order_counts["last_week"],
+                order_counts["last_month"],
+                order_counts["all_time"],
+                earnings["last_day"] if earnings["last_day"] != 0 else 0.0,
+                earnings["last_week"] if earnings["last_week"] != 0 else 0.0,
+                earnings["last_month"] if earnings["last_month"] != 0 else 0.0,
+                earnings["all_time"],
+                commission_earnings["last_day"],
+                commission_earnings["last_week"],
+                commission_earnings["last_month"],
+                commission_earnings["all_time"],
+                monthly_earnings,
+                status_counts,
+            ),
+            "quota_exhausted": False,
+        }
+
+    import ttl_cache
+    cache_key = (
+        f"order_stats_result:{user_id}:{driver_id}:{start_date}:{end_date}:{city}"
+    )
+    return ttl_cache.get_or_set(cache_key, 300, _compute)
+
+
 def get_order_statistics(user_id, driver_id, start_date, end_date, city) -> tuple[
     int, int, int, int, float, float, float, float, float, float, float, float, list[float], dict[Any, int]]:
-
-    # Предполагается, что клиент Firestore инициализируется при импорте модуля
-    db = utils.init_firebase_client()
-    order_collection_ref = db.collection("order")
-    payment_collection_ref = db.collection("pay_order")
-
-    today = datetime.utcnow()
-    yesterday = today - timedelta(days=1)
-    last_week = today - timedelta(weeks=1)
-    last_month = today - timedelta(days=30)
-
-    order_counts = {
-        "last_day": 0,
-        "last_week": 0,
-        "last_month": 0,
-        "all_time": 0,
-    }
-
-    earnings = {
-        "last_day": 0.0,
-        "last_week": 0.0,
-        "last_month": 0.0,
-        "all_time": 0.0,
-    }
-    commission_earnings = {
-        "last_day": 0.0,
-        "last_week": 0.0,
-        "last_month": 0.0,
-        "all_time": 0.0,
-    }
-
-    # Monthly earnings initialization
-    monthly_earnings = [0.0] * 12
-
-    # Status counts initialization
-    status_counts = {}
-
-    for doc in order_collection_ref.stream():
-        order_data = doc.to_dict()
-        time: DatetimeWithNanoseconds = order_data.get('dateTime_created')
-        order_created = datetime.fromtimestamp(time.timestamp())
-        order_status = order_data.get('status')
-        add_to_currentPrice = order_status == 'completed'
-        json = firebase_order_to_json(order_data, is_dict_already=True)
-
-        if json is None:
-            continue
-
-        if user_id and json.get('user_customer', {}) != user_id:
-            continue
-        if driver_id and json.get('selected_driver', {}) != driver_id:
-            continue
-        if start_date and json.get('dateTime_created') is not None:
-            try:
-                date_time_create = datetime.fromtimestamp(json['dateTime_created'])
-            except:
-                date_time_create = datetime.fromisoformat(json['dateTime_created'])
-            if date_time_create.timestamp() < start_date.timestamp():
-                continue
-        if end_date and json.get('dateTime_created') is not None:
-            try:
-                date_time_create = datetime.fromtimestamp(json['dateTime_created'])
-            except:
-                date_time_create = datetime.fromisoformat(json['dateTime_created'])
-
-            if date_time_create.timestamp() > end_date.timestamp():
-                continue
-        if city and json.get('pointA') and json.get('pointA').get('city').lower() != city.lower():
-            continue
-
-        # Increment counts
-        order_counts["all_time"] += 1
-        currentPrice = order_data.get('currentPrice', 0.0)
-        commission_percent = order_data.get('commissionPercent') or 17.0
-        currentCommission = (currentPrice / 100) * commission_percent
-
-        # Count status occurrences
-        if order_status in status_counts:
-            status_counts[order_status] += 1
-        else:
-            status_counts[order_status] = 1
-
-        print(currentCommission)
-        if add_to_currentPrice:
-            earnings['all_time'] += currentPrice
-            commission_earnings["all_time"] += currentCommission
-
-            # Add to monthly earnings
-            monthly_earnings[order_created.month - 1] += currentPrice
-        if order_created >= yesterday:
-            order_counts["last_day"] += 1
-            if add_to_currentPrice:
-                earnings["last_day"] += currentPrice
-                commission_earnings["last_day"] += currentCommission
-        if order_created >= last_week:
-            order_counts["last_week"] += 1
-            if add_to_currentPrice:
-                earnings["last_week"] += currentPrice
-                commission_earnings["last_week"] += currentCommission
-
-        if order_created >= last_month:
-            order_counts["last_month"] += 1
-            if add_to_currentPrice:
-                earnings["last_month"] += currentPrice
-                commission_earnings["last_month"] += currentCommission
-
-
-
-
-    return (
-        order_counts["last_day"],
-        order_counts["last_week"],
-        order_counts["last_month"],
-        order_counts["all_time"],
-        earnings["last_day"] if earnings["last_day"] != 0 else 0.0,
-        earnings["last_week"] if earnings["last_week"] != 0 else 0.0,
-        earnings["last_month"] if earnings["last_month"] != 0 else 0.0,
-        earnings["all_time"],
-        commission_earnings["last_day"],
-        commission_earnings["last_week"],
-        commission_earnings["last_month"],
-        commission_earnings["all_time"],
-        monthly_earnings,  # Добавлено: Заработок по месяцам
-        status_counts,  # Добавлено: Список заказов по статусу
-    )
+    return get_order_statistics_result(
+        user_id, driver_id, start_date, end_date, city
+    )["stats"]
 
 
 from datetime import datetime, timedelta
@@ -749,39 +808,54 @@ def edit_order(order_id: str, budget, distance, currentPrice, status) -> Optiona
 
 
 def check_order_status():
+    """Таймеры: авто-cancel устаревших newOrder и auto-hide completed.
+
+    Нельзя убрать опрос полностью — это не реакция на нашу запись, а дедлайны
+    по времени. Читаем только status-фильтр + limit, пауза 60с, один worker (lock в app.py).
+    """
+    poll_sec = 60
+    batch_limit = 50
     while True:
-        logger.info(f"START check_orders_status CHECK")
+        logger.info("START check_orders_status CHECK")
         try:
             utc_tz = timezone(timedelta(hours=0))
             now = datetime.now(utc_tz)
             model = settings.get_model()
-
-            orders = fetch_firebase_orders(status='newOrder')
-
-            for _order in orders['orders']:
-
-                order = firebase_order_to_json(_order, is_dict_already=True)
-                logger.info(f"START check_orders_status CHECK {order['id']}")
-
-                created_val = order.get('dateTime_created')
-                v = datetime.fromisoformat(created_val).replace(tzinfo=utc_tz)
-                elapsed = now - v
-
-                if elapsed >= timedelta(minutes=model.minutes_for_delete_order):
-                    edit_order(order['id'],None,None,None, status='cancelled')
-
-                #замена статус заказа на cancelled если заказ существует более чем 15 минут (поле created_at и поле status)
-                print()
-
-            # Авто-скрытие завершённых заказов: через deadline_minutes после date_upd
-            # completed -> hidden + status_do_hidden=completed, чтобы клиент
-            # отрисовал архивную карточку "Повтор заказа" (Flutter ловит именно
-            # эту пару полей).
             db = firestore.client()
-            completed_snaps = db.collection("order").where('status', '==', 'completed').stream()
+
+            new_snaps = list(
+                db.collection("order")
+                .where("status", "==", "newOrder")
+                .limit(batch_limit)
+                .stream()
+            )
+            for snap in new_snaps:
+                order = firebase_order_to_json(
+                    {**(snap.to_dict() or {}), "id": snap.id}, is_dict_already=True
+                )
+                if not order:
+                    continue
+                logger.info(f"START check_orders_status CHECK {order['id']}")
+                created_val = order.get("dateTime_created")
+                if not created_val:
+                    continue
+                try:
+                    v = datetime.fromisoformat(created_val).replace(tzinfo=utc_tz)
+                except Exception:
+                    continue
+                if now - v >= timedelta(minutes=model.minutes_for_delete_order):
+                    edit_order(order["id"], None, None, None, status="cancelled")
+
+            # Авто-скрытие completed -> hidden (карточка «Повтор заказа» на клиенте).
+            completed_snaps = list(
+                db.collection("order")
+                .where("status", "==", "completed")
+                .limit(batch_limit)
+                .stream()
+            )
             for snap in completed_snaps:
                 data = snap.to_dict() or {}
-                date_upd = _parse_firestore_dt(data.get('date_upd'))
+                date_upd = _parse_firestore_dt(data.get("date_upd"))
                 if date_upd is None:
                     continue
                 if date_upd.tzinfo is None:
@@ -790,16 +864,16 @@ def check_order_status():
                     logger.info(f"AUTO-HIDE completed order {snap.id}")
                     try:
                         snap.reference.update({
-                            'status': 'hidden',
-                            'status_do_hidden': 'completed',
+                            "status": "hidden",
+                            "status_do_hidden": "completed",
                         })
                     except Exception as e:
                         logger.error(
                             f"[check_order_status.auto_hide] failed {snap.id}: {e}"
                         )
         except Exception as e:
-            print(e)
-            raise e
+            logger.error(f"[check_order_status] loop error: {e}")
+        time.sleep(poll_sec)
 
 
 # --------------------------------------------------------------------------
@@ -820,7 +894,7 @@ def notify_busy_drivers_about_new_orders():
 
     db = firestore.client()
     api_key = getattr(config.Production, 'GOOGLE_API_KEY', '') or ''
-    poll_interval_sec = 5
+    poll_interval_sec = 30
 
     while True:
         try:
@@ -828,26 +902,29 @@ def notify_busy_drivers_about_new_orders():
             cooldown_sec = model.extra_order_notify_cooldown_sec
 
             tick_start = datetime.now(timezone.utc)
-            new_orders_raw = fetch_firebase_orders(status='newOrder', per_page=50, page=1)
-            new_orders_list = new_orders_raw.get('orders', [])
+            # Не fetch_firebase_orders: он раньше стримил всю коллекцию.
+            new_snaps = list(
+                db.collection("order")
+                .where("status", "==", "newOrder")
+                .limit(50)
+                .stream()
+            )
             logger.info(
-                f"[extra_notify.loop] tick new_orders_count={len(new_orders_list)}"
+                f"[extra_notify.loop] tick new_orders_count={len(new_snaps)}"
             )
 
-            for order in new_orders_list:
-                order_id = order.get('id')
-                if not order_id:
+            for snap in new_snaps:
+                order_id = snap.id
+                raw = snap.to_dict() or {}
+                if (raw.get("status") or "").lower() != "neworder":
+                    continue
+                order = firebase_order_to_json(
+                    {**raw, "id": order_id}, is_dict_already=True
+                )
+                if not order:
                     continue
 
-                # Берём «сырой» snapshot чтобы прочитать extra_notified_at
-                doc_ref = db.collection("order").document(order_id)
-                snap = doc_ref.get()
-                if not snap.exists:
-                    continue
-                raw = snap.to_dict() or {}
-                if (raw.get('status') or '').lower() != 'neworder':
-                    # переключился пока мы тикали
-                    continue
+                doc_ref = snap.reference
 
                 # Проверяем cooldown — повторная рассылка не чаще раза в N секунд.
                 last_notified = raw.get('extra_notified_at')

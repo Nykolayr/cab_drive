@@ -424,32 +424,31 @@ def get_firebase_users(query: Optional[str] = None,
             except Exception:
                 total_users = None
 
-            # Fallback to streaming count if aggregate not available
+            # Fallback: НЕ стримим всю коллекцию ради count (сжигает quota).
             if total_users is None:
-                try:
-                    total_users = sum(1 for _ in query_ref.select([]).stream())
-                except Exception:
-                    total_users = sum(1 for _ in query_ref.stream())
+                total_users = -1
 
-            # Server-side ordering for deterministic results (by email asc)
-            # Если требуется другой порядок — поменяйте поле/направление
+            # Server-side ordering for deterministic results
             if is_all:
-                query_page = query_ref.order_by('created_time', direction='DESCENDING')
+                query_page = query_ref.order_by('created_time', direction='DESCENDING').limit(100)
             else:
                 query_page = query_ref.order_by('created_time', direction='DESCENDING').offset(offset).limit(per_page)
 
             docs = query_page.stream()
             data: List[Dict[str, Any]] = []
             for doc in docs:
-                # firebase_user_to_json ожидает DocumentSnapshot или dict?
-                # В вашем исходном коде использовалась firebase_user_to_json(doc)
                 value = firebase_user_to_json(doc)
-                # Убедимся, что id присутствует
                 if isinstance(value, dict):
                     value.setdefault('id', doc.id)
                 data.append(value)
 
+            if total_users < 0:
+                total_users = offset + len(data)
+                if len(data) >= per_page:
+                    total_users += 1
             total_pages = math.ceil(total_users / per_page) if per_page > 0 else 1
+            if total_pages < page:
+                total_pages = page
 
             return {
                 "users": data,
@@ -458,17 +457,14 @@ def get_firebase_users(query: Optional[str] = None,
                 "current_page": page,
             }
 
-        # Если есть q_lower (substring search) — нужно фильтровать на стороне приложения.
-        # В этом случае мы сначала собираем все подходящие документы (по server-side where),
-        # фильтруем по email/name/phone, считаем общее количество и затем возвращаем нужную страницу из результата.
-        all_docs = query_ref.stream()
+        # Поиск: не читаем всю коллекцию — потолок документов.
+        all_docs = query_ref.limit(300).stream()
         matched: List[Dict[str, Any]] = []
         for doc in all_docs:
             data = doc.to_dict() or {}
             email = (data.get('email') or '').lower()
             name = (data.get('name') or '').lower()
             phone = (data.get('phone') or '').lower()
-            # Поиск по email, имени или телефону
             if q_lower not in email and q_lower not in name and q_lower not in phone:
                 continue
             value = firebase_user_to_json(doc)

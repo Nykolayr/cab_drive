@@ -14,8 +14,96 @@ import datetime
 import settings
 import payments
 import config
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
+import ttl_cache
 
 app = blueprints.Blueprint('d', __name__, url_prefix='/d')
+
+_EMPTY_STATS = (0, 0, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, [0.0] * 12, {})
+
+
+def _call_timeout(fn, timeout_sec=10, default=None):
+    """Таймаут без join зависшего Firestore-потока (иначе gunicorn worker мёртв до SIGKILL)."""
+    pool = ThreadPoolExecutor(max_workers=1)
+    try:
+        return pool.submit(fn).result(timeout=timeout_sec)
+    except FuturesTimeout:
+        print(f"[dashboard] timeout {timeout_sec}s on {getattr(fn, '__name__', fn)}")
+        return default
+    except Exception as e:
+        print(f"[dashboard] soft-fail {getattr(fn, '__name__', fn)}: {e}")
+        return default
+    finally:
+        pool.shutdown(wait=False, cancel_futures=True)
+
+
+def _safe_order_stats(user_id, driver_id, start_date, finish_date, city, timeout_sec=4):
+    """Возвращает {'stats': tuple|list, 'quota_exhausted': bool}. TTL + Redis на все workers."""
+    key = f"dash:stats_pack:{user_id}:{driver_id}:{start_date}:{finish_date}:{city}"
+    empty_pack = {"stats": _EMPTY_STATS, "quota_exhausted": True}
+    rkey = f"{user_id}|{driver_id}|{start_date}|{finish_date}|{city}"
+
+    try:
+        import cache as redis_cache
+        raw = redis_cache.get_cache("dash_stats", rkey)
+        if raw:
+            packed = json.loads(raw)
+            if isinstance(packed, dict) and "stats" in packed:
+                return packed
+    except Exception:
+        pass
+
+    def _load():
+        result = _call_timeout(
+            lambda: orders.api.get_order_statistics_result(
+                user_id, driver_id, start_date, finish_date, city
+            ),
+            timeout_sec=timeout_sec,
+            default=empty_pack,
+        )
+        if not isinstance(result, dict) or "stats" not in result:
+            return empty_pack
+        return {
+            "stats": result.get("stats") or _EMPTY_STATS,
+            "quota_exhausted": bool(result.get("quota_exhausted")),
+        }
+
+    pack = ttl_cache.get_or_set(key, 180, _load)
+    try:
+        import cache as redis_cache
+        redis_cache.set_cache(
+            "dash_stats",
+            rkey,
+            json.dumps(pack, default=str),
+            minutes=3,
+        )
+    except Exception:
+        pass
+    return pack
+
+
+def _safe_firebase_user_lists(timeout_sec=3):
+    def _load():
+        users_list = _call_timeout(
+            lambda: users.api.get_firebase_users(is_driver=False, is_all=True)['users'],
+            timeout_sec=timeout_sec,
+            default=[],
+        ) or []
+        driver_list = _call_timeout(
+            lambda: users.api.get_firebase_users(is_driver=True, is_all=True)['users'],
+            timeout_sec=timeout_sec,
+            default=[],
+        ) or []
+        return users_list, driver_list
+
+    return ttl_cache.get_or_set('dash:user_filter_lists', 300, _load)
+
+
+def _stats_filter_lists(need_lists: bool):
+    """На статистике списки users/drivers тяжелые — по умолчанию не грузим (быстрый первый экран)."""
+    if not need_lists:
+        return [], []
+    return _safe_firebase_user_lists(timeout_sec=3)
 
 
 @app.route('/')
@@ -47,16 +135,26 @@ def home():
     except:
         finish_date = None
 
-    order_stats = orders.api.get_order_statistics(user_id, driver_id, start_date, finish_date, city)
+    # Sample ≤400 docs / 120 дней + TTL (см. get_order_statistics_result).
+    stats_pack = _safe_order_stats(user_id, driver_id, start_date, finish_date, city, timeout_sec=4)
+    order_stats = stats_pack["stats"]
+    firestore_quota_exhausted = stats_pack.get("quota_exhausted", False)
+    need_lists = bool(user_id or driver_id or request.values.get('with_filters'))
+    users_list, driver_list = _stats_filter_lists(need_lists)
 
-    users_list = users.api.get_firebase_users(is_driver=False, is_all=True)['users']
-    driver_list = users.api.get_firebase_users(is_driver=True, is_all=True)['users']
-
-    return render_template('dashboard/statistics.html', user=user, order_stats=order_stats, client_id=user_id,
-                           driver_id=driver_id,
-                           start_date=start_date,
-                           finish_date=finish_date,
-                           users_list=users_list, driver_list=driver_list, city=city)
+    return render_template(
+        'dashboard/statistics.html',
+        user=user,
+        order_stats=order_stats,
+        firestore_quota_exhausted=firestore_quota_exhausted,
+        client_id=user_id,
+        driver_id=driver_id,
+        start_date=start_date,
+        finish_date=finish_date,
+        users_list=users_list,
+        driver_list=driver_list,
+        city=city,
+    )
 
 
 @app.route('/payments')
@@ -110,11 +208,28 @@ def users_page():
     if filter_type is None:
         filter_type = 'all'
 
-    users_list = users.api.get_firebase_users(query=search_query if search_query else None, is_driver=is_driver, on_verif_now=on_verif_now, page=page)
+    users_list = _call_timeout(
+        lambda: ttl_cache.get_or_set(
+            f"dash:users:{filter_type}:{page}:{search_query}",
+            60,
+            lambda: users.api.get_firebase_users(
+                query=search_query if search_query else None,
+                is_driver=is_driver,
+                on_verif_now=on_verif_now,
+                page=page,
+            ),
+        ),
+        timeout_sec=8,
+        default={'users': [], 'current_page': 1, 'total_pages': 1, 'total_users': 0},
+    )
 
     super_admins = []
     if utils.is_super_admin(user):
-        super_admins = users.api.get_dashboard_super_admins()
+        super_admins = _call_timeout(
+            users.api.get_dashboard_super_admins,
+            timeout_sec=5,
+            default=[],
+        ) or []
 
     return render_template(
         'dashboard/users.html',
@@ -123,9 +238,9 @@ def users_page():
         f_phone=utils.format_phone,
         filter=filter_type,
         search=search_query,
-        current_page=users_list['current_page'],
-        total_pages=users_list['total_pages'],
-        total_user=users_list['total_pages'],
+        current_page=users_list.get('current_page', 1),
+        total_pages=users_list.get('total_pages', 1),
+        total_user=users_list.get('total_pages', 1),
         super_admins=super_admins,
         is_super_admin=utils.is_super_admin(user),
     )
@@ -138,18 +253,36 @@ def user_page():
         return redirect('/d/auth')
 
     client_id = request.values.get('id', "", str)
-    client = users.api.get_firebase_user_by_id(client_id)
+    client = _call_timeout(
+        lambda: users.api.get_firebase_user_by_id(client_id),
+        timeout_sec=10,
+        default=None,
+    )
+    if not client:
+        return redirect('/d/users')
     balance = 0
     verification_data=None
 
-    if client['is_driver']:
-        balance = users.api.calculate_user_balance(client['id'], None, None)
-        verification_data = users.api.get_driver_verification_data(client['id'])
+    if client.get('is_driver'):
+        balance = _call_timeout(
+            lambda: users.api.calculate_user_balance(client['id'], None, None),
+            timeout_sec=10,
+            default=0,
+        )
+        verification_data = _call_timeout(
+            lambda: users.api.get_driver_verification_data(client['id']),
+            timeout_sec=10,
+            default=None,
+        )
 
     from datetime import datetime
 
     current_year_month = datetime.now().strftime('%Y-%m')
-    statistics = users.api.get_monthly_user_statistics(client['id'], current_year_month)
+    statistics = _call_timeout(
+        lambda: users.api.get_monthly_user_statistics(client['id'], current_year_month),
+        timeout_sec=10,
+        default={},
+    )
     return render_template('dashboard/user.html', user=user, client=client, f_phone=utils.format_phone, server_path=utils.get_server_ip(), balance=balance, statistics=statistics, verification_data=verification_data)
 
 
@@ -222,12 +355,24 @@ def chats_page():
     sort = request.values.get('sort')
     if not page:
         page = 1
-    chats_list = chats.api.fetch_firebase_chats(page, 10, sort_by=sort)
+    chats_list = _call_timeout(
+        lambda: ttl_cache.get_or_set(
+            f"dash:chats:{page}:{sort}",
+            60,
+            lambda: chats.api.fetch_firebase_chats(page, 10, sort_by=sort),
+        ),
+        timeout_sec=8,
+        default={'chats': [], 'current_page': 1, 'total_pages': 1},
+    )
 
-
-
-    return render_template('dashboard/chats.html', user=user, chat_list=chats_list['chats'], current_page=chats_list['current_page'], page=chats_list['current_page'], total_pages=chats_list['total_pages'] )
-
+    return render_template(
+        'dashboard/chats.html',
+        user=user,
+        chat_list=chats_list.get('chats', []),
+        current_page=chats_list.get('current_page', 1),
+        page=chats_list.get('current_page', 1),
+        total_pages=chats_list.get('total_pages', 1),
+    )
 
 
 @app.route('/chat')
@@ -282,30 +427,38 @@ def trips_page():
     except:
         finish_date = None
 
-    users_list = users.api.get_firebase_users(is_all=True, is_driver=False)['users']
-    driver_list = users.api.get_firebase_users(is_driver=True, is_all=True)['users']
+    users_list, driver_list = _safe_firebase_user_lists(timeout_sec=6)
     page = request.values.get('page', 1, int)
 
-    order_list = orders.api.fetch_firebase_orders(
-        client_id=user_id,
-        driver_id=driver_id,
-        start_date=start_date,
-        finish_date=finish_date,
-        status=status_id,
-        page=page,
-        price_from=price_from,
-        price_to=price_to,
-        distance_from=distance_from,
-        distance_to=distance_to
+    order_list = _call_timeout(
+        lambda: ttl_cache.get_or_set(
+            f"dash:trips:{status_id}:{user_id}:{driver_id}:{start_date}:{finish_date}:{page}:{price_from}:{price_to}:{distance_from}:{distance_to}",
+            45,
+            lambda: orders.api.fetch_firebase_orders(
+                client_id=user_id,
+                driver_id=driver_id,
+                start_date=start_date,
+                finish_date=finish_date,
+                status=status_id,
+                page=page,
+                price_from=price_from,
+                price_to=price_to,
+                distance_from=distance_from,
+                distance_to=distance_to,
+            ),
+        ),
+        timeout_sec=8,
+        default={'orders': [], 'current_page': 1, 'total_pages': 1, 'total_orders': 0},
     )
 
-
+    users_list = users_list or []
+    driver_list = driver_list or []
     users_list.sort(key=lambda _user: _user['id'])
 
     return render_template('dashboard/orders.html', user=user, status_id=status_id,
                            is_finished=False, user_id=user_id,
                            start_date=start_date, finish_date=finish_date,
-                           users_list=users_list, driver_list=driver_list, order_list=order_list['orders'],total_pages=order_list['total_pages'], total_orders=order_list['total_orders'], current_page=order_list['current_page'] )
+                           users_list=users_list, driver_list=driver_list, order_list=order_list.get('orders', []),total_pages=order_list.get('total_pages', 1), total_orders=order_list.get('total_orders', 0), current_page=order_list.get('current_page', 1) )
 
 
 @app.route('/trip')
@@ -385,23 +538,34 @@ def operator_page():
 
     trip = None
     if trip_id > 0:
-        trip = orders.api.get_order_by_id(trip_id)
+        trip = _call_timeout(
+            lambda: orders.api.get_order_by_id(trip_id),
+            timeout_sec=10,
+            default=None,
+        )
 
-
-    order_list = orders.api.fetch_firebase_orders(
-        client_id=None,
-        driver_id=None,
-        start_date=None,
-        finish_date=None,
-        status=None,
-        page=page
+    order_list = _call_timeout(
+        lambda: orders.api.fetch_firebase_orders(
+            client_id=None,
+            driver_id=None,
+            start_date=None,
+            finish_date=None,
+            status=None,
+            page=page,
+        ),
+        timeout_sec=10,
+        default={'orders': [], 'current_page': 1, 'total_pages': 1, 'total_orders': 0},
     )
 
-
-
-
-    return render_template('dashboard/operator.html', user=user, trip=trip,order_list=order_list['orders'], total_pages=order_list['total_pages'], total_orders=order_list['total_orders'], page=order_list['current_page'])
-
+    return render_template(
+        'dashboard/operator.html',
+        user=user,
+        trip=trip,
+        order_list=order_list.get('orders', []),
+        total_pages=order_list.get('total_pages', 1),
+        total_orders=order_list.get('total_orders', 0),
+        page=order_list.get('current_page', page),
+    )
 
 @app.route('/auth', methods=['GET', 'POST'])
 def auth_api():
@@ -459,16 +623,26 @@ def statistics_page():
     except:
         finish_date = None
 
-    order_stats = orders.api.get_order_statistics(user_id, driver_id,  start_date, finish_date, city)
+    # Sample ≤400 docs / 120 дней + TTL (см. get_order_statistics_result).
+    stats_pack = _safe_order_stats(user_id, driver_id, start_date, finish_date, city, timeout_sec=4)
+    order_stats = stats_pack["stats"]
+    firestore_quota_exhausted = stats_pack.get("quota_exhausted", False)
+    need_lists = bool(user_id or driver_id or request.values.get('with_filters'))
+    users_list, driver_list = _stats_filter_lists(need_lists)
 
-    users_list = users.api.get_firebase_users(is_all=True, is_driver=False)['users']
-    driver_list = users.api.get_firebase_users(is_driver=True, is_all=True,)['users']
-
-    return render_template('dashboard/statistics.html', user=user, order_stats=order_stats,  client_id=user_id,
+    return render_template(
+        'dashboard/statistics.html',
+        user=user,
+        order_stats=order_stats,
+        firestore_quota_exhausted=firestore_quota_exhausted,
+        client_id=user_id,
         driver_id=driver_id,
         start_date=start_date,
         finish_date=finish_date,
-                           users_list=users_list, driver_list=driver_list, city=city)
+        users_list=users_list,
+        driver_list=driver_list,
+        city=city,
+    )
 
 
 @app.route('/order_settings')
