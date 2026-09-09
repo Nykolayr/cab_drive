@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -145,15 +146,22 @@ class _AdminVrfWidgetState extends State<AdminVrfWidget> {
                   Expanded(
                     child: FFButtonWidget(
                       onPressed: () async {
-                        await widget!.doc!.user!.update(createUsersRecordData(
-                          onVerifNow: false,
-                          verifCompl: true,
-                        ));
+                        final verId = widget!.doc?.reference.id;
+                        var ok = false;
+                        if (verId != null && verId.isNotEmpty) {
+                          ok = await AppMeApi.approveVerification(verId);
+                        }
+                        if (!ok) {
+                          await widget!.doc!.user!.update(createUsersRecordData(
+                            onVerifNow: false,
+                            verifCompl: true,
+                          ));
 
-                        await widget!.doc!.reference
-                            .update(createRequestVereficationRecordData(
-                          status: StatusVerif.Completed,
-                        ));
+                          await widget!.doc!.reference
+                              .update(createRequestVereficationRecordData(
+                            status: StatusVerif.Completed,
+                          ));
+                        }
                       },
                       text: 'Одобрить',
                       options: FFButtonOptions(

@@ -1,5 +1,11 @@
+import 'dart:async';
+
 import 'package:aligned_dialog/aligned_dialog.dart';
+import 'package:cab_drive/backend/api/app_me_api.dart';
+import 'package:cab_drive/backend/api/chat_open.dart';
 import 'package:cab_drive/backend/api/file_storage_service.dart';
+import 'package:cab_drive/backend/api/order_record_mapper.dart';
+import 'package:cab_drive/backend/api/users_record_api.dart';
 import 'package:cab_drive/driver/order_page_driver/widgets/images_grid_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
@@ -52,45 +58,160 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
   late OrderPageCustomerModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  Timer? _poll;
+  OrderRecord? _order;
+  List<ResponsesRecord>? _bids;
+  bool _loading = true;
+  bool _useFsFallback = false;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => OrderPageCustomerModel());
+    unawaited(_reload());
+    _poll = Timer.periodic(const Duration(seconds: 5), (_) => _reload());
+  }
+
+  Future<void> _reload() async {
+    final id = widget.order?.id;
+    if (id == null || id.isEmpty) return;
+    try {
+      final map = await AppMeApi.getOrder(id);
+      final bids = await AppMeApi.listBids(id);
+      if (!mounted) return;
+      if (map == null) {
+        setState(() {
+          _useFsFallback = false;
+          _loading = false;
+        });
+        return;
+      }
+      setState(() {
+        _order = OrderRecordMapper.fromApi(map, id);
+        _bids = bids
+            .map((b) => OrderRecordMapper.bidFromApi(b, id))
+            .toList();
+        _useFsFallback = false;
+        _loading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _useFsFallback = false;
+        _loading = false;
+      });
+    }
   }
 
   @override
   void dispose() {
+    _poll?.cancel();
     _model.dispose();
 
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<OrderRecord>(
-      stream: OrderRecord.getDocument(widget!.order!),
-      builder: (context, snapshot) {
-        // Customize what your widget looks like when it's loading.
-        if (!snapshot.hasData) {
-          return Scaffold(
-            backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-            body: Center(
-              child: SizedBox(
-                width: 50.0,
-                height: 50.0,
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    FlutterFlowTheme.of(context).primary,
+  Widget _loadingScaffold() {
+    return Scaffold(
+      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+      body: Center(
+        child: SizedBox(
+          width: 50.0,
+          height: 50.0,
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(
+              FlutterFlowTheme.of(context).primary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBidsList(
+    OrderRecord orderPageCustomerOrderRecord,
+    List<ResponsesRecord> listViewResponsesRecordList,
+  ) {
+    return ListView.separated(
+      padding: EdgeInsets.zero,
+      primary: false,
+      shrinkWrap: true,
+      scrollDirection: Axis.vertical,
+      itemCount: listViewResponsesRecordList.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 16.0),
+      itemBuilder: (context, listViewIndex) {
+        final listViewResponsesRecord =
+            listViewResponsesRecordList[listViewIndex];
+        Future<void> openDetail() async {
+          await showModalBottomSheet(
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            context: context,
+            builder: (context) {
+              return WebViewAware(
+                child: GestureDetector(
+                  onTap: () {
+                    FocusScope.of(context).unfocus();
+                    FocusManager.instance.primaryFocus?.unfocus();
+                  },
+                  child: Padding(
+                    padding: MediaQuery.viewInsetsOf(context),
+                    child: ResponsedDetailWidget(
+                      order: orderPageCustomerOrderRecord,
+                      respDT: listViewResponsesRecord,
+                    ),
                   ),
                 ),
-              ),
-            ),
-          );
+              );
+            },
+          ).then((value) => safeSetState(() {}));
         }
 
-        final orderPageCustomerOrderRecord = snapshot.data!;
+        return InkWell(
+          splashColor: Colors.transparent,
+          focusColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          onTap: openDetail,
+          child: ResponseWidget(
+            key: Key(
+                'Key18r_${listViewIndex}_of_${listViewResponsesRecordList.length}'),
+            responseDT: listViewResponsesRecord,
+            order: orderPageCustomerOrderRecord,
+            onAccept: openDetail,
+            onReject: () async {
+              final orderId = widget.order?.id ?? '';
+              final bidId = listViewResponsesRecord.reference.id;
+              final ok = await AppMeApi.deleteBid(orderId, bidId);
+              if (!ok) {
+                // ignore: avoid_print
+                print('[order_page] deleteBid failed bid=$bidId');
+              }
+              await _reload();
+              safeSetState(() {});
+            },
+          ),
+        );
+      },
+    );
+  }
 
+  @override
+  Widget build(BuildContext context) {
+    if (_order != null) {
+      return _buildLoaded(_order!);
+    }
+    if (_loading) {
+      return _loadingScaffold();
+    }
+    return Scaffold(
+      key: scaffoldKey,
+      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+      body: const Center(child: Text('Не удалось загрузить заказ')),
+    );
+  }
+
+  Widget _buildLoaded(OrderRecord orderPageCustomerOrderRecord) {
         return GestureDetector(
           onTap: () {
             FocusScope.of(context).unfocus();
@@ -180,15 +301,15 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                     .status ==
                                                 StatusOrder.spec_set) {
                                               return 'Ожидает доставки';
-                                            }else if (orderPageCustomerOrderRecord
-                                                .status ==
+                                            } else if (orderPageCustomerOrderRecord
+                                                    .status ==
                                                 StatusOrder.place_pickup) {
                                               return 'Водитель ожидает на месте подачи';
                                             } else if (orderPageCustomerOrderRecord
-                                                .status ==
+                                                    .status ==
                                                 StatusOrder.place_delivery) {
                                               return 'Водитель ожидает на месте выгрузки';
-                                            }else if (orderPageCustomerOrderRecord
+                                            } else if (orderPageCustomerOrderRecord
                                                     .status ==
                                                 StatusOrder.at_work) {
                                               return 'В работе';
@@ -364,11 +485,9 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                   } else if ((orderPageCustomerOrderRecord
                                               .status ==
                                           StatusOrder.spec_set) ||
-                                      (orderPageCustomerOrderRecord
-                                          .status ==
+                                      (orderPageCustomerOrderRecord.status ==
                                           StatusOrder.place_pickup) ||
-                                      (orderPageCustomerOrderRecord
-                                          .status ==
+                                      (orderPageCustomerOrderRecord.status ==
                                           StatusOrder.place_delivery) ||
                                       (orderPageCustomerOrderRecord.status ==
                                           StatusOrder.at_work) ||
@@ -394,15 +513,16 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                   return 'Заказ выполнит';
                                                 }
                                                 if (orderPageCustomerOrderRecord
-                                                    .status ==
+                                                        .status ==
                                                     StatusOrder.place_pickup) {
                                                   return 'Ожидание на месте подачи';
                                                 }
                                                 if (orderPageCustomerOrderRecord
-                                                    .status ==
-                                                    StatusOrder.place_delivery) {
+                                                        .status ==
+                                                    StatusOrder
+                                                        .place_delivery) {
                                                   return 'Ожидание на месте выгрузки';
-                                                }else if (orderPageCustomerOrderRecord
+                                                } else if (orderPageCustomerOrderRecord
                                                         .status ==
                                                     StatusOrder.completed) {
                                                   return 'Заказ выполнил';
@@ -426,36 +546,58 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                       ),
                                             ),
                                           ),
-                                          if(orderPageCustomerOrderRecord
-                                              .status ==
-                                              StatusOrder.place_pickup || orderPageCustomerOrderRecord
-                                              .status ==
-                                              StatusOrder.place_delivery)
+                                          if (orderPageCustomerOrderRecord
+                                                      .status ==
+                                                  StatusOrder.place_pickup ||
+                                              orderPageCustomerOrderRecord
+                                                      .status ==
+                                                  StatusOrder.place_delivery)
                                             Padding(
-                                                padding: EdgeInsets.only(bottom: 8.0, left: 10),
+                                                padding: EdgeInsets.only(
+                                                    bottom: 8.0, left: 10),
                                                 child: CountdownOrExpired(
-                                                  dateUpd: orderPageCustomerOrderRecord.dateUpd,
-                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                    fontFamily: 'SF',
-                                                    fontSize: 16.0,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: FlutterFlowTheme.of(context).error,
-                                                  ),
-                                                  expiredStyle: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                    fontFamily: 'SF',
-                                                    fontSize: 16.0,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: FlutterFlowTheme.of(context).error,
-                                                  ),
-                                                  descriptionTextStyle: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                    fontFamily: 'SF',
-                                                    fontSize: 14.0,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ))
-                                            ,
+                                                  dateUpd:
+                                                      orderPageCustomerOrderRecord
+                                                          .dateUpd,
+                                                  style: FlutterFlowTheme.of(
+                                                          context)
+                                                      .bodyMedium
+                                                      .override(
+                                                        fontFamily: 'SF',
+                                                        fontSize: 16.0,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .error,
+                                                      ),
+                                                  expiredStyle: FlutterFlowTheme
+                                                          .of(context)
+                                                      .bodyMedium
+                                                      .override(
+                                                        fontFamily: 'SF',
+                                                        fontSize: 16.0,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .error,
+                                                      ),
+                                                  descriptionTextStyle:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .bodyMedium
+                                                          .override(
+                                                            fontFamily: 'SF',
+                                                            fontSize: 14.0,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                          ),
+                                                )),
                                           FutureBuilder<UsersRecord>(
-                                            future: UsersRecord.getDocumentOnce(
+                                            future: UsersRecordApi.getOnce(
                                                 orderPageCustomerOrderRecord
                                                     .selectedDriver!),
                                             builder: (context, snapshot) {
@@ -524,8 +666,10 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                           12.0),
                                                               child:
                                                                   Image.network(
-                                                                FileStorageService.getImageUrl(containerUsersRecord
-                                                                    .photoUrl),
+                                                                FileStorageService
+                                                                    .getImageUrl(
+                                                                        containerUsersRecord
+                                                                            .photoUrl),
                                                                 width: 60.0,
                                                                 height: 80.0,
                                                                 fit: BoxFit
@@ -784,137 +928,17 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                           child: FFButtonWidget(
                                                             onPressed:
                                                                 () async {
-                                                              var _shouldSetState =
-                                                                  false;
-                                                              _model.mychats =
-                                                                  await queryChatsRecordOnce(
-                                                                queryBuilder:
-                                                                    (chatsRecord) =>
-                                                                        chatsRecord
-                                                                            .where(
-                                                                  'users',
-                                                                  arrayContains:
-                                                                      currentUserReference,
-                                                                ),
+                                                              final peer =
+                                                                  containerUsersRecord
+                                                                      .reference
+                                                                      .id;
+                                                              final name =
+                                                                  '${containerUsersRecord.displayName} ${containerUsersRecord.surname}';
+                                                              await openPeerChat(
+                                                                context,
+                                                                peerUid: peer,
+                                                                name: name,
                                                               );
-                                                              _shouldSetState =
-                                                                  true;
-                                                              if (_model
-                                                                  .mychats!
-                                                                  .where((e) => e
-                                                                      .users
-                                                                      .contains(
-                                                                          containerUsersRecord
-                                                                              .reference))
-                                                                  .toList()
-                                                                  .isNotEmpty) {
-                                                                context
-                                                                    .pushNamed(
-                                                                  ChatWidget
-                                                                      .routeName,
-                                                                  queryParameters:
-                                                                      {
-                                                                    'chat':
-                                                                        serializeParam(
-                                                                      _model
-                                                                          .mychats
-                                                                          ?.where((e) => e
-                                                                              .users
-                                                                              .contains(containerUsersRecord.reference))
-                                                                          .toList()
-                                                                          ?.firstOrNull
-                                                                          ?.reference,
-                                                                      ParamType
-                                                                          .DocumentReference,
-                                                                    ),
-                                                                    'name':
-                                                                        serializeParam(
-                                                                      '${containerUsersRecord.displayName} ${containerUsersRecord.surname}',
-                                                                      ParamType
-                                                                          .String,
-                                                                    ),
-                                                                  }.withoutNulls,
-                                                                );
-
-                                                                if (_shouldSetState)
-                                                                  safeSetState(
-                                                                      () {});
-                                                                return;
-                                                              } else {
-                                                                var chatsRecordReference =
-                                                                    ChatsRecord
-                                                                        .collection
-                                                                        .doc();
-                                                                await chatsRecordReference
-                                                                    .set({
-                                                                  ...createChatsRecordData(
-                                                                    dateCreated:
-                                                                        getCurrentTimestamp,
-                                                                    support:
-                                                                        false,
-                                                                  ),
-                                                                  ...mapToFirestore(
-                                                                    {
-                                                                      'users': functions.comnineUsers(
-                                                                          containerUsersRecord
-                                                                              .reference,
-                                                                          currentUserReference!),
-                                                                    },
-                                                                  ),
-                                                                });
-                                                                _model.newchat =
-                                                                    ChatsRecord
-                                                                        .getDocumentFromData({
-                                                                  ...createChatsRecordData(
-                                                                    dateCreated:
-                                                                        getCurrentTimestamp,
-                                                                    support:
-                                                                        false,
-                                                                  ),
-                                                                  ...mapToFirestore(
-                                                                    {
-                                                                      'users': functions.comnineUsers(
-                                                                          containerUsersRecord
-                                                                              .reference,
-                                                                          currentUserReference!),
-                                                                    },
-                                                                  ),
-                                                                }, chatsRecordReference);
-                                                                _shouldSetState =
-                                                                    true;
-
-                                                                context
-                                                                    .pushNamed(
-                                                                  ChatWidget
-                                                                      .routeName,
-                                                                  queryParameters:
-                                                                      {
-                                                                    'chat':
-                                                                        serializeParam(
-                                                                      _model
-                                                                          .newchat
-                                                                          ?.reference,
-                                                                      ParamType
-                                                                          .DocumentReference,
-                                                                    ),
-                                                                    'name':
-                                                                        serializeParam(
-                                                                      '${containerUsersRecord.displayName} ${containerUsersRecord.surname}',
-                                                                      ParamType
-                                                                          .String,
-                                                                    ),
-                                                                  }.withoutNulls,
-                                                                );
-
-                                                                if (_shouldSetState)
-                                                                  safeSetState(
-                                                                      () {});
-                                                                return;
-                                                              }
-
-                                                              if (_shouldSetState)
-                                                                safeSetState(
-                                                                    () {});
                                                             },
                                                             text: 'Написать',
                                                             options:
@@ -1025,7 +1049,6 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                               );
                                             },
                                           ),
-
                                           if (!orderPageCustomerOrderRecord
                                               .driverReviewed)
                                             Padding(
@@ -1410,7 +1433,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                             ),
                                           ),
                                           FutureBuilder<UsersRecord>(
-                                            future: UsersRecord.getDocumentOnce(
+                                            future: UsersRecordApi.getOnce(
                                                 orderPageCustomerOrderRecord
                                                     .selectedDriver!),
                                             builder: (context, snapshot) {
@@ -1479,8 +1502,10 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                           12.0),
                                                               child:
                                                                   Image.network(
-                                                                FileStorageService.getImageUrl(containerUsersRecord
-                                                                    .photoUrl),
+                                                                FileStorageService
+                                                                    .getImageUrl(
+                                                                        containerUsersRecord
+                                                                            .photoUrl),
                                                                 width: 60.0,
                                                                 height: 80.0,
                                                                 fit: BoxFit
@@ -1739,137 +1764,17 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                           child: FFButtonWidget(
                                                             onPressed:
                                                                 () async {
-                                                              var _shouldSetState =
-                                                                  false;
-                                                              _model.mychats2 =
-                                                                  await queryChatsRecordOnce(
-                                                                queryBuilder:
-                                                                    (chatsRecord) =>
-                                                                        chatsRecord
-                                                                            .where(
-                                                                  'users',
-                                                                  arrayContains:
-                                                                      currentUserReference,
-                                                                ),
+                                                              final peer =
+                                                                  containerUsersRecord
+                                                                      .reference
+                                                                      .id;
+                                                              final name =
+                                                                  '${containerUsersRecord.displayName} ${containerUsersRecord.surname}';
+                                                              await openPeerChat(
+                                                                context,
+                                                                peerUid: peer,
+                                                                name: name,
                                                               );
-                                                              _shouldSetState =
-                                                                  true;
-                                                              if (_model
-                                                                  .mychats2!
-                                                                  .where((e) => e
-                                                                      .users
-                                                                      .contains(
-                                                                          containerUsersRecord
-                                                                              .reference))
-                                                                  .toList()
-                                                                  .isNotEmpty) {
-                                                                context
-                                                                    .pushNamed(
-                                                                  ChatWidget
-                                                                      .routeName,
-                                                                  queryParameters:
-                                                                      {
-                                                                    'chat':
-                                                                        serializeParam(
-                                                                      _model
-                                                                          .mychats2
-                                                                          ?.where((e) => e
-                                                                              .users
-                                                                              .contains(containerUsersRecord.reference))
-                                                                          .toList()
-                                                                          ?.firstOrNull
-                                                                          ?.reference,
-                                                                      ParamType
-                                                                          .DocumentReference,
-                                                                    ),
-                                                                    'name':
-                                                                        serializeParam(
-                                                                      '${containerUsersRecord.displayName} ${containerUsersRecord.surname}',
-                                                                      ParamType
-                                                                          .String,
-                                                                    ),
-                                                                  }.withoutNulls,
-                                                                );
-
-                                                                if (_shouldSetState)
-                                                                  safeSetState(
-                                                                      () {});
-                                                                return;
-                                                              } else {
-                                                                var chatsRecordReference =
-                                                                    ChatsRecord
-                                                                        .collection
-                                                                        .doc();
-                                                                await chatsRecordReference
-                                                                    .set({
-                                                                  ...createChatsRecordData(
-                                                                    dateCreated:
-                                                                        getCurrentTimestamp,
-                                                                    support:
-                                                                        false,
-                                                                  ),
-                                                                  ...mapToFirestore(
-                                                                    {
-                                                                      'users': functions.comnineUsers(
-                                                                          containerUsersRecord
-                                                                              .reference,
-                                                                          currentUserReference!),
-                                                                    },
-                                                                  ),
-                                                                });
-                                                                _model.newchat2 =
-                                                                    ChatsRecord
-                                                                        .getDocumentFromData({
-                                                                  ...createChatsRecordData(
-                                                                    dateCreated:
-                                                                        getCurrentTimestamp,
-                                                                    support:
-                                                                        false,
-                                                                  ),
-                                                                  ...mapToFirestore(
-                                                                    {
-                                                                      'users': functions.comnineUsers(
-                                                                          containerUsersRecord
-                                                                              .reference,
-                                                                          currentUserReference!),
-                                                                    },
-                                                                  ),
-                                                                }, chatsRecordReference);
-                                                                _shouldSetState =
-                                                                    true;
-
-                                                                context
-                                                                    .pushNamed(
-                                                                  ChatWidget
-                                                                      .routeName,
-                                                                  queryParameters:
-                                                                      {
-                                                                    'chat':
-                                                                        serializeParam(
-                                                                      _model
-                                                                          .newchat2
-                                                                          ?.reference,
-                                                                      ParamType
-                                                                          .DocumentReference,
-                                                                    ),
-                                                                    'name':
-                                                                        serializeParam(
-                                                                      '${containerUsersRecord.displayName} ${containerUsersRecord.surname}',
-                                                                      ParamType
-                                                                          .String,
-                                                                    ),
-                                                                  }.withoutNulls,
-                                                                );
-
-                                                                if (_shouldSetState)
-                                                                  safeSetState(
-                                                                      () {});
-                                                                return;
-                                                              }
-
-                                                              if (_shouldSetState)
-                                                                safeSetState(
-                                                                    () {});
                                                             },
                                                             text: 'Написать',
                                                             options:
@@ -2000,11 +1905,16 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                       orderPageCustomerOrderRecord
                                                           .imageCompl
                                                           .map(
-                                                            (e) =>
-                                                                Padding(
-                                                                  padding: EdgeInsetsGeometry.only(right: 15),
-                                                                  child: GestureDetector(
-                                                                                                                                onTap: () async {
+                                                            (e) => Padding(
+                                                              padding:
+                                                                  EdgeInsetsGeometry
+                                                                      .only(
+                                                                          right:
+                                                                              15),
+                                                              child:
+                                                                  GestureDetector(
+                                                                onTap:
+                                                                    () async {
                                                                   await Navigator
                                                                       .push(
                                                                     context,
@@ -2029,23 +1939,27 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                       ),
                                                                     ),
                                                                   );
-                                                                                                                                },
-                                                                                                                                child: ClipRRect(
+                                                                },
+                                                                child:
+                                                                    ClipRRect(
                                                                   borderRadius:
                                                                       BorderRadius
                                                                           .circular(
                                                                               10.0),
                                                                   child:
                                                                       CachedNetworkImage(
-                                                                    imageUrl: FileStorageService.getImageUrl(e),
+                                                                    imageUrl: FileStorageService
+                                                                        .getImageUrl(
+                                                                            e),
                                                                     width: 150,
-                                                                    height: 150.0,
+                                                                    height:
+                                                                        150.0,
                                                                     fit: BoxFit
                                                                         .cover,
                                                                   ),
-                                                                                                                                ),
-                                                                                                                              ),
                                                                 ),
+                                                              ),
+                                                            ),
                                                           )
                                                           .toList(),
                                                 ),
@@ -2476,120 +2390,9 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
                                                     0.0, 24.0, 0.0, 0.0),
-                                            child: StreamBuilder<
-                                                List<ResponsesRecord>>(
-                                              stream: queryResponsesRecord(
-                                                parent: widget!.order,
-                                              ),
-                                              builder: (context, snapshot) {
-                                                // Customize what your widget looks like when it's loading.
-                                                if (!snapshot.hasData) {
-                                                  return Center(
-                                                    child: SizedBox(
-                                                      width: 50.0,
-                                                      height: 50.0,
-                                                      child:
-                                                          CircularProgressIndicator(
-                                                        valueColor:
-                                                            AlwaysStoppedAnimation<
-                                                                Color>(
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .primary,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  );
-                                                }
-                                                List<ResponsesRecord>
-                                                    listViewResponsesRecordList =
-                                                    snapshot.data!;
-
-                                                return ListView.separated(
-                                                  padding: EdgeInsets.zero,
-                                                  primary: false,
-                                                  shrinkWrap: true,
-                                                  scrollDirection:
-                                                      Axis.vertical,
-                                                  itemCount:
-                                                      listViewResponsesRecordList
-                                                          .length,
-                                                  separatorBuilder: (_, __) =>
-                                                      SizedBox(height: 16.0),
-                                                  itemBuilder:
-                                                      (context, listViewIndex) {
-                                                    final listViewResponsesRecord =
-                                                        listViewResponsesRecordList[
-                                                            listViewIndex];
-                                                    Future<void>
-                                                        openDetail() async {
-                                                      await showModalBottomSheet(
-                                                        isScrollControlled:
-                                                            true,
-                                                        backgroundColor:
-                                                            Colors.transparent,
-                                                        context: context,
-                                                        builder: (context) {
-                                                          return WebViewAware(
-                                                            child:
-                                                                GestureDetector(
-                                                              onTap: () {
-                                                                FocusScope.of(
-                                                                        context)
-                                                                    .unfocus();
-                                                                FocusManager
-                                                                    .instance
-                                                                    .primaryFocus
-                                                                    ?.unfocus();
-                                                              },
-                                                              child: Padding(
-                                                                padding: MediaQuery
-                                                                    .viewInsetsOf(
-                                                                        context),
-                                                                child:
-                                                                    ResponsedDetailWidget(
-                                                                  order:
-                                                                      orderPageCustomerOrderRecord,
-                                                                  respDT:
-                                                                      listViewResponsesRecord,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          );
-                                                        },
-                                                      ).then((value) =>
-                                                          safeSetState(() {}));
-                                                    }
-
-                                                    return InkWell(
-                                                      splashColor:
-                                                          Colors.transparent,
-                                                      focusColor:
-                                                          Colors.transparent,
-                                                      hoverColor:
-                                                          Colors.transparent,
-                                                      highlightColor:
-                                                          Colors.transparent,
-                                                      onTap: openDetail,
-                                                      child: ResponseWidget(
-                                                        key: Key(
-                                                            'Key18r_${listViewIndex}_of_${listViewResponsesRecordList.length}'),
-                                                        responseDT:
-                                                            listViewResponsesRecord,
-                                                        order:
-                                                            orderPageCustomerOrderRecord,
-                                                        onAccept: openDetail,
-                                                        onReject: () async {
-                                                          await listViewResponsesRecord
-                                                              .reference
-                                                              .delete();
-                                                          safeSetState(() {});
-                                                        },
-                                                      ),
-                                                    );
-                                                  },
-                                                );
-                                              },
+                                            child: _buildBidsList(
+                                              orderPageCustomerOrderRecord,
+                                              _bids ?? const [],
                                             ),
                                           ),
                                         ],
@@ -3387,11 +3190,10 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                   mainAxisSize: MainAxisSize.max,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-
                                     TextInfoWidget(
                                       tittle: 'Ожидаемая стоимость',
                                       pole:
-                                      '${orderPageCustomerOrderRecord.budget.toString()} ₽',
+                                          '${orderPageCustomerOrderRecord.budget.toString()} ₽',
                                     ),
                                     if ((orderPageCustomerOrderRecord.status ==
                                             StatusOrder.spec_set) ||
@@ -3404,48 +3206,47 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                       TextInfoWidget(
                                         tittle: 'Итоговая стоимость доставки',
                                         pole:
-                                        '${orderPageCustomerOrderRecord.currentPrice.toString()} ₽',
+                                            '${orderPageCustomerOrderRecord.currentPrice.toString()} ₽',
                                       ),
                                     TextInfoWidget(
                                       tittle: 'Способ оплаты',
                                       pole: orderPageCustomerOrderRecord
-                                          .payMethod ==
-                                          PayMethod.card
+                                                  .payMethod ==
+                                              PayMethod.card
                                           ? 'Оплата картой'
                                           : 'Оплата наличными',
                                     ),
                                     TextInfoWidget(
                                       tittle: 'Подача',
                                       pole: orderPageCustomerOrderRecord
-                                          .supply ==
-                                          1
+                                                  .supply ==
+                                              1
                                           ? 'В ближайшее время'
                                           : valueOrDefault<String>(
-                                        dateTimeFormat(
-                                          "MMMMEEEEd HH:mm",
-                                          orderPageCustomerOrderRecord
-                                              .dateTime,
-                                          locale: FFLocalizations.of(
-                                              context)
-                                              .languageCode,
-                                        ),
-                                        'MMMMEEEEd HH:mm',
-                                      ),
+                                              dateTimeFormat(
+                                                "MMMMEEEEd HH:mm",
+                                                orderPageCustomerOrderRecord
+                                                    .dateTime,
+                                                locale:
+                                                    FFLocalizations.of(context)
+                                                        .languageCode,
+                                              ),
+                                              'MMMMEEEEd HH:mm',
+                                            ),
                                     ),
                                     TextInfoWidget(
                                       tittle: 'Время и дистанция',
                                       pole:
-                                      '${orderPageCustomerOrderRecord.time}, ${orderPageCustomerOrderRecord.distanceStr}',
+                                          '${orderPageCustomerOrderRecord.time}, ${orderPageCustomerOrderRecord.distanceStr}',
                                     ),
                                     TextInfoWidget(
                                       tittle: 'Авто',
                                       pole: () {
-                                        if (orderPageCustomerOrderRecord
-                                            .car ==
+                                        if (orderPageCustomerOrderRecord.car ==
                                             Car.largus) {
                                           return 'Мини S';
                                         } else if (orderPageCustomerOrderRecord
-                                            .car ==
+                                                .car ==
                                             Car.largusTermo) {
                                           return 'Термобудка S/M';
                                         } else {
@@ -3457,11 +3258,11 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                       tittle: 'Грузчики',
                                       pole: () {
                                         if (orderPageCustomerOrderRecord
-                                            .movers ==
+                                                .movers ==
                                             1) {
                                           return 'Помощь водителя (1)';
                                         } else if (orderPageCustomerOrderRecord
-                                            .movers ==
+                                                .movers ==
                                             2) {
                                           return 'Помощь двух грузчиков';
                                         } else {
@@ -3587,7 +3388,9 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                                                   .circular(
                                                                       10.0),
                                                           child: Image.network(
-                                                            FileStorageService.getImageUrl(imagesCargoItem),
+                                                            FileStorageService
+                                                                .getImageUrl(
+                                                                    imagesCargoItem),
                                                             width:
                                                                 double.infinity,
                                                             height: 120.0,
@@ -3631,44 +3434,55 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                           EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 35.0),
                       child: FFButtonWidget(
                         onPressed: () async {
-                          await widget!.order!.update(createOrderRecordData(
-                            status: StatusOrder.completed,
-                          ));
-                          if (orderPageCustomerOrderRecord.payMethod ==
-                              PayMethod.card) {
-                            await orderPageCustomerOrderRecord.selectedDriver!
-                                .update({
-                              ...mapToFirestore(
-                                {
-                                  'balance': FieldValue.increment(
-                                      (orderPageCustomerOrderRecord.currentPrice
-                                                  .toDouble() / 100) *
-
-                                          currentUserDocument!
-                                              .commissionPercent),
-                                },
-                              ),
-                            });
-
-                            createPayOrderRecordData(
-                              isPaid: false,
-                              amountInCop: ((orderPageCustomerOrderRecord
-                                          .currentPrice
-                                          .toDouble() / 100) *
-                                      currentUserDocument!.commissionPercent)
-                                  .toInt(),
-                              user: currentUserReference,
-                              paymentType: PaymentType.finishedMyShift,
-                            );
-                          } else {
-                            final driver = (UsersRecord.fromSnapshot(await orderPageCustomerOrderRecord.selectedDriver!.get()));
-                            await orderPageCustomerOrderRecord.selectedDriver!
-                                .update(createUsersRecordData(
-                              currentCommision: driver.currentCommision + ((orderPageCustomerOrderRecord
-                                      .currentPrice
-                                      .toDouble() / 100) *
-                                  currentUserDocument!.commissionPercent),
+                          final orderId = widget!.order!.id;
+                          final apiOk =
+                              await AppMeApi.completeOrder(orderId) != null;
+                          if (!apiOk) {
+                            await widget!.order!.update(createOrderRecordData(
+                              status: StatusOrder.completed,
                             ));
+                            if (orderPageCustomerOrderRecord.payMethod ==
+                                PayMethod.card) {
+                              await orderPageCustomerOrderRecord.selectedDriver!
+                                  .update({
+                                ...mapToFirestore(
+                                  {
+                                    'balance': FieldValue.increment(
+                                        (orderPageCustomerOrderRecord
+                                                    .currentPrice
+                                                    .toDouble() /
+                                                100) *
+                                            currentUserDocument!
+                                                .commissionPercent),
+                                  },
+                                ),
+                              });
+
+                              createPayOrderRecordData(
+                                isPaid: false,
+                                amountInCop: ((orderPageCustomerOrderRecord
+                                                .currentPrice
+                                                .toDouble() /
+                                            100) *
+                                        currentUserDocument!.commissionPercent)
+                                    .toInt(),
+                                user: currentUserReference,
+                                paymentType: PaymentType.finishedMyShift,
+                              );
+                            } else {
+                              final driver = (UsersRecord.fromSnapshot(
+                                  await orderPageCustomerOrderRecord
+                                      .selectedDriver!
+                                      .get()));
+                              await orderPageCustomerOrderRecord.selectedDriver!
+                                  .update(createUsersRecordData(
+                                currentCommision: driver.currentCommision +
+                                    ((orderPageCustomerOrderRecord.currentPrice
+                                                .toDouble() /
+                                            100) *
+                                        currentUserDocument!.commissionPercent),
+                              ));
+                            }
                           }
                         },
                         text: 'Завершить заказ',
@@ -3697,7 +3511,5 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
             ),
           ),
         );
-      },
-    );
   }
 }

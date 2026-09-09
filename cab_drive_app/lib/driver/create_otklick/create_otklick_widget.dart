@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
 import '/backend/push_notifications/push_notifications_util.dart';
@@ -9,7 +10,6 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -116,28 +116,27 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
       final computedTime =
           DistanceMatrixCall.time(_model.adsd3?.jsonBody ?? '') ?? '';
       final timeValue = etaText.isNotEmpty ? etaText : computedTime;
+      final distanceValue =
+          DistanceMatrixCall.time(_model.adsd3?.jsonBody ?? '') ?? '';
 
-      await ResponsesRecord.createDoc(widget.order!.reference)
-          .set(createResponsesRecordData(
-        userDriver: currentUserReference,
-        viewed: false,
+      final orderId = widget.order!.reference.id;
+      final apiBid = await AppMeApi.createBid(
+        orderId,
         text: _model.commentBTextController?.text ?? '',
         price: _proposedPrice,
-        dateCreated: getCurrentTimestamp,
         time: timeValue,
-        distance:
-            DistanceMatrixCall.time(_model.adsd3?.jsonBody ?? '') ?? '',
-      ));
+        distance: distanceValue,
+      );
 
-      await widget.order!.reference.update({
-        ...mapToFirestore(
-          {
-            'user_who_responced':
-                FieldValue.arrayUnion([currentUserReference]),
-            'count_resp': FieldValue.increment(1),
-          },
-        ),
-      });
+      if (apiBid == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Не удалось отправить отклик')),
+          );
+          setState(() => _isSending = false);
+        }
+        return;
+      }
 
       triggerPushNotification(
         notificationTitle: 'Новый отклик',

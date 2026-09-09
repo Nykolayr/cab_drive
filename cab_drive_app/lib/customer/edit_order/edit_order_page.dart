@@ -8,6 +8,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:webviewx_plus/webviewx_plus.dart';
 
 import '../../auth/firebase_auth/auth_util.dart';
+import '../../backend/api/app_me_api.dart';
+import '../../backend/api/order_record_mapper.dart';
+import '../../backend/api/saved_cards_record_mapper.dart';
 import '../../backend/api_requests/api_calls.dart';
 import '../../backend/schema/order_record.dart';
 import '../../backend/schema/structs/point_struct.dart';
@@ -76,7 +79,17 @@ class _EditOrderPageState extends State<EditOrderPage> {
     _lastPointB = FFAppState().pointB;
     _lastPointC = FFAppState().pointC;
 
-    orderRecord = await OrderRecord.getDocumentOnce(widget.orderReference);
+    final map = await AppMeApi.getOrder(widget.orderReference.id);
+    if (map == null) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Не удалось загрузить заказ')),
+        );
+      }
+      return;
+    }
+    orderRecord = OrderRecordMapper.fromApi(map, widget.orderReference.id);
     setState(() {
       time = orderRecord.time;
       distance = orderRecord.distance;
@@ -186,7 +199,30 @@ class _EditOrderPageState extends State<EditOrderPage> {
         time: time,
         distance: distance);
 
-    await widget.orderReference.update(data);
+    final ok = await AppMeApi.patchOrder(
+      widget.orderReference.id,
+      {
+        'description': _descriptionController.text.trim(),
+        'budget': parsedBudget,
+        'dateTime': dateTime?.toUtc().toIso8601String(),
+        'supply': supply,
+        'movers': movers,
+        'pointA': pointToApiMap(FFAppState().pointA),
+        'pointB': pointToApiMap(FFAppState().pointB),
+        if (FFAppState().pointC.latlng != null)
+          'pointC': pointToApiMap(FFAppState().pointC),
+        'time': time,
+        'distance': distance,
+      },
+    );
+    if (!ok) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Не удалось сохранить заказ')),
+        );
+      }
+      return;
+    }
     Navigator.pop(context);
   }
 

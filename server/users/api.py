@@ -385,6 +385,46 @@ def get_firebase_users(query: Optional[str] = None,
     - Если query (по email) передан — подсчёт total_users и пагинация выполняются после client-side фильтрации.
     """
     try:
+        # Быстрый путь: список из Postgres (в т.ч. filter on_verif_now).
+        if login_is_complete is None:
+            try:
+                import app_pg
+                if app_pg.enabled():
+                    lim = 500 if is_all else max(per_page * 5, 50)
+                    pg_rows = app_pg.list_users(
+                        is_driver=is_driver,
+                        on_verif_now=on_verif_now,
+                        query=query,
+                        limit=lim,
+                    )
+                    if pg_rows or on_verif_now is not None:
+                        total_users = len(pg_rows)
+                        if is_all:
+                            page_rows = pg_rows[:100]
+                            total_pages = 1
+                            current_page = 1
+                        else:
+                            if page is None or page < 1:
+                                page = 1
+                            if per_page is None or per_page <= 0:
+                                per_page = 20
+                            start = (page - 1) * per_page
+                            page_rows = pg_rows[start:start + per_page]
+                            total_pages = max(1, (total_users + per_page - 1) // per_page) if total_users else 1
+                            current_page = page
+                        return {
+                            "users": page_rows,
+                            "total_pages": total_pages,
+                            "total_users": total_users,
+                            "current_page": current_page,
+                            "source": "postgres",
+                        }
+            except Exception:
+                logger.exception("[users.get_firebase_users] app_pg list failed, fallback Firestore")
+
+        if on_verif_now is None and login_is_complete is None:
+            pass  # already tried PG above
+
         client = utils.init_firebase_client()
         users_ref = client.collection('users')
         query_ref = users_ref
@@ -396,7 +436,6 @@ def get_firebase_users(query: Optional[str] = None,
             query_ref = query_ref.where('login_complete', '==', login_is_complete)
         if on_verif_now is not None:
             query_ref = query_ref.where('on_verif_now', '==', on_verif_now)
-
         # Normalize paging params
         if page is None or page < 1:
             page = 1
@@ -503,32 +542,43 @@ def calculate_user_balance(user_id: str, start_date: str | None, end_date: str |
     import datetime
     from google.api_core import exceptions as api_exceptions
 
+    def _parse_iso_date(s: str | None) -> datetime.datetime | None:
+        if not s:
+            return None
+        if isinstance(s, datetime.datetime):
+            return s
+        if isinstance(s, datetime.date):
+            return datetime.datetime.combine(s, datetime.time.min)
+        try:
+            return datetime.datetime.fromisoformat(s)
+        except Exception:
+            try:
+                return datetime.datetime.strptime(s, "%Y-%m-%d")
+            except Exception:
+                return None
+
+    start_dt = _parse_iso_date(start_date)
+    end_dt = _parse_iso_date(end_date)
+
+    # Postgres SoT
+    try:
+        import app_pg
+
+        if app_pg.enabled():
+            total = app_pg.sum_driver_completed_budget(
+                str(user_id), start_dt=start_dt, end_dt=end_dt
+            )
+            if total is not None:
+                return float(total)
+    except Exception:
+        logger.exception("[calculate_user_balance] PG failed, fallback Firestore")
+
     try:
         client = utils.init_firebase_client()
         orders_ref = client.collection('order')
 
         # Get driver representation (in original code get_firebase_user_by_id(user_id, True))
         driver_ref = get_firebase_user_by_id(user_id, True)
-
-        # Parsing input dates into datetime
-        def _parse_iso_date(s: str | None) -> datetime.datetime | None:
-            if not s:
-                return None
-            if isinstance(s, datetime.datetime):
-                return s
-            if isinstance(s, datetime.date):
-                return datetime.datetime.combine(s, datetime.time.min)
-            try:
-                # Support 'YYYY-MM-DD' and ISO format with time
-                return datetime.datetime.fromisoformat(s)
-            except Exception:
-                try:
-                    return datetime.datetime.strptime(s, "%Y-%m-%d")
-                except Exception:
-                    return None
-
-        start_dt = _parse_iso_date(start_date)
-        end_dt = _parse_iso_date(end_date)
 
         # Normalizer date from Firestore document into datetime
         def _to_datetime(value) -> datetime.datetime | None:
@@ -630,12 +680,21 @@ def calculate_user_balance(user_id: str, start_date: str | None, end_date: str |
 
 def get_firebase_user_by_id(user_id: str, is_reference: bool = False) -> dict:
     """
-    Retrieve a user from Firestore by ID.
+    Retrieve a user by ID.
 
-    :param user_id: User ID.
-    :return: Dictionary with user data or empty dictionary if user is not found.
+    Сначала Postgres (зеркало), при отсутствии — Firestore.
+    is_reference=True всегда Firestore DocumentReference (нужно для записей FS).
     """
     try:
+        if not is_reference:
+            try:
+                import app_pg
+                pg_user = app_pg.get_user(user_id)
+                if pg_user:
+                    return pg_user
+            except Exception:
+                logger.exception("[users.get_firebase_user_by_id] app_pg read failed id=%s", user_id)
+
         client = utils.init_firebase_client()
         user_ref = client.collection('users').document(user_id)
         user_doc = user_ref.get()
@@ -649,9 +708,26 @@ def get_firebase_user_by_id(user_id: str, is_reference: bool = False) -> dict:
     except Exception as e:
         raise IncorrectDataValue(f'Error retrieving user with ID {user_id}: {e}')
 
-def update_firebase_user(user_id: str, display_name: str, photo_url: str | None, is_driver: bool, is_blocked: bool, block_comment: str | None, phone_number: str | None, verif_ne_proidena: bool | None, balance: int | None, commission: int | None, verif_compl: bool | None, on_verif_now: bool | None, bonus_balance: int | None = None) -> None:
+def _parse_number(value, field_name: str = 'value'):
+    """Принимает int/float/str с точкой или запятой; пустое → None."""
+    if value is None or value == 'None':
+        return None
+    if isinstance(value, bool):
+        raise IncorrectDataValue(f'Invalid {field_name}: {value!r}')
+    if isinstance(value, (int, float)):
+        return float(value)
+    s = str(value).strip().replace(',', '.').replace(' ', '')
+    if s == '':
+        return None
+    try:
+        return float(s)
+    except (ValueError, TypeError):
+        raise IncorrectDataValue(f'Invalid {field_name}: {value!r}')
+
+
+def update_firebase_user(user_id: str, display_name: str, photo_url: str | None, is_driver: bool, is_blocked: bool, block_comment: str | None, phone_number: str | None, verif_ne_proidena: bool | None, balance, commission, verif_compl: bool | None, on_verif_now: bool | None, bonus_balance=None) -> None:
     """
-    Update user data in Firestore.
+    Update user data. Postgres is Source of Truth; Firestore only via soft_fs (APP_FS_MIRROR).
 
     :param user_id: User ID.
     :param display_name: New user name.
@@ -660,58 +736,80 @@ def update_firebase_user(user_id: str, display_name: str, photo_url: str | None,
     :param bonus_balance: Delta to apply to bonus_balance (e.g. +200 to credit, -50 to debit).
         Bonus balance is for write-offs only — never withdrawn via payout.
     """
-    from firebase_admin import firestore
     try:
-        client = utils.init_firebase_client()
-        user_ref = client.collection('users').document(user_id)
+        import app_fs_mirror
+        import app_pg
+        from firebase_admin import firestore
+
+        pg_fields = {}
 
         if display_name is not None:
-            user_ref.update({'display_name': display_name})
+            pg_fields['display_name'] = display_name
 
         if photo_url is not None:
-            user_ref.update({'photo_url': photo_url})
+            pg_fields['photo_url'] = photo_url
 
         if is_driver is not None:
-            user_ref.update({'is_driver': is_driver})
+            pg_fields['is_driver'] = is_driver
 
         if is_blocked is not None:
-            user_ref.update({'is_blocked': is_blocked})
+            pg_fields['is_blocked'] = is_blocked
 
         if block_comment is not None:
-            user_ref.update({'block_comment': block_comment})
+            pg_fields['block_comment'] = block_comment
 
         if phone_number is not None:
-            user_ref.update({'phone_number': phone_number})
+            pg_fields['phone_number'] = phone_number
 
         if verif_ne_proidena is not None:
-            user_ref.update({'verif_ne_proidena': verif_ne_proidena})
+            pg_fields['verif_ne_proidena'] = verif_ne_proidena
 
         if verif_compl is not None:
-            user_ref.update({'verif_compl': verif_compl})
+            pg_fields['verif_compl'] = verif_compl
 
         if on_verif_now is not None:
-            user_ref.update({'on_verif_now': on_verif_now})
+            pg_fields['on_verif_now'] = on_verif_now
 
-        if balance is not None and balance != 'None':
-            user_ref.update({
-                'balance': int(balance),
-            })
-        if commission is not None  and commission != 'None':
-            user_ref.update({
-                'commission_percent': int(commission)
-            })
+        balance_num = _parse_number(balance, 'balance')
+        if balance_num is not None:
+            # Дробные балансы (напр. -9031.7) — не приводить к int().
+            pg_fields['balance'] = balance_num
 
+        commission_num = _parse_number(commission, 'commission')
+        if commission_num is not None:
+            pg_fields['commission_percent'] = commission_num
+
+        bonus_delta = None
         if bonus_balance is not None and bonus_balance != 'None' and str(bonus_balance).strip() != '':
             try:
-                delta = int(bonus_balance)
-            except (ValueError, TypeError):
+                bonus_delta = _parse_number(bonus_balance, 'bonus_balance')
+                if bonus_delta is None:
+                    bonus_delta = 0.0
+            except IncorrectDataValue:
                 logger.error(f"[users.update_firebase_user] invalid bonus_balance delta={bonus_balance!r} user_id={user_id}")
-                raise IncorrectDataValue(f'Invalid bonus_balance value: {bonus_balance!r}')
-            if delta != 0:
-                logger.info(f"[users.update_firebase_user] bonus_balance delta={delta} user_id={user_id}")
+                raise
+            if bonus_delta != 0:
+                logger.info(f"[users.update_firebase_user] bonus_balance delta={bonus_delta} user_id={user_id}")
+
+        # Postgres SoT first
+        if pg_fields:
+            if not app_pg.mirror_user_fields(user_id, pg_fields):
+                raise IncorrectDataValue(f'Error updating user with ID {user_id}: postgres update failed')
+        if bonus_delta:
+            if not app_pg.increment_user_bonus(user_id, float(bonus_delta)):
+                raise IncorrectDataValue(f'Error updating user with ID {user_id}: postgres bonus update failed')
+
+        def _fs():
+            client = utils.init_firebase_client()
+            user_ref = client.collection('users').document(user_id)
+            if pg_fields:
+                user_ref.update(pg_fields)
+            if bonus_delta:
                 user_ref.update({
-                    'bonus_balance': firestore.Increment(delta),
+                    'bonus_balance': firestore.Increment(bonus_delta),
                 })
+
+        app_fs_mirror.soft_fs("update_firebase_user", _fs)
     except IncorrectDataValue:
         raise
     except Exception as e:
@@ -836,6 +934,24 @@ def get_monthly_user_statistics(user_id: str, month: str) -> dict:
         except Exception as ex:
             raise IncorrectDataValue(f"Invalid month format: {month}. Expected 'YYYY-MM'. {ex}")
 
+        # Postgres SoT
+        try:
+            import app_pg
+
+            if app_pg.enabled():
+                stats = app_pg.driver_order_stats(
+                    str(user_id), month_start=start_dt, month_end=end_dt
+                )
+                if stats is not None:
+                    return {
+                        "monthly_balance": stats.get("monthly_balance", 0),
+                        "last_transaction_date": stats.get("last_transaction_date"),
+                        "total_orders": stats.get("total_orders", 0),
+                        "completed_orders": stats.get("completed_orders", 0),
+                    }
+        except Exception:
+            logger.exception("[get_monthly_user_statistics] PG failed, fallback Firestore")
+
         client = utils.init_firebase_client()
         orders_ref = client.collection("order")
 
@@ -896,11 +1012,19 @@ def get_monthly_user_statistics(user_id: str, month: str) -> dict:
 
 def get_driver_verification_data(driver_id):
     """
-    Retrieve driver's verification data from the request_verification collection by driver ID.
-
-    :param driver_id: Driver ID.
-    :return: Dictionary with driver's verification data in JSON format.
+    Retrieve driver's verification data (Postgres SoT, FS fallback).
     """
+    try:
+        import app_verifications_ops
+
+        row = app_verifications_ops.get_for_driver(str(driver_id))
+        if row:
+            return json.loads(
+                json.dumps(row, ensure_ascii=False, default=utils.json_serial)
+            )
+    except Exception as e:
+        print(f"[get_driver_verification_data] PG failed: {e}")
+
     try:
         client = utils.init_firebase_client()
         driver = get_firebase_user_by_id(driver_id, is_reference=True)
@@ -914,16 +1038,21 @@ def get_driver_verification_data(driver_id):
 
             data['id'] = doc.id  # Add document ID
             data['user'] = driver_id
-            if data['dateCreated'] is not None and isinstance(data['dateCreated'], DatetimeWithNanoseconds):
+            if data.get('dateCreated') is not None and isinstance(data['dateCreated'], DatetimeWithNanoseconds):
                 date_created: DatetimeWithNanoseconds = data['dateCreated']
                 data['dateCreated'] = date_created.date().isoformat()
-            if data['dfb'] is not None and isinstance(data['dfb'], DatetimeWithNanoseconds):
+            if data.get('dfb') is not None and isinstance(data['dfb'], DatetimeWithNanoseconds):
                 dfb_date: DatetimeWithNanoseconds = data['dfb']
                 data['dfb'] = dfb_date.date().isoformat()
 
             verification_data.append(data)
 
-        return json.loads(json.dumps((verification_data[0]), ensure_ascii=False, default=utils.json_serial))
+        if not verification_data:
+            return None
+        # prefer onVerif if present
+        on = [x for x in verification_data if x.get('status') == 'onVerif']
+        pick = on[0] if on else verification_data[0]
+        return json.loads(json.dumps(pick, ensure_ascii=False, default=utils.json_serial))
 
     except Exception as e:
         print(str(e))
@@ -932,27 +1061,15 @@ def get_driver_verification_data(driver_id):
 
 def update_driver_verification_data(driver_id, update_fields):
     """
-    Update driver's verification data in the request_verification collection by driver ID.
-
-    :param driver_id: Driver ID.
-    :param update_fields: Dictionary with fields to update.
+    Update driver's verification (Postgres SoT + soft FS by doc id).
     """
     try:
-        client = utils.init_firebase_client()
-        verification_ref = client.collection('request_verefication').where('user', '==', driver_id)
-        verification_docs = verification_ref.stream()
+        import app_verifications_ops
 
-        docs_len = 0
-        for doc in verification_docs:
-            docs_len += 1
-            doc_ref = client.collection('request_verefication').document(doc.id)
-            doc_ref.update(update_fields)
-
-        if docs_len == 0:
-            update_fields["user"] = get_firebase_user_by_id(update_fields["user"], is_reference=True)
-            update_fields["dateCreated"] = datetime.datetime.now().isoformat()
-            client.collection('request_verefication').add(update_fields)
-
+        fields = dict(update_fields or {})
+        fields['user_id'] = str(driver_id)
+        app_verifications_ops.upsert_from_admin(str(driver_id), fields)
+        return
     except Exception as e:
         raise IncorrectDataValue(f'Error updating driver verification data: {e}')
 
@@ -1039,19 +1156,30 @@ def check_driver_inn(inn: str, timeout: int = 10) -> Dict[str, Any]:
 
 def send_push_to_firebase_users(user_ids: List[str], title: str, text: str, data: dict = None) -> Dict[str, Any]:
     """
-    Отправляет push уведомления пользователям по их firebase_id.
-    Читает FCM токены из Firestore подколлекции fcm_tokens.
-    Автоматически удаляет невалидные токены.
-
-    Args:
-        user_ids: Список firebase_id пользователей
-        title: Заголовок уведомления
-        text: Текст уведомления
-        data: Дополнительные данные
-
-    Returns:
-        Dict с результатами отправки
+    Отправляет push по firebase_id.
+    Токены: Postgres app_user_fcm_tokens (primary), FS fcm_tokens как fallback.
     """
+    try:
+        import app_fcm_ops
+
+        page = None
+        pdata = None
+        if isinstance(data, dict):
+            page = data.get("initialPageName")
+            pdata = data.get("parameterData")
+        return app_fcm_ops.send_to_users(
+            list(user_ids or []),
+            title=title or "",
+            body=text or "",
+            data=data if isinstance(data, dict) else None,
+            initial_page_name=page,
+            parameter_data=pdata,
+        )
+    except Exception:
+        logger.exception(
+            "[send_push_to_firebase_users] app_fcm_ops failed, legacy FS path"
+        )
+
     logger.info(f"[send_push_to_firebase_users] Starting for {len(user_ids)} users")
     logger.info(f"[send_push_to_firebase_users] user_ids: {user_ids}")
 

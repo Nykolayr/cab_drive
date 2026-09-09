@@ -1,10 +1,10 @@
 import 'dart:io' show Platform;
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dio/dio.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' show DocumentReference;
 
 import 'serialization_util.dart';
 import '../../auth/firebase_auth/auth_util.dart';
+import '../api/app_me_api.dart';
 import '../cloud_functions/cloud_functions.dart';
 import '../../core/utils/app_dio.dart';
 
@@ -52,10 +52,20 @@ final fcmTokenUserStream = authenticatedUserStream
     .distinct()
     .switchMap(getFcmTokenStream)
     .asyncMap((userTokenInfo) async {
-      print('[FCM] Sending token to Cloud Function...');
+      print('[FCM] Registering token (PG + optional CF)...');
       print('[FCM] userDocPath: ${userTokenInfo.userPath}');
       print('[FCM] fcmToken: ${userTokenInfo.fcmToken.substring(0, 20)}...');
       print('[FCM] deviceType: ${Platform.isIOS ? 'iOS' : 'Android'}');
+
+      // Primary: Postgres via /api/app/me/fcm
+      try {
+        final ok = await AppMeApi.registerFcm(userTokenInfo.fcmToken);
+        print('[FCM] AppMeApi.registerFcm: $ok');
+      } catch (e) {
+        print('[FCM] ERROR AppMeApi.registerFcm: $e');
+      }
+
+      // Soft: keep CF for older builds / FS mirror until cutover complete
       try {
         final result = await makeCloudCall(
           'addFcmToken',
@@ -69,7 +79,7 @@ final fcmTokenUserStream = authenticatedUserStream
         return result;
       } catch (e) {
         print('[FCM] ERROR calling addFcmToken: $e');
-        rethrow;
+        return null;
       }
     });
 
@@ -97,36 +107,28 @@ void triggerPushNotification({
     return;
   }
   final serializedParameterData = serializeParameterData(parameterData);
-  final userRefsString = userRefs.map((u) => u.path).join(',');
-  print('[PushNotification] user_refs string: $userRefsString');
+  final userIds = userRefs
+      .map((u) => u.id)
+      .where((id) => id.isNotEmpty)
+      .toList();
+  print('[PushNotification] Sending via AppMeApi.sendPush to $userIds');
 
-  final pushNotificationData = {
-    'notification_title': notificationTitle,
-    'notification_text': notificationText,
-    if (notificationImageUrl != null)
-      'notification_image_url': notificationImageUrl,
-    if (scheduledTime != null) 'scheduled_time': scheduledTime,
-    'user_refs': userRefsString,
-    'initial_page_name': initialPageName,
-    'parameter_data': serializedParameterData,
-    'sender': currentUserReference,
-    'timestamp': DateTime.now(),
-  };
-
-  print('[PushNotification] Writing to Firestore collection: $kUserPushNotificationsCollectionName');
   try {
-    final docRef = FirebaseFirestore.instance
-        .collection(kUserPushNotificationsCollectionName)
-        .doc();
-    await docRef.set(pushNotificationData);
-    print('[PushNotification] SUCCESS: Document written with ID: ${docRef.id}');
+    final ok = await AppMeApi.sendPush(
+      title: notificationTitle!,
+      text: notificationText!,
+      userIds: userIds,
+      initialPageName: initialPageName,
+      parameterData: serializedParameterData,
+    );
+    print('[PushNotification] AppMeApi.sendPush: $ok');
+    if (ok) return;
   } catch (e) {
-    print('[PushNotification] ERROR writing to Firestore: $e');
+    print('[PushNotification] ERROR AppMeApi.sendPush: $e');
   }
 }
 
-/// Отправляет push уведомления через бэкенд API.
-/// Бэкенд сам находит FCM токены и удаляет невалидные.
+/// Отправляет push через /api/app/push (PG tokens). Legacy Dio path — fallback.
 Future<void> sendPushToUsers({
   required String title,
   required String text,
@@ -144,6 +146,22 @@ Future<void> sendPushToUsers({
   }
 
   try {
+    final ok = await AppMeApi.sendPush(
+      title: title,
+      text: text,
+      userIds: userIds,
+      data: data,
+      initialPageName: data?['initialPageName']?.toString(),
+      parameterData: data?['parameterData']?.toString(),
+    );
+    print('[PushNotification] AppMeApi.sendPush: $ok');
+    if (ok) return;
+  } catch (e) {
+    print('[PushNotification] ERROR AppMeApi.sendPush: $e');
+  }
+
+  // Legacy Dio → users/send_push_to_users (also PG-first on server now)
+  try {
     final response = await AppDio.dio.post(
       'users/send_push_to_users',
       data: {
@@ -153,16 +171,8 @@ Future<void> sendPushToUsers({
         if (data != null) 'data': data,
       },
     );
-
-    print('[PushNotification] Backend response: ${response.data}');
-
-    if (response.statusCode == 200) {
-      final result = response.data['result'];
-      print('[PushNotification] SUCCESS: sent=${result['success_count']}, failed=${result['failure_count']}, cleaned=${result['tokens_cleaned']}');
-    } else {
-      print('[PushNotification] ERROR: ${response.data}');
-    }
+    print('[PushNotification] Legacy backend response: ${response.data}');
   } catch (e) {
-    print('[PushNotification] ERROR calling backend: $e');
+    print('[PushNotification] ERROR legacy backend: $e');
   }
 }

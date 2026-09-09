@@ -70,6 +70,62 @@ def fetch_firebase_orders(client_id: Optional[str] = None,
         "current_page": page,
     }
     """
+    # Postgres SoT: фильтры + пагинация (FS только fallback).
+    try:
+        import app_pg
+
+        if app_pg.enabled():
+            if page is None or page < 1:
+                page = 1
+            if per_page is None or per_page <= 0:
+                per_page = 10
+            start_dt = _parse_dt(start_date)
+            finish_dt = _parse_dt(finish_date)
+
+            def _num(v):
+                if v is None or v == "":
+                    return None
+                try:
+                    return float(v)
+                except (TypeError, ValueError):
+                    return None
+
+            # client_id/driver_id в dashboard иногда приходят как path или id
+            def _uid(v):
+                if not v:
+                    return None
+                s = str(v).strip()
+                if "/" in s:
+                    s = s.rsplit("/", 1)[-1]
+                return s or None
+
+            offset = (page - 1) * per_page
+            result = app_pg.list_orders_filtered(
+                status=status or None,
+                customer_id=_uid(client_id),
+                driver_id=_uid(driver_id),
+                start_dt=start_dt,
+                end_dt=finish_dt,
+                budget_min=_num(price_from),
+                budget_max=_num(price_to),
+                distance_min=_num(distance_from),
+                distance_max=_num(distance_to),
+                limit=per_page,
+                offset=offset,
+            )
+            rows = result.get("orders") or []
+            total_orders = int(result.get("total") or 0)
+            total_pages = max(1, (total_orders + per_page - 1) // per_page) if total_orders else 1
+            return {
+                "orders": rows,
+                "total_pages": total_pages,
+                "total_orders": total_orders,
+                "current_page": page,
+                "source": "postgres",
+            }
+    except Exception:
+        logger.exception("[orders.fetch_firebase_orders] app_pg list failed, fallback Firestore")
+
     try:
         db = firestore.client()
         collection_ref = db.collection("order")
@@ -642,6 +698,7 @@ def export_order_statistics_to_excel(order_counts, earnings, commission_earnings
 def update_order_point(order_id: str, point: str, position_data: Any, description: Optional[str] = None, city: Optional[str] = None) -> Optional[dict]:
     """
     Обновляет точку pointA или pointB у заказа.
+    Postgres SoT; Firestore soft_fs только если APP_FS_MIRROR=1.
 
     position_data можно передавать как dict или JSON-строку. Ожидаемые ключи: lat/lon или latitude/longitude,
     либо latlng (список/кортеж или dict). Также могут присутствовать city и description.
@@ -650,13 +707,14 @@ def update_order_point(order_id: str, point: str, position_data: Any, descriptio
     Возвращает обновлённый заказ в формате firebase_order_to_json или выбрасывает IncorrectDataValue при ошибке.
     """
     try:
+        import app_fs_mirror
+        import app_pg
+
         if point not in ("pointA", "pointB"):
             raise IncorrectDataValue("Поле 'point' должно быть 'pointA' или 'pointB'")
 
-        db = firestore.client()
-        doc_ref = db.collection("order").document(order_id)
-        doc_snapshot = doc_ref.get()
-        if not doc_snapshot.exists:
+        existing = app_pg.get_order(order_id)
+        if not existing:
             raise IncorrectDataValue(f"Заказ с id={order_id} не найден")
 
         # Подготовка position_data
@@ -699,8 +757,6 @@ def update_order_point(order_id: str, point: str, position_data: Any, descriptio
 
         lat, lon = _extract_latlon(pd)
 
-        # Получаем текущую точку и обновляем её поля
-        existing = doc_snapshot.to_dict() or {}
         existing_point = existing.get(point) or {}
         if not isinstance(existing_point, dict):
             existing_point = {}
@@ -717,8 +773,7 @@ def update_order_point(order_id: str, point: str, position_data: Any, descriptio
             new_point["address"] = new_description
             new_point["fullAddress"] = new_description
         if lat is not None and lon is not None:
-            # Используем GeoPoint для хранения в Firestore
-            new_point["latlng"] = GeoPoint(lat, lon)
+            new_point["latlng"] = [lat, lon]
         else:
             # Если координат нет, но есть полное описание адреса, сохраняем его
             addr = pd.get("address") or pd.get("formatted_address")
@@ -726,19 +781,28 @@ def update_order_point(order_id: str, point: str, position_data: Any, descriptio
                 new_point["address"] = addr
                 new_point["fullAddress"] = addr
 
-        # Выполняем обновление документа
-        try:
-            doc_ref.update({point: new_point})
-        except Exception as e:
-            # Если прямо обновить вложенный объект не удалось, пробуем установить целиком
-            logger.warning("Не удалось обновить %s у заказа %s напрямую: %s. Попытка установки целиком.", point, order_id, str(e))
-            doc_ref.set({point: new_point}, merge=True)
+        if not app_pg.mirror_order_fields(order_id, {point: new_point}):
+            raise IncorrectDataValue(f"Не удалось обновить точку {point} заказа {order_id} в Postgres")
 
-        # Получаем обновлённый документ и форматируем в json-представление
-        updated_snapshot = doc_ref.get()
-        updated_data = updated_snapshot.to_dict() or {}
-        updated_data['id'] = updated_snapshot.id
-        return firebase_order_to_json(updated_data, is_dict_already=True)
+        def _fs():
+            fs_point = dict(new_point)
+            if lat is not None and lon is not None:
+                fs_point["latlng"] = GeoPoint(lat, lon)
+            doc_ref = firestore.client().collection("order").document(order_id)
+            try:
+                doc_ref.update({point: fs_point})
+            except Exception as e:
+                logger.warning(
+                    "Не удалось обновить %s у заказа %s напрямую: %s. Попытка установки целиком.",
+                    point, order_id, str(e),
+                )
+                doc_ref.set({point: fs_point}, merge=True)
+
+        app_fs_mirror.soft_fs("update_order_point", _fs)
+
+        updated = app_pg.get_order(order_id) or {**existing, point: new_point, "id": order_id}
+        updated["id"] = order_id
+        return firebase_order_to_json(updated, is_dict_already=True)
 
     except IncorrectDataValue:
         raise
@@ -752,6 +816,15 @@ def get_order_by_id(order_id: str) -> Optional[dict]:
     Возвращает заказ по его идентификатору или None, если не найден.
     """
     try:
+        try:
+            import app_pg
+            pg_order = app_pg.get_order(order_id)
+            if pg_order:
+                # Нормализуем через тот же пайплайн, что и Firestore
+                return firebase_order_to_json(pg_order, is_dict_already=True)
+        except Exception:
+            logger.exception("[orders.get_order_by_id] app_pg failed id=%s", order_id)
+
         db = firestore.client()
         doc_ref = db.collection("order").document(order_id)
         doc_snapshot = doc_ref.get()
@@ -767,37 +840,41 @@ def get_order_by_id(order_id: str) -> Optional[dict]:
 
 def edit_order(order_id: str, budget, distance, currentPrice, status) -> Optional[dict]:
     """
-    Обновляет поля budget, currentPrice, distance у заказа.
-
-    Примечание: для совместимости с предыдущим интерфейсом параметры point, description, city игнорируются.
-    position_data можно передавать как dict или JSON-строку. Ожидаемые ключи (любые из вариантов):
-      - budget (budgetValue, budget_value)
-      - currentPrice (current_price, price, currentprice)
-      - distance (dist, length)
-
-    Возвращает обновлённый заказ в формате firebase_order_to_json или выбрасывает IncorrectDataValue при ошибке.
+    Обновляет поля budget, currentPrice, distance / status у заказа.
+    Postgres SoT; Firestore soft_fs только если APP_FS_MIRROR=1.
     """
     try:
-        db = firestore.client()
-        doc_ref = db.collection("order").document(order_id)
-        doc_snapshot = doc_ref.get()
-        if not doc_snapshot.exists:
+        import app_fs_mirror
+        import app_pg
+
+        existing = app_pg.get_order(order_id)
+        if not existing:
             raise IncorrectDataValue(f"Заказ с id={order_id} не найден")
 
+        pg_fields: dict = {}
         if budget:
-            doc_ref.update({
+            pg_fields.update({
                 'budget': budget,
                 'distance': distance,
-                'currentPrice': currentPrice
+                'currentPrice': currentPrice,
             })
         if status:
-            doc_ref.update({
-                'status': status,
-            })
-        updated_snapshot = doc_ref.get()
-        updated_data = updated_snapshot.to_dict() or {}
-        updated_data['id'] = updated_snapshot.id
-        return firebase_order_to_json(updated_data, is_dict_already=True)
+            pg_fields['status'] = status
+        if pg_fields:
+            if not app_pg.mirror_order_fields(order_id, pg_fields):
+                raise IncorrectDataValue(f"Не удалось обновить заказ {order_id} в Postgres")
+
+        def _fs():
+            db = firestore.client()
+            doc_ref = db.collection("order").document(order_id)
+            if pg_fields:
+                doc_ref.update(pg_fields)
+
+        app_fs_mirror.soft_fs("edit_order", _fs)
+
+        updated = app_pg.get_order(order_id) or {**existing, **pg_fields, "id": order_id}
+        updated["id"] = order_id
+        return firebase_order_to_json(updated, is_dict_already=True)
 
     except IncorrectDataValue:
         raise
@@ -808,68 +885,71 @@ def edit_order(order_id: str, budget, distance, currentPrice, status) -> Optiona
 
 
 def check_order_status():
-    """Таймеры: авто-cancel устаревших newOrder и auto-hide completed.
-
-    Нельзя убрать опрос полностью — это не реакция на нашу запись, а дедлайны
-    по времени. Читаем только status-фильтр + limit, пауза 60с, один worker (lock в app.py).
-    """
+    """Таймеры: авто-cancel устаревших newOrder и auto-hide completed (Postgres SoT)."""
     poll_sec = 60
     batch_limit = 50
     while True:
         logger.info("START check_orders_status CHECK")
         try:
+            import app_pg
+
             utc_tz = timezone(timedelta(hours=0))
             now = datetime.now(utc_tz)
             model = settings.get_model()
-            db = firestore.client()
 
-            new_snaps = list(
-                db.collection("order")
-                .where("status", "==", "newOrder")
-                .limit(batch_limit)
-                .stream()
-            )
-            for snap in new_snaps:
-                order = firebase_order_to_json(
-                    {**(snap.to_dict() or {}), "id": snap.id}, is_dict_already=True
-                )
-                if not order:
+            for order in app_pg.list_orders(status="newOrder", limit=batch_limit):
+                oid = order.get("id")
+                if not oid:
                     continue
-                logger.info(f"START check_orders_status CHECK {order['id']}")
-                created_val = order.get("dateTime_created")
+                logger.info(f"START check_orders_status CHECK {oid}")
+                created_val = order.get("dateTime_created") or order.get("date_created")
                 if not created_val:
                     continue
                 try:
-                    v = datetime.fromisoformat(created_val).replace(tzinfo=utc_tz)
+                    if isinstance(created_val, datetime):
+                        v = created_val
+                        if v.tzinfo is None:
+                            v = v.replace(tzinfo=utc_tz)
+                    else:
+                        v = datetime.fromisoformat(str(created_val)).replace(tzinfo=utc_tz)
                 except Exception:
                     continue
                 if now - v >= timedelta(minutes=model.minutes_for_delete_order):
-                    edit_order(order["id"], None, None, None, status="cancelled")
+                    edit_order(oid, None, None, None, status="cancelled")
 
-            # Авто-скрытие completed -> hidden (карточка «Повтор заказа» на клиенте).
-            completed_snaps = list(
-                db.collection("order")
-                .where("status", "==", "completed")
-                .limit(batch_limit)
-                .stream()
-            )
-            for snap in completed_snaps:
-                data = snap.to_dict() or {}
-                date_upd = _parse_firestore_dt(data.get("date_upd"))
+            for order in app_pg.list_orders(status="completed", limit=batch_limit):
+                oid = order.get("id")
+                if not oid:
+                    continue
+                date_upd = order.get("date_upd") or order.get("dateUpd")
+                if isinstance(date_upd, str):
+                    try:
+                        date_upd = datetime.fromisoformat(date_upd)
+                    except Exception:
+                        date_upd = None
                 if date_upd is None:
                     continue
                 if date_upd.tzinfo is None:
                     date_upd = date_upd.replace(tzinfo=utc_tz)
                 if now - date_upd >= timedelta(minutes=model.deadline_minutes):
-                    logger.info(f"AUTO-HIDE completed order {snap.id}")
+                    logger.info(f"AUTO-HIDE completed order {oid}")
                     try:
-                        snap.reference.update({
-                            "status": "hidden",
-                            "status_do_hidden": "completed",
-                        })
+                        app_pg.mirror_order_fields(
+                            oid,
+                            {"status": "hidden", "status_do_hidden": "completed"},
+                        )
+                        import app_fs_mirror
+
+                        def _fs_hide(order_id=oid):
+                            firestore.client().collection("order").document(order_id).update({
+                                "status": "hidden",
+                                "status_do_hidden": "completed",
+                            })
+
+                        app_fs_mirror.soft_fs("check_order_status.auto_hide", _fs_hide)
                     except Exception as e:
                         logger.error(
-                            f"[check_order_status.auto_hide] failed {snap.id}: {e}"
+                            f"[check_order_status.auto_hide] failed {oid}: {e}"
                         )
         except Exception as e:
             logger.error(f"[check_order_status] loop error: {e}")
@@ -882,67 +962,114 @@ def check_order_status():
 
 def notify_busy_drivers_about_new_orders():
     """
-    Периодически (каждые 5 сек) ищет свежие newOrder, для которых ещё не
-    рассылались уведомления занятым водителям, и шлёт FCM data-push
-    подходящим (по маршруту и тарифу) водителям.
+    Периодически ищет свежие newOrder и шлёт FCM data-push
+    подходящим (по маршруту и тарифу) занятым водителям.
 
-    Запускается в отдельном потоке из app.py.
+    Запускается в отдельном потоке из app.py. PG-first + soft FS meta.
     """
     import config
+    import app_fs_mirror
     from orders.extra_orders import find_busy_drivers_for_order
     from users.api import send_push_to_firebase_users
 
-    db = firestore.client()
     api_key = getattr(config.Production, 'GOOGLE_API_KEY', '') or ''
     poll_interval_sec = 30
+
+    def _parse_notified_at(val):
+        if val is None:
+            return None
+        if isinstance(val, datetime):
+            if val.tzinfo is None:
+                return val.replace(tzinfo=timezone.utc)
+            return val
+        if isinstance(val, str):
+            try:
+                dt = datetime.fromisoformat(val.replace("Z", "+00:00"))
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                return dt
+            except Exception:
+                return None
+        if hasattr(val, "to_datetime") and callable(val.to_datetime):
+            try:
+                return val.to_datetime()
+            except Exception:
+                return None
+        return None
+
+    def _persist_meta(order_id, tick_start, new_notified):
+        fields = {"extra_notified_at": tick_start.isoformat()}
+        if new_notified is not None:
+            fields["extra_notified_drivers"] = new_notified
+        try:
+            import app_pg
+
+            if app_pg.enabled():
+                app_pg.mirror_order_fields(order_id, fields)
+        except Exception:
+            logger.exception("[extra_notify.persist] PG meta failed order=%s", order_id)
+
+        def _fs():
+            db = firestore.client()
+            patch = {"extra_notified_at": tick_start}
+            if new_notified is not None:
+                patch["extra_notified_drivers"] = new_notified
+            db.collection("order").document(order_id).update(patch)
+
+        app_fs_mirror.soft_fs("extra_notify_meta", _fs)
+
+    def _list_new_orders():
+        try:
+            import app_pg
+
+            if app_pg.enabled():
+                rows = app_pg.list_orders(status="newOrder", limit=50)
+                if rows is not None:
+                    return rows
+        except Exception:
+            logger.exception("[extra_notify.loop] PG list newOrder failed")
+
+        db = firestore.client()
+        snaps = list(
+            db.collection("order").where("status", "==", "newOrder").limit(50).stream()
+        )
+        out = []
+        for snap in snaps:
+            raw = snap.to_dict() or {}
+            order = firebase_order_to_json({**raw, "id": snap.id}, is_dict_already=True)
+            if order:
+                out.append(order)
+        return out
 
     while True:
         try:
             model = settings.get_model()
             cooldown_sec = model.extra_order_notify_cooldown_sec
-
             tick_start = datetime.now(timezone.utc)
-            # Не fetch_firebase_orders: он раньше стримил всю коллекцию.
-            new_snaps = list(
-                db.collection("order")
-                .where("status", "==", "newOrder")
-                .limit(50)
-                .stream()
-            )
+            new_orders = _list_new_orders()
             logger.info(
-                f"[extra_notify.loop] tick new_orders_count={len(new_snaps)}"
+                f"[extra_notify.loop] tick new_orders_count={len(new_orders)}"
             )
 
-            for snap in new_snaps:
-                order_id = snap.id
-                raw = snap.to_dict() or {}
-                if (raw.get("status") or "").lower() != "neworder":
+            for order in new_orders:
+                order_id = str(order.get("id") or "")
+                if not order_id:
                     continue
-                order = firebase_order_to_json(
-                    {**raw, "id": order_id}, is_dict_already=True
-                )
-                if not order:
+                if (order.get("status") or "").lower() != "neworder":
                     continue
 
-                doc_ref = snap.reference
-
-                # Проверяем cooldown — повторная рассылка не чаще раза в N секунд.
-                last_notified = raw.get('extra_notified_at')
-                if isinstance(last_notified, datetime):
+                last_notified = _parse_notified_at(order.get("extra_notified_at"))
+                if last_notified is not None:
                     elapsed = (tick_start - last_notified).total_seconds()
                     if elapsed < cooldown_sec:
                         continue
 
-                # Persisted dedup: список уже уведомлённых водителей по этому заказу.
-                # Читаем явно из raw (Firestore). Не ArrayUnion — пишем вручную, чтобы исключить
-                # любые SDK-сюрпризы и видеть значение в логах.
-                notified_uids_raw = raw.get('extra_notified_drivers') or []
+                notified_uids_raw = order.get("extra_notified_drivers") or []
                 notified_uids = [str(u) for u in notified_uids_raw if u]
                 logger.info(
                     f"[extra_notify.dedup] order={order_id} already_notified={notified_uids}"
                 )
 
-                # Получаем подходящих занятых водителей
                 try:
                     candidates = find_busy_drivers_for_order(order, api_key)
                 except Exception as e:
@@ -952,7 +1079,9 @@ def notify_busy_drivers_about_new_orders():
                     )
                     candidates = []
 
-                fresh = [c for c in candidates if str(c.get('driver_uid')) not in notified_uids]
+                fresh = [
+                    c for c in candidates if str(c.get("driver_uid")) not in notified_uids
+                ]
                 logger.info(
                     f"[extra_notify.dispatch] order={order_id} "
                     f"candidates={[c.get('driver_uid') for c in candidates]} "
@@ -960,30 +1089,24 @@ def notify_busy_drivers_about_new_orders():
                 )
 
                 if not fresh:
-                    # Всё равно отметим timestamp, чтобы не молотить find_busy_drivers без нужды
-                    try:
-                        doc_ref.update({'extra_notified_at': tick_start})
-                    except Exception:
-                        pass
+                    _persist_meta(order_id, tick_start, None)
                     continue
 
-                # Отправляем самому подходящему (с минимальным delta_min).
-                # Если он откажется — на следующем тике (через cooldown) попробуем следующего.
                 target = fresh[0]
-                target_uid = target['driver_uid']
+                target_uid = target["driver_uid"]
                 data = {
-                    'type': 'additional_order',
-                    'order_id': order_id,
-                    'current_order_id': target.get('current_order_id') or '',
-                    'delta_min': str(target.get('delta_min', '')),
-                    'delta_km': str(target.get('delta_km', '')),
+                    "type": "additional_order",
+                    "order_id": order_id,
+                    "current_order_id": target.get("current_order_id") or "",
+                    "delta_min": str(target.get("delta_min", "")),
+                    "delta_km": str(target.get("delta_km", "")),
                 }
 
                 try:
                     send_push_to_firebase_users(
                         user_ids=[target_uid],
-                        title='Дополнительный заказ',
-                        text='Заказ по пути',
+                        title="Дополнительный заказ",
+                        text="Заказ по пути",
                         data=data,
                     )
                     logger.info(
@@ -996,14 +1119,9 @@ def notify_busy_drivers_about_new_orders():
                         f"driver={target_uid}: {e}\n{traceback.format_exc()}"
                     )
 
-                # Обновляем метаданные заказа: timestamp + список уже уведомлённых.
-                # Пишем вручную: notified_uids + target_uid (dedup сразу), без ArrayUnion.
                 new_notified = list(dict.fromkeys(notified_uids + [str(target_uid)]))
                 try:
-                    doc_ref.update({
-                        'extra_notified_at': tick_start,
-                        'extra_notified_drivers': new_notified,
-                    })
+                    _persist_meta(order_id, tick_start, new_notified)
                     logger.info(
                         f"[extra_notify.persist] order={order_id} "
                         f"extra_notified_drivers <- {new_notified}"

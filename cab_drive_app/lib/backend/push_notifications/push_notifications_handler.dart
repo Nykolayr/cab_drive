@@ -3,6 +3,8 @@ import 'dart:convert';
 
 import 'serialization_util.dart';
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
+import '/backend/api/order_record_mapper.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
 import '/driver/extra_order_bottom_sheet/extra_order_bottom_sheet_widget.dart';
@@ -72,9 +74,13 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
         return;
       }
 
-      final orderRef =
-          FirebaseFirestore.instance.collection('order').doc(orderId);
-      final order = await OrderRecord.getDocumentOnce(orderRef);
+      final raw = await AppMeApi.getOrder(orderId);
+      if (raw == null) {
+        print('[push.additional_order] getOrder failed order=$orderId');
+        ExtraOrdersDedup.forget(orderId);
+        return;
+      }
+      final order = OrderRecordMapper.fromApi(raw, orderId);
       if (order.status != StatusOrder.newOrder) {
         print('[push.additional_order] order ${orderId} no longer new '
             '(status=${order.status})');
@@ -115,23 +121,9 @@ class _PushNotificationsHandlerState extends State<PushNotificationsHandler> {
   }
 
   Future<String?> _resolveActiveOrderId() async {
-    final uid = currentUserUid;
-    if (uid.isEmpty) return null;
-    final driverRef =
-        FirebaseFirestore.instance.collection('users').doc(uid);
-    final activeStatuses = [
-      StatusOrder.spec_set.serialize(),
-      StatusOrder.place_pickup.serialize(),
-      StatusOrder.at_work.serialize(),
-    ];
-    final qs = await FirebaseFirestore.instance
-        .collection('order')
-        .where('selected_driver', isEqualTo: driverRef)
-        .where('status', whereIn: activeStatuses)
-        .limit(1)
-        .get();
-    if (qs.docs.isEmpty) return null;
-    return qs.docs.first.id;
+    final queue = effectiveActiveOrdersQueue;
+    if (queue.isNotEmpty) return queue.first;
+    return null;
   }
 
   Future _handlePushNotification(RemoteMessage message) async {

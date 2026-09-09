@@ -1,16 +1,16 @@
+import 'dart:async';
+
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
+import '/backend/api/order_record_mapper.dart';
 import '/backend/backend.dart';
 import '/customer/order_card_customer/order_card_customer_widget.dart';
 import '/driver/order_card_driver/order_card_driver_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'moi_zakazy_model.dart';
 export 'moi_zakazy_model.dart';
 
@@ -23,6 +23,10 @@ class MoiZakazyWidget extends StatefulWidget {
 
 class _MoiZakazyWidgetState extends State<MoiZakazyWidget> {
   late MoiZakazyModel _model;
+  Timer? _poll;
+  List<OrderRecord>? _orders;
+  bool _loading = true;
+  bool _useFsFallback = false;
 
   @override
   void setState(VoidCallback callback) {
@@ -34,25 +38,119 @@ class _MoiZakazyWidgetState extends State<MoiZakazyWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => MoiZakazyModel());
+    unawaited(_reload());
+    _poll = Timer.periodic(const Duration(seconds: 5), (_) => _reload());
+  }
+
+  bool get _isDriver =>
+      valueOrDefault<bool>(currentUserDocument?.isDriver, false);
+
+  Future<void> _reload() async {
+    final role = _isDriver ? 'driver' : 'customer';
+    try {
+      final maps = await AppMeApi.ordersMine(role: role, limit: 100);
+      final out = <OrderRecord>[];
+      for (final m in maps) {
+        final id = m['id']?.toString();
+        if (id == null || id.isEmpty) continue;
+        try {
+          final rec = OrderRecordMapper.fromApi(m, id);
+          // шторка водителя: только назначенные (как старый FS where selected_driver)
+          if (_isDriver && rec.selectedDriver?.id != currentUserUid) {
+            continue;
+          }
+          out.add(rec);
+        } catch (_) {}
+      }
+      if (!mounted) return;
+      setState(() {
+        _orders = out;
+        _loading = false;
+        _useFsFallback = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _orders = const [];
+        _useFsFallback = false;
+        _loading = false;
+      });
+    }
   }
 
   @override
   void dispose() {
+    _poll?.cancel();
     _model.maybeDispose();
-
     super.dispose();
+  }
+
+  Widget _loadingBox() => Center(
+        child: SizedBox(
+          width: 50.0,
+          height: 50.0,
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(
+              FlutterFlowTheme.of(context).primary,
+            ),
+          ),
+        ),
+      );
+
+  Widget _list(List<OrderRecord> list, {required bool driver}) {
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 50.0),
+      shrinkWrap: true,
+      scrollDirection: Axis.vertical,
+      itemCount: list.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 5.0),
+      itemBuilder: (context, index) {
+        final order = list[index];
+        return InkWell(
+          splashColor: Colors.transparent,
+          focusColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          onTap: () async {
+            context.pushNamed(
+              driver
+                  ? OrderPageDriverWidget.routeName
+                  : OrderPageCustomerWidget.routeName,
+              queryParameters: {
+                if (!driver)
+                  'index': serializeParam(2, ParamType.int),
+                'order': serializeParam(
+                  order.reference,
+                  ParamType.DocumentReference,
+                ),
+              }.withoutNulls,
+            );
+          },
+          child: driver
+              ? OrderCardDriverWidget(
+                  key: Key('Keyciq_${index}_of_${list.length}'),
+                  order: order,
+                )
+              : OrderCardCustomerWidget(
+                  key: Key('Keym8i_${index}_of_${list.length}'),
+                  order: order,
+                ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final driver = _isDriver;
     return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(0.0, 50.0, 0.0, 0.0),
+      padding: const EdgeInsetsDirectional.fromSTEB(0.0, 50.0, 0.0, 0.0),
       child: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).primaryBackground,
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
             bottomLeft: Radius.circular(0.0),
             bottomRight: Radius.circular(0.0),
             topLeft: Radius.circular(22.0),
@@ -68,7 +166,7 @@ class _MoiZakazyWidgetState extends State<MoiZakazyWidget> {
               height: 64.0,
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondaryBackground,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(5.0),
                   bottomRight: Radius.circular(5.0),
                   topLeft: Radius.circular(22.0),
@@ -76,7 +174,8 @@ class _MoiZakazyWidgetState extends State<MoiZakazyWidget> {
                 ),
               ),
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
                 child: Row(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -116,152 +215,12 @@ class _MoiZakazyWidgetState extends State<MoiZakazyWidget> {
             Flexible(
               child: Builder(
                 builder: (context) {
-                  if (valueOrDefault<bool>(
-                      currentUserDocument?.isDriver, false)) {
-                    return StreamBuilder<List<OrderRecord>>(
-                      stream: queryOrderRecord(
-                        queryBuilder: (orderRecord) => orderRecord
-                            .where(
-                              'selected_driver',
-                              isEqualTo: currentUserReference,
-                            )
-                            .orderBy('date_upd', descending: true),
-                      ),
-                      builder: (context, snapshot) {
-                        // Customize what your widget looks like when it's loading.
-                        if (!snapshot.hasData) {
-                          return Center(
-                            child: SizedBox(
-                              width: 50.0,
-                              height: 50.0,
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  FlutterFlowTheme.of(context).primary,
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-                        List<OrderRecord> listViewOrderRecordList =
-                            snapshot.data!;
-
-                        return ListView.separated(
-                          padding: EdgeInsets.fromLTRB(
-                            0,
-                            0,
-                            0,
-                            50.0,
-                          ),
-                          shrinkWrap: true,
-                          scrollDirection: Axis.vertical,
-                          itemCount: listViewOrderRecordList.length,
-                          separatorBuilder: (_, __) => SizedBox(height: 5.0),
-                          itemBuilder: (context, listViewIndex) {
-                            final listViewOrderRecord =
-                                listViewOrderRecordList[listViewIndex];
-                            return InkWell(
-                              splashColor: Colors.transparent,
-                              focusColor: Colors.transparent,
-                              hoverColor: Colors.transparent,
-                              highlightColor: Colors.transparent,
-                              onTap: () async {
-                                context.pushNamed(
-                                  OrderPageDriverWidget.routeName,
-                                  queryParameters: {
-                                    'order': serializeParam(
-                                      listViewOrderRecord.reference,
-                                      ParamType.DocumentReference,
-                                    ),
-                                  }.withoutNulls,
-                                );
-                              },
-                              child: OrderCardDriverWidget(
-                                key: Key(
-                                    'Keyciq_${listViewIndex}_of_${listViewOrderRecordList.length}'),
-                                order: listViewOrderRecord,
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    );
-                  } else {
-                    return StreamBuilder<List<OrderRecord>>(
-                      stream: queryOrderRecord(
-                        queryBuilder: (orderRecord) => orderRecord
-                            .where(
-                              'user_customer',
-                              isEqualTo: currentUserReference,
-                            )
-                            .orderBy('date_upd', descending: true),
-                      ),
-                      builder: (context, snapshot) {
-                        // Customize what your widget looks like when it's loading.
-                        if (!snapshot.hasData) {
-                          return Center(
-                            child: SizedBox(
-                              width: 50.0,
-                              height: 50.0,
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  FlutterFlowTheme.of(context).primary,
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-                        List<OrderRecord> listViewOrderRecordList =
-                            snapshot.data!;
-
-                        return ListView.separated(
-                          padding: EdgeInsets.fromLTRB(
-                            0,
-                            0,
-                            0,
-                            50.0,
-                          ),
-                          shrinkWrap: true,
-                          scrollDirection: Axis.vertical,
-                          itemCount: listViewOrderRecordList.length,
-                          separatorBuilder: (_, __) => SizedBox(height: 5.0),
-                          itemBuilder: (context, listViewIndex) {
-                            final listViewOrderRecord =
-                                listViewOrderRecordList[listViewIndex];
-                            return InkWell(
-                              splashColor: Colors.transparent,
-                              focusColor: Colors.transparent,
-                              hoverColor: Colors.transparent,
-                              highlightColor: Colors.transparent,
-                              onTap: () async {
-                                context.pushNamed(
-                                  OrderPageCustomerWidget.routeName,
-                                  queryParameters: {
-                                    'index': serializeParam(
-                                      2,
-                                      ParamType.int,
-                                    ),
-                                    'order': serializeParam(
-                                      listViewOrderRecord.reference,
-                                      ParamType.DocumentReference,
-                                    ),
-                                  }.withoutNulls,
-                                );
-                              },
-                              child: OrderCardCustomerWidget(
-                                key: Key(
-                                    'Keyfov_${listViewIndex}_of_${listViewOrderRecordList.length}'),
-                                order: listViewOrderRecord,
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    );
-                  }
+                  if (_loading && _orders == null) return _loadingBox();
+                  return _list(_orders ?? const [], driver: driver);
                 },
               ),
             ),
-          ].divide(SizedBox(height: 5.0)),
+          ].divide(const SizedBox(height: 5.0)),
         ),
       ),
     );

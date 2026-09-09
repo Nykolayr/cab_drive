@@ -1,5 +1,8 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
+import '/backend/api/chat_open.dart';
 import '/backend/api/file_storage_service.dart';
+import '/backend/api/users_record_api.dart';
 import '/backend/backend.dart';
 import '/backend/push_notifications/push_notifications_util.dart';
 import '/backend/schema/enums/enums.dart';
@@ -80,7 +83,7 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
     return Padding(
       padding: EdgeInsetsDirectional.fromSTEB(0.0, 50.0, 0.0, 0.0),
       child: FutureBuilder<UsersRecord>(
-        future: UsersRecord.getDocumentOnce(widget!.respDT!.userDriver!),
+        future: UsersRecordApi.getOnce(widget!.respDT!.userDriver!),
         builder: (context, snapshot) {
           // Customize what your widget looks like when it's loading.
           if (!snapshot.hasData) {
@@ -756,111 +759,13 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                           Expanded(
                                             child: FFButtonWidget(
                                               onPressed: () async {
-                                                var _shouldSetState = false;
-                                                _model.mychats =
-                                                    await queryChatsRecordOnce(
-                                                  queryBuilder: (chatsRecord) =>
-                                                      chatsRecord.where(
-                                                    'users',
-                                                    arrayContains:
-                                                        currentUserReference,
-                                                  ),
+                                                await openPeerChat(
+                                                  context,
+                                                  peerUid: containerUsersRecord
+                                                      .reference.id,
+                                                  name:
+                                                      '${containerUsersRecord.displayName} ${containerUsersRecord.surname}',
                                                 );
-                                                _shouldSetState = true;
-                                                if (_model.mychats!
-                                                    .where((e) => e.users
-                                                        .contains(
-                                                            containerUsersRecord
-                                                                .reference))
-                                                    .toList()
-                                                    .isNotEmpty) {
-                                                  context.pushNamed(
-                                                    ChatWidget.routeName,
-                                                    queryParameters: {
-                                                      'chat': serializeParam(
-                                                        _model.mychats
-                                                            ?.where((e) => e
-                                                                .users
-                                                                .contains(
-                                                                    containerUsersRecord
-                                                                        .reference))
-                                                            .toList()
-                                                            ?.firstOrNull
-                                                            ?.reference,
-                                                        ParamType
-                                                            .DocumentReference,
-                                                      ),
-                                                      'name': serializeParam(
-                                                        '${containerUsersRecord.displayName} ${containerUsersRecord.surname}',
-                                                        ParamType.String,
-                                                      ),
-                                                    }.withoutNulls,
-                                                  );
-
-                                                  if (_shouldSetState)
-                                                    safeSetState(() {});
-                                                  return;
-                                                } else {
-                                                  var chatsRecordReference =
-                                                      ChatsRecord.collection
-                                                          .doc();
-                                                  await chatsRecordReference
-                                                      .set({
-                                                    ...createChatsRecordData(
-                                                      dateCreated:
-                                                          getCurrentTimestamp,
-                                                      support: false,
-                                                    ),
-                                                    ...mapToFirestore(
-                                                      {
-                                                        'users': functions.comnineUsers(
-                                                            containerUsersRecord
-                                                                .reference,
-                                                            currentUserReference!),
-                                                      },
-                                                    ),
-                                                  });
-                                                  _model.newchat = ChatsRecord
-                                                      .getDocumentFromData({
-                                                    ...createChatsRecordData(
-                                                      dateCreated:
-                                                          getCurrentTimestamp,
-                                                      support: false,
-                                                    ),
-                                                    ...mapToFirestore(
-                                                      {
-                                                        'users': functions.comnineUsers(
-                                                            containerUsersRecord
-                                                                .reference,
-                                                            currentUserReference!),
-                                                      },
-                                                    ),
-                                                  }, chatsRecordReference);
-                                                  _shouldSetState = true;
-
-                                                  context.pushNamed(
-                                                    ChatWidget.routeName,
-                                                    queryParameters: {
-                                                      'chat': serializeParam(
-                                                        _model
-                                                            .newchat?.reference,
-                                                        ParamType
-                                                            .DocumentReference,
-                                                      ),
-                                                      'name': serializeParam(
-                                                        '${containerUsersRecord.displayName} ${containerUsersRecord.surname}',
-                                                        ParamType.String,
-                                                      ),
-                                                    }.withoutNulls,
-                                                  );
-
-                                                  if (_shouldSetState)
-                                                    safeSetState(() {});
-                                                  return;
-                                                }
-
-                                                if (_shouldSetState)
-                                                  safeSetState(() {});
                                               },
                                               text: 'Написать',
                                               options: FFButtonOptions(
@@ -968,48 +873,102 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                       child: FFButtonWidget(
                         onPressed: !selectEnabled ? null : () async {
                           if (widget!.order?.payMethod == PayMethod.cahs) {
-                            await widget!.order!.reference
-                                .update(createOrderRecordData(
-                              selectedDriver: containerUsersRecord.reference,
-                              status: StatusOrder.spec_set,
-                              commissionPercent: containerUsersRecord.commissionPercent.toInt(),
-                              currentPrice: widget!.respDT?.price,
-                            ));
-                            // Добавляем заказ в очередь активных у выбранного водителя.
-                            try {
-                              await containerUsersRecord.reference.update({
-                                'active_orders_queue':
-                                    FieldValue.arrayUnion([widget!.order!.reference]),
-                              });
-                              print('[responsed_detail.assign] queue+= '
-                                  'driver=${containerUsersRecord.reference.id} '
-                                  'order=${widget!.order!.reference.id}');
-                            } catch (e) {
-                              print('[responsed_detail.assign] queue ERROR $e');
+                            final ok = await AppMeApi.acceptBid(
+                              widget!.order!.reference.id,
+                              driverUid: containerUsersRecord.reference.id,
+                              price: widget!.respDT?.price,
+                              commissionPercent:
+                                  containerUsersRecord.commissionPercent,
+                            );
+                            if (!ok) {
+                              await widget!.order!.reference
+                                  .update(createOrderRecordData(
+                                selectedDriver: containerUsersRecord.reference,
+                                status: StatusOrder.spec_set,
+                                commissionPercent: containerUsersRecord
+                                    .commissionPercent
+                                    .toInt(),
+                                currentPrice: widget!.respDT?.price,
+                              ));
+                              try {
+                                await containerUsersRecord.reference.update({
+                                  'active_orders_queue': FieldValue.arrayUnion(
+                                      [widget!.order!.reference]),
+                                });
+                              } catch (e) {
+                                print(
+                                    '[responsed_detail.assign] queue ERROR $e');
+                              }
                             }
                             Navigator.pop(context);
                           } else {
-                            var payOrderRecordReference =
-                                PayOrderRecord.collection.doc();
-                            await payOrderRecordReference
-                                .set(createPayOrderRecordData(
-                              orderId: getCurrentTimestamp
-                                  .millisecondsSinceEpoch
-                                  .toString(),
-                              isPaid: false,
-                              amountInCop: widget!.respDT!.price * 100,
-                              user: currentUserReference,
-                              paymentType: PaymentType.regularCustomer,
-                              currentOrderDocRef: widget!.order?.reference,
-                              driver: containerUsersRecord.reference,
-                            ));
-                            _model.order = PayOrderRecord.getDocumentFromData(
-                                await createPayOrderRecordData(
-                                  orderId: getCurrentTimestamp
-                                      .millisecondsSinceEpoch
-                                      .toString(),
+                            final orderIdMs = getCurrentTimestamp
+                                .millisecondsSinceEpoch
+                                .toString();
+                            final amountCop = widget!.respDT!.price * 100;
+                            final driverId =
+                                containerUsersRecord.reference.id;
+                            final cabOrderId = widget!.order!.reference.id;
+                            final created = await AppMeApi.createPayment({
+                              'order_id': orderIdMs,
+                              'orderId': orderIdMs,
+                              'is_paid': false,
+                              'amount_in_cop': amountCop,
+                              'amountInCop': amountCop,
+                              'payment_type':
+                                  PaymentType.regularCustomer.serialize(),
+                              'paymentType':
+                                  PaymentType.regularCustomer.serialize(),
+                              'current_order_id': cabOrderId,
+                              'current_order_doc_ref': {
+                                '_ref': 'order/$cabOrderId',
+                              },
+                              'driver_id': driverId,
+                              'driver': {'_ref': 'users/$driverId'},
+                              // цена отклика для accept-bid после оплаты
+                              'bid_price': widget!.respDT?.price,
+                              'commission_percent':
+                                  containerUsersRecord.commissionPercent,
+                            });
+                            DocumentReference payOrderRecordReference;
+                            if (created != null &&
+                                (created['id']?.toString().isNotEmpty ??
+                                    false)) {
+                              payOrderRecordReference =
+                                  PayOrderRecord.collection
+                                      .doc(created['id'].toString());
+                              // FS doc для PayInit stream (пока poll не готов)
+                              try {
+                                await payOrderRecordReference
+                                    .set(createPayOrderRecordData(
+                                  orderId: orderIdMs,
                                   isPaid: false,
-                                  amountInCop: widget!.respDT!.price * 100,
+                                  amountInCop: amountCop,
+                                  user: currentUserReference,
+                                  paymentType: PaymentType.regularCustomer,
+                                  currentOrderDocRef: widget!.order?.reference,
+                                  driver: containerUsersRecord.reference,
+                                ));
+                              } catch (_) {}
+                            } else {
+                              payOrderRecordReference =
+                                  PayOrderRecord.collection.doc();
+                              await payOrderRecordReference
+                                  .set(createPayOrderRecordData(
+                                orderId: orderIdMs,
+                                isPaid: false,
+                                amountInCop: amountCop,
+                                user: currentUserReference,
+                                paymentType: PaymentType.regularCustomer,
+                                currentOrderDocRef: widget!.order?.reference,
+                                driver: containerUsersRecord.reference,
+                              ));
+                            }
+                            _model.order = PayOrderRecord.getDocumentFromData(
+                                createPayOrderRecordData(
+                                  orderId: orderIdMs,
+                                  isPaid: false,
+                                  amountInCop: amountCop,
                                   user: currentUserReference,
                                   paymentType: PaymentType.regularCustomer,
                                   currentOrderDocRef: widget!.order?.reference,

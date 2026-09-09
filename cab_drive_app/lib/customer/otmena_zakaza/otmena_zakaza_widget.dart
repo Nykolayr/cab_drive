@@ -1,6 +1,5 @@
-import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
 import '/backend/backend.dart';
-import '/backend/schema/enums/enums.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -212,10 +211,15 @@ class _OtmenaZakazaWidgetState extends State<OtmenaZakazaWidget> {
                     : () async {
                         unawaited(
                           () async {
-                            await widget!.order!.update(createOrderRecordData(
-                              status: StatusOrder.cancelled,
-                              dateUpd: getCurrentTimestamp,
-                            ));
+                            final oid = widget!.order!.id;
+                            final ok = await AppMeApi.cancelOrder(oid);
+                            if (!ok && context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Не удалось отменить заказ'),
+                                ),
+                              );
+                            }
                           }(),
                         );
                         Navigator.pop(context);

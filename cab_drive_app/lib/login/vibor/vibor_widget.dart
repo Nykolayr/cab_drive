@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -168,13 +169,20 @@ class _ViborWidgetState extends State<ViborWidget> {
                         FFAppState().roleSelected = true;
                         debugPrint('[ViborWidget] Selected role: driver');
                         safeSetState(() {});
-                        _model.kek = await queryRequestVereficationRecordCount(
-                          queryBuilder: (requestVereficationRecord) =>
-                              requestVereficationRecord.where(
-                            'user',
-                            isEqualTo: currentUserReference,
-                          ),
-                        );
+                        _model.kek = null;
+                        try {
+                          _model.kek =
+                              await AppMeApi.verificationCountMine();
+                        } catch (_) {
+                          _model.kek =
+                              await queryRequestVereficationRecordCount(
+                            queryBuilder: (requestVereficationRecord) =>
+                                requestVereficationRecord.where(
+                              'user',
+                              isEqualTo: currentUserReference,
+                            ),
+                          );
+                        }
                         _shouldSetState = true;
                         if (_model.kek! > 0) {
                           context.goNamed(MainDriverWidget.routeName);

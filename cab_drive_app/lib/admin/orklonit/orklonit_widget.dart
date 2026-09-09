@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
 import '/backend/backend.dart';
 import '/backend/push_notifications/push_notifications_util.dart';
 import '/backend/schema/enums/enums.dart';
@@ -142,14 +143,21 @@ class _OrklonitWidgetState extends State<OrklonitWidget> {
                     children: [
                       FFButtonWidget(
                         onPressed: () async {
-                          await widget!.user!.update(createUsersRecordData(
-                            verifNeProidena: true,
-                          ));
+                          final verId = widget!.verif?.id;
+                          var ok = false;
+                          if (verId != null && verId.isNotEmpty) {
+                            ok = await AppMeApi.rejectVerification(verId);
+                          }
+                          if (!ok) {
+                            await widget!.user!.update(createUsersRecordData(
+                              verifNeProidena: true,
+                            ));
 
-                          await widget!.verif!
-                              .update(createRequestVereficationRecordData(
-                            status: StatusVerif.otklonena,
-                          ));
+                            await widget!.verif!
+                                .update(createRequestVereficationRecordData(
+                              status: StatusVerif.otklonena,
+                            ));
+                          }
                           triggerPushNotification(
                             notificationTitle: 'Верефикация не пройдена!',
                             notificationText:

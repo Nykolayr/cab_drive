@@ -24,6 +24,7 @@ import json
 import payments
 import tinkoff
 from orders.api import check_order_status, notify_busy_drivers_about_new_orders
+import app_data
 
 init_db()
 
@@ -59,6 +60,7 @@ app.register_blueprint(settings.app)
 app.register_blueprint(chats.app)
 app.register_blueprint(orders.app, url_prefix='/d/api/orders')
 app.register_blueprint(tinkoff.app)
+app.register_blueprint(app_data.app)
 # ЮKassa callback (подписки) — был импорт без register
 app.register_blueprint(payments.app)
 

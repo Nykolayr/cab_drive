@@ -1,6 +1,10 @@
 import '/app_state.dart';
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
+import '/backend/api/chat_open.dart';
 import '/backend/api/file_storage_service.dart';
+import '/backend/api/saved_cards_record_mapper.dart';
+import '/backend/api/users_record_api.dart';
 import '/backend/backend.dart';
 import '/backend/push_notifications/push_notifications_util.dart';
 import '/backend/schema/enums/enums.dart';
@@ -82,7 +86,18 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
       _pendingPrice = newPrice;
     });
     try {
-      await widget.order!.reference.update({'currentPrice': newPrice});
+      final ok = await AppMeApi.patchOrder(
+        widget.order!.reference.id,
+        {'currentPrice': newPrice},
+      );
+      if (!ok) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Не удалось изменить цену')),
+          );
+        }
+        return;
+      }
       // Уведомляем откликнувшихся водителей об изменении цены заказа.
       final respondedDrivers = widget.order!.userWhoResponced;
       if (respondedDrivers.isNotEmpty) {
@@ -127,35 +142,25 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
 
 
   Widget _responseBadge(OrderRecord order) {
-    return FutureBuilder<int>(
-      future: queryResponsesRecordCount(
-        parent: order.reference,
-        queryBuilder: (responsesRecord) =>
-            responsesRecord.where('viewed', isEqualTo: false),
+    final count = order.countResp;
+    if (count == 0) return const SizedBox.shrink();
+    return Container(
+      width: 28.0,
+      height: 28.0,
+      decoration: const BoxDecoration(
+        color: Color(0xFFE01935),
+        shape: BoxShape.circle,
       ),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) return const SizedBox(width: 28.0, height: 28.0);
-        final count = snapshot.data!;
-        if (count == 0) return const SizedBox.shrink();
-        return Container(
-          width: 28.0,
-          height: 28.0,
-          decoration: const BoxDecoration(
-            color: Color(0xFFE01935),
-            shape: BoxShape.circle,
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            '$count',
-            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                  fontFamily: 'SF',
-                  color: FlutterFlowTheme.of(context).secondaryBackground,
-                  letterSpacing: 0.0,
-                  fontWeight: FontWeight.w500,
-                ),
-          ),
-        );
-      },
+      alignment: Alignment.center,
+      child: Text(
+        '$count',
+        style: FlutterFlowTheme.of(context).bodyMedium.override(
+              fontFamily: 'SF',
+              color: FlutterFlowTheme.of(context).secondaryBackground,
+              letterSpacing: 0.0,
+              fontWeight: FontWeight.w500,
+            ),
+      ),
     );
   }
 
@@ -460,49 +465,37 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
     _repeatInFlight = true;
     try {
       final src = widget!.order!;
-      final ref = OrderRecord.collection.doc();
-      await ref.set({
-        ...createOrderRecordData(
-          userCustomer: currentUserReference,
-          supply: src.supply,
-          dateTime: src.dateTime,
-          pointA: src.pointA,
-          pointB: src.pointB,
-          pointC: src.hasPointC() ? src.pointC : null,
-          movers: src.movers,
-          description: src.description,
-          budget: src.budget,
-          dateTimeCreated: functions.toUtc(),
-          status: StatusOrder.newOrder,
-          driverReviewed: false,
-          customerReviewed: false,
-          dateUpd: getCurrentTimestamp,
-          distance: src.distance,
-          time: src.time,
-          car: src.car,
-          payMethod: src.payMethod,
-        ),
-        ...mapToFirestore({'images': src.images}),
+      final id = OrderRecord.collection.doc().id;
+      final api = await AppMeApi.createOrder({
+        'id': id,
+        'user_customer_id': currentUserUid,
+        'supply': src.supply,
+        'dateTime': src.dateTime?.toUtc().toIso8601String(),
+        'pointA': pointToApiMap(src.pointA),
+        'pointB': pointToApiMap(src.pointB),
+        if (src.hasPointC()) 'pointC': pointToApiMap(src.pointC),
+        'movers': src.movers,
+        'description': src.description,
+        'budget': src.budget,
+        'dateTime_created': functions.toUtc().toIso8601String(),
+        'status': 'newOrder',
+        'distance': src.distance,
+        'time': src.time,
+        'car': src.car?.serialize(),
+        'payMethod': src.payMethod?.serialize(),
+        'images': src.images,
       });
-
-      final drivers = await queryUsersRecordOnce(
-        queryBuilder: (q) => q
-            .where('is_driver', isEqualTo: true)
-            .where('verif_compl', isEqualTo: true)
-            .where('city', isEqualTo: src.pointA.city),
-      );
-      final ids = drivers.map((e) => e.uid).whereType<String>().toList();
-      if (ids.isNotEmpty) {
-        await sendPushToUsers(
-          title: 'Новый заказ',
-          text: 'В приложении появился новый заказ',
-          userIds: ids,
-          data: {'order_id': ref.id, 'page': 'order_Page_Driver'},
-        );
+      if (api == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Не удалось повторить заказ')),
+          );
+        }
+        return;
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Заказ был создан'),
             duration: Duration(seconds: 2),
           ),
@@ -1076,63 +1069,28 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                             ),
                           ),
                         if (widget!.order?.countResp != 0)
-                          FutureBuilder<int>(
-                            future: queryResponsesRecordCount(
-                              parent: widget!.order?.reference,
-                              queryBuilder: (responsesRecord) =>
-                                  responsesRecord.where(
-                                'viewed',
-                                isEqualTo: false,
+                          Container(
+                            width: 28.0,
+                            height: 28.0,
+                            decoration: BoxDecoration(
+                              color: Color(0xFFE01935),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Align(
+                              alignment: AlignmentDirectional(0.0, 0.0),
+                              child: Text(
+                                '${widget!.order?.countResp}',
+                                style: FlutterFlowTheme.of(context)
+                                    .bodyMedium
+                                    .override(
+                                      fontFamily: 'SF',
+                                      color: FlutterFlowTheme.of(context)
+                                          .secondaryBackground,
+                                      letterSpacing: 0.0,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                               ),
                             ),
-                            builder: (context, snapshot) {
-                              // Customize what your widget looks like when it's loading.
-                              if (!snapshot.hasData) {
-                                return Center(
-                                  child: SizedBox(
-                                    width: 28.0,
-                                    height: 28.0,
-                                    child: CircularProgressIndicator(
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        FlutterFlowTheme.of(context).primary,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }
-                              int containerCount = snapshot.data!;
-
-                              return Container(
-                                decoration: BoxDecoration(),
-                                child: Visibility(
-                                  visible: containerCount != 0,
-                                  child: Container(
-                                    width: 28.0,
-                                    height: 28.0,
-                                    decoration: BoxDecoration(
-                                      color: Color(0xFFE01935),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Align(
-                                      alignment: AlignmentDirectional(0.0, 0.0),
-                                      child: Text(
-                                        containerCount.toString(),
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              fontFamily: 'SF',
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .secondaryBackground,
-                                              letterSpacing: 0.0,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
                           ),
                         Expanded(
                           child: Text(
@@ -1406,7 +1364,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                     ),
                   ),
                   FutureBuilder<UsersRecord>(
-                    future: UsersRecord.getDocumentOnce(
+                    future: UsersRecordApi.getOnce(
                         widget!.order!.selectedDriver!),
                     builder: (context, snapshot) {
                       // Customize what your widget looks like when it's loading.
@@ -1507,100 +1465,13 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                   Expanded(
                                     child: FFButtonWidget(
                                       onPressed: () async {
-                                        var _shouldSetState = false;
-                                        _model.mychats =
-                                            await queryChatsRecordOnce(
-                                          queryBuilder: (chatsRecord) =>
-                                              chatsRecord.where(
-                                            'users',
-                                            arrayContains: currentUserReference,
-                                          ),
+                                        await openPeerChat(
+                                          context,
+                                          peerUid:
+                                              containerUsersRecord.reference.id,
+                                          name:
+                                              '${containerUsersRecord.displayName} ${containerUsersRecord.surname}',
                                         );
-                                        _shouldSetState = true;
-                                        if (_model.mychats!
-                                            .where((e) => e.users.contains(
-                                                containerUsersRecord.reference))
-                                            .toList()
-                                            .isNotEmpty) {
-                                          context.pushNamed(
-                                            ChatWidget.routeName,
-                                            queryParameters: {
-                                              'chat': serializeParam(
-                                                _model.mychats
-                                                    ?.where((e) => e.users
-                                                        .contains(
-                                                            containerUsersRecord
-                                                                .reference))
-                                                    .toList()
-                                                    ?.firstOrNull
-                                                    ?.reference,
-                                                ParamType.DocumentReference,
-                                              ),
-                                              'name': serializeParam(
-                                                '${containerUsersRecord.displayName} ${containerUsersRecord.surname}',
-                                                ParamType.String,
-                                              ),
-                                            }.withoutNulls,
-                                          );
-
-                                          if (_shouldSetState)
-                                            safeSetState(() {});
-                                          return;
-                                        } else {
-                                          var chatsRecordReference =
-                                              ChatsRecord.collection.doc();
-                                          await chatsRecordReference.set({
-                                            ...createChatsRecordData(
-                                              dateCreated: getCurrentTimestamp,
-                                              support: false,
-                                            ),
-                                            ...mapToFirestore(
-                                              {
-                                                'users': functions.comnineUsers(
-                                                    containerUsersRecord
-                                                        .reference,
-                                                    currentUserReference!),
-                                              },
-                                            ),
-                                          });
-                                          _model.newchat =
-                                              ChatsRecord.getDocumentFromData({
-                                            ...createChatsRecordData(
-                                              dateCreated: getCurrentTimestamp,
-                                              support: false,
-                                            ),
-                                            ...mapToFirestore(
-                                              {
-                                                'users': functions.comnineUsers(
-                                                    containerUsersRecord
-                                                        .reference,
-                                                    currentUserReference!),
-                                              },
-                                            ),
-                                          }, chatsRecordReference);
-                                          _shouldSetState = true;
-
-                                          context.pushNamed(
-                                            ChatWidget.routeName,
-                                            queryParameters: {
-                                              'chat': serializeParam(
-                                                _model.newchat?.reference,
-                                                ParamType.DocumentReference,
-                                              ),
-                                              'name': serializeParam(
-                                                '${containerUsersRecord.displayName} ${containerUsersRecord.surname}',
-                                                ParamType.String,
-                                              ),
-                                            }.withoutNulls,
-                                          );
-
-                                          if (_shouldSetState)
-                                            safeSetState(() {});
-                                          return;
-                                        }
-
-                                        if (_shouldSetState)
-                                          safeSetState(() {});
                                       },
                                       text: 'Написать',
                                       options: FFButtonOptions(

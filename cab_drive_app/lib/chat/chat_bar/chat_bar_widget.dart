@@ -1,4 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_chat_ws.dart';
+import '/backend/api/app_me_api.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
 import '/backend/push_notifications/push_notifications_util.dart';
@@ -8,7 +10,6 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/upload_data.dart';
 import '/pages/bottom/error_popup/error_popup_widget.dart';
-import 'dart:async';
 import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -440,25 +441,38 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
 
                                     var messagesRecordReference1 =
                                         MessagesRecord.collection.doc();
-                                    await messagesRecordReference1.set({
-                                      ...createMessagesRecordData(
-                                        text: _model.textTextController.text,
-                                        sender: currentUserReference,
-                                        dateCreated: getCurrentTimestamp,
-                                        read: false,
-                                        chatRef: widget!.chat,
-                                      ),
-                                      ...mapToFirestore(
-                                        {
-                                          'list_images': _model
-                                              .uploadedFileUrls_uploadDataLms,
-                                        },
-                                      ),
-                                    });
+                                    final listImages = List<String>.from(
+                                        _model.uploadedFileUrls_uploadDataLms);
+                                    final text =
+                                        _model.textTextController.text;
+                                    final wsOk = await AppChatWs.instance
+                                        .sendMessage(
+                                      widget!.chat!.id,
+                                      text: text,
+                                      listImages: listImages,
+                                    );
+                                    if (!wsOk) {
+                                      final apiOk =
+                                          await AppMeApi.sendChatMessage(
+                                        widget!.chat!.id,
+                                        text: text,
+                                        listImages: listImages,
+                                      );
+                                      if (!apiOk) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                                'Не удалось отправить сообщение'),
+                                          ),
+                                        );
+                                        return;
+                                      }
+                                    }
                                     _model.newmess2 =
                                         MessagesRecord.getDocumentFromData({
                                       ...createMessagesRecordData(
-                                        text: _model.textTextController.text,
+                                        text: text,
                                         sender: currentUserReference,
                                         dateCreated: getCurrentTimestamp,
                                         read: false,
@@ -466,28 +480,10 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
                                       ),
                                       ...mapToFirestore(
                                         {
-                                          'list_images': _model
-                                              .uploadedFileUrls_uploadDataLms,
+                                          'list_images': listImages,
                                         },
                                       ),
                                     }, messagesRecordReference1);
-                                    unawaited(
-                                      () async {
-                                        await widget!.chat!
-                                            .update(createChatsRecordData(
-                                          lastMessage: _model.newmess2?.text !=
-                                                      null &&
-                                                  _model.newmess2?.text != ''
-                                              ? _model.newmess2?.text
-                                              : (_model.newmess2!.listImages
-                                                          .length >
-                                                      1
-                                                  ? '${_model.newmess2?.listImages?.length?.toString()} фото'
-                                                  : 'Фотография'),
-                                          dateCreated: getCurrentTimestamp,
-                                        ));
-                                      }(),
-                                    );
                                     safeSetState(() {
                                       _model.textTextController?.clear();
                                     });
@@ -533,42 +529,47 @@ class _ChatBarWidgetState extends State<ChatBarWidget> {
                                   } else {
                                     var messagesRecordReference2 =
                                         MessagesRecord.collection.doc();
-                                    await messagesRecordReference2
-                                        .set(createMessagesRecordData(
-                                      text: _model.textTextController.text,
-                                      sender: currentUserReference,
-                                      dateCreated: getCurrentTimestamp,
-                                      read: false,
-                                      chatRef: widget!.chat,
-                                    ));
+                                    final text =
+                                        _model.textTextController.text;
+                                    final wsOk = await AppChatWs.instance
+                                        .sendMessage(
+                                      widget!.chat!.id,
+                                      text: text,
+                                    );
+                                    if (!wsOk) {
+                                      final apiOk =
+                                          await AppMeApi.sendChatMessage(
+                                        widget!.chat!.id,
+                                        text: text,
+                                      );
+                                      if (!apiOk) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                                'Не удалось отправить сообщение'),
+                                          ),
+                                        );
+                                        return;
+                                      }
+                                    }
                                     _model.newmess =
                                         MessagesRecord.getDocumentFromData(
                                             createMessagesRecordData(
-                                              text: _model
-                                                  .textTextController.text,
+                                              text: text,
                                               sender: currentUserReference,
                                               dateCreated: getCurrentTimestamp,
                                               read: false,
                                               chatRef: widget!.chat,
                                             ),
                                             messagesRecordReference2);
-                                    unawaited(
-                                      () async {
-                                        await widget!.chat!
-                                            .update(createChatsRecordData(
-                                          lastMessage: _model.newmess?.text,
-                                          dateCreated:
-                                              _model.newmess?.dateCreated,
-                                        ));
-                                      }(),
-                                    );
                                     safeSetState(() {
                                       _model.textTextController?.clear();
                                     });
                                     triggerPushNotification(
                                       notificationTitle:
                                           '${currentUserDisplayName} ${valueOrDefault(currentUserDocument?.surname, '')}',
-                                      notificationText: _model.newmess!.text,
+                                      notificationText: text,
                                       notificationImageUrl: currentUserPhoto,
                                       notificationSound: 'default',
                                       userRefs: [widget!.user!],

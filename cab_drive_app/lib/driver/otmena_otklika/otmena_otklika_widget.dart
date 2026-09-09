@@ -1,4 +1,4 @@
-import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -151,16 +151,16 @@ class _OtmenaOtklikaWidgetState extends State<OtmenaOtklikaWidget> {
                 children: [
                   FFButtonWidget(
                     onPressed: () async {
-                      await widget!.order!.reference.update({
-                        ...mapToFirestore(
-                          {
-                            'user_who_responced':
-                                FieldValue.arrayRemove([currentUserReference]),
-                            'count_resp': FieldValue.increment(-(1)),
-                          },
-                        ),
-                      });
-                      await widget!.resp!.delete();
+                      final orderId = widget!.order!.reference.id;
+                      final bidId = widget!.resp!.id;
+                      final ok = await AppMeApi.deleteBid(orderId, bidId);
+                      if (!ok) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Не удалось отменить отклик')),
+                        );
+                        return;
+                      }
                       Navigator.pop(context);
                     },
                     text: 'Отменить отклик',

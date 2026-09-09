@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_animations.dart';
@@ -277,48 +278,22 @@ class _OtpWidgetState extends State<OtpWidget> with TickerProviderStateMixin {
                                 return;
                               }
 
-                              await UsersRecord.collection
-                                  .doc(user.uid)
-                                  .update(createUsersRecordData(
-                                    phoneNumber: FFAppState().phone,
-                                    photoUrl:
-                                        'https://firebasestorage.googleapis.com/v0/b/underworking-aq2ijs.appspot.com/o/group_1171274713.webp?alt=media&token=7191e1ad-858e-46dd-baac-19367b969bcf',
-                                  ));
-
-                              var chatsRecordReference =
-                                  ChatsRecord.collection.doc();
-                              await chatsRecordReference.set({
-                                ...createChatsRecordData(
-                                  dateCreated: getCurrentTimestamp,
-                                  support: true,
-                                ),
-                                ...mapToFirestore(
-                                  {
-                                    'users': functions
-                                        .listusers(currentUserReference!),
-                                  },
-                                ),
+                              await AppMeApi.patchMe({
+                                'phone_number': FFAppState().phone,
+                                'photo_url':
+                                    'https://firebasestorage.googleapis.com/v0/b/underworking-aq2ijs.appspot.com/o/group_1171274713.webp?alt=media&token=7191e1ad-858e-46dd-baac-19367b969bcf',
+                                'login_complete': false,
                               });
-                              _model.chatWithSupport =
-                                  ChatsRecord.getDocumentFromData({
-                                ...createChatsRecordData(
-                                  dateCreated: getCurrentTimestamp,
-                                  support: true,
-                                ),
-                                ...mapToFirestore(
-                                  {
-                                    'users': functions
-                                        .listusers(currentUserReference!),
-                                  },
-                                ),
-                              }, chatsRecordReference);
-                              _shouldSetState = true;
 
-                              await currentUserReference!
-                                  .update(createUsersRecordData(
-                                chatWithSupport:
-                                    _model.chatWithSupport?.reference,
-                              ));
+                              final supportChatId =
+                                  await AppMeApi.ensureSupportChat();
+                              if (supportChatId != null &&
+                                  supportChatId.isNotEmpty) {
+                                currentUserDocument?.chatWithSupport =
+                                    ChatsRecord.collection.doc(supportChatId);
+                              }
+                              await refreshAppMeCache();
+                              _shouldSetState = true;
 
                               context.goNamedAuth(
                                 GeoWidget.routeName,

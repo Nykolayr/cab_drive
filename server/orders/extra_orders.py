@@ -78,7 +78,14 @@ def _extract_point_latlng(point: Any) -> Optional[Tuple[float, float]]:
 
 
 def _extract_driver_location(driver_doc: Dict[str, Any]) -> Optional[Tuple[float, float]]:
-    """Достаёт (lat, lng) из user-документа водителя."""
+    """Достаёт (lat, lng) из user-документа водителя (FS GeoPoint или PG driver_lat/lng)."""
+    lat = driver_doc.get("driver_lat")
+    lng = driver_doc.get("driver_lng")
+    if lat is not None and lng is not None:
+        try:
+            return float(lat), float(lng)
+        except Exception:
+            pass
     loc = driver_doc.get("driver_location") or driver_doc.get("location")
     if loc is None:
         return None
@@ -95,6 +102,17 @@ def _extract_driver_location(driver_doc: Dict[str, Any]) -> Optional[Tuple[float
         except Exception:
             return None
     return None
+
+
+def _driver_uid_from_order(order: Dict[str, Any]) -> Optional[str]:
+    drv = order.get("selected_driver") or order.get("selected_driver_id")
+    if drv is None:
+        return None
+    if isinstance(drv, str):
+        return drv.rsplit("/", 1)[-1] if "/" in drv else drv
+    if isinstance(drv, dict) and "_ref" in drv:
+        return str(drv["_ref"]).rsplit("/", 1)[-1]
+    return getattr(drv, "id", None)
 
 
 # ----------------------------- Google Directions -----------------------------
@@ -274,21 +292,59 @@ def is_route_compatible(
 
 def _list_active_orders_for_drivers() -> Dict[str, Dict[str, Any]]:
     """Возвращает map driver_uid -> active_order_dict для всех водителей в статусе spec_set/place_pickup/at_work."""
-    db = firestore.client()
     out: Dict[str, Dict[str, Any]] = {}
+
+    # Postgres SoT
+    try:
+        import app_pg
+
+        if app_pg.enabled():
+            rows = app_pg.list_orders_by_statuses(list(ACTIVE_ORDER_STATUSES), limit_per_status=200)
+            for d in rows:
+                drv_uid = _driver_uid_from_order(d)
+                if drv_uid and drv_uid not in out:
+                    out[drv_uid] = d
+            if out:
+                return out
+    except Exception as e:
+        logger.warning(f"[extra_orders._list_active_orders_for_drivers] PG failed: {e}")
+
+    db = firestore.client()
     for status in ACTIVE_ORDER_STATUSES:
         try:
             docs = db.collection("order").where("status", "==", status).stream()
             for doc in docs:
                 d = doc.to_dict() or {}
                 d["id"] = doc.id
-                drv_ref = d.get("selected_driver")
-                drv_uid = getattr(drv_ref, "id", None) if drv_ref else None
+                drv_uid = _driver_uid_from_order(d)
                 if drv_uid and drv_uid not in out:
                     out[drv_uid] = d
         except Exception as e:
             logger.warning(f"[extra_orders._list_active_orders_for_drivers] failed status={status}: {e}")
     return out
+
+
+def _load_driver_user(driver_uid: str) -> Optional[Dict[str, Any]]:
+    """Профиль водителя: PG get_me, fallback Firestore."""
+    try:
+        import app_pg
+
+        if app_pg.enabled():
+            me = app_pg.get_me(driver_uid)
+            if me:
+                return me
+    except Exception as e:
+        logger.warning(f"[extra_orders._load_driver_user] PG failed uid={driver_uid}: {e}")
+
+    try:
+        db = firestore.client()
+        user_doc = db.collection("users").document(driver_uid).get()
+        if not user_doc.exists:
+            return None
+        return user_doc.to_dict() or {}
+    except Exception as e:
+        logger.warning(f"[extra_orders._load_driver_user] FS failed uid={driver_uid}: {e}")
+        return None
 
 
 def find_busy_drivers_for_order(new_order: Dict[str, Any], api_key: str) -> List[Dict[str, Any]]:
@@ -326,16 +382,13 @@ def find_busy_drivers_for_order(new_order: Dict[str, Any], api_key: str) -> List
         logger.info(f"[extra_orders.find_busy_drivers_for_order] no active drivers found")
         return []
 
-    db = firestore.client()
     results: List[Dict[str, Any]] = []
 
     for driver_uid, cur_order in active.items():
         try:
-            # 1) Достаём пользователя водителя
-            user_doc = db.collection("users").document(driver_uid).get()
-            if not user_doc.exists:
+            user_data = _load_driver_user(driver_uid)
+            if not user_data:
                 continue
-            user_data = user_doc.to_dict() or {}
 
             if user_data.get("is_blocked"):
                 continue

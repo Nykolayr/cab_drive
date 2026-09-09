@@ -1,12 +1,10 @@
-import '/auth/firebase_auth/auth_util.dart';
-import '/backend/backend.dart';
+import '/backend/api/app_me_api.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'dart:async';
 import 'dart:ui';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -249,10 +247,16 @@ class _NewCardWidgetState extends State<NewCardWidget> {
                   }
                   unawaited(
                     () async {
-                      await SavedCardsRecord.createDoc(currentUserReference!)
-                          .set(createSavedCardsRecordData(
+                      final created = await AppMeApi.createCard(
                         pan: _model.nameInputTextController.text,
-                      ));
+                      );
+                      if (created == null && mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Не удалось добавить карту'),
+                          ),
+                        );
+                      }
                     }(),
                   );
                   Navigator.pop(context);

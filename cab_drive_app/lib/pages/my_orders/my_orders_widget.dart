@@ -1,5 +1,7 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
 import '/backend/api/file_storage_service.dart';
+import '/backend/api/order_record_mapper.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
@@ -44,12 +46,63 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
   bool _userDocCoordsTried = false;
   bool _gpsTried = false;
 
+  Timer? _minePoll;
+  List<OrderRecord>? _mineOrders;
+  bool _mineFsFallback = false;
+  bool? _lastDriverRole;
+
   void _onPriceCommitted() {
     _priceBannerTimer?.cancel();
     setState(() => _showPriceBanner = true);
     _priceBannerTimer = Timer(const Duration(seconds: 3), () {
       if (mounted) setState(() => _showPriceBanner = false);
     });
+  }
+
+  Future<void> _reloadMineOrders() async {
+    final role = FFAppState().driver ? 'driver' : 'customer';
+    try {
+      final maps = await AppMeApi.ordersMine(role: role, limit: 100);
+      final out = <OrderRecord>[];
+      for (final m in maps) {
+        final id = m['id']?.toString();
+        if (id == null || id.isEmpty) continue;
+        try {
+          out.add(OrderRecordMapper.fromApi(m, id));
+        } catch (_) {}
+      }
+      if (!mounted) return;
+      setState(() {
+        _mineOrders = out;
+        _mineFsFallback = false;
+      });
+    } catch (e) {
+      // ignore: avoid_print
+      print('[my_orders] API fail (no FS fallback): $e');
+      if (!mounted) return;
+      setState(() {
+        _mineOrders = const [];
+        _mineFsFallback = false;
+      });
+    }
+  }
+
+  Stream<List<OrderRecord>> _mineStream(Stream<List<OrderRecord>> fs) {
+    return Stream<List<OrderRecord>>.value(_mineOrders ?? const []);
+  }
+
+  Widget _mineLoadingBox(BuildContext context) {
+    return Center(
+      child: SizedBox(
+        width: 50.0,
+        height: 50.0,
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(
+            FlutterFlowTheme.of(context).primary,
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _greetingHeader(BuildContext context) {
@@ -171,6 +224,9 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => MyOrdersModel());
+    unawaited(_reloadMineOrders());
+    _minePoll =
+        Timer.periodic(const Duration(seconds: 5), (_) => _reloadMineOrders());
   }
 
   void _kickoffLocationResolve() {
@@ -233,6 +289,7 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
 
   @override
   void dispose() {
+    _minePoll?.cancel();
     _priceBannerTimer?.cancel();
     _model.dispose();
 
@@ -242,6 +299,11 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
+    final driverNow = FFAppState().driver;
+    if (_lastDriverRole != driverNow) {
+      _lastDriverRole = driverNow;
+      unawaited(_reloadMineOrders());
+    }
     _kickoffLocationResolve();
 
     return GestureDetector(
@@ -409,30 +471,20 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                             ),
                             Expanded(
                               child: StreamBuilder<List<OrderRecord>>(
-                                stream: queryOrderRecord(
-                                  queryBuilder: (orderRecord) => orderRecord
-                                      .where(
-                                        'user_customer',
-                                        isEqualTo: currentUserReference,
-                                      )
-                                      .orderBy('date_upd', descending: true),
+                                stream: _mineStream(
+                                  queryOrderRecord(
+                                    queryBuilder: (orderRecord) => orderRecord
+                                        .where(
+                                          'user_customer',
+                                          isEqualTo: currentUserReference,
+                                        )
+                                        .orderBy('date_upd', descending: true),
+                                  ),
                                 ),
                                 builder: (context, snapshot) {
                                   // Customize what your widget looks like when it's loading.
                                   if (!snapshot.hasData) {
-                                    return Center(
-                                      child: SizedBox(
-                                        width: 50.0,
-                                        height: 50.0,
-                                        child: CircularProgressIndicator(
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                            FlutterFlowTheme.of(context)
-                                                .primary,
-                                          ),
-                                        ),
-                                      ),
-                                    );
+                                    return _mineLoadingBox(context);
                                   }
                                   List<OrderRecord> containerOrderRecordList =
                                       snapshot.data!;
@@ -726,36 +778,26 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                             ),
                             Expanded(
                               child: StreamBuilder<List<OrderRecord>>(
-                                stream: queryOrderRecord(
-                                  queryBuilder: (orderRecord) => orderRecord
-                                      .where(Filter.or(
-                                        Filter(
-                                          'selected_driver',
-                                          isEqualTo: currentUserReference,
-                                        ),
-                                        Filter(
-                                          'user_who_responced',
-                                          arrayContains: currentUserReference,
-                                        ),
-                                      ))
-                                      .orderBy('date_upd', descending: true),
+                                stream: _mineStream(
+                                  queryOrderRecord(
+                                    queryBuilder: (orderRecord) => orderRecord
+                                        .where(Filter.or(
+                                          Filter(
+                                            'selected_driver',
+                                            isEqualTo: currentUserReference,
+                                          ),
+                                          Filter(
+                                            'user_who_responced',
+                                            arrayContains: currentUserReference,
+                                          ),
+                                        ))
+                                        .orderBy('date_upd', descending: true),
+                                  ),
                                 ),
                                 builder: (context, snapshot) {
                                   // Customize what your widget looks like when it's loading.
                                   if (!snapshot.hasData) {
-                                    return Center(
-                                      child: SizedBox(
-                                        width: 50.0,
-                                        height: 50.0,
-                                        child: CircularProgressIndicator(
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                            FlutterFlowTheme.of(context)
-                                                .primary,
-                                          ),
-                                        ),
-                                      ),
-                                    );
+                                    return _mineLoadingBox(context);
                                   }
                                   List<OrderRecord> containerOrderRecordList =
                                       snapshot.data!;

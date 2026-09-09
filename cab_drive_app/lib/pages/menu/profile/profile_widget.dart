@@ -8,6 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:webviewx_plus/webviewx_plus.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
+import '/backend/api/chat_open.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
 import '/custom_code/widgets/user_avatar_image.dart';
@@ -302,10 +304,11 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                                                     currentUserDocument
                                                                         ?.balance,
                                                                     0.0);
-                                                            final bonus = valueOrDefault(
-                                                                currentUserDocument
-                                                                    ?.bonusBalance,
-                                                                0.0);
+                                                            final bonus =
+                                                                valueOrDefault(
+                                                                    currentUserDocument
+                                                                        ?.bonusBalance,
+                                                                    0.0);
                                                             final hasBonus =
                                                                 bonus > 0;
                                                             return Column(
@@ -328,8 +331,8 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                                                     format: '0',
                                                                     locale: '',
                                                                   )} руб.',
-                                                                  style: FlutterFlowTheme
-                                                                          .of(context)
+                                                                  style: FlutterFlowTheme.of(
+                                                                          context)
                                                                       .bodyMedium
                                                                       .override(
                                                                         fontFamily:
@@ -346,13 +349,12 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                                                 ),
                                                                 if (hasBonus)
                                                                   Padding(
-                                                                    padding:
-                                                                        EdgeInsetsDirectional
-                                                                            .fromSTEB(
-                                                                                0,
-                                                                                2,
-                                                                                0,
-                                                                                0),
+                                                                    padding: EdgeInsetsDirectional
+                                                                        .fromSTEB(
+                                                                            0,
+                                                                            2,
+                                                                            0,
+                                                                            0),
                                                                     child: Text(
                                                                       '${formatNumber(
                                                                         bonus,
@@ -405,7 +407,8 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                                               currentUserDocument
                                                                   ?.bonusBalance,
                                                               0.0);
-                                                      if (withdrawable < 200.0 &&
+                                                      if (withdrawable <
+                                                              200.0 &&
                                                           bonusOnly > 0) {
                                                         ScaffoldMessenger.of(
                                                                 context)
@@ -1056,64 +1059,65 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                           ),
                                         ].divide(SizedBox(width: 5.0)),
                                       ),
-                                      Padding(padding: EdgeInsetsGeometry.symmetric(vertical: 5),
+                                      Padding(
+                                          padding: EdgeInsetsGeometry.symmetric(
+                                              vertical: 5),
                                           child: GestureDetector(
                                             onTap: () {
-                                              PaymentHistoryWidget.show(context);
+                                              PaymentHistoryWidget.show(
+                                                  context);
                                             },
                                             child: Container(
                                               height: 55.0,
                                               decoration: BoxDecoration(
                                                 color:
-                                                FlutterFlowTheme.of(context)
-                                                    .secondaryBackground,
+                                                    FlutterFlowTheme.of(context)
+                                                        .secondaryBackground,
                                                 borderRadius:
-                                                BorderRadius.circular(18.0),
+                                                    BorderRadius.circular(18.0),
                                               ),
                                               child: Padding(
                                                 padding: EdgeInsetsDirectional
                                                     .fromSTEB(
-                                                    16.0, 14.0, 16.0, 17.0),
+                                                        16.0, 14.0, 16.0, 17.0),
                                                 child: Column(
                                                   mainAxisSize:
-                                                  MainAxisSize.max,
+                                                      MainAxisSize.max,
                                                   crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
+                                                      CrossAxisAlignment.start,
                                                   children: [
                                                     Row(
                                                       mainAxisSize:
-                                                      MainAxisSize.max,
+                                                          MainAxisSize.max,
                                                       mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
                                                       children: [
                                                         Text(
                                                           'История пополнений',
                                                           style: FlutterFlowTheme
-                                                              .of(context)
+                                                                  .of(context)
                                                               .bodyMedium
                                                               .override(
-                                                            fontFamily:
-                                                            'SF',
-                                                            fontSize:
-                                                            18.0,
-                                                            letterSpacing:
-                                                            0.0,
-                                                            fontWeight:
-                                                            FontWeight
-                                                                .w500,
-                                                          ),
+                                                                fontFamily:
+                                                                    'SF',
+                                                                fontSize: 18.0,
+                                                                letterSpacing:
+                                                                    0.0,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                              ),
                                                         ),
                                                         Icon(
                                                           FFIcons
                                                               .kiconrightStroke,
                                                           color:
-                                                          Color(0xFFC0C0C0),
+                                                              Color(0xFFC0C0C0),
                                                           size: 14.0,
                                                         ),
                                                       ],
                                                     ),
-
                                                   ].divide(
                                                       SizedBox(height: 10.0)),
                                                 ),
@@ -1134,158 +1138,156 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             InkWell(
-                                                splashColor: Colors.transparent,
-                                                focusColor: Colors.transparent,
-                                                hoverColor: Colors.transparent,
-                                                highlightColor:
-                                                    Colors.transparent,
-                                                onTap: () async {
-                                                  await showModalBottomSheet(
-                                                    isScrollControlled: true,
-                                                    backgroundColor:
-                                                        Colors.transparent,
-                                                    context: context,
-                                                    builder: (context) {
-                                                      return WebViewAware(
-                                                        child: GestureDetector(
-                                                          onTap: () {
-                                                            FocusScope.of(
-                                                                    context)
-                                                                .unfocus();
-                                                            FocusManager
-                                                                .instance
-                                                                .primaryFocus
-                                                                ?.unfocus();
-                                                          },
-                                                          child: Padding(
-                                                            padding: MediaQuery
-                                                                .viewInsetsOf(
-                                                                    context),
-                                                            child: CityWidget(
-                                                              action: (city,
-                                                                  regi) async {
-                                                                await currentUserReference!
-                                                                    .update(
-                                                                        createUsersRecordData(
-                                                                  city: city,
-                                                                ));
-                                                              },
-                                                            ),
+                                              splashColor: Colors.transparent,
+                                              focusColor: Colors.transparent,
+                                              hoverColor: Colors.transparent,
+                                              highlightColor:
+                                                  Colors.transparent,
+                                              onTap: () async {
+                                                await showModalBottomSheet(
+                                                  isScrollControlled: true,
+                                                  backgroundColor:
+                                                      Colors.transparent,
+                                                  context: context,
+                                                  builder: (context) {
+                                                    return WebViewAware(
+                                                      child: GestureDetector(
+                                                        onTap: () {
+                                                          FocusScope.of(context)
+                                                              .unfocus();
+                                                          FocusManager.instance
+                                                              .primaryFocus
+                                                              ?.unfocus();
+                                                        },
+                                                        child: Padding(
+                                                          padding: MediaQuery
+                                                              .viewInsetsOf(
+                                                                  context),
+                                                          child: CityWidget(
+                                                            action: (city,
+                                                                regi) async {
+                                                              await AppMeApi
+                                                                  .patchMe({
+                                                                'city': city,
+                                                              });
+                                                              await refreshAppMeCache();
+                                                            },
                                                           ),
                                                         ),
-                                                      );
-                                                    },
-                                                  ).then((value) =>
-                                                      safeSetState(() {}));
-                                                },
-                                                child: Container(
-                                                  decoration: BoxDecoration(),
-                                                  child: Column(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    children: [
-                                                      Padding(
-                                                        padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    16.0,
-                                                                    17.0,
-                                                                    16.0,
-                                                                    20.0),
-                                                        child: Row(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .start,
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          10.0,
-                                                                          0.0),
-                                                              child: Icon(
-                                                                FFIcons
-                                                                    .kmarkerPin05,
-                                                                color: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .tertiary,
-                                                                size: 20.0,
-                                                              ),
+                                                      ),
+                                                    );
+                                                  },
+                                                ).then((value) =>
+                                                    safeSetState(() {}));
+                                              },
+                                              child: Container(
+                                                decoration: BoxDecoration(),
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.max,
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          EdgeInsetsDirectional
+                                                              .fromSTEB(
+                                                                  16.0,
+                                                                  17.0,
+                                                                  16.0,
+                                                                  20.0),
+                                                      child: Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .start,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                                EdgeInsetsDirectional
+                                                                    .fromSTEB(
+                                                                        0.0,
+                                                                        0.0,
+                                                                        10.0,
+                                                                        0.0),
+                                                            child: Icon(
+                                                              FFIcons
+                                                                  .kmarkerPin05,
+                                                              color: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .tertiary,
+                                                              size: 20.0,
                                                             ),
-                                                            Expanded(
-                                                              child: Text(
-                                                                'Город поиска',
+                                                          ),
+                                                          Expanded(
+                                                            child: Text(
+                                                              'Город поиска',
+                                                              style: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .bodyMedium
+                                                                  .override(
+                                                                    fontFamily:
+                                                                        'SF',
+                                                                    fontSize:
+                                                                        16.0,
+                                                                    letterSpacing:
+                                                                        0.0,
+                                                                  ),
+                                                            ),
+                                                          ),
+                                                          Padding(
+                                                            padding:
+                                                                EdgeInsetsDirectional
+                                                                    .fromSTEB(
+                                                                        0.0,
+                                                                        0.0,
+                                                                        6.0,
+                                                                        0.0),
+                                                            child:
+                                                                AuthUserStreamWidget(
+                                                              builder:
+                                                                  (context) =>
+                                                                      Text(
+                                                                valueOrDefault(
+                                                                    currentUserDocument
+                                                                        ?.city,
+                                                                    ''),
                                                                 style: FlutterFlowTheme.of(
                                                                         context)
                                                                     .bodyMedium
                                                                     .override(
                                                                       fontFamily:
                                                                           'SF',
-                                                                      fontSize:
-                                                                          16.0,
+                                                                      color: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .secondaryText,
                                                                       letterSpacing:
                                                                           0.0,
                                                                     ),
                                                               ),
                                                             ),
-                                                            Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          0.0,
-                                                                          6.0,
-                                                                          0.0),
-                                                              child:
-                                                                  AuthUserStreamWidget(
-                                                                builder:
-                                                                    (context) =>
-                                                                        Text(
-                                                                  valueOrDefault(
-                                                                      currentUserDocument
-                                                                          ?.city,
-                                                                      ''),
-                                                                  style: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .override(
-                                                                        fontFamily:
-                                                                            'SF',
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .secondaryText,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                      ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            Icon(
-                                                              FFIcons
-                                                                  .kiconrightStroke,
-                                                              color: Color(
-                                                                  0xFFC0C0C0),
-                                                              size: 14.0,
-                                                            ),
-                                                          ],
-                                                        ),
+                                                          ),
+                                                          Icon(
+                                                            FFIcons
+                                                                .kiconrightStroke,
+                                                            color: Color(
+                                                                0xFFC0C0C0),
+                                                            size: 14.0,
+                                                          ),
+                                                        ],
                                                       ),
-                                                      Divider(
-                                                        height: 0.3,
-                                                        thickness: 0.3,
-                                                        color:
-                                                            Color(0xFFD0CFCE),
-                                                      ),
-                                                    ],
-                                                  ),
+                                                    ),
+                                                    Divider(
+                                                      height: 0.3,
+                                                      thickness: 0.3,
+                                                      color: Color(0xFFD0CFCE),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
+                                            ),
                                             InkWell(
                                               splashColor: Colors.transparent,
                                               focusColor: Colors.transparent,
@@ -1404,76 +1406,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                               highlightColor:
                                                   Colors.transparent,
                                               onTap: () async {
-                                                if (currentUserDocument
-                                                        ?.chatWithSupport ==
-                                                    null ||
-                                                    (await currentUserDocument
-                                                            ?.chatWithSupport
-                                                            ?.get())
-                                                        ?.data() ==
-                                                    null) {
-                                                  var chatsRecordReference =
-                                                      ChatsRecord.collection
-                                                          .doc();
-                                                  await chatsRecordReference
-                                                      .set({
-                                                    ...createChatsRecordData(
-                                                      dateCreated:
-                                                          getCurrentTimestamp,
-                                                      support: true,
-                                                    ),
-                                                    ...mapToFirestore(
-                                                      {
-                                                        'users': functions
-                                                            .listusers(
-                                                                currentUserReference!),
-                                                      },
-                                                    ),
-                                                  });
-                                                  currentUserDocument!
-                                                          .chatWithSupport =
-                                                      ChatsRecord
-                                                          .getDocumentFromData(
-                                                              {
-                                                        ...createChatsRecordData(
-                                                          dateCreated:
-                                                              getCurrentTimestamp,
-                                                          support: true,
-                                                        ),
-                                                        ...mapToFirestore(
-                                                          {
-                                                            'users': functions
-                                                                .listusers(
-                                                                    currentUserReference!),
-                                                          },
-                                                        ),
-                                                      },
-                                                              chatsRecordReference).reference;
-
-                                                  await currentUserReference!
-                                                      .update(
-                                                          createUsersRecordData(
-                                                    chatWithSupport:
-                                                        currentUserDocument!
-                                                            .chatWithSupport!,
-                                                  ));
-                                                }
-
-                                                context.pushNamed(
-                                                  ChatWidget.routeName,
-                                                  queryParameters: {
-                                                    'chat': serializeParam(
-                                                      currentUserDocument
-                                                          ?.chatWithSupport,
-                                                      ParamType
-                                                          .DocumentReference,
-                                                    ),
-                                                    'name': serializeParam(
-                                                      'Поддержка',
-                                                      ParamType.String,
-                                                    ),
-                                                  }.withoutNulls,
-                                                );
+                                                await openSupportChat(context);
                                               },
                                               child: Container(
                                                 decoration: BoxDecoration(),
@@ -1561,11 +1494,10 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                                 FFAppState().update(() {});
                                                 unawaited(
                                                   () async {
-                                                    await currentUserReference!
-                                                        .update(
-                                                            createUsersRecordData(
-                                                      isDriver: false,
-                                                    ));
+                                                    await AppMeApi.patchMe({
+                                                      'is_driver': false,
+                                                    });
+                                                    await refreshAppMeCache();
                                                   }(),
                                                 );
                                                 HapticFeedback.mediumImpact();
@@ -2296,7 +2228,6 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                         ),
                                       ].divide(SizedBox(width: 5.0)),
                                     ),
-
                                     Container(
                                       width: double.infinity,
                                       decoration: BoxDecoration(
@@ -2534,76 +2465,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                             hoverColor: Colors.transparent,
                                             highlightColor: Colors.transparent,
                                             onTap: () async {
-                                              if (currentUserDocument
-                                                  ?.chatWithSupport ==
-                                                  null ||
-                                                  (await currentUserDocument
-                                                      ?.chatWithSupport
-                                                      ?.get())
-                                                      ?.data() ==
-                                                      null) {
-                                                var chatsRecordReference =
-                                                ChatsRecord.collection
-                                                    .doc();
-                                                await chatsRecordReference
-                                                    .set({
-                                                  ...createChatsRecordData(
-                                                    dateCreated:
-                                                    getCurrentTimestamp,
-                                                    support: true,
-                                                  ),
-                                                  ...mapToFirestore(
-                                                    {
-                                                      'users': functions
-                                                          .listusers(
-                                                          currentUserReference!),
-                                                    },
-                                                  ),
-                                                });
-                                                currentUserDocument!
-                                                    .chatWithSupport =
-                                                    ChatsRecord
-                                                        .getDocumentFromData(
-                                                        {
-                                                          ...createChatsRecordData(
-                                                            dateCreated:
-                                                            getCurrentTimestamp,
-                                                            support: true,
-                                                          ),
-                                                          ...mapToFirestore(
-                                                            {
-                                                              'users': functions
-                                                                  .listusers(
-                                                                  currentUserReference!),
-                                                            },
-                                                          ),
-                                                        },
-                                                        chatsRecordReference).reference;
-
-                                                await currentUserReference!
-                                                    .update(
-                                                    createUsersRecordData(
-                                                      chatWithSupport:
-                                                      currentUserDocument!
-                                                          .chatWithSupport!,
-                                                    ));
-                                              }
-
-                                              context.pushNamed(
-                                                ChatWidget.routeName,
-                                                queryParameters: {
-                                                  'chat': serializeParam(
-                                                    currentUserDocument
-                                                        ?.chatWithSupport,
-                                                    ParamType
-                                                        .DocumentReference,
-                                                  ),
-                                                  'name': serializeParam(
-                                                    'Поддержка',
-                                                    ParamType.String,
-                                                  ),
-                                                }.withoutNulls,
-                                              );
+                                              await openSupportChat(context);
                                             },
                                             child: Container(
                                               decoration: BoxDecoration(),
@@ -2696,11 +2558,10 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                                 FFAppState().driver = true;
                                                 safeSetState(() {});
 
-                                                await currentUserReference!
-                                                    .update(
-                                                        createUsersRecordData(
-                                                  isDriver: true,
-                                                ));
+                                                await AppMeApi.patchMe({
+                                                  'is_driver': true,
+                                                });
+                                                await refreshAppMeCache();
                                               } else {
                                                 await showModalBottomSheet(
                                                   isScrollControlled: true,

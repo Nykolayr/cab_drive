@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import '/admin/admin_vrf/admin_vrf_widget.dart';
 import '/admin/navbar_admin/navbar_admin_widget.dart';
+import '/backend/api/app_me_api.dart';
+import '/backend/api/verification_record_mapper.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -25,6 +29,10 @@ class VerifAdminWidget extends StatefulWidget {
 
 class _VerifAdminWidgetState extends State<VerifAdminWidget> {
   late VerifAdminModel _model;
+  Timer? _poll;
+  List<RequestVereficationRecord>? _items;
+  bool _loading = true;
+  bool _useFsFallback = false;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -32,13 +40,66 @@ class _VerifAdminWidgetState extends State<VerifAdminWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => VerifAdminModel());
+    unawaited(_reload());
+    _poll = Timer.periodic(const Duration(seconds: 8), (_) => _reload());
+  }
+
+  Future<void> _reload() async {
+    try {
+      final rows = await AppMeApi.listVerifications(limit: 200);
+      if (!mounted) return;
+      setState(() {
+        _items = rows.map(VerificationRecordMapper.fromApi).toList();
+        _loading = false;
+        _useFsFallback = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _useFsFallback = true;
+        _loading = false;
+      });
+    }
   }
 
   @override
   void dispose() {
+    _poll?.cancel();
     _model.dispose();
 
     super.dispose();
+  }
+
+  Widget _buildList(List<RequestVereficationRecord> all) {
+    final containerVar = all
+        .where((e) => _model.index == 1
+            ? (e.status == StatusVerif.onVerif)
+            : (e.status != StatusVerif.onVerif))
+        .toList();
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(18.0),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18.0),
+        ),
+        child: ListView.separated(
+          padding: EdgeInsets.zero,
+          shrinkWrap: true,
+          scrollDirection: Axis.vertical,
+          itemCount: containerVar.length,
+          separatorBuilder: (_, __) => SizedBox(height: 5.0),
+          itemBuilder: (context, containerVarIndex) {
+            final containerVarItem = containerVar[containerVarIndex];
+            return AdminVrfWidget(
+              key: Key(
+                  'Keyqiw_${containerVarIndex}_of_${containerVar.length}'),
+              doc: containerVarItem,
+            );
+          },
+        ),
+      ),
+    );
   }
 
   @override
@@ -171,69 +232,46 @@ class _VerifAdminWidgetState extends State<VerifAdminWidget> {
               ),
             ),
             Expanded(
-              child: StreamBuilder<List<RequestVereficationRecord>>(
-                stream: _model.verif(
-                  requestFn: () => queryRequestVereficationRecord(
-                    queryBuilder: (requestVereficationRecord) =>
-                        requestVereficationRecord.orderBy('dateCreated',
-                            descending: true),
-                  ),
-                ),
-                builder: (context, snapshot) {
-                  // Customize what your widget looks like when it's loading.
-                  if (!snapshot.hasData) {
-                    return Center(
-                      child: SizedBox(
-                        width: 50.0,
-                        height: 50.0,
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            FlutterFlowTheme.of(context).primary,
+              child: (!_useFsFallback && _items != null)
+                  ? _buildList(_items!)
+                  : (!_useFsFallback && _loading)
+                      ? Center(
+                          child: SizedBox(
+                            width: 50.0,
+                            height: 50.0,
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                FlutterFlowTheme.of(context).primary,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    );
-                  }
-                  List<RequestVereficationRecord>
-                      containerRequestVereficationRecordList = snapshot.data!;
-
-                  return ClipRRect(
-                    borderRadius: BorderRadius.circular(18.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(18.0),
-                      ),
-                      child: Builder(
-                        builder: (context) {
-                          final containerVar =
-                              containerRequestVereficationRecordList
-                                  .where((e) => _model.index == 1
-                                      ? (e.status == StatusVerif.onVerif)
-                                      : (e.status != StatusVerif.onVerif))
-                                  .toList();
-
-                          return ListView.separated(
-                            padding: EdgeInsets.zero,
-                            shrinkWrap: true,
-                            scrollDirection: Axis.vertical,
-                            itemCount: containerVar.length,
-                            separatorBuilder: (_, __) => SizedBox(height: 5.0),
-                            itemBuilder: (context, containerVarIndex) {
-                              final containerVarItem =
-                                  containerVar[containerVarIndex];
-                              return AdminVrfWidget(
-                                key: Key(
-                                    'Keyqiw_${containerVarIndex}_of_${containerVar.length}'),
-                                doc: containerVarItem,
+                        )
+                      : StreamBuilder<List<RequestVereficationRecord>>(
+                          stream: _model.verif(
+                            requestFn: () => queryRequestVereficationRecord(
+                              queryBuilder: (requestVereficationRecord) =>
+                                  requestVereficationRecord.orderBy(
+                                      'dateCreated',
+                                      descending: true),
+                            ),
+                          ),
+                          builder: (context, snapshot) {
+                            if (!snapshot.hasData) {
+                              return Center(
+                                child: SizedBox(
+                                  width: 50.0,
+                                  height: 50.0,
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      FlutterFlowTheme.of(context).primary,
+                                    ),
+                                  ),
+                                ),
                               );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  );
-                },
-              ),
+                            }
+                            return _buildList(snapshot.data!);
+                          },
+                        ),
             ),
             wrapWithModel(
               model: _model.navbarAdminModel,

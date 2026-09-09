@@ -1,5 +1,6 @@
 import '/admin/orklonit/orklonit_widget.dart';
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
 import '/backend/backend.dart';
 import '/backend/push_notifications/push_notifications_util.dart';
 import '/backend/schema/enums/enums.dart';
@@ -855,17 +856,25 @@ class _DetaliZayavkiAdminWidgetState extends State<DetaliZayavkiAdminWidget> {
                                 StatusVerif.onVerif)
                               FFButtonWidget(
                                 onPressed: () async {
-                                  await widget!.docref!.update(
-                                      createRequestVereficationRecordData(
-                                    status: StatusVerif.Completed,
-                                  ));
+                                  final verId = widget!.docref?.id;
+                                  var ok = false;
+                                  if (verId != null && verId.isNotEmpty) {
+                                    ok = await AppMeApi.approveVerification(
+                                        verId);
+                                  }
+                                  if (!ok) {
+                                    await widget!.docref!.update(
+                                        createRequestVereficationRecordData(
+                                      status: StatusVerif.Completed,
+                                    ));
 
-                                  await detaliZayavkiAdminRequestVereficationRecord
-                                      .user!
-                                      .update(createUsersRecordData(
-                                    onVerifNow: false,
-                                    verifCompl: true,
-                                  ));
+                                    await detaliZayavkiAdminRequestVereficationRecord
+                                        .user!
+                                        .update(createUsersRecordData(
+                                      onVerifNow: false,
+                                      verifCompl: true,
+                                    ));
+                                  }
                                   triggerPushNotification(
                                     notificationTitle: 'Верефикация пройдена!',
                                     notificationText:

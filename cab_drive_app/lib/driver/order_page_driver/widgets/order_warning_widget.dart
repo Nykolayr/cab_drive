@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:typed_data';
 import '../../../auth/firebase_auth/auth_util.dart';
+import '../../../backend/api/app_me_api.dart';
+import '../../../backend/api/order_record_mapper.dart';
 import '../../../backend/schema/enums/enums.dart';
 import '../../../pages/bottom/text_info/text_info_widget.dart';
 import '../../otmena_otklika/otmena_otklika_widget.dart';
@@ -369,14 +371,39 @@ class OrderWarningWidget extends StatelessWidget {
 
     // Default: if driver hasn't been selected, show "Отклик отправлен" block by querying responses.
     return FutureBuilder<List<ResponsesRecord>>(
-      future: queryResponsesRecordOnce(
-        parent: widgetOrderRef,
-        queryBuilder: (responsesRecord) => responsesRecord.where(
-          'user_driver',
-          isEqualTo: currentUserReference,
-        ),
-        singleRecord: true,
-      ),
+      future: () async {
+        final orderId = widgetOrderRef.id;
+        final rows = await AppMeApi.listBids(orderId);
+        if (rows.isNotEmpty) {
+          final me = currentUserReference?.id;
+          final mine = rows.where((m) {
+            final d = m['driver_id']?.toString() ??
+                m['user_driver']?.toString() ??
+                '';
+            if (me != null && (d == me || d.endsWith('/$me'))) return true;
+            final ref = m['user_driver'];
+            if (ref is Map) {
+              final path = ref['_ref']?.toString() ?? '';
+              return me != null && path.endsWith('/$me');
+            }
+            return false;
+          }).toList();
+          if (mine.isNotEmpty) {
+            return mine
+                .map((m) => OrderRecordMapper.bidFromApi(m, orderId))
+                .toList();
+          }
+        }
+        // FS fallback
+        return queryResponsesRecordOnce(
+          parent: widgetOrderRef,
+          queryBuilder: (responsesRecord) => responsesRecord.where(
+            'user_driver',
+            isEqualTo: currentUserReference,
+          ),
+          singleRecord: true,
+        );
+      }(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return Center(

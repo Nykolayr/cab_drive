@@ -4,6 +4,8 @@ import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
+import '/backend/api/saved_cards_record_mapper.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
 import '/backend/push_notifications/push_notifications_util.dart';
@@ -95,7 +97,7 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
         }
 
         var orderRecordReference1 = OrderRecord.collection.doc();
-        await orderRecordReference1.set({
+        final orderPayload1 = {
           ...createOrderRecordData(
             userCustomer: currentUserReference,
             supply: widget!.supply,
@@ -135,69 +137,45 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
               'images': _model.uploadedFileUrls_uploadDataGw5,
             },
           ),
+        };
+        final api1 = await AppMeApi.createOrder({
+          'id': orderRecordReference1.id,
+          'user_customer_id': currentUserUid,
+          'supply': widget!.supply,
+          'dateTime': widget!.dateTime?.toUtc().toIso8601String(),
+          'pointA': pointToApiMap(FFAppState().pointA),
+          'pointB': pointToApiMap(FFAppState().pointB),
+          if (widget.intermediateOn)
+            'pointC': pointToApiMap(FFAppState().pointC),
+          'movers': widget!.movers,
+          'description': widget!.description,
+          'budget': widget!.budget,
+          'dateTime_created': functions.toUtc().toIso8601String(),
+          'status': 'newOrder',
+          'distance': FFAppState().distanceKm,
+          'time': FFAppState().distanceTime,
+          'car': widget!.car?.serialize(),
+          'payMethod': FFAppState().payMethod?.serialize(),
+          'images': _model.uploadedFileUrls_uploadDataGw5,
         });
-        _model.neworderImage = OrderRecord.getDocumentFromData({
-          ...createOrderRecordData(
-            userCustomer: currentUserReference,
-            supply: widget!.supply,
-            dateTime: widget!.dateTime,
-            pointC: widget.intermediateOn
-                ? updatePointStruct(
-                    FFAppState().pointC,
-                    clearUnsetFields: false,
-                    create: true,
-                  )
-                : null,
-            pointA: updatePointStruct(
-              FFAppState().pointA,
-              clearUnsetFields: false,
-              create: true,
-            ),
-            pointB: updatePointStruct(
-              FFAppState().pointB,
-              clearUnsetFields: false,
-              create: true,
-            ),
-            movers: widget!.movers,
-            description: widget!.description,
-            budget: widget!.budget,
-            dateTimeCreated: functions.toUtc(),
-            status: StatusOrder.newOrder,
-            driverReviewed: false,
-            customerReviewed: false,
-            dateUpd: getCurrentTimestamp,
-            distance: FFAppState().distanceKm,
-            time: FFAppState().distanceTime,
-            car: widget!.car,
-            payMethod: FFAppState().payMethod,
-          ),
-          ...mapToFirestore(
-            {
-              'images': _model.uploadedFileUrls_uploadDataGw5,
-            },
-          ),
-        }, orderRecordReference1);
+        if (api1 == null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Не удалось создать заказ. Попробуйте ещё раз.')),
+            );
+          }
+          return;
+        }
+        _model.neworderImage = OrderRecord.getDocumentFromData(
+            orderPayload1, orderRecordReference1);
         safeSetState(() {
           _model.isDataUploading_uploadDataGw5 = false;
           _model.uploadedLocalFiles_uploadDataGw5 = [];
           _model.uploadedFileUrls_uploadDataGw5 = [];
         });
 
-        _model.listU = await queryUsersRecordOnce(
-          queryBuilder: (usersRecord) => usersRecord
-              .where(
-                'is_driver',
-                isEqualTo: true,
-          )
-              .where(
-                'verif_compl',
-                isEqualTo: true,
-              )
-              .where(
-                'city',
-                isEqualTo: _model.neworderImage?.pointA?.city,
-              ),
-        );
+        // Notify drivers: FS user query убран (SoT=PG); push опционален с сервера.
+        _model.listU = const [];
         print('[CreateOrder] Sending push notifications for order with image');
         print('[CreateOrder] Order city: ${_model.neworderImage?.pointA?.city}');
         print('[CreateOrder] Found ${_model.listU?.length ?? 0} drivers to notify');
@@ -226,7 +204,7 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
         print('[CreateOrder] FFAppState().pointA.latlng: ${FFAppState().pointA.latlng}');
         print('[CreateOrder] ===============================================');
         var orderRecordReference2 = OrderRecord.collection.doc();
-        await orderRecordReference2.set(createOrderRecordData(
+        final orderPayload2 = createOrderRecordData(
           userCustomer: currentUserReference,
           supply: widget!.supply,
           dateTime: widget!.dateTime,
@@ -259,58 +237,37 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
           time: FFAppState().distanceTime,
           car: widget!.car,
           payMethod: FFAppState().payMethod,
-        ));
-        _model.neworder = OrderRecord.getDocumentFromData(
-            createOrderRecordData(
-              userCustomer: currentUserReference,
-              supply: widget!.supply,
-              dateTime: widget!.dateTime,
-              pointA: updatePointStruct(
-                FFAppState().pointA,
-                clearUnsetFields: false,
-                create: true,
-              ),
-              pointC: widget.intermediateOn
-                  ? updatePointStruct(
-                      FFAppState().pointC,
-                      clearUnsetFields: false,
-                      create: true,
-                    )
-                  : null,
-              pointB: updatePointStruct(
-                FFAppState().pointB,
-                clearUnsetFields: false,
-                create: true,
-              ),
-              movers: widget!.movers,
-              description: widget!.description,
-              budget: widget!.budget,
-              dateTimeCreated: functions.toUtc(),
-              status: StatusOrder.newOrder,
-              driverReviewed: false,
-              customerReviewed: false,
-              dateUpd: getCurrentTimestamp,
-              distance: FFAppState().distanceKm,
-              time: FFAppState().distanceTime,
-              car: widget!.car,
-              payMethod: FFAppState().payMethod,
-            ),
-            orderRecordReference2);
-        _model.listU2 = await queryUsersRecordOnce(
-          queryBuilder: (usersRecord) => usersRecord
-              .where(
-                'is_driver',
-                isEqualTo: true,
-              )
-              .where(
-                'verif_compl',
-                isEqualTo: true,
-              )
-              .where(
-                'city',
-                isEqualTo: _model.neworder?.pointA?.city,
-              ),
         );
+        final api2 = await AppMeApi.createOrder({
+          'id': orderRecordReference2.id,
+          'user_customer_id': currentUserUid,
+          'supply': widget!.supply,
+          'dateTime': widget!.dateTime?.toUtc().toIso8601String(),
+          'pointA': pointToApiMap(FFAppState().pointA),
+          'pointB': pointToApiMap(FFAppState().pointB),
+          if (widget.intermediateOn)
+            'pointC': pointToApiMap(FFAppState().pointC),
+          'movers': widget!.movers,
+          'description': widget!.description,
+          'budget': widget!.budget,
+          'dateTime_created': functions.toUtc().toIso8601String(),
+          'status': 'newOrder',
+          'distance': FFAppState().distanceKm,
+          'time': FFAppState().distanceTime,
+          'car': widget!.car?.serialize(),
+          'payMethod': FFAppState().payMethod?.serialize(),
+        });
+        if (api2 == null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Не удалось создать заказ. Попробуйте ещё раз.')),
+            );
+          }
+          return;
+        }
+        _model.neworder = OrderRecord.getDocumentFromData(
+            orderPayload2, orderRecordReference2);
+        _model.listU2 = const [];
         print('[CreateOrder] Sending push notifications for order without image');
         print('[CreateOrder] Order city: ${_model.neworder?.pointA?.city}');
         print('[CreateOrder] Found ${_model.listU2?.length ?? 0} drivers to notify');
@@ -339,21 +296,12 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
               (e.fullAddress == FFAppState().pointA.fullAddress))
           .toList()
           .isNotEmpty)) {
-        await currentUserReference!.update({
-          ...mapToFirestore(
-            {
-              'addresses': FieldValue.arrayUnion([
-                getPointFirestoreData(
-                  updatePointStruct(
-                    FFAppState().pointA,
-                    clearUnsetFields: false,
-                  ),
-                  true,
-                )
-              ]),
-            },
-          ),
-        });
+        final ok = await AppMeApi.addAddress(pointToApiMap(FFAppState().pointA));
+        if (ok) {
+          try {
+            await refreshAppMeCache();
+          } catch (_) {}
+        }
       }
       if (!((currentUserDocument?.addresses?.toList() ?? [])
           .where((e) =>
@@ -362,21 +310,12 @@ class _CreateOrderWidgetState extends State<CreateOrderWidget> {
               (e.fullAddress == FFAppState().pointB.fullAddress))
           .toList()
           .isNotEmpty)) {
-        await currentUserReference!.update({
-          ...mapToFirestore(
-            {
-              'addresses': FieldValue.arrayUnion([
-                getPointFirestoreData(
-                  updatePointStruct(
-                    FFAppState().pointB,
-                    clearUnsetFields: false,
-                  ),
-                  true,
-                )
-              ]),
-            },
-          ),
-        });
+        final ok = await AppMeApi.addAddress(pointToApiMap(FFAppState().pointB));
+        if (ok) {
+          try {
+            await refreshAppMeCache();
+          } catch (_) {}
+        }
       }
       FFAppState().pointB = PointStruct();
       FFAppState().pointA = PointStruct();

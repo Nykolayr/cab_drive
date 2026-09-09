@@ -34,6 +34,23 @@ def send():
     return utils.get_answer('Сохранено')
 
 
+@app.route('/<chat_id>/messages', methods=['GET'])
+def list_messages_admin(chat_id: str):
+    """Admin session: история чата из Postgres."""
+    user = utils.get_user()
+    if user is None:
+        return abort(401)
+    try:
+        import app_chat_pg
+
+        rows = app_chat_pg.list_messages(chat_id, limit=200)
+        # dashboard expects oldest→newest for render
+        rows = list(reversed(rows))
+        return jsonify({"messages": rows, "source": "postgres"})
+    except Exception as e:
+        return utils.get_error(str(e), status=500)
+
+
 @app.route('/mark_as_read', methods=['POST'])
 def mark_as_read():
     user = utils.get_user()

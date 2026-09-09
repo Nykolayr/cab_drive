@@ -563,9 +563,9 @@
                         if (bonusDelta !== '') {
                             const currentEl = document.getElementById('bonus_balance_current');
                             if (currentEl) {
-                                const prev = parseInt(currentEl.value || '0', 10) || 0;
-                                const delta = parseInt(bonusDelta, 10) || 0;
-                                currentEl.value = String(prev + delta);
+                                const prev = parseFloat(String(currentEl.value || '0').replace(',', '.')) || 0;
+                                const delta = parseFloat(String(bonusDelta).replace(',', '.')) || 0;
+                                currentEl.value = String(Math.round((prev + delta) * 100) / 100);
                             }
                             $('#bonus_balance_delta').val('');
                         }
@@ -596,6 +596,7 @@
                     'Эти деньги <b>нельзя вывести</b> — только на комиссию в приложении.',
                     'Подтвердить пополнение',
                     function () {
+                        // Не шлём balance/commission — иначе бонус-пополнение перезаписывает основной баланс.
                         const data = {
                             'user_id': $('#user_id').val(),
                             'display_name': $('#display_name').val(),
@@ -604,8 +605,6 @@
                             'is_blocked': $('#is_blocked').is(':checked'),
                             'phone_number': $('#phone_number').val(),
                             'block_comment': $('#block_comment').val(),
-                            'balance': $('#balance').val(),
-                            'commission': $('#commission').val(),
                             'bonus_balance': amount,
                         };
                         $.ajax({
@@ -619,8 +618,8 @@
                                 }
                                 const currentEl = document.getElementById('bonus_balance_current');
                                 if (currentEl) {
-                                    const prev = parseInt(currentEl.value || '0', 10) || 0;
-                                    currentEl.value = String(prev + amount);
+                                    const prev = parseFloat(String(currentEl.value || '0').replace(',', '.')) || 0;
+                                    currentEl.value = String(Math.round((prev + amount) * 100) / 100);
                                 }
                                 $('#bonus_topup_amount').val('');
                                 showSuccess('Бонус на комиссию', 'Начислено ' + amount + ' ₽');
@@ -931,7 +930,6 @@
 window.handleVerifAction = function(action) {
     try {
         const userId = '{{ client.id }}';
-                const userUid = '{{ client.uid }}';
 
         const approve = action === 'approve';
         const confirmText = approve ? 'Точно одобрить заявку на верификацию водителя?' : 'Точно отклонить заявку на верификацию водителя?';
@@ -942,34 +940,32 @@ window.handleVerifAction = function(action) {
         if (approveBtn) approveBtn.disabled = true;
         if (rejectBtn) rejectBtn.disabled = true;
 
-        const payload = {
-            user_id: userId,
-            on_verif_now: false,
-            verif_compl: true,
-            verif_ne_proidena: !approve
-        };
+        const url = approve
+            ? '/api/users/verification/approve'
+            : '/api/users/verification/reject';
 
         $.ajax({
-            url: '/api/users/edit',
+            url: url,
             method: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify(payload),
+            data: JSON.stringify({ user_id: userId }),
             success: function (resp) {
                 console.log('verif action response', resp);
                 if (resp && resp.status && resp.status !== 'ok') {
-                    // если API возвращает статус ошибки
                     if (approveBtn) approveBtn.disabled = false;
                     if (rejectBtn) rejectBtn.disabled = false;
                     return showError(resp.message || 'Ошибка при обработке запроса');
                 }
                 showSuccess(approve ? 'Заявка одобрена' : 'Заявка отклонена', (resp && resp.message) ? resp.message : '');
-                // скрываем баннер и обновляем элементы страницы при успехе
                 const banner = document.getElementById('verification-request-banner');
                 if (banner) banner.style.display = 'none';
-                // При необходимости обновляем UI: снять флаг on_verif_now, показать результат и т.д.
+                const statusEl = document.getElementById('verification_data_status');
+                if (statusEl) {
+                    statusEl.value = approve ? 'Completed' : 'otklonena';
+                }
             },
             error: function (jqXHR, textStatus, errorThrown) {
-                console.error('Ошибка при запросе /api/users/edit', textStatus, errorThrown);
+                console.error('Ошибка при запросе verification approve/reject', textStatus, errorThrown);
                 if (approveBtn) approveBtn.disabled = false;
                 if (rejectBtn) rejectBtn.disabled = false;
                 if (jqXHR.responseJSON && jqXHR.responseJSON.message) {

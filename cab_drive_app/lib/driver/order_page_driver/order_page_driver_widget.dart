@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cab_drive/driver/order_page_driver/widgets/bottom_actions_widget.dart';
 import 'package:cab_drive/driver/order_page_driver/widgets/customer_card_widget.dart';
 import 'package:cab_drive/driver/order_page_driver/widgets/details_section_widget.dart';
@@ -6,6 +8,8 @@ import 'package:cab_drive/driver/order_page_driver/widgets/map_card_widget.dart'
 import 'package:cab_drive/driver/order_page_driver/widgets/order_warning_widget.dart';
 import 'package:cab_drive/driver/order_page_driver/widgets/queue_indicator_widget.dart';
 import '../../pages/bottom/app_bar/app_bar_widget.dart';
+import '/backend/api/app_me_api.dart';
+import '/backend/api/order_record_mapper.dart';
 import '/backend/backend.dart';
 import '/core/config/app_env.dart';
 import '/core/config/test_driver_seed.dart';
@@ -34,17 +38,70 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
   late OrderPageDriverModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
   LatLng? currentUserLocationValue;
+  Timer? _poll;
+  OrderRecord? _order;
+  bool _loading = true;
+  bool _useFsFallback = false;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => OrderPageDriverModel());
+    if (!AppEnv.isTest) {
+      unawaited(_reload());
+      _poll = Timer.periodic(const Duration(seconds: 5), (_) => _reload());
+    }
+  }
+
+  Future<void> _reload() async {
+    final id = widget.order?.id;
+    if (id == null || id.isEmpty) return;
+    try {
+      final map = await AppMeApi.getOrder(id);
+      if (!mounted) return;
+      if (map == null) {
+        setState(() {
+          _useFsFallback = false;
+          _loading = false;
+        });
+        return;
+      }
+      setState(() {
+        _order = OrderRecordMapper.fromApi(map, id);
+        _useFsFallback = false;
+        _loading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _useFsFallback = false;
+        _loading = false;
+      });
+    }
   }
 
   @override
   void dispose() {
+    _poll?.cancel();
     _model.dispose();
     super.dispose();
+  }
+
+  Widget _loadingScaffold() {
+    return Scaffold(
+      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+      body: Center(
+        child: SizedBox(
+          width: 50.0,
+          height: 50.0,
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(
+              FlutterFlowTheme.of(context).primary,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -53,28 +110,18 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
       return _buildOrderScaffold(TestDriverSeed.buildOrder());
     }
 
-    return StreamBuilder<OrderRecord>(
-      stream: OrderRecord.getDocument(widget.order!),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return Scaffold(
-            backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-            body: Center(
-              child: SizedBox(
-                width: 50.0,
-                height: 50.0,
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    FlutterFlowTheme.of(context).primary,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }
+    if (_order != null) {
+      return _buildOrderScaffold(_order!);
+    }
 
-        return _buildOrderScaffold(snapshot.data!);
-      },
+    if (_loading) {
+      return _loadingScaffold();
+    }
+
+    return Scaffold(
+      key: scaffoldKey,
+      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+      body: const Center(child: Text('Не удалось загрузить заказ')),
     );
   }
 

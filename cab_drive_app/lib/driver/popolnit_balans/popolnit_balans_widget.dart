@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
 import '/driver/pay_balance/pay_balance_widget.dart';
@@ -324,12 +325,12 @@ class _PopolnitBalansWidgetState extends State<PopolnitBalansWidget> {
                                       0.0, 8.0, 0.0, 0.0),
                                   child: AuthUserStreamWidget(
                                     builder: (context) => Text(
-                                      'Минимальная сумма пополнения ${valueOrDefault(currentUserDocument?.balance, 0.0) < 0.0 ? ((double balance) {
+                                      'Минимальная сумма пополнения ${valueOrDefault(effectiveBalance, 0.0) < 0.0 ? ((double balance) {
                                           return (balance < 0
                                                   ? -balance.abs().ceil()
                                                   : balance.ceil())
                                               .toString();
-                                        }(valueOrDefault(currentUserDocument?.balance, 0.0))) : '- 200'}₽',
+                                        }(valueOrDefault(effectiveBalance, 0.0))) : '- 200'}₽',
                                       style: FlutterFlowTheme.of(context)
                                           .bodyMedium
                                           .override(
@@ -380,42 +381,67 @@ class _PopolnitBalansWidgetState extends State<PopolnitBalansWidget> {
                     AuthUserStreamWidget(
                       builder: (context) => FFButtonWidget(
                         onPressed: (valueOrDefault(
-                                        currentUserDocument?.balance, 0.0) <
+                                        effectiveBalance, 0.0) <
                                     0.0
                                 ? (_model.num <= 0.0)
                                 : (_model.num < 200.0))
                             ? null
                             : () async {
-                                var payOrderRecordReference =
-                                    PayOrderRecord.collection.doc();
-                                await payOrderRecordReference
-                                    .set(createPayOrderRecordData(
-                                  orderId: DateTime.fromMicrosecondsSinceEpoch(
-                                          getCurrentTimestamp
-                                              .millisecondsSinceEpoch)
-                                      .microsecondsSinceEpoch
-                                      .toString(),
-                                  isPaid: false,
-                                  amountInCop: int.parse(_model
-                                          .budgetInputTextController.text) *
-                                      100,
-                                  user: currentUserReference,
-                                  paymentType: PaymentType.regular,
-                                ));
+                                final orderIdMs = DateTime
+                                        .fromMicrosecondsSinceEpoch(
+                                            getCurrentTimestamp
+                                                .millisecondsSinceEpoch)
+                                    .microsecondsSinceEpoch
+                                    .toString();
+                                final amountCop = int.parse(_model
+                                        .budgetInputTextController.text) *
+                                    100;
+                                final created = await AppMeApi.createPayment({
+                                  'order_id': orderIdMs,
+                                  'orderId': orderIdMs,
+                                  'is_paid': false,
+                                  'amount_in_cop': amountCop,
+                                  'amountInCop': amountCop,
+                                  'payment_type':
+                                      PaymentType.regular.serialize(),
+                                  'paymentType':
+                                      PaymentType.regular.serialize(),
+                                });
+                                DocumentReference payOrderRecordReference;
+                                if (created != null &&
+                                    (created['id']?.toString().isNotEmpty ??
+                                        false)) {
+                                  payOrderRecordReference =
+                                      PayOrderRecord.collection
+                                          .doc(created['id'].toString());
+                                  try {
+                                    await payOrderRecordReference
+                                        .set(createPayOrderRecordData(
+                                      orderId: orderIdMs,
+                                      isPaid: false,
+                                      amountInCop: amountCop,
+                                      user: currentUserReference,
+                                      paymentType: PaymentType.regular,
+                                    ));
+                                  } catch (_) {}
+                                } else {
+                                  payOrderRecordReference =
+                                      PayOrderRecord.collection.doc();
+                                  await payOrderRecordReference
+                                      .set(createPayOrderRecordData(
+                                    orderId: orderIdMs,
+                                    isPaid: false,
+                                    amountInCop: amountCop,
+                                    user: currentUserReference,
+                                    paymentType: PaymentType.regular,
+                                  ));
+                                }
                                 _model.order =
                                     PayOrderRecord.getDocumentFromData(
-                                        await createPayOrderRecordData(
-                                          orderId: DateTime
-                                                  .fromMicrosecondsSinceEpoch(
-                                                      getCurrentTimestamp
-                                                          .millisecondsSinceEpoch)
-                                              .microsecondsSinceEpoch
-                                              .toString(),
+                                        createPayOrderRecordData(
+                                          orderId: orderIdMs,
                                           isPaid: false,
-                                          amountInCop: int.parse(_model
-                                                  .budgetInputTextController
-                                                  .text) *
-                                              100,
+                                          amountInCop: amountCop,
                                           user: currentUserReference,
                                           paymentType: PaymentType.regular,
                                         ),

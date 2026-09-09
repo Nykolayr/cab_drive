@@ -6,7 +6,133 @@ from google.cloud.firestore_v1 import WriteBatch
 from errors import IncorrectDataValue
 from users.api import get_firebase_user_by_id  # можно не использовать, если используем batch-requests
 
+SUPPORT_UID = "MEkzqxquE2OqdVEZi4NrxZ9K8F03"
+
+
+def fetch_pg_support_chats(
+    page: int = 1, per_page: int = 10, sort_by: Optional[str] = None
+) -> Optional[Dict]:
+    """Support-чаты из Postgres (dashboard)."""
+    import app_pg
+    import app_chat_pg
+
+    if not app_pg.enabled():
+        return None
+    page = max(1, int(page or 1))
+    per_page = max(1, min(int(per_page or 10), 100))
+    offset = (page - 1) * per_page
+
+    try:
+        with app_pg.connection() as conn:
+            if conn is None:
+                return None
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT COUNT(*) FROM app_chats WHERE COALESCE(support,false)=true"
+                )
+                total = int(cur.fetchone()[0] or 0)
+                cur.execute(
+                    """
+                    SELECT id FROM app_chats
+                    WHERE COALESCE(support,false)=true
+                    ORDER BY updated_at DESC NULLS LAST
+                    LIMIT %s OFFSET %s
+                    """,
+                    (per_page, offset),
+                )
+                ids = [r[0] for r in cur.fetchall()]
+        data = []
+        for cid in ids:
+            chat = app_chat_pg.get_chat(cid)
+            if not chat:
+                continue
+            users_list = []
+            user_ids_list = []
+            for uid in chat.get("users") or []:
+                if uid == SUPPORT_UID:
+                    continue
+                user_data = None
+                try:
+                    user_data = get_firebase_user_by_id(uid)
+                except Exception:
+                    user_data = None
+                me = None
+                try:
+                    me = app_pg.get_me(uid) or app_pg.get_user(uid)
+                except Exception:
+                    me = None
+                label = None
+                if user_data:
+                    email = user_data.get("email") or ""
+                    if email and "79031082211" not in email:
+                        label = email.split("@")[0]
+                if not label and me:
+                    label = (
+                        me.get("display_name")
+                        or me.get("phone_number")
+                        or uid[:8]
+                    )
+                if not label:
+                    label = uid[:8]
+                users_list.append(label)
+                user_ids_list.append(uid)
+            if not user_ids_list:
+                continue
+            # unread: messages in chat not from support and read=false
+            unread = 0
+            try:
+                with app_pg.connection() as conn2:
+                    with conn2.cursor() as cur2:
+                        cur2.execute(
+                            """
+                            SELECT COUNT(*) FROM app_messages
+                            WHERE chat_id=%s AND COALESCE(read,false)=false
+                              AND sender_id <> %s
+                            """,
+                            (cid, SUPPORT_UID),
+                        )
+                        unread = int(cur2.fetchone()[0] or 0)
+            except Exception:
+                unread = 0
+            created = chat.get("date_created")
+            if isinstance(created, str):
+                try:
+                    created = datetime.fromisoformat(created.replace("Z", "+00:00"))
+                except Exception:
+                    created = datetime.utcnow()
+            data.append(
+                {
+                    "id": cid,
+                    "date_created": created or datetime.utcnow(),
+                    "support": True,
+                    "users": users_list,
+                    "messages": [],
+                    "user_id": user_ids_list[0],
+                    "unread_count": unread,
+                }
+            )
+        if sort_by == "unread_count":
+            data.sort(key=lambda x: x.get("unread_count") or 0, reverse=True)
+        total_pages = max(1, (total + per_page - 1) // per_page)
+        return {
+            "chats": data,
+            "total_pages": total_pages,
+            "current_page": page,
+            "total_chats": total,
+            "source": "postgres",
+        }
+    except Exception:
+        return None
+
+
 def fetch_firebase_chats(page: int = 1, per_page: int = 10, sort_by: Optional[str] = None) -> Dict:
+    # PG-first support inbox
+    try:
+        pg = fetch_pg_support_chats(page, per_page, sort_by=sort_by)
+        if pg is not None:
+            return pg
+    except Exception:
+        pass
     try:
         db = firestore.client()
         collection_ref = db.collection("chats")
@@ -283,29 +409,52 @@ def get_chat_messages(chat_ref):
 
 
 def send_chat_message(chat_id: str, text: str, sender_id: str) -> Dict:
+    """PG SoT + Redis fanout + FS mirror."""
+    import json
+    import os
+
+    import app_chat_pg
+    import app_fs_mirror
+
+    if not chat_id or not sender_id:
+        raise IncorrectDataValue("chat_id and sender_id required")
+    text = text or ""
+    # ensure membership for support sender
+    app_chat_pg.touch_chat_for_user(chat_id, sender_id, support=True)
+    msg = app_chat_pg.insert_message(chat_id, sender_id, text=text, list_images=[])
+    if not msg:
+        raise IncorrectDataValue("postgres insert failed")
+
     try:
+        import redis
+
+        r = redis.from_url(os.environ.get("REDIS_URL", "redis://127.0.0.1:6379/0"))
+        r.publish(
+            "cab:chat",
+            json.dumps({"chat_id": chat_id, "message": msg}, ensure_ascii=False),
+        )
+    except Exception:
+        pass
+
+    def _fs():
         db = firestore.client()
-        messages_ref = db.collection('messages')
+        chat_ref = db.collection("chats").document(chat_id)
+        db.collection("messages").document(msg["id"]).set(
+            {
+                "chatRef": chat_ref,
+                "sender": db.collection("users").document(sender_id),
+                "text": text,
+                "date_created": firestore.SERVER_TIMESTAMP,
+                "read": False,
+            }
+        )
+        chat_ref.set(
+            {"last_message": text[:500], "date_created": firestore.SERVER_TIMESTAMP},
+            merge=True,
+        )
 
-        # Создаем новое сообщение
-        message_data = {
-            "chatRef": db.collection('chats').document(chat_id),
-            "sender": db.collection('users').document(sender_id),  # Ссылка на отправителя
-            "text": text,
-            "date_created": firestore.firestore.SERVER_TIMESTAMP,
-            "read": False  # Устанавливаем статус как непрочитанное
-        }
-
-        # Сохраняем сообщение в Firestore
-        messages_ref.add(message_data)
-
-        return {
-            "success": True,
-            "message": "Сообщение успешно отправлено."
-        }
-
-    except Exception as e:
-        raise IncorrectDataValue(f'Ошибка при отправке сообщения в Firebase: {e}')
+    app_fs_mirror.soft_fs("admin_chat_send", _fs)
+    return {"success": True, "message": "ok", "id": msg["id"], "sot": "postgres"}
 
 
 from typing import Optional
@@ -315,54 +464,50 @@ BATCH_SIZE = 500
 
 def mark_chat_messages_read(chat_id: str) -> int:
     """
-    Пометить все непрочитанные сообщения чата как прочитанные.
-    Параметр:
-      - chat_id: id документа чата в коллекции 'chats'
-    Возвращает количество обновлённых сообщений.
+    Пометить непрочитанные сообщения чата как прочитанные (Postgres SoT).
     """
     if not chat_id:
         raise ValueError("chat_id is required")
 
-    db = firestore.client()
-    chat_ref = db.collection('chats').document(chat_id)
-
-    # Вариант A: сообщения находятся в глобальной коллекции 'messages' и ссылаются на chatRef
-    messages_col = db.collection('messages')
-    unread_query = messages_col.where('chatRef', '==', chat_ref).where('read', '==', False)
-
-    # Если у вас сообщения лежат как подколлекция у чата, используйте:
-    # unread_query = chat_ref.collection('messages').where('read', '==', False)
-
-    unread_docs = list(unread_query.stream())
-    total = len(unread_docs)
-    if total == 0:
-        # Можно попытаться обнулить unread_count на всякий случай
-        try:
-            chat_ref.update({'read': 0})
-        except Exception:
-            pass
-        return 0
-
-    # Батч-обновления по 500 операций
     updated = 0
-    for i in range(0, total, BATCH_SIZE):
-        batch: WriteBatch = db.batch()
-        chunk = unread_docs[i:i + BATCH_SIZE]
-        for doc in chunk:
-            # Обновляем поле read и ставим дату прочтения
-            batch.update(doc.reference, {
-                'read': True,
-                'date_read': firestore.SERVER_TIMESTAMP,  # или ваш формат поля
-            })
-        batch.commit()
-        updated += len(chunk)
-
-    # Обновляем поле unread_count в чате (если используете)
-    # Здесь ставим 0. Важно: возможна гонка — новые сообщения могут появиться одновременно.
     try:
-        chat_ref.update({'read': False})
+        import app_pg
+
+        def _run(conn):
+            nonlocal updated
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE app_messages
+                    SET read = true, date_read = NOW()
+                    WHERE chat_id = %s AND COALESCE(read,false)=false
+                      AND sender_id <> %s
+                    """,
+                    (chat_id, SUPPORT_UID),
+                )
+                updated = cur.rowcount or 0
+
+        app_pg.soft_execute("mark_chat_read", _run)
     except Exception:
-        # не критично, просто логируйте при необходимости
+        updated = 0
+
+    try:
+        import app_fs_mirror
+
+        def _fs():
+            db = firestore.client()
+            chat_ref = db.collection('chats').document(chat_id)
+            messages_col = db.collection('messages')
+            unread_query = messages_col.where('chatRef', '==', chat_ref).where('read', '==', False)
+            unread_docs = list(unread_query.stream())
+            for i in range(0, len(unread_docs), BATCH_SIZE):
+                batch = db.batch()
+                for doc in unread_docs[i:i + BATCH_SIZE]:
+                    batch.update(doc.reference, {'read': True})
+                batch.commit()
+
+        app_fs_mirror.soft_fs("mark_chat_messages_read", _fs)
+    except Exception:
         pass
 
     return updated

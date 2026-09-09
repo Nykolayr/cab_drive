@@ -70,43 +70,64 @@ def haversine_distance_km(lat1: float, lon1: float, lat2: float, lon2: float) ->
 
 def fetch_drivers_within_radius(user_lat: float, user_lng: float, radius_km: float = 10.0) -> List[Dict[str, Any]]:
     """
-    Получает всех водителей из Firestore (is_driver == true, on_shift == true) и фильтрует по радиусу.
-    Возвращает список словарей с полями документа (включая 'uid' и 'driver_location' как dict с lat/lng).
+    Водители на смене в радиусе: Postgres SoT, Firestore fallback.
+    Возвращает список словарей с uid/lat/lng/distance_km/data.
     """
-    drivers = []
-    # Для примера мы берем всех водителей, которые на смене. В продакшне стоит использовать геоиндексы.
+    drivers: List[Dict[str, Any]] = []
+
+    def _append(uid: str, data: Dict[str, Any], lat: float, lng: float, dist: float):
+        drivers.append(
+            {
+                "uid": uid,
+                "data": data,
+                "lat": float(lat),
+                "lng": float(lng),
+                "distance_km": dist,
+            }
+        )
+
+    # Postgres SoT
+    try:
+        import app_pg
+
+        if app_pg.enabled():
+            rows = app_pg.list_drivers_for_geo(on_shift=True, require_location=True, limit=500)
+            for row in rows:
+                if row.get("is_blocked"):
+                    continue
+                lat = row.get("driver_lat")
+                lng = row.get("driver_lng")
+                if lat is None or lng is None:
+                    continue
+                dist = haversine_distance_km(user_lat, user_lng, float(lat), float(lng))
+                if dist <= radius_km:
+                    _append(str(row.get("id") or row.get("uid")), row, float(lat), float(lng), dist)
+            return drivers
+    except Exception:
+        # fallback FS ниже
+        pass
+
     qs = db.collection("users").where("is_driver", "==", True).where("on_shift", "==", True).stream()
     for doc in qs:
-        data = doc.to_dict()
-        # Пропускаем заблокированных/неверифицированных, если нужно
+        data = doc.to_dict() or {}
         if data.get("is_blocked", False):
             continue
         loc = data.get("driver_location")
-        # Ожидаем GeoPoint-like: {'latitude': .., 'longitude': ..} или firebase.GeoPoint
         if loc is None:
             continue
-        # Поддержка нескольких форматов:
-        if hasattr(loc, "latitude") and hasattr(loc, "longitude"):  # GeoPoint
+        if hasattr(loc, "latitude") and hasattr(loc, "longitude"):
             lat, lng = loc.latitude, loc.longitude
         elif isinstance(loc, dict) and ("latitude" in loc or "lat" in loc):
             lat = loc.get("latitude", loc.get("lat"))
             lng = loc.get("longitude", loc.get("lng"))
         elif isinstance(loc, list) and len(loc) >= 2:
-            # пример: [lat, lng]
             lat, lng = float(loc[0]), float(loc[1])
         else:
             continue
 
         dist = haversine_distance_km(user_lat, user_lng, float(lat), float(lng))
         if dist <= radius_km:
-            driver_info = {
-                "uid": doc.id,
-                "data": data,
-                "lat": float(lat),
-                "lng": float(lng),
-                "distance_km": dist,
-            }
-            drivers.append(driver_info)
+            _append(doc.id, data, float(lat), float(lng), dist)
     return drivers
 
 def call_distance_matrix(origins: List[str], destinations: List[str], api_key: str) -> Dict[str, Any]:

@@ -10,9 +10,9 @@ import 'index.dart'; // Imports other custom actions
 import 'dart:async';
 import 'dart:io' show Platform;
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 
+import '/backend/api/app_me_api.dart';
 import '/custom_code/services/ors_route_service.dart';
 
 StreamSubscription<Position>? _locationSubscription;
@@ -62,16 +62,20 @@ Future toggleRouteTracking(
           to: pointB,
         );
 
-        final update = <String, dynamic>{
-          'driver_location':
-              GeoPoint(position.latitude, position.longitude),
-        };
-        if (matrix != null) {
-          update['time_left'] = matrix.timeLeft;
-          update['km_left'] = matrix.kmLeft;
-        }
+        final timeLeft = matrix?.timeLeft;
+        final kmLeft = matrix?.kmLeft;
 
-        await orderId.update(update);
+        final ok = await AppMeApi.pingOrderGeo(
+          orderId.id,
+          lat: position.latitude,
+          lng: position.longitude,
+          timeLeft: timeLeft?.toString(),
+          kmLeft: kmLeft?.toString(),
+        );
+        if (!ok) {
+          // ignore: avoid_print
+          print('pingOrderGeo failed for ${orderId.id}');
+        }
       } catch (e) {
         // ignore: avoid_print
         print('Error updating location and route info: $e');
@@ -124,9 +128,13 @@ Future toggleDriverPosTracking() async {
         desiredAccuracy: LocationAccuracy.high,
       );
 
-      currentUserDocument?.reference.update({
-        'driver_location': GeoPoint(position.latitude, position.longitude),
-      });
+      final ok = await AppMeApi.pingMeLocation(
+        lat: position.latitude,
+        lng: position.longitude,
+      );
+      if (!ok) {
+        print('pingMeLocation failed');
+      }
     } catch (e) {
       print('Error updating location and route info: $e');
     }

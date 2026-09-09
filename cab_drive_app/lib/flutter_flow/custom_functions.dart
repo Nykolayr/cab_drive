@@ -315,11 +315,21 @@ double proc(double balance) {
 }
 
 String formatDriverBalance(double balance, double bonusBalance) {
-  final total = balance + bonusBalance;
+  // Крупно — только выводимый balance; бонус отдельно.
   if (bonusBalance > 0) {
-    return '${total.toStringAsFixed(0)} ₽ (${bonusBalance.toStringAsFixed(0)} ₽ бонус на комиссию)';
+    return '${balance.toStringAsFixed(0)} ₽ (+${bonusBalance.toStringAsFixed(0)} ₽ бонус на комиссию)';
   }
   return '${balance.toStringAsFixed(0)} ₽';
+}
+
+double driverSpendableBalance(double balance, double bonusBalance) {
+  final bonus = bonusBalance > 0 ? bonusBalance : 0.0;
+  return balance + bonus;
+}
+
+/// Долг, блокирующий заказы/смену: суммарно (balance + bonus) в минусе.
+bool driverHasWorkDebt(double balance, double bonusBalance) {
+  return driverSpendableBalance(balance, bonusBalance) < 0;
 }
 
 List<DocumentReference> listusers(DocumentReference usercur) {

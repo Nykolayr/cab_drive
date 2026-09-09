@@ -12,6 +12,7 @@ import '/flutter_flow/permissions_util.dart';
 import '/flutter_flow/upload_data.dart';
 import '/pages/bottom/error_popup/error_popup_widget.dart';
 import '../../../auth/firebase_auth/auth_util.dart';
+import '../../../backend/api/app_me_api.dart';
 import '../../../backend/firebase_storage/storage.dart';
 import '../../../backend/push_notifications/push_notifications_util.dart';
 import '../../../backend/schema/enums/enums.dart';
@@ -35,17 +36,46 @@ class BottomActionsWidget extends StatelessWidget {
 
 
 
+  Future<bool> _pushOrderStatus(
+    StatusOrder status, {
+    LatLng? loc,
+    List<String>? imageCompl,
+  }) async {
+    final extra = <String, dynamic>{};
+    if (loc != null) {
+      extra['driverLocation'] = {'lat': loc.latitude, 'lng': loc.longitude};
+      extra['driver_lat'] = loc.latitude;
+      extra['driver_lng'] = loc.longitude;
+    }
+    if (imageCompl != null) {
+      extra['image_compl'] = imageCompl;
+    }
+    return AppMeApi.setOrderStatus(
+      widgetOrderRef.id,
+      status.serialize(),
+      extra: extra.isEmpty ? null : extra,
+    );
+  }
+
+  Future<void> _patchCurrentOrder(String? orderId) async {
+    await AppMeApi.patchMe({
+      'current_order_json':
+          orderId == null ? null : {'order_id': orderId},
+    });
+    await refreshAppMeCache();
+  }
+
   Future<void> _atPlacePickup(BuildContext context) async {
     final loc = await getCurrentUserLocation(defaultLocation: LatLng(0.0, 0.0));
     if (await getPermissionStatus(locationPermission)) {
-      await widgetOrderRef.update(createOrderRecordData(
-          status: StatusOrder.place_pickup, driverLocation: loc, dateUpd: getCurrentTimestamp));
-      await currentUserReference!.update(createUsersRecordData(
-        currentOrder: updateCurrentOrderStruct(
-          CurrentOrderStruct(
-              orderDocRef: order.reference, pointB: order.pointB.latlng),
-        ),
-      ));
+      final ok = await _pushOrderStatus(StatusOrder.place_pickup, loc: loc);
+      if (!ok) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Не удалось обновить статус заказа')),
+        );
+        return;
+      }
+      await _patchCurrentOrder(order.reference.id);
       await actions.toggleRouteTracking(
           'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
           true,
@@ -84,14 +114,14 @@ class BottomActionsWidget extends StatelessWidget {
   Future<void> _atPlaceDelivery(BuildContext context) async {
     final loc = await getCurrentUserLocation(defaultLocation: LatLng(0.0, 0.0));
     if (await getPermissionStatus(locationPermission)) {
-      await widgetOrderRef.update(createOrderRecordData(
-          status: StatusOrder.place_delivery, driverLocation: loc, dateUpd: getCurrentTimestamp));
-      await currentUserReference!.update(createUsersRecordData(
-        currentOrder: updateCurrentOrderStruct(
-          CurrentOrderStruct(
-              orderDocRef: order.reference, pointB: order.pointB.latlng),
-        ),
-      ));
+      final ok = await _pushOrderStatus(StatusOrder.place_delivery, loc: loc);
+      if (!ok) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Не удалось обновить статус заказа')),
+        );
+        return;
+      }
+      await _patchCurrentOrder(order.reference.id);
       await actions.toggleRouteTracking(
           'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
           true,
@@ -130,14 +160,14 @@ class BottomActionsWidget extends StatelessWidget {
   Future<void> _startOrder(BuildContext context) async {
     final loc = await getCurrentUserLocation(defaultLocation: LatLng(0.0, 0.0));
     if (await getPermissionStatus(locationPermission)) {
-      await widgetOrderRef.update(createOrderRecordData(
-          status: StatusOrder.at_work, driverLocation: loc, dateUpd: getCurrentTimestamp));
-      await currentUserReference!.update(createUsersRecordData(
-        currentOrder: updateCurrentOrderStruct(
-          CurrentOrderStruct(
-              orderDocRef: order.reference, pointB: order.pointB.latlng),
-        ),
-      ));
+      final ok = await _pushOrderStatus(StatusOrder.at_work, loc: loc);
+      if (!ok) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Не удалось обновить статус заказа')),
+        );
+        return;
+      }
+      await _patchCurrentOrder(order.reference.id);
       await actions.toggleRouteTracking(
           'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
           true,
@@ -284,15 +314,18 @@ class BottomActionsWidget extends StatelessWidget {
       return;
     }
 
-    await widgetOrderRef.update(createOrderRecordData(
-      status: StatusOrder.on_confirmation,
+    final statusOk = await _pushOrderStatus(
+      StatusOrder.on_confirmation,
       imageCompl: model.uploadedFileUrl_uploadDataSk6,
-      completionDateByTheDriver: getCurrentTimestamp,
-      commissionPercent: currentUserDocument?.commissionPercent.toInt(),
-    ));
+    );
+    if (!statusOk) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Не удалось обновить статус заказа')),
+      );
+      return;
+    }
 
-    await currentUserReference!.update(createUsersRecordData(
-        currentOrder: createCurrentOrderStruct(delete: true)));
+    await _patchCurrentOrder(null);
     await actions.toggleRouteTracking('AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
         false, widgetOrderRef, order.pointB.latlng!);
     triggerPushNotification(
@@ -314,46 +347,33 @@ class BottomActionsWidget extends StatelessWidget {
   Future<void> _advanceQueue(BuildContext context) async {
     final userRef = currentUserReference;
     if (userRef == null) return;
-    final queue =
-        List<DocumentReference>.from(currentUserDocument?.activeOrdersQueue ?? const []);
-    final remaining =
-        queue.where((r) => r.id != widgetOrderRef.id).toList();
-    print('[BottomActions.completeOrder] order_id=${widgetOrderRef.id} '
-        'queue_size_before=${queue.length} remaining=${remaining.length}');
 
+    Map<String, dynamic>? apiResult;
     try {
-      await userRef.update({
-        'active_orders_queue':
-            FieldValue.arrayRemove([widgetOrderRef]),
-      });
+      apiResult = await AppMeApi.dequeueOrder(widgetOrderRef.id, advance: true);
     } catch (e) {
-      print('[BottomActions.completeOrder] arrayRemove ERROR $e');
+      print('[BottomActions.completeOrder] dequeue API ERROR $e');
     }
 
-    if (remaining.isEmpty) return;
-    final nextRef = remaining.first;
-    print('[BottomActions.completeOrder] next_order_id=${nextRef.id}');
-
-    try {
-      // Если заказ ещё в newOrder — гарантируем что он назначен на нас.
-      final snap = await nextRef.get();
-      final data = snap.data() as Map<String, dynamic>?;
-      final status = data?['status'];
-      if (status == StatusOrder.newOrder.serialize()) {
-        await nextRef.update({
-          'status': StatusOrder.spec_set.serialize(),
-          'selected_driver': userRef,
-          'date_upd': getCurrentTimestamp,
-        });
+    if (apiResult == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Не удалось обновить очередь заказов')),
+        );
       }
-    } catch (e) {
-      print('[BottomActions.completeOrder] next status transition ERROR $e');
+      return;
     }
 
+    final nextId = apiResult['next_order_id']?.toString();
+    final remaining = apiResult['remaining'];
+    print('[BottomActions.completeOrder] API dequeue ok next=$nextId remaining=$remaining');
+    if (nextId == null || nextId.isEmpty) return;
     if (!context.mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (_) => OrderPageDriverWidget(order: nextRef),
+        builder: (_) => OrderPageDriverWidget(
+          order: OrderRecord.collection.doc(nextId),
+        ),
       ),
     );
   }

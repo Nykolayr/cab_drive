@@ -1,4 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
+import '/backend/api/pay_order_record_mapper.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/api_requests/payments_api_config.dart';
 import '/backend/backend.dart';
@@ -41,11 +43,50 @@ class _PayBalanceWidgetState extends State<PayBalanceWidget> {
 
   late StreamSubscription<bool> _keyboardVisibilitySubscription;
   bool _isKeyboardVisible = false;
+  Timer? _payPollTimer;
+  PayOrderRecord? _polledPay;
+  bool _apiPaid = false;
 
   @override
   void setState(VoidCallback callback) {
     super.setState(callback);
     _model.onUpdate();
+  }
+
+  void _startPayPoll() {
+    _payPollTimer?.cancel();
+    final payId = widget.payOrderRef?.id;
+    if (payId == null || payId.isEmpty) return;
+    _payPollTimer = Timer.periodic(const Duration(seconds: 2), (_) async {
+      final pay = await AppMeApi.getPayment(payId);
+      if (pay == null || !mounted) return;
+      _polledPay = PayOrderRecordMapper.fromApi(pay, payId);
+      if (PayOrderRecordMapper.isPaid(pay)) {
+        _apiPaid = true;
+        _payPollTimer?.cancel();
+        if (mounted) safeSetState(() {});
+        return;
+      }
+      final status = PayOrderRecordMapper.tinkoffStatus(pay);
+      if (PayOrderRecordMapper.failStatuses.contains(status)) {
+        _model.bankFailOverlay = true;
+        _model.bankFailMessage = PaymentBankError.message(
+          errorCode: pay['tinkoff_error_code']?.toString(),
+          status: status,
+          bankMessage: pay['tinkoff_message']?.toString(),
+          mode: PaymentsApiConfig.mode,
+        );
+        _payPollTimer?.cancel();
+      }
+      if (mounted) safeSetState(() {});
+    });
+  }
+
+  Stream<PayOrderRecord> _payStream() {
+    if (_polledPay != null) {
+      return Stream<PayOrderRecord>.value(_polledPay!);
+    }
+    return const Stream.empty();
   }
 
   @override
@@ -61,8 +102,19 @@ class _PayBalanceWidgetState extends State<PayBalanceWidget> {
           '[Pay.balance] start amountCop=${widget.amountCop} '
           'payOrder=${widget.payOrderRef?.id} user=${currentUserReference?.id}',
         );
-        _model.order =
-            await PayOrderRecord.getDocumentOnce(widget!.payOrderRef!);
+        final payId = widget.payOrderRef?.id ?? '';
+        final apiPay = payId.isNotEmpty ? await AppMeApi.getPayment(payId) : null;
+        if (apiPay != null) {
+          _polledPay = PayOrderRecordMapper.fromApi(apiPay, payId);
+          _model.order = _polledPay;
+        } else {
+          _model.urlIsSet = false;
+          _model.paymentFailed = true;
+          _model.paymentErrorMessage =
+              'Не удалось загрузить платёж. Попробуйте ещё раз.';
+          if (mounted) safeSetState(() {});
+          return;
+        }
         // ignore: avoid_print
         print(
           '[Pay.balance] pay_order orderId=${_model.order?.orderId} '
@@ -93,16 +145,23 @@ class _PayBalanceWidgetState extends State<PayBalanceWidget> {
         if (ok && paymentUrl != null && paymentUrl.isNotEmpty) {
           unawaited(
             () async {
-              await widget!.payOrderRef!.update(await createPayOrderRecordData(
-                paymentId: paymentId,
-              ));
+              final id = widget!.payOrderRef!.id;
+              final patched = await AppMeApi.patchPayment(id, {
+                'paymentId': paymentId,
+                'payment_id': paymentId,
+              });
+              if (!patched) {
+                // ignore: avoid_print
+                print('[Pay.balance] patchPayment failed paymentId=$paymentId');
+              }
               // ignore: avoid_print
-              print('[Pay.balance] pay_order.paymentId saved=$paymentId');
+              print('[Pay.balance] pay_order.paymentId saved=$paymentId api=$patched');
             }(),
           );
           _model.urlIsSet = true;
           _model.paymentFailed = false;
           _model.paymentErrorMessage = '';
+          _startPayPoll();
         } else {
           _model.urlIsSet = false;
           _model.paymentFailed = true;
@@ -182,6 +241,7 @@ class _PayBalanceWidgetState extends State<PayBalanceWidget> {
 
   @override
   void dispose() {
+    _payPollTimer?.cancel();
     _model.maybeDispose();
 
     if (!isWeb) {
@@ -260,10 +320,10 @@ class _PayBalanceWidgetState extends State<PayBalanceWidget> {
             ),
             Expanded(
               child: StreamBuilder<PayOrderRecord>(
-                stream: PayOrderRecord.getDocument(widget!.payOrderRef!),
+                stream: _payStream(),
                 builder: (context, snapshot) {
                   // Customize what your widget looks like when it's loading.
-                  if (!snapshot.hasData) {
+                  if (!snapshot.hasData && !_apiPaid) {
                     return Center(
                       child: SizedBox(
                         width: 50.0,
@@ -277,8 +337,16 @@ class _PayBalanceWidgetState extends State<PayBalanceWidget> {
                     );
                   }
 
-                  final containerPayOrderRecord = snapshot.data!;
-                  _applyBankFailFromPayOrder(containerPayOrderRecord);
+                  final containerPayOrderRecord =
+                      snapshot.data ?? _polledPay;
+                  if (containerPayOrderRecord == null && !_apiPaid) {
+                    return const SizedBox.shrink();
+                  }
+                  if (containerPayOrderRecord != null) {
+                    _applyBankFailFromPayOrder(containerPayOrderRecord);
+                  }
+                  final paid = _apiPaid ||
+                      (containerPayOrderRecord?.isPaid ?? false);
 
                   return ClipRRect(
                     borderRadius: BorderRadius.circular(5.0),
@@ -290,7 +358,7 @@ class _PayBalanceWidgetState extends State<PayBalanceWidget> {
                       ),
                       child: Builder(
                         builder: (context) {
-                          if (containerPayOrderRecord.isPaid) {
+                          if (paid) {
                             return Column(
                               mainAxisSize: MainAxisSize.max,
                               children: [

@@ -1,30 +1,20 @@
-import 'package:firebase_remote_config/firebase_remote_config.dart';
+/// Локальный конфиг приложения (замена Firebase Remote Config).
+/// PDF пока по legacy URL; позже можно перенести на свой files/.
+const Map<String, String> _kAppConfigStrings = {
+  'poll':
+      'https://firebasestorage.googleapis.com/v0/b/ydrive-a35d2.firebasestorage.app/o/политика_конфеденциальности_приложение.pdf?alt=media&token=061471ea-ed01-4bf8-87b4-3693a45391b8',
+  'usl':
+      'https://firebasestorage.googleapis.com/v0/b/ydrive-a35d2.firebasestorage.app/o/условия%20использования.pdf?alt=media&token=dc68fba9-2d07-4d19-8732-2e5836391528',
+};
 
 Future initializeFirebaseRemoteConfig() async {
-  try {
-    await FirebaseRemoteConfig.instance.setConfigSettings(RemoteConfigSettings(
-      fetchTimeout: const Duration(minutes: 1),
-      minimumFetchInterval: const Duration(hours: 1),
-    ));
-    await FirebaseRemoteConfig.instance.setDefaults(const {
-      'poll':
-          'https://firebasestorage.googleapis.com/v0/b/ydrive-a35d2.firebasestorage.app/o/политика_конфеденциальности_приложение.pdf?alt=media&token=061471ea-ed01-4bf8-87b4-3693a45391b8',
-      'usl':
-          'https://firebasestorage.googleapis.com/v0/b/ydrive-a35d2.firebasestorage.app/o/условия%20использования.pdf?alt=media&token=dc68fba9-2d07-4d19-8732-2e5836391528',
-    });
-    await FirebaseRemoteConfig.instance.fetchAndActivate();
-  } catch (error) {
-    print(error);
-  }
+  // no-op: конфиг локальный, без Google Remote Config
 }
 
-String getRemoteConfigString(String key) =>
-    FirebaseRemoteConfig.instance.getString(key);
+String getRemoteConfigString(String key) => _kAppConfigStrings[key] ?? '';
 
-bool getRemoteConfigBool(String key) =>
-    FirebaseRemoteConfig.instance.getBool(key);
+bool getRemoteConfigBool(String key) => false;
 
-int getRemoteConfigInt(String key) => FirebaseRemoteConfig.instance.getInt(key);
+int getRemoteConfigInt(String key) => 0;
 
-double getRemoteConfigDouble(String key) =>
-    FirebaseRemoteConfig.instance.getDouble(key);
+double getRemoteConfigDouble(String key) => 0.0;

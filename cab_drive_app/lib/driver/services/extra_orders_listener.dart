@@ -1,18 +1,19 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
+import '/backend/api/order_record_mapper.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
 import '/driver/extra_order_bottom_sheet/extra_order_bottom_sheet_widget.dart';
 import '/driver/services/extra_orders_dedup.dart';
 
-/// Резервный канал доставки доп.заказов на случай потери FCM push:
-/// слушает Firestore стрим newOrder, фильтрует «по пути» приближённо
-/// (radius + tariff + queue) и сам показывает bottom sheet.
+/// Резервный канал доставки доп.заказов при потере FCM:
+/// poll `orders/feed` (Postgres API), без Firestore stream/writes.
+/// Dedup meta пишет сервер (`extra_notified_*` в PG).
 class ExtraOrdersListener {
   ExtraOrdersListener._();
 
@@ -26,12 +27,15 @@ class ExtraOrdersListener {
   /// Синхронизировано с settings.driver_max_queue_size на backend.
   static int maxQueueSize = 2;
 
-  StreamSubscription<List<OrderRecord>>? _sub;
+  static const Duration _pollInterval = Duration(seconds: 25);
+
+  Timer? _pollTimer;
   String? _activeOrderId;
   String _driverUid = '';
   String? _driverMark;
   LatLng? _driverLocation;
   GlobalKey<NavigatorState>? _navigatorKey;
+  bool _tickBusy = false;
 
   /// Обновляет текущую позицию водителя (вызывается из main_driver_widget
   /// при изменении geolocation).
@@ -40,7 +44,7 @@ class ExtraOrdersListener {
   }
 
   /// Запускается из main_driver_widget при наличии активного заказа.
-  /// idempotent — повторный start() с теми же параметрами не пересоздаст стрим.
+  /// idempotent — повторный start() с теми же параметрами не пересоздаст poll.
   void start({
     required String activeOrderId,
     required String driverUid,
@@ -49,7 +53,9 @@ class ExtraOrdersListener {
     required GlobalKey<NavigatorState> navigatorKey,
   }) {
     _driverLocation = driverLocation;
-    if (_sub != null && _activeOrderId == activeOrderId && _driverUid == driverUid) {
+    if (_pollTimer != null &&
+        _activeOrderId == activeOrderId &&
+        _driverUid == driverUid) {
       return;
     }
     stop();
@@ -58,98 +64,86 @@ class ExtraOrdersListener {
     _driverMark = driverMark;
     _navigatorKey = navigatorKey;
     print('[ExtraOrdersListener.start] driver_uid=$driverUid '
-        'current_order=$activeOrderId mark=$driverMark');
+        'current_order=$activeOrderId mark=$driverMark poll=api');
 
-    _sub = queryOrderRecord(
-      queryBuilder: (q) => q
-          .where('status', isEqualTo: StatusOrder.newOrder.serialize())
-          .orderBy('dateTime_created', descending: true),
-      limit: 20,
-    ).listen(_onSnapshot);
+    _pollTimer = Timer.periodic(_pollInterval, (_) => unawaited(_tick()));
+    unawaited(_tick());
   }
 
   void stop() {
-    if (_sub != null) {
-      _sub?.cancel();
-      _sub = null;
+    if (_pollTimer != null) {
+      _pollTimer?.cancel();
+      _pollTimer = null;
       print('[ExtraOrdersListener.stop] driver_uid=$_driverUid');
     }
     _activeOrderId = null;
     _driverUid = '';
     _driverMark = null;
     _navigatorKey = null;
+    _tickBusy = false;
   }
 
-  Future<void> _onSnapshot(List<OrderRecord> orders) async {
-    if (_activeOrderId == null) return;
-    final navContext = _navigatorKey?.currentContext;
-    if (navContext == null) return;
-
-    final driverLoc = _driverLocation;
-    final queue = currentUserDocument?.activeOrdersQueue ?? const [];
-    if (queue.length >= maxQueueSize) {
-      // очередь уже заполнена — ничего не предлагаем
-      return;
-    }
-
-    for (final order in orders) {
-      final id = order.reference.id;
-      // Базовые быстрые фильтры
-      if (order.userCustomer == currentUserReference) continue;
-      if (order.selectedDriver != null) continue;
-      // Совпадение тарифа
-      if (_driverMark != null && _driverMark!.isNotEmpty) {
-        if (order.car != null && order.car!.name != _driverMark) continue;
-      }
-      // Радиус по pointA
-      if (driverLoc != null) {
-        final pa = order.pointA;
-        final lat = pa.latlng?.latitude;
-        final lng = pa.latlng?.longitude;
-        if (lat != null && lng != null) {
-          final km = _haversineKm(
-              driverLoc.latitude, driverLoc.longitude, lat, lng);
-          if (km > searchRadiusKm) continue;
-        }
-      }
-      // Persisted dedup: бэк/прошлая сессия уже уведомляли этого водителя по
-      // этому заказу — повторно не показываем. Источник правды — Firestore-поле
-      // extra_notified_drivers, оно переживает рестарт приложения и бэка.
-      final notifiedDrivers = (order.snapshotData['extra_notified_drivers'] as List?) ?? const [];
-      final alreadyNotified = _driverUid.isNotEmpty &&
-          notifiedDrivers.any((e) => e?.toString() == _driverUid);
-      if (alreadyNotified) {
-        // подменяем в local dedup чтобы не пересчитывать на каждом тике стрима
-        ExtraOrdersDedup.tryAdd(id);
-        print('[ExtraOrdersListener.skip] persisted dedup hit '
-            'order_id=$id driver=$_driverUid');
-        continue;
-      }
-
-      // In-memory dedup общий с FCM-каналом
-      if (!ExtraOrdersDedup.tryAdd(id)) continue;
-
-      // Сразу пишем в Firestore чтобы при гонке backend / другая сессия
-      // тоже видели нас в списке и не дублировали push.
-      _persistNotified(order.reference, _driverUid);
-
-      print('[ExtraOrdersListener.match] order_id=$id');
-      _showSheet(navContext, order);
-      // Показываем только один — следующий покажем на новом снапшоте, если останется в очереди.
-      return;
-    }
-  }
-
-  Future<void> _persistNotified(DocumentReference ref, String uid) async {
-    if (uid.isEmpty) return;
+  Future<void> _tick() async {
+    if (_tickBusy || _activeOrderId == null) return;
+    _tickBusy = true;
     try {
-      await ref.update({
-        'extra_notified_drivers': FieldValue.arrayUnion([uid]),
-        'extra_notified_at': FieldValue.serverTimestamp(),
-      });
-      print('[ExtraOrdersListener.persist] order_id=${ref.id} driver=$uid');
+      final navContext = _navigatorKey?.currentContext;
+      if (navContext == null) return;
+
+      final queue = effectiveActiveOrdersQueue;
+      if (queue.length >= maxQueueSize) return;
+
+      final rows = await AppMeApi.ordersFeed(status: 'newOrder');
+      if (rows.isEmpty || _activeOrderId == null) return;
+
+      final driverLoc = _driverLocation;
+      for (final raw in rows) {
+        final id = (raw['id'] ?? '').toString();
+        if (id.isEmpty) continue;
+        final order = OrderRecordMapper.fromApi(raw, id);
+        if (order.status != StatusOrder.newOrder) continue;
+        if (order.userCustomer?.id == _driverUid) continue;
+        if (order.selectedDriver != null) continue;
+
+        if (_driverMark != null && _driverMark!.isNotEmpty) {
+          if (order.car != null && order.car!.name != _driverMark) continue;
+        }
+
+        if (driverLoc != null) {
+          final pa = order.pointA;
+          final lat = pa.latlng?.latitude;
+          final lng = pa.latlng?.longitude;
+          if (lat != null && lng != null) {
+            final km = _haversineKm(
+              driverLoc.latitude,
+              driverLoc.longitude,
+              lat,
+              lng,
+            );
+            if (km > searchRadiusKm) continue;
+          }
+        }
+
+        // Серверный dedup (PG raw_json); клиент — только in-memory с FCM.
+        final notifiedDrivers =
+            (order.snapshotData['extra_notified_drivers'] as List?) ?? const [];
+        final alreadyNotified = _driverUid.isNotEmpty &&
+            notifiedDrivers.any((e) => e?.toString() == _driverUid);
+        if (alreadyNotified) {
+          ExtraOrdersDedup.tryAdd(id);
+          continue;
+        }
+
+        if (!ExtraOrdersDedup.tryAdd(id)) continue;
+
+        print('[ExtraOrdersListener.match] order_id=$id');
+        _showSheet(navContext, order);
+        return;
+      }
     } catch (e) {
-      print('[ExtraOrdersListener.persist] failed order_id=${ref.id}: $e');
+      print('[ExtraOrdersListener.tick] error: $e');
+    } finally {
+      _tickBusy = false;
     }
   }
 
@@ -166,7 +160,12 @@ class ExtraOrdersListener {
     );
   }
 
-  static double _haversineKm(double lat1, double lon1, double lat2, double lon2) {
+  static double _haversineKm(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
     const r = 6371.0;
     final dLat = _toRad(lat2 - lat1);
     final dLon = _toRad(lon2 - lon1);

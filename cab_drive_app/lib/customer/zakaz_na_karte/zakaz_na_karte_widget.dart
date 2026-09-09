@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import '/backend/api/app_me_api.dart';
+import '/backend/api/order_record_mapper.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
 import '/core/config/app_env.dart';
@@ -30,15 +34,43 @@ class _ZakazNaKarteWidgetState extends State<ZakazNaKarteWidget> {
   late ZakazNaKarteModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  Timer? _poll;
+  OrderRecord? _order;
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => ZakazNaKarteModel());
+    if (!AppEnv.isTest) {
+      unawaited(_reload());
+      _poll = Timer.periodic(const Duration(seconds: 5), (_) => _reload());
+    }
+  }
+
+  Future<void> _reload() async {
+    final id = widget.order?.id;
+    if (id == null || id.isEmpty) return;
+    try {
+      final map = await AppMeApi.getOrder(id);
+      if (!mounted) return;
+      if (map == null) {
+        setState(() => _loading = false);
+        return;
+      }
+      setState(() {
+        _order = OrderRecordMapper.fromApi(map, id);
+        _loading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+    }
   }
 
   @override
   void dispose() {
+    _poll?.cancel();
     _model.dispose();
 
     super.dispose();
@@ -50,14 +82,15 @@ class _ZakazNaKarteWidgetState extends State<ZakazNaKarteWidget> {
       return _mapScaffold(TestDriverSeed.buildOrder());
     }
 
-    return StreamBuilder<OrderRecord>(
-      stream: OrderRecord.getDocument(widget!.order!),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return Scaffold(
-            backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-            body: Center(
-              child: SizedBox(
+    if (_order != null) {
+      return _mapScaffold(_order!);
+    }
+
+    return Scaffold(
+      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+      body: Center(
+        child: _loading
+            ? SizedBox(
                 width: 50.0,
                 height: 50.0,
                 child: CircularProgressIndicator(
@@ -65,13 +98,9 @@ class _ZakazNaKarteWidgetState extends State<ZakazNaKarteWidget> {
                     FlutterFlowTheme.of(context).primary,
                   ),
                 ),
-              ),
-            ),
-          );
-        }
-
-        return _mapScaffold(snapshot.data!);
-      },
+              )
+            : const Text('Не удалось загрузить заказ'),
+      ),
     );
   }
 

@@ -2,7 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../custom_code/actions/toggle_route_tracking.dart';
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
+import '/backend/api/chat_open.dart';
 import '/backend/api/file_storage_service.dart';
+import '/backend/api/order_record_mapper.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
@@ -27,7 +30,6 @@ import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/permissions_util.dart';
 import '/index.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -52,6 +54,54 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
   LatLng? currentUserLocationValue;
+  Timer? _ordersFeedTimer;
+  List<OrderRecord> _apiFeedOrders = [];
+  bool _apiFeedLoading = true;
+  bool _apiFeedUseFallbackStream = false;
+
+  Future<void> _loadOrdersFeed() async {
+    try {
+      final maps = await AppMeApi.ordersFeed(status: 'newOrder');
+      if (maps.isEmpty) {
+        // пустой PG feed — не маскируем; FS fallback только при сбое API
+        if (!mounted) return;
+        setState(() {
+          _apiFeedOrders = const [];
+          _apiFeedLoading = false;
+          _apiFeedUseFallbackStream = false;
+        });
+        return;
+      }
+      final out = <OrderRecord>[];
+      for (final m in maps) {
+        final id = m['id']?.toString();
+        if (id == null || id.isEmpty) continue;
+        try {
+          final rec = OrderRecordMapper.fromApi(m, id);
+          if (rec.userCustomer == currentUserReference) continue;
+          out.add(rec);
+        } catch (e) {
+          // ignore: avoid_print
+          print('[main_driver.feed] map skip id=$id: $e');
+        }
+      }
+      if (!mounted) return;
+      setState(() {
+        _apiFeedOrders = out;
+        _apiFeedLoading = false;
+        _apiFeedUseFallbackStream = false;
+      });
+    } catch (e) {
+      // ignore: avoid_print
+      print('[main_driver.feed] API fail (no FS fallback): $e');
+      if (!mounted) return;
+      setState(() {
+        _apiFeedOrders = const [];
+        _apiFeedUseFallbackStream = false;
+        _apiFeedLoading = false;
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -71,24 +121,29 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
         return;
       }
 
-      if(valueOrDefault(currentUserDocument?.onShift, false)) {
+      _loadOrdersFeed();
+      _ordersFeedTimer =
+          Timer.periodic(const Duration(seconds: 5), (_) => _loadOrdersFeed());
+
+      if (valueOrDefault(currentUserDocument?.onShift, false)) {
         toggleDriverPosTracking();
       }
 
-      if ((valueOrDefault(currentUserDocument?.balance, 0.0) < 0.0) &&
+      if (functions.driverHasWorkDebt(
+              effectiveBalance, effectiveBonusBalance) &&
           (valueOrDefault<bool>(currentUserDocument?.fine, false) == false) &&
           functions.hours48(currentUserDocument!.shiftCompletionDateTime!)) {
-        await currentUserReference!.update({
-          ...createUsersRecordData(
-            lastOnline: functions.toUtc(),
-            fine: true,
-          ),
-          ...mapToFirestore(
-            {
-              'balance': FieldValue.increment(-(3000.0)),
-            },
-          ),
-        });
+        final ok = await AppMeApi.applyLateCommissionFine();
+        if (!ok) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text('Не удалось начислить штраф')),
+            );
+          }
+          return;
+        }
+        await refreshAppMeCache();
         await showModalBottomSheet(
           isScrollControlled: true,
           backgroundColor: Colors.transparent,
@@ -117,57 +172,46 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
       } else {
         unawaited(
           () async {
-            await currentUserReference!.update({
-              ...createUsersRecordData(
-                lastOnline: functions.toUtc(),
-              ),
-              ...mapToFirestore(
-                {
-                  'fine': FieldValue.delete(),
-                },
-              ),
-            });
+            final ok = await AppMeApi.clearFine();
+            if (ok) {
+              await refreshAppMeCache();
+            }
           }(),
         );
       }
 
-
-      await currentUserReference!.update(createUsersRecordData(
-        fbId: FirebaseAuth.instance.currentUser!.uid,
-      ));
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null && uid.isNotEmpty) {
+        await AppMeApi.patchMe({'fb_id': uid});
+      }
     });
 
     getCurrentUserLocation(defaultLocation: LatLng(0.0, 0.0), cached: true)
         .then((loc) => safeSetState(() => currentUserLocationValue = loc));
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
 
-    // Запуск/перезапуск резервного Firestore-листенера доп.заказов «по пути».
+    // Резервный poll доп.заказов «по пути» (FCM primary; без Firestore).
     if (!AppEnv.isTest) {
-      _activeOrderSub = queryOrderRecord(
-        queryBuilder: (q) => q
-            .where('selected_driver', isEqualTo: currentUserReference)
-            .where('status', whereIn: [
-          StatusOrder.spec_set.serialize(),
-          StatusOrder.place_pickup.serialize(),
-          StatusOrder.at_work.serialize(),
-        ]),
-        limit: 1,
-      ).listen(_syncExtraOrdersListener);
+      _extraSyncTimer = Timer.periodic(const Duration(seconds: 8), (_) {
+        _syncExtraOrdersFromMe();
+      });
+      _syncExtraOrdersFromMe();
     }
   }
 
-  StreamSubscription<List<OrderRecord>>? _activeOrderSub;
+  Timer? _extraSyncTimer;
 
-  void _syncExtraOrdersListener(List<OrderRecord> active) {
-    if (active.isEmpty) {
+  void _syncExtraOrdersFromMe() {
+    final queue = effectiveActiveOrdersQueue;
+    if (queue.isEmpty) {
       ExtraOrdersListener.instance.stop();
       return;
     }
-    final order = active.first;
+    final orderId = queue.first;
     final uid = currentUserUid;
     final mark = currentUserDocument?.car?.mark?.name;
     ExtraOrdersListener.instance.start(
-      activeOrderId: order.reference.id,
+      activeOrderId: orderId,
       driverUid: uid,
       driverMark: mark,
       driverLocation: currentUserLocationValue,
@@ -176,9 +220,65 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
     ExtraOrdersListener.instance.updateDriverLocation(currentUserLocationValue);
   }
 
+  Widget _buildOrdersList(List<OrderRecord> containerOrderRecordList) {
+    final orders = functions
+        .filterOrders(
+            FFAppState().filter.ott != 0 ? FFAppState().filter.ott : null,
+            FFAppState().filter.doo != 0 ? FFAppState().filter.doo : null,
+            FFAppState().filter.supply != 0 ? FFAppState().filter.supply : null,
+            FFAppState().filter.radius != 0.0
+                ? FFAppState().filter.radius
+                : null,
+            containerOrderRecordList.toList(),
+            currentUserLocationValue,
+            currentUserDocument?.car?.mark?.name)
+        .toList();
+    if (orders.isEmpty) {
+      return Container(
+        height: 700.0,
+        child: NetPoiskaWidget(),
+      );
+    }
+
+    final canGetNew = orders
+        .where((e) =>
+            e.userWhoResponced.contains(currentUserReference) &&
+                (e.status == StatusOrder.newOrder) ||
+            e.selectedDriver == currentUserReference)
+        .isEmpty;
+    final hasUnrespondedOrders = orders.any(
+      (e) =>
+          !e.userWhoResponced.contains(currentUserReference) &&
+          e.selectedDriver != currentUserReference,
+    );
+    final showExtraOrderBanner = !canGetNew && hasUnrespondedOrders;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (showExtraOrderBanner) const _ExtraOrderBanner(),
+        ListView.builder(
+          padding: EdgeInsets.zero,
+          primary: false,
+          shrinkWrap: true,
+          scrollDirection: Axis.vertical,
+          itemCount: orders.length,
+          itemBuilder: (context, ordersIndex) {
+            final ordersItem = orders[ordersIndex];
+            return OrderCardDriverWidget(
+              canGetNew: canGetNew,
+              key: Key('Keydjd_${ordersIndex}_of_${orders.length}'),
+              order: ordersItem,
+            );
+          },
+        ),
+      ],
+    );
+  }
+
   @override
   void dispose() {
-    _activeOrderSub?.cancel();
+    _ordersFeedTimer?.cancel();
+    _extraSyncTimer?.cancel();
     ExtraOrdersListener.instance.stop();
     _model.dispose();
 
@@ -217,150 +317,148 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                         children: [
                           _DriverGreetingHeader(),
                           Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(
-                              8.0, 8.0, 8.0, 8.0),
-                          child: Wrap(
-                            spacing: 8.0,
-                            runSpacing: 8.0,
-                            alignment: WrapAlignment.start,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            direction: Axis.horizontal,
-                            runAlignment: WrapAlignment.start,
-                            verticalDirection: VerticalDirection.down,
-                            clipBehavior: Clip.none,
-                            children: [
-                              _DriverFilterChip(
-                                label: FFAppState().filter.radius != 0.0
-                                    ? formatNumber(
-                                        FFAppState().filter.radius,
-                                        formatType: FormatType.custom,
-                                        format: 'Радиус 0 км',
-                                        locale: '',
-                                      )
-                                    : 'Радиус поиска',
-                                isActive:
-                                    FFAppState().filter.radius != 0.0,
-                                onTap: () async {
-                                  await showModalBottomSheet(
-                                    isScrollControlled: true,
-                                    backgroundColor: Colors.transparent,
-                                    context: context,
-                                    builder: (context) {
-                                      return WebViewAware(
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            FocusScope.of(context).unfocus();
-                                            FocusManager.instance.primaryFocus
-                                                ?.unfocus();
-                                          },
-                                          child: Padding(
-                                            padding: MediaQuery.viewInsetsOf(
-                                                context),
-                                            child: FiltersWidget(
-                                                focus: 'radius'),
+                            padding: EdgeInsetsDirectional.fromSTEB(
+                                8.0, 8.0, 8.0, 8.0),
+                            child: Wrap(
+                              spacing: 8.0,
+                              runSpacing: 8.0,
+                              alignment: WrapAlignment.start,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              direction: Axis.horizontal,
+                              runAlignment: WrapAlignment.start,
+                              verticalDirection: VerticalDirection.down,
+                              clipBehavior: Clip.none,
+                              children: [
+                                _DriverFilterChip(
+                                  label: FFAppState().filter.radius != 0.0
+                                      ? formatNumber(
+                                          FFAppState().filter.radius,
+                                          formatType: FormatType.custom,
+                                          format: 'Радиус 0 км',
+                                          locale: '',
+                                        )
+                                      : 'Радиус поиска',
+                                  isActive: FFAppState().filter.radius != 0.0,
+                                  onTap: () async {
+                                    await showModalBottomSheet(
+                                      isScrollControlled: true,
+                                      backgroundColor: Colors.transparent,
+                                      context: context,
+                                      builder: (context) {
+                                        return WebViewAware(
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              FocusScope.of(context).unfocus();
+                                              FocusManager.instance.primaryFocus
+                                                  ?.unfocus();
+                                            },
+                                            child: Padding(
+                                              padding: MediaQuery.viewInsetsOf(
+                                                  context),
+                                              child: FiltersWidget(
+                                                  focus: 'radius'),
+                                            ),
                                           ),
-                                        ),
-                                      );
-                                    },
-                                  ).then((value) => safeSetState(() {}));
-                                },
-                                onClear: () {
-                                  FFAppState().updateFilterStruct(
-                                    (e) => e..radius = null,
-                                  );
-                                  safeSetState(() {});
-                                },
-                              ),
-                              _DriverFilterChip(
-                                label: () {
-                                  final ott = FFAppState().filter.ott;
-                                  final doo = FFAppState().filter.doo;
-                                  if (ott != 0 && doo != 0) {
-                                    return '$ott–$doo ₽';
-                                  } else if (ott != 0) {
-                                    return 'От $ott ₽';
-                                  } else if (doo != 0) {
-                                    return 'До $doo ₽';
-                                  }
-                                  return 'Ставка';
-                                }(),
-                                isActive: FFAppState().filter.ott != 0 ||
-                                    FFAppState().filter.doo != 0,
-                                onTap: () async {
-                                  await showModalBottomSheet(
-                                    isScrollControlled: true,
-                                    backgroundColor: Colors.transparent,
-                                    context: context,
-                                    builder: (context) {
-                                      return WebViewAware(
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            FocusScope.of(context).unfocus();
-                                            FocusManager.instance.primaryFocus
-                                                ?.unfocus();
-                                          },
-                                          child: Padding(
-                                            padding: MediaQuery.viewInsetsOf(
-                                                context),
-                                            child:
-                                                FiltersWidget(focus: 'rate'),
+                                        );
+                                      },
+                                    ).then((value) => safeSetState(() {}));
+                                  },
+                                  onClear: () {
+                                    FFAppState().updateFilterStruct(
+                                      (e) => e..radius = null,
+                                    );
+                                    safeSetState(() {});
+                                  },
+                                ),
+                                _DriverFilterChip(
+                                  label: () {
+                                    final ott = FFAppState().filter.ott;
+                                    final doo = FFAppState().filter.doo;
+                                    if (ott != 0 && doo != 0) {
+                                      return '$ott–$doo ₽';
+                                    } else if (ott != 0) {
+                                      return 'От $ott ₽';
+                                    } else if (doo != 0) {
+                                      return 'До $doo ₽';
+                                    }
+                                    return 'Ставка';
+                                  }(),
+                                  isActive: FFAppState().filter.ott != 0 ||
+                                      FFAppState().filter.doo != 0,
+                                  onTap: () async {
+                                    await showModalBottomSheet(
+                                      isScrollControlled: true,
+                                      backgroundColor: Colors.transparent,
+                                      context: context,
+                                      builder: (context) {
+                                        return WebViewAware(
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              FocusScope.of(context).unfocus();
+                                              FocusManager.instance.primaryFocus
+                                                  ?.unfocus();
+                                            },
+                                            child: Padding(
+                                              padding: MediaQuery.viewInsetsOf(
+                                                  context),
+                                              child:
+                                                  FiltersWidget(focus: 'rate'),
+                                            ),
                                           ),
-                                        ),
-                                      );
-                                    },
-                                  ).then((value) => safeSetState(() {}));
-                                },
-                                onClear: () {
-                                  FFAppState().updateFilterStruct(
-                                    (e) => e
-                                      ..ott = null
-                                      ..doo = null,
-                                  );
-                                  safeSetState(() {});
-                                },
-                              ),
-                              _DriverFilterChip(
-                                label: FFAppState().filter.supply == 1
-                                    ? 'В ближайшее время'
-                                    : FFAppState().filter.supply == 2
-                                        ? 'Ко времени'
-                                        : 'Подача',
-                                isActive:
-                                    FFAppState().filter.supply != 0,
-                                onTap: () async {
-                                  await showModalBottomSheet(
-                                    isScrollControlled: true,
-                                    backgroundColor: Colors.transparent,
-                                    context: context,
-                                    builder: (context) {
-                                      return WebViewAware(
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            FocusScope.of(context).unfocus();
-                                            FocusManager.instance.primaryFocus
-                                                ?.unfocus();
-                                          },
-                                          child: Padding(
-                                            padding: MediaQuery.viewInsetsOf(
-                                                context),
-                                            child: FiltersWidget(
-                                                focus: 'supply'),
+                                        );
+                                      },
+                                    ).then((value) => safeSetState(() {}));
+                                  },
+                                  onClear: () {
+                                    FFAppState().updateFilterStruct(
+                                      (e) => e
+                                        ..ott = null
+                                        ..doo = null,
+                                    );
+                                    safeSetState(() {});
+                                  },
+                                ),
+                                _DriverFilterChip(
+                                  label: FFAppState().filter.supply == 1
+                                      ? 'В ближайшее время'
+                                      : FFAppState().filter.supply == 2
+                                          ? 'Ко времени'
+                                          : 'Подача',
+                                  isActive: FFAppState().filter.supply != 0,
+                                  onTap: () async {
+                                    await showModalBottomSheet(
+                                      isScrollControlled: true,
+                                      backgroundColor: Colors.transparent,
+                                      context: context,
+                                      builder: (context) {
+                                        return WebViewAware(
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              FocusScope.of(context).unfocus();
+                                              FocusManager.instance.primaryFocus
+                                                  ?.unfocus();
+                                            },
+                                            child: Padding(
+                                              padding: MediaQuery.viewInsetsOf(
+                                                  context),
+                                              child: FiltersWidget(
+                                                  focus: 'supply'),
+                                            ),
                                           ),
-                                        ),
-                                      );
-                                    },
-                                  ).then((value) => safeSetState(() {}));
-                                },
-                                onClear: () {
-                                  FFAppState().updateFilterStruct(
-                                    (e) => e..supply = null,
-                                  );
-                                  safeSetState(() {});
-                                },
-                              ),
-                            ],
+                                        );
+                                      },
+                                    ).then((value) => safeSetState(() {}));
+                                  },
+                                  onClear: () {
+                                    FFAppState().updateFilterStruct(
+                                      (e) => e..supply = null,
+                                    );
+                                    safeSetState(() {});
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
                         ],
                       ),
                     ),
@@ -440,67 +538,53 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                 final commission = valueOrDefault(
                                     currentUserDocument?.currentCommision,
                                     0.0);
-                                final bonus = valueOrDefault(
-                                    currentUserDocument?.bonusBalance, 0.0);
-                                final fromBonus =
+                                final bonus = effectiveBonusBalance;
+                                final mainBefore = effectiveBalance;
+                                var fromBonus =
                                     commission <= bonus ? commission : bonus;
-                                final fromMain = commission - fromBonus;
-                                print(
-                                    '[main_driver.endShift] commission=$commission bonus=$bonus fromBonus=$fromBonus fromMain=$fromMain');
-                                final mainBalanceAfter = valueOrDefault(
-                                        currentUserDocument?.balance, 0.0) -
-                                    fromMain;
-                                if (fromMain > 0 && mainBalanceAfter < 0) {
-                                  print(
-                                      '[main_driver.endShift] WARN: balance going negative after shift end → $mainBalanceAfter');
+                                var fromMain = commission - fromBonus;
+                                var mainAfter = mainBefore - fromMain;
+                                var bonusAfter = bonus - fromBonus;
+                                if (mainAfter < 0 && bonusAfter > 0) {
+                                  final cover = mainAfter.abs() < bonusAfter
+                                      ? mainAfter.abs()
+                                      : bonusAfter;
+                                  fromBonus += cover;
+                                  fromMain -= cover;
+                                  mainAfter = mainBefore - fromMain;
+                                  bonusAfter = bonus - fromBonus;
                                 }
 
-                                final shiftWriteOff = <String, dynamic>{};
-                                if (fromBonus > 0) {
-                                  shiftWriteOff['bonus_balance'] =
-                                      FieldValue.increment(-fromBonus);
+                                final apiResult = await AppMeApi.shiftEnd();
+                                if (apiResult == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content:
+                                          Text('Не удалось завершить смену'),
+                                    ),
+                                  );
+                                  return;
                                 }
-                                if (fromMain > 0) {
-                                  shiftWriteOff['balance'] =
-                                      FieldValue.increment(-fromMain);
-                                }
-
-                                await currentUserReference!.update({
-                                  ...createUsersRecordData(
-                                    onShift: false,
-                                    shiftCompletionDateTime:
-                                        getCurrentTimestamp,
-                                  ),
-                                  ...mapToFirestore(shiftWriteOff),
-                                });
+                                mainAfter = (apiResult['balance'] is num)
+                                    ? (apiResult['balance'] as num).toDouble()
+                                    : mainAfter;
+                                bonusAfter =
+                                    (apiResult['bonus_balance'] is num)
+                                        ? (apiResult['bonus_balance'] as num)
+                                            .toDouble()
+                                        : bonusAfter;
+                                await refreshAppMeCache();
 
                                 createPayOrderRecordData(
-
                                   isPaid: false,
-                                  amountInCop: (valueOrDefault(
-                                      currentUserDocument
-                                          ?.currentCommision,
-                                      0.0)).toInt(),
+                                  amountInCop: commission.toInt(),
                                   user: currentUserReference,
                                   paymentType: PaymentType.finishedMyShift,
                                 );
-                                unawaited(
-                                      () async {
-                                    await currentUserReference!.update({
-                                      ...mapToFirestore(
-                                        {
-                                          'current_commision':
-                                          FieldValue.delete(),
-                                        },
-                                      ),
-                                    });
-                                  }(),
-                                );
                                 FFAppState().update(() {});
                                 HapticFeedback.mediumImpact();
-                                if (valueOrDefault(
-                                        currentUserDocument?.balance, 0.0) <
-                                    0.0) {
+                                if (functions.driverHasWorkDebt(
+                                    mainAfter, bonusAfter)) {
                                   await showModalBottomSheet(
                                     isScrollControlled: true,
                                     backgroundColor: Colors.transparent,
@@ -567,113 +651,20 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
                             children: [
-                              StreamBuilder<List<OrderRecord>>(
-                                stream: queryOrderRecord(
-                                  queryBuilder: (orderRecord) => orderRecord
-                                      .where(
-                                        'status',
-                                        isEqualTo:
-                                            StatusOrder.newOrder.serialize(),
-                                      )
-                                      .where(
-                                        'user_customer',
-                                        isNotEqualTo: currentUserReference,
+                              if (_apiFeedLoading)
+                                Center(
+                                  child: SizedBox(
+                                    width: 50.0,
+                                    height: 50.0,
+                                    child: CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        FlutterFlowTheme.of(context).primary,
                                       ),
-                                ),
-                                builder: (context, snapshot) {
-                                  // Customize what your widget looks like when it's loading.
-                                  if (!snapshot.hasData) {
-                                    return Center(
-                                      child: SizedBox(
-                                        width: 50.0,
-                                        height: 50.0,
-                                        child: CircularProgressIndicator(
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                            FlutterFlowTheme.of(context)
-                                                .primary,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                  List<OrderRecord> containerOrderRecordList =
-                                      snapshot.data!;
-
-                                  return Container(
-                                    decoration: BoxDecoration(),
-                                    child: Builder(
-                                      builder: (context) {
-                                        final orders = functions
-                                            .filterOrders(
-                                                FFAppState().filter.ott != 0
-                                                    ? FFAppState().filter.ott
-                                                    : null,
-                                                FFAppState().filter.doo != 0
-                                                    ? FFAppState().filter.doo
-                                                    : null,
-                                                FFAppState().filter.supply != 0
-                                                    ? FFAppState().filter.supply
-                                                    : null,
-                                                FFAppState().filter.radius !=
-                                                        0.0
-                                                    ? FFAppState().filter.radius
-                                                    : null,
-                                                containerOrderRecordList
-                                                    .toList(),
-                                                currentUserLocationValue,
-                                                currentUserDocument
-                                                    ?.car?.mark?.name)
-                                            .toList();
-                                        if (orders.isEmpty) {
-                                          return Container(
-                                            height: 700.0,
-                                            child: NetPoiskaWidget(),
-                                          );
-                                        }
-
-                                        final canGetNew = orders.where((e) => e.userWhoResponced.contains(currentUserReference) &&
-                                            (e.status == StatusOrder.newOrder) || e.selectedDriver == currentUserReference).isEmpty;
-                                        final hasUnrespondedOrders = orders.any(
-                                          (e) =>
-                                              !e.userWhoResponced.contains(
-                                                  currentUserReference) &&
-                                              e.selectedDriver !=
-                                                  currentUserReference,
-                                        );
-                                        final showExtraOrderBanner =
-                                            !canGetNew &&
-                                                hasUnrespondedOrders;
-                                        return Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            if (showExtraOrderBanner)
-                                              const _ExtraOrderBanner(),
-                                            ListView.builder(
-                                              padding: EdgeInsets.zero,
-                                              primary: false,
-                                              shrinkWrap: true,
-                                              scrollDirection: Axis.vertical,
-                                              itemCount: orders.length,
-                                              itemBuilder:
-                                                  (context, ordersIndex) {
-                                                final ordersItem =
-                                                    orders[ordersIndex];
-                                                return OrderCardDriverWidget(
-                                                  canGetNew: canGetNew,
-                                                  key: Key(
-                                                      'Keydjd_${ordersIndex}_of_${orders.length}'),
-                                                  order: ordersItem,
-                                                );
-                                              },
-                                            ),
-                                          ],
-                                        );
-                                      },
                                     ),
-                                  );
-                                },
-                              ),
+                                  ),
+                                )
+                              else
+                                _buildOrdersList(_apiFeedOrders),
                             ],
                           ),
                         ),
@@ -754,22 +745,18 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                             0.0, 24.0, 0.0, 0.0),
                                         child: FFButtonWidget(
                                           onPressed: () async {
-                                            if (valueOrDefault(
-                                                    currentUserDocument
-                                                        ?.balance,
-                                                    0.0) >=
-                                                0.0) {
+                                            if (!functions.driverHasWorkDebt(
+                                                effectiveBalance,
+                                                effectiveBonusBalance)) {
                                               if (await getPermissionStatus(
                                                   locationPermission)) {
                                                 unawaited(
                                                   () async {
-                                                    await currentUserReference!
-                                                        .update(
-                                                            createUsersRecordData(
-                                                      onShift: true,
-                                                      shiftStartDateTime:
-                                                          getCurrentTimestamp,
-                                                    ));
+                                                    final ok = await AppMeApi
+                                                        .shiftStart();
+                                                    if (ok) {
+                                                      await refreshAppMeCache();
+                                                    }
                                                   }(),
                                                 );
 
@@ -873,8 +860,8 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   if (!valueOrDefault<bool>(
-                                          currentUserDocument?.verifNeProidena,
-                                          false))
+                                      currentUserDocument?.verifNeProidena,
+                                      false))
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
                                           0.0, 0.0, 0.0, 5.0),
@@ -962,8 +949,7 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                       ),
                                     ),
                                   if (valueOrDefault<bool>(
-                                      currentUserDocument?.isBlocked,
-                                      false))
+                                      currentUserDocument?.isBlocked, false))
                                     AuthUserStreamWidget(
                                       builder: (context) => Container(
                                         width: double.infinity,
@@ -971,14 +957,14 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                           color: FlutterFlowTheme.of(context)
                                               .secondaryBackground,
                                           borderRadius:
-                                          BorderRadius.circular(18.0),
+                                              BorderRadius.circular(18.0),
                                         ),
                                         child: Padding(
                                           padding: EdgeInsets.all(16.0),
                                           child: Column(
                                             mainAxisSize: MainAxisSize.max,
                                             crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Row(
                                                 mainAxisSize: MainAxisSize.max,
@@ -986,31 +972,31 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                                   Icon(
                                                     FFIcons.kalertHexagon,
                                                     color: FlutterFlowTheme.of(
-                                                        context)
+                                                            context)
                                                         .error,
                                                     size: 20.0,
                                                   ),
                                                   Padding(
                                                     padding:
-                                                    EdgeInsetsDirectional
-                                                        .fromSTEB(6.0, 0.0,
-                                                        0.0, 0.0),
+                                                        EdgeInsetsDirectional
+                                                            .fromSTEB(6.0, 0.0,
+                                                                0.0, 0.0),
                                                     child: Text(
                                                       'Вы заблокированы',
                                                       style: FlutterFlowTheme
-                                                          .of(context)
+                                                              .of(context)
                                                           .bodyMedium
                                                           .override(
-                                                        fontFamily: 'SF',
-                                                        color: FlutterFlowTheme
-                                                            .of(context)
-                                                            .error,
-                                                        fontSize: 16.0,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                        FontWeight.w600,
-                                                        lineHeight: 1.0,
-                                                      ),
+                                                            fontFamily: 'SF',
+                                                            color: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .error,
+                                                            fontSize: 16.0,
+                                                            letterSpacing: 0.0,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            lineHeight: 1.0,
+                                                          ),
                                                     ),
                                                   ),
                                                 ],
@@ -1018,89 +1004,63 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                               Padding(
                                                 padding: EdgeInsetsDirectional
                                                     .fromSTEB(
-                                                    0.0, 5.0, 0.0, 0.0),
+                                                        0.0, 5.0, 0.0, 0.0),
                                                 child: Text(
                                                   'Свяжитесь с поддержкой для получения доп инфы ',
                                                   style: FlutterFlowTheme.of(
-                                                      context)
+                                                          context)
                                                       .bodyMedium
                                                       .override(
-                                                    fontFamily: 'SF',
-                                                    color:
-                                                    Color(0xFF4B4B4B),
-                                                    letterSpacing: 0.0,
-                                                    fontWeight:
-                                                    FontWeight.normal,
-                                                  ),
+                                                        fontFamily: 'SF',
+                                                        color:
+                                                            Color(0xFF4B4B4B),
+                                                        letterSpacing: 0.0,
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                      ),
                                                 ),
                                               ),
                                               Padding(
                                                 padding: EdgeInsetsDirectional
                                                     .fromSTEB(
-                                                    0.0, 12.0, 0.0, 0.0),
+                                                        0.0, 12.0, 0.0, 0.0),
                                                 child: FFButtonWidget(
                                                   onPressed: () async {
-
-
-                                                    var chatsRecordReference =
-                                                    ChatsRecord.collection
-                                                        .doc();
-                                                    if (currentUserDocument
-                                                        ?.chatWithSupport ==
-                                                        null) {
-                                                      currentUserDocument!.chatWithSupport =
-                                                          ChatsRecord
-                                                              .getDocumentFromData({
-                                                            ...createChatsRecordData(
-                                                              dateCreated:
-                                                              getCurrentTimestamp,
-                                                              support: true,
-                                                            ),
-                                                            ...mapToFirestore(
-                                                              {
-                                                                'users':
-                                                                functions.listusers(
-                                                                    currentUserReference!),
-                                                              },
-                                                            ),
-                                                          }, chatsRecordReference).reference;
-                                                    }
-
-
-                                                    return;
+                                                    await openSupportChat(
+                                                        context);
                                                   },
                                                   text: 'Чат с поддержкой',
                                                   options: FFButtonOptions(
                                                     width: double.infinity,
                                                     height: 45.0,
                                                     padding:
-                                                    EdgeInsetsDirectional
-                                                        .fromSTEB(0.0, 0.0,
-                                                        0.0, 0.0),
+                                                        EdgeInsetsDirectional
+                                                            .fromSTEB(0.0, 0.0,
+                                                                0.0, 0.0),
                                                     iconPadding:
-                                                    EdgeInsetsDirectional
-                                                        .fromSTEB(0.0, 0.0,
-                                                        0.0, 0.0),
+                                                        EdgeInsetsDirectional
+                                                            .fromSTEB(0.0, 0.0,
+                                                                0.0, 0.0),
                                                     color: FlutterFlowTheme.of(
-                                                        context)
+                                                            context)
                                                         .primaryBackground,
                                                     textStyle: FlutterFlowTheme
-                                                        .of(context)
+                                                            .of(context)
                                                         .titleSmall
                                                         .override(
-                                                      fontFamily: 'SF',
-                                                      color: FlutterFlowTheme
-                                                          .of(context)
-                                                          .tertiary,
-                                                      fontSize: 15.0,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                      FontWeight.w500,
-                                                    ),
+                                                          fontFamily: 'SF',
+                                                          color: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .tertiary,
+                                                          fontSize: 15.0,
+                                                          letterSpacing: 0.0,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                        ),
                                                     elevation: 0.0,
                                                     borderRadius:
-                                                    BorderRadius.circular(
-                                                        12.0),
+                                                        BorderRadius.circular(
+                                                            12.0),
                                                   ),
                                                   showLoadingIndicator: false,
                                                 ),
@@ -1109,8 +1069,8 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                           ),
                                         ),
                                       ),
-                                    ) else
-                                  if (valueOrDefault<bool>(
+                                    )
+                                  else if (valueOrDefault<bool>(
                                       currentUserDocument?.verifNeProidena,
                                       false))
                                     AuthUserStreamWidget(
@@ -1287,8 +1247,7 @@ class _DriverGreetingHeader extends StatelessWidget {
     final location =
         city.isNotEmpty ? city : (region.isNotEmpty ? region : '…');
     return Padding(
-      padding:
-          const EdgeInsetsDirectional.fromSTEB(16.0, 48.0, 16.0, 4.0),
+      padding: const EdgeInsetsDirectional.fromSTEB(16.0, 48.0, 16.0, 4.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [

@@ -147,6 +147,45 @@ function renderSnapshot(snapshot) {
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
+function renderPgMessages(rows) {
+  clearMessages();
+  (rows || []).forEach(m => {
+    const fake = {
+      text: m.text || '',
+      date_created: m.date_created,
+      sender: { id: m.sender_id },
+      read: !!m.read,
+    };
+    messagesContainer.appendChild(renderMessage(m.id, fake));
+  });
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+let _pgPollStarted = false;
+async function pollPgMessages() {
+  try {
+    const resp = await fetch('/api/chats/' + encodeURIComponent(CHAT_ID) + '/messages', {
+      credentials: 'same-origin',
+    });
+    if (!resp.ok) return false;
+    const data = await resp.json();
+    if (data && Array.isArray(data.messages)) {
+      renderPgMessages(data.messages);
+      return true;
+    }
+  } catch (e) {
+    console.warn('pg poll', e);
+  }
+  return false;
+}
+
+function startPgPoll() {
+  if (_pgPollStarted) return;
+  _pgPollStarted = true;
+  pollPgMessages();
+  setInterval(pollPgMessages, 2500);
+}
+
 /* Простое диалоговое окно ошибки в UI */
 function showErrorDialog(title, message) {
   // если уже есть диалог — обновим текст
@@ -185,6 +224,7 @@ function showErrorDialog(title, message) {
 /* Основная логика: получить конфиг с сервера, инициализировать Firebase и подписаться на сообщения.
    Выполняется после ensureFirebaseV8(). */
 async function initChat() {
+  startPgPoll();
   try {
     const resp = await fetch('/api/chats/firebase-config', { credentials: 'same-origin' });
     if (!resp.ok) throw new Error('Не удалось получить конфигурацию Firebase: ' + resp.status);

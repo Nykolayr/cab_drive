@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
 import '/backend/push_notifications/push_notifications_util.dart';
@@ -104,83 +105,139 @@ class _CreateVerifReqWidgetState extends State<CreateVerifReqWidget> {
         }
       }
 
-      _model.count = await queryRequestVereficationRecordCount();
-
-      var requestVereficationRecordReference =
-          RequestVereficationRecord.collection.doc();
-      await requestVereficationRecordReference.set({
-        ...createRequestVereficationRecordData(
-          city: widget!.city,
-          commissionPercent: widget.commissionPercent,
-          name: widget!.name,
-          surname: widget!.surnme,
-          numberAvto: widget!.nomer,
-          phoneNumber: currentPhoneNumber,
-          dfb: widget!.dtb,
-          user: currentUserReference,
-          status: StatusVerif.onVerif,
-          dateCreated: functions.toUtc(),
-          numberId: (_model.count!) + 1,
-          email: widget!.mail,
-          avatar: currentUserPhoto,
-          marka: widget!.marka,
-        ),
-        ...mapToFirestore(
-          {
-            'photo_doc': widget!.photoDoc,
-            'photo_avto': _model.uploadedFileUrls_uploadData1tw,
-          },
-        ),
+      _model.count = null;
+      final created = await AppMeApi.createVerification({
+        'city': widget!.city,
+        'commission_percent': widget.commissionPercent,
+        'name': widget!.name,
+        'surname': widget!.surnme,
+        'number_avto': widget!.nomer,
+        'phone_number': currentPhoneNumber,
+        'dfb': widget!.dtb?.toUtc().toIso8601String(),
+        'email': widget!.mail,
+        'avatar': currentUserPhoto,
+        'marka': widget!.marka?.serialize(),
+        'photo_doc': widget!.photoDoc,
+        'photo_avto': _model.uploadedFileUrls_uploadData1tw,
       });
-      _model.verif = RequestVereficationRecord.getDocumentFromData({
-        ...createRequestVereficationRecordData(
-          city: widget!.city,
-          name: widget!.name,
-          surname: widget!.surnme,
-          commissionPercent: widget.commissionPercent,
-          numberAvto: widget!.nomer,
-          phoneNumber: currentPhoneNumber,
-          dfb: widget!.dtb,
-          user: currentUserReference,
-          status: StatusVerif.onVerif,
-          dateCreated: functions.toUtc(),
-          numberId: (_model.count!) + 1,
-          email: widget!.mail,
-          avatar: currentUserPhoto,
-          marka: widget!.marka,
-        ),
-        ...mapToFirestore(
+
+      DocumentReference? verifRef;
+      int? numberId;
+      if (created != null && (created['id']?.toString().isNotEmpty ?? false)) {
+        final id = created['id'].toString();
+        numberId = created['number_id'] is int
+            ? created['number_id'] as int
+            : int.tryParse('${created['number_id']}');
+        verifRef = RequestVereficationRecord.collection.doc(id);
+        _model.verif = RequestVereficationRecord.getDocumentFromData(
           {
-            'photo_doc': widget!.photoDoc,
-            'photo_avto': _model.uploadedFileUrls_uploadData1tw,
+            ...createRequestVereficationRecordData(
+              city: widget!.city,
+              name: widget!.name,
+              surname: widget!.surnme,
+              commissionPercent: widget.commissionPercent,
+              numberAvto: widget!.nomer,
+              phoneNumber: currentPhoneNumber,
+              dfb: widget!.dtb,
+              user: currentUserReference,
+              status: StatusVerif.onVerif,
+              dateCreated: functions.toUtc(),
+              numberId: numberId,
+              email: widget!.mail,
+              avatar: currentUserPhoto,
+              marka: widget!.marka,
+            ),
+            ...mapToFirestore({
+              'photo_doc': widget!.photoDoc,
+              'photo_avto': _model.uploadedFileUrls_uploadData1tw,
+            }),
           },
-        ),
-      }, requestVereficationRecordReference);
-
-      await currentUserReference!.update(createUsersRecordData(
-        displayName: widget!.name,
-        loginComplete: true,
-        isDriver: true,
-        admin: false,
-        surname: widget!.surnme,
-        city: widget!.city,
-
-        commissionPercent: widget.commissionPercent,
-        dfb: widget!.dtb,
-        verifCompl: false,
-        onVerifNow: true,
-        car: updateCarStruct(
-          CarStruct(
-            nomer: widget!.nomer,
-            images: _model.uploadedFileUrls_uploadData1tw,
-            mark: widget!.marka,
+          verifRef,
+        );
+        // локальный кэш профиля (PG уже обновлён на сервере)
+        try {
+          await refreshAppMeCache();
+        } catch (_) {}
+      } else {
+        // FS fallback
+        _model.count = await queryRequestVereficationRecordCount();
+        numberId = (_model.count!) + 1;
+        var requestVereficationRecordReference =
+            RequestVereficationRecord.collection.doc();
+        await requestVereficationRecordReference.set({
+          ...createRequestVereficationRecordData(
+            city: widget!.city,
+            commissionPercent: widget.commissionPercent,
+            name: widget!.name,
+            surname: widget!.surnme,
+            numberAvto: widget!.nomer,
+            phoneNumber: currentPhoneNumber,
+            dfb: widget!.dtb,
+            user: currentUserReference,
+            status: StatusVerif.onVerif,
+            dateCreated: functions.toUtc(),
+            numberId: numberId,
+            email: widget!.mail,
+            avatar: currentUserPhoto,
+            marka: widget!.marka,
           ),
-          clearUnsetFields: false,
-        ),
-        verifNeProidena: false,
-        verifId: _model.verif?.numberId,
-        emailUser: widget!.mail,
-      ));
+          ...mapToFirestore(
+            {
+              'photo_doc': widget!.photoDoc,
+              'photo_avto': _model.uploadedFileUrls_uploadData1tw,
+            },
+          ),
+        });
+        verifRef = requestVereficationRecordReference;
+        _model.verif = RequestVereficationRecord.getDocumentFromData({
+          ...createRequestVereficationRecordData(
+            city: widget!.city,
+            name: widget!.name,
+            surname: widget!.surnme,
+            commissionPercent: widget.commissionPercent,
+            numberAvto: widget!.nomer,
+            phoneNumber: currentPhoneNumber,
+            dfb: widget!.dtb,
+            user: currentUserReference,
+            status: StatusVerif.onVerif,
+            dateCreated: functions.toUtc(),
+            numberId: numberId,
+            email: widget!.mail,
+            avatar: currentUserPhoto,
+            marka: widget!.marka,
+          ),
+          ...mapToFirestore(
+            {
+              'photo_doc': widget!.photoDoc,
+              'photo_avto': _model.uploadedFileUrls_uploadData1tw,
+            },
+          ),
+        }, requestVereficationRecordReference);
+
+        await currentUserReference!.update(createUsersRecordData(
+          displayName: widget!.name,
+          loginComplete: true,
+          isDriver: true,
+          admin: false,
+          surname: widget!.surnme,
+          city: widget!.city,
+          commissionPercent: widget.commissionPercent,
+          dfb: widget!.dtb,
+          verifCompl: false,
+          onVerifNow: true,
+          car: updateCarStruct(
+            CarStruct(
+              nomer: widget!.nomer,
+              images: _model.uploadedFileUrls_uploadData1tw,
+              mark: widget!.marka,
+            ),
+            clearUnsetFields: false,
+          ),
+          verifNeProidena: false,
+          verifId: numberId,
+          emailUser: widget!.mail,
+        ));
+      }
       _model.admin = await queryUsersRecordOnce(
         queryBuilder: (usersRecord) => usersRecord.where(
           'admin',
@@ -188,17 +245,19 @@ class _CreateVerifReqWidgetState extends State<CreateVerifReqWidget> {
         ),
         singleRecord: true,
       ).then((s) => s.firstOrNull);
-      triggerPushNotification(
-        notificationTitle: 'Новый водитель!',
-        notificationText:
-            'В приложении появился новый водитель, перейдите на страницу заявки и рассмотрите ее',
-        notificationSound: 'default',
-        userRefs: [_model.admin!.reference],
-        initialPageName: 'Detali_zayavki_Admin',
-        parameterData: {
-          'docref': _model.verif?.reference,
-        },
-      );
+      if (_model.admin != null && verifRef != null) {
+        triggerPushNotification(
+          notificationTitle: 'Новый водитель!',
+          notificationText:
+              'В приложении появился новый водитель, перейдите на страницу заявки и рассмотрите ее',
+          notificationSound: 'default',
+          userRefs: [_model.admin!.reference],
+          initialPageName: 'Detali_zayavki_Admin',
+          parameterData: {
+            'docref': verifRef,
+          },
+        );
+      }
       FFAppState().driver = true;
       FFAppState().update(() {});
 

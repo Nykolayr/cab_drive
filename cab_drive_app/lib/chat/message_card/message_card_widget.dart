@@ -8,7 +8,6 @@ import '/pages/bottom/image_view/image_view_widget.dart';
 import 'dart:ui';
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -73,10 +72,7 @@ class _MessageCardWidgetState extends State<MessageCardWidget> {
                     height: 1.0,
                     messageId: widget!.messageDoc!.reference.id,
                     action: () async {
-                      await widget!.messageDoc!.reference
-                          .update(createMessagesRecordData(
-                        read: true,
-                      ));
+                      // Read receipts via API/WSS not wired; skip FS write.
                     },
                   ),
                 ),

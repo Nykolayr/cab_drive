@@ -1,4 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
+import '/backend/api/saved_cards_record_mapper.dart';
 import '/backend/backend.dart';
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -172,22 +174,13 @@ class _MoiAdresaWidgetState extends State<MoiAdresaWidget> {
                                           size: 16.0,
                                         ),
                                         onPressed: () async {
-                                          await currentUserReference!.update({
-                                            ...mapToFirestore(
-                                              {
-                                                'addresses':
-                                                    FieldValue.arrayRemove([
-                                                  getPointFirestoreData(
-                                                    updatePointStruct(
-                                                      addreItem,
-                                                      clearUnsetFields: false,
-                                                    ),
-                                                    true,
-                                                  )
-                                                ]),
-                                              },
-                                            ),
-                                          });
+                                          final ok = await AppMeApi.removeAddress(
+                                              pointToApiMap(addreItem));
+                                          if (ok) {
+                                            try {
+                                              await refreshAppMeCache();
+                                            } catch (_) {}
+                                          }
                                         },
                                       ),
                                     ].divide(SizedBox(width: 8.0)),

@@ -1,0 +1,161 @@
+---
+description: Архитектура Cab Drive — МП + бэк, Postgres SoT, cutover Firestore, WSS
+alwaysApply: true
+---
+
+# Cab Drive — архитектура (МП + бэк) и cutover
+
+Monorepo: `D:\Projects\cab_drive`  
+- Flutter МП: `cab_drive_app/`  
+- Flask: `server/`  
+- VPS: `37.252.20.248`, systemd `cab.service` (gunicorn :5000), `cab-wss.service` (:5001), nginx `https://cab.artean.ru`, WSS `wss://cab.artean.ru/ws/`  
+- Postgres app: `cab_drive_app` / `DATABASE_URL` (`/root/cab_drive_database_url.txt`)  
+- MySQL `cab` — **только** админ SQL (`User` / `FirebaseUser` phone bridge), **не** app data  
+
+Правило ЖЕЛЕЗО (Expansion): до «делай»/«ок»/«утверждаю» — только план в чате; после — код/деплой. APK — только по явной просьбе.
+
+---
+
+## Что остаётся на Google (намеренно)
+
+| Сервис | Зачем |
+|--------|--------|
+| **Firebase Auth** | телефон / ID token; Bearer для `/api/app/*` |
+| **FCM** | доставка пушей (токены в PG `app_user_fcm_tokens`) |
+
+**Не SoT / не Google DB:**
+- Файлы → свой `files/upload` + `files/get` (Firebase Storage SDK в МП не вызывается)
+- Remote Config → локальные константы (`firebase_remote_config_util.dart`), без fetch Google
+- Firestore → **не** Source of Truth; soft mirror OFF на проде
+
+Всё app-data → **Postgres SoT**. Soft FS mirror **выключен** (`APP_FS_MIRROR=0`).
+
+---
+
+## SoT и зеркало
+
+```
+МП / Dashboard
+    │ Bearer Firebase ID token  или  admin session
+    ▼
+Flask /api/app/*  +  WSS /ws/
+    │
+    └─► Postgres app_*     = Source of Truth
+        (Firestore soft mirror OFF: APP_FS_MIRROR=0)
+```
+
+- Health: `GET /api/app/health` → `sot=postgres`, `fs_mirror=false` (прод)  
+- Клиент: **API/WSS only** для app-data; не писать FS как SoT  
+- Откат mirror: `APP_FS_MIRROR=1` в env + `systemctl restart cab.service`  
+
+---
+
+## Бэкенд (ключевые модули)
+
+| Модуль | Роль |
+|--------|------|
+| `app_data/__init__.py` | Blueprint `/api/app` |
+| `app_auth_mp.py` | verify Firebase UID |
+| `app_pg.py` | Postgres access, mirror_*, get_me, orders, pay |
+| `app_fs_mirror.py` | soft_fs / APP_FS_MIRROR |
+| `app_me_ops.py` | shift, fine, me/location |
+| `app_order_ops.py` | complete, status, accept-bid, dequeue, cancel, hide, geo, patch |
+| `app_bids_ops.py` | bids CRUD, FCM token |
+| `app_chat_pg.py` | chats/messages PG |
+| `app_reviews_ops.py` | reviews create/list + soft FS |
+| `app_verifications_ops.py` | driver KYC create/list/approve/reject + soft FS |
+| `app_profile_ops.py` | addresses add/remove + saved_cards CRUD + soft FS |
+| `app_fcm_ops.py` | FCM send via `app_user_fcm_tokens` (PG) |
+| `wss_server.py` | WSS hub (отдельный процесс) |
+| `tinkoff/webhook.py` | PG-first paid + accept_bid card |
+| `chats/api.py` | dashboard: PG-first list/send |
+| MySQL admin | `users/` SQL — отдельно |
+
+### API МП (Bearer) — ядро
+
+- `GET/PATCH /me`, shift, fine, `POST /me/location`, `POST /me/fcm`  
+- orders: create, mine, feed, complete, status, accept-bid, dequeue, cancel, hide, geo, GET/PATCH `:id`  
+- bids CRUD  
+- payments POST/GET/PATCH  
+- chats: ensure, list, messages (HTTP + WSS)  
+- reviews / verifications / addresses / cards / push / peer public  
+
+### WSS протокол
+
+`{ "t", "id?", "p" }` — `auth` → `auth.ok`; `chat.subscribe|history|send` → `chat.new` / `chat.history.ok`  
+Задел: `order.updated` (ещё не wired с сервера заказов).
+
+---
+
+## МП (Flutter)
+
+| Слой | Файлы |
+|------|--------|
+| API HTTP | `lib/backend/api/app_me_api.dart` |
+| WSS чаты | `lib/backend/api/app_chat_ws.dart` |
+| Open chat | `lib/backend/api/chat_open.dart` |
+| Кэш профиля | `auth_util.dart` → `appMeCache`, `effectiveBalance`, `effectiveActiveOrdersQueue`, `refreshAppMeCache` |
+| Base URL | `payments_api_config.dart` → `cab.artean.ru` |
+
+Стек UI исторический FlutterFlow + местами BLoC; **не ломать** рабочие флоу ради «чистой» архитектуры без запроса.
+
+---
+
+## Postgres таблицы (app)
+
+`app_users`, `app_orders`, `app_order_responses`, `app_pay_orders`, `app_user_fcm_tokens`,  
+`app_chats`, `app_chat_members`, `app_messages`, `app_reviews`, `app_verifications`, `app_saved_cards`  
+(+ миграции `001`…`005_saved_cards.sql`)
+
+---
+
+## Статус cutover (актуально, 2026-09-09)
+
+### Прод: `APP_FS_MIRROR=0`
+
+Health: `fs_mirror=false`, `sot=postgres`. Soft FS writes с сервера **не идут**.
+
+### Уже PG SoT (МП + сервер)
+
+- Session `/me` poll (+ `PATCH /me` профиль: city/name/phone/photo/`fb_id`/role/…) — без FS user stream  
+- Create / repeat order, edit order load+save — API; точки через `pointToApiMap` (не сырой LatLng)  
+- Feed / order detail / bids / my_orders / moi_zakazy / map — API poll, без FS stream fallback  
+- Pay wait / cards / addresses / reviews — API  
+- Смена / штраф / geo / complete / status / accept / dequeue / cancel / hide — API; FS fallbacks МП сняты  
+- Чаты: ensure + WSS/HTTP history+send; inbox poll; chat_bar без FS write  
+- Login/OTP bootstrap — `patchMe` + `ensureSupportChat` (без FS user/chat set)  
+- FCM: register + `/push` через PG tokens  
+- Dashboard: user edit / order edit / point / auto-hide timer / mark-read — PG SoT + soft_fs only  
+- Pickup / extra / admin balance-stats — PG-first  
+
+### Хвосты (чистка, не блокер SoT)
+
+1. Выпил `cloud_firestore` / мёртвых `query*Record` импортов из pubspec/МП  
+2. Редкие admin UI (если ещё FS stream) → dashboard API  
+3. Legacy PDF URL в «О приложении» (бывший Storage) — перенести PDF на свой files  
+4. Tinkoff GetCardList sync — optional  
+
+### Оценка
+
+~**98%+** app-data SoT на Postgres. Google: **только Auth + FCM**. Для заказчика: *Firestore не используется как БД приложения*.
+
+---
+
+## Правила для агента
+
+1. Новые app-данные — **только PG**, не dual-write в FS.  
+2. Auth = Firebase; пароли/секреты не в git.  
+3. Деплой: `cab.service` + при WSS `cab-wss.service`; nginx `/ws/`.  
+4. Прод: `APP_FS_MIRROR=0` — не включать `1` без причины (откат).  
+5. Не путать MySQL `cab` и Postgres `app_*`.  
+6. Документ плана: `docs/CUTOVER_OWN_DB.md`.  
+7. APK/bundle — только по явной просьбе пользователя.
+
+---
+
+## Следующие пакеты (приоритет)
+
+1. Smoke на релизе (заказ / чат / профиль / смена)  
+2. Выпил `cloud_firestore` из pubspec  
+3. PDF политики → свой files + убрать legacy Storage URL  
+4. Tinkoff cards sync (optional)  

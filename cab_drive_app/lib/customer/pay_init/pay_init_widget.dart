@@ -1,7 +1,10 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
+import '/backend/api/pay_order_record_mapper.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/api_requests/payments_api_config.dart';
 import '/backend/backend.dart';
+import '/backend/schema/enums/enums.dart';
 import '/custom_code/services/payment_bank_error.dart';
 import '/custom_code/services/payment_init_error.dart';
 import '/custom_code/widgets/payment_result_overlay.dart';
@@ -45,6 +48,13 @@ class _PayInitWidgetState extends State<PayInitWidget> {
 
   late StreamSubscription<bool> _keyboardVisibilitySubscription;
   bool _isKeyboardVisible = false;
+  Timer? _payPollTimer;
+  bool _apiPaid = false;
+  String? _apiFailStatus;
+  String? _apiFailCode;
+  String? _apiFailMessage;
+  PayOrderRecord? _polledPay;
+  bool _queueUpdated = false;
 
   @override
   void setState(VoidCallback callback) {
@@ -65,8 +75,19 @@ class _PayInitWidgetState extends State<PayInitWidget> {
           '[Pay.order] start amountRUB=${widget.amountRUB} '
           'payOrder=${widget.payOrderRef?.id} user=${currentUserReference?.id}',
         );
-        _model.order =
-            await PayOrderRecord.getDocumentOnce(widget!.payOrderRef!);
+        final payId = widget.payOrderRef?.id ?? '';
+        final apiPay = payId.isNotEmpty ? await AppMeApi.getPayment(payId) : null;
+        if (apiPay != null) {
+          _polledPay = PayOrderRecordMapper.fromApi(apiPay, payId);
+          _model.order = _polledPay;
+        } else {
+          _model.urlIsSet = false;
+          _model.paymentFailed = true;
+          _model.paymentErrorMessage =
+              'Не удалось загрузить платёж. Попробуйте ещё раз.';
+          if (mounted) safeSetState(() {});
+          return;
+        }
         // ignore: avoid_print
         print(
           '[Pay.order] pay_order orderId=${_model.order?.orderId}',
@@ -96,16 +117,23 @@ class _PayInitWidgetState extends State<PayInitWidget> {
         if (ok && paymentUrl != null && paymentUrl.isNotEmpty) {
           unawaited(
             () async {
-              await widget!.payOrderRef!.update(await createPayOrderRecordData(
-                paymentId: paymentId,
-              ));
+              final payId = widget!.payOrderRef!.id;
+              final patched = await AppMeApi.patchPayment(payId, {
+                'paymentId': paymentId,
+                'payment_id': paymentId,
+              });
+              if (!patched) {
+                // ignore: avoid_print
+                print('[Pay.order] patchPayment failed paymentId=$paymentId');
+              }
               // ignore: avoid_print
-              print('[Pay.order] pay_order.paymentId saved=$paymentId');
+              print('[Pay.order] pay_order.paymentId saved=$paymentId api=$patched');
             }(),
           );
           _model.urlIsSet = true;
           _model.paymentFailed = false;
           _model.paymentErrorMessage = '';
+          _startPayPoll();
         } else {
           _model.urlIsSet = false;
           _model.paymentFailed = true;
@@ -139,8 +167,6 @@ class _PayInitWidgetState extends State<PayInitWidget> {
       });
     }
   }
-
-  bool _queueUpdated = false;
 
   void _onPayNavigate(String url) {
     // ignore: avoid_print
@@ -187,19 +213,107 @@ class _PayInitWidgetState extends State<PayInitWidget> {
     if (driverRef == null || orderRef == null) return;
     _queueUpdated = true;
     try {
-      await driverRef.update({
-        'active_orders_queue':
-            FieldValue.arrayUnion([orderRef]),
-      });
-      print('[pay_init.queue] queue+= driver=${driverRef.id} order=${orderRef.id}');
+      final ok = await AppMeApi.acceptBid(
+        orderRef.id,
+        driverUid: driverRef.id,
+        price: widget.currentprice ??
+            (payOrder.amountInCop > 0
+                ? (payOrder.amountInCop / 100).round()
+                : null),
+        commissionPercent: null,
+      );
+      if (!ok) {
+        print('[pay_init.queue] acceptBid failed order=${orderRef.id}');
+      } else {
+        print('[pay_init.queue] acceptBid ok order=${orderRef.id}');
+      }
     } catch (e) {
       _queueUpdated = false;
       print('[pay_init.queue] ERROR $e');
     }
   }
 
+  void _startPayPoll() {
+    _payPollTimer?.cancel();
+    final payId = widget.payOrderRef?.id;
+    if (payId == null || payId.isEmpty) return;
+    _payPollTimer = Timer.periodic(const Duration(seconds: 2), (_) async {
+      final pay = await AppMeApi.getPayment(payId);
+      if (pay == null || !mounted) return;
+      _polledPay = PayOrderRecordMapper.fromApi(pay, payId);
+      final paid = PayOrderRecordMapper.isPaid(pay);
+      if (paid) {
+        _apiPaid = true;
+        final orderId = pay['current_order_id']?.toString() ??
+            payOrderCurrentOrderId(pay);
+        final driverId =
+            pay['driver_id']?.toString() ?? widget.driver?.id;
+        if (orderId != null &&
+            orderId.isNotEmpty &&
+            driverId != null &&
+            driverId.isNotEmpty &&
+            !_queueUpdated) {
+          _queueUpdated = true;
+          final price = widget.currentprice ??
+              (() {
+                final cop = pay['amount_in_cop'];
+                if (cop is num && cop > 0) return (cop / 100).round();
+                return null;
+              })();
+          final commission = pay['commission_percent'] ?? pay['commissionPercent'];
+          final ok = await AppMeApi.acceptBid(
+            orderId,
+            driverUid: driverId,
+            price: price,
+            commissionPercent: commission is num ? commission : null,
+          );
+          if (!ok) _queueUpdated = false;
+        }
+        _payPollTimer?.cancel();
+        if (mounted) safeSetState(() {});
+        return;
+      }
+      final status = PayOrderRecordMapper.tinkoffStatus(pay);
+      if (PayOrderRecordMapper.failStatuses.contains(status)) {
+        _apiFailStatus = status;
+        _apiFailCode = pay['tinkoff_error_code']?.toString();
+        _apiFailMessage = pay['tinkoff_message']?.toString();
+        _model.bankFailOverlay = true;
+        _model.bankFailMessage = PaymentBankError.message(
+          errorCode: _apiFailCode,
+          status: status,
+          bankMessage: _apiFailMessage,
+          mode: PaymentsApiConfig.mode,
+        );
+        _payPollTimer?.cancel();
+        if (mounted) safeSetState(() {});
+      } else if (mounted) {
+        safeSetState(() {});
+      }
+    });
+  }
+
+  Stream<PayOrderRecord> _payStream() {
+    if (_polledPay != null) {
+      return Stream<PayOrderRecord>.value(_polledPay!);
+    }
+    return const Stream.empty();
+  }
+
+  String? payOrderCurrentOrderId(Map<String, dynamic> pay) {
+    final ref = pay['current_order_doc_ref'];
+    if (ref is Map && ref['_ref'] != null) {
+      return ref['_ref'].toString().split('/').last;
+    }
+    if (ref is String && ref.isNotEmpty) {
+      return ref.contains('/') ? ref.split('/').last : ref;
+    }
+    return null;
+  }
+
   @override
   void dispose() {
+    _payPollTimer?.cancel();
     _model.maybeDispose();
 
     if (!isWeb) {
@@ -278,10 +392,10 @@ class _PayInitWidgetState extends State<PayInitWidget> {
             ),
             Expanded(
               child: StreamBuilder<PayOrderRecord>(
-                stream: PayOrderRecord.getDocument(widget!.payOrderRef!),
+                stream: _payStream(),
                 builder: (context, snapshot) {
                   // Customize what your widget looks like when it's loading.
-                  if (!snapshot.hasData) {
+                  if (!snapshot.hasData && !_apiPaid) {
                     return Center(
                       child: SizedBox(
                         width: 50.0,
@@ -295,11 +409,14 @@ class _PayInitWidgetState extends State<PayInitWidget> {
                     );
                   }
 
-                  final containerPayOrderRecord = snapshot.data!;
-                  if (containerPayOrderRecord.isPaid) {
+                  final containerPayOrderRecord =
+                      snapshot.data ?? _polledPay;
+                  final paid = _apiPaid ||
+                      (containerPayOrderRecord?.isPaid ?? false);
+                  if (paid && containerPayOrderRecord != null) {
                     // idempotent — добавит ref только один раз благодаря _queueUpdated
                     _ensureDriverQueueUpdated(containerPayOrderRecord);
-                  } else {
+                  } else if (containerPayOrderRecord != null) {
                     _applyBankFailFromPayOrder(containerPayOrderRecord);
                   }
 
@@ -313,7 +430,7 @@ class _PayInitWidgetState extends State<PayInitWidget> {
                       ),
                       child: Builder(
                         builder: (context) {
-                          if (containerPayOrderRecord.isPaid) {
+                          if (paid) {
                             return Column(
                               mainAxisSize: MainAxisSize.max,
                               children: [

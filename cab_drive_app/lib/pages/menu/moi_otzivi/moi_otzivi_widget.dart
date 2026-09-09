@@ -1,4 +1,8 @@
+import 'dart:async';
+
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
+import '/backend/api/reviews_record_mapper.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -22,6 +26,10 @@ class MoiOtziviWidget extends StatefulWidget {
 
 class _MoiOtziviWidgetState extends State<MoiOtziviWidget> {
   late MoiOtziviModel _model;
+  Timer? _poll;
+  List<ReviewsRecord>? _reviews;
+  bool _loading = true;
+  bool _useFsFallback = false;
 
   @override
   void setState(VoidCallback callback) {
@@ -33,13 +41,66 @@ class _MoiOtziviWidgetState extends State<MoiOtziviWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => MoiOtziviModel());
+    unawaited(_reload());
+    _poll = Timer.periodic(const Duration(seconds: 8), (_) => _reload());
+  }
+
+  Future<void> _reload() async {
+    try {
+      final rows = await AppMeApi.listReviews(mine: true);
+      if (!mounted) return;
+      setState(() {
+        _reviews = rows.map(ReviewsRecordMapper.fromApi).toList();
+        _loading = false;
+        _useFsFallback = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _reviews = const [];
+        _useFsFallback = false;
+        _loading = false;
+      });
+    }
   }
 
   @override
   void dispose() {
+    _poll?.cancel();
     _model.maybeDispose();
 
     super.dispose();
+  }
+
+  Widget _buildList(List<ReviewsRecord> listViewReviewsRecordList) {
+    if (listViewReviewsRecordList.isEmpty) {
+      return Container(
+        height: 900.0,
+        child: RewEmptWidget(),
+      );
+    }
+
+    return ListView.separated(
+      padding: EdgeInsets.fromLTRB(
+        0,
+        0,
+        0,
+        50.0,
+      ),
+      shrinkWrap: true,
+      scrollDirection: Axis.vertical,
+      itemCount: listViewReviewsRecordList.length,
+      separatorBuilder: (_, __) => SizedBox(height: 5.0),
+      itemBuilder: (context, listViewIndex) {
+        final listViewReviewsRecord =
+            listViewReviewsRecordList[listViewIndex];
+        return OtzivWidget(
+          key: Key(
+              'Keybnb_${listViewIndex}_of_${listViewReviewsRecordList.length}'),
+          rewDoc: listViewReviewsRecord,
+        );
+      },
+    );
   }
 
   @override
@@ -112,60 +173,20 @@ class _MoiOtziviWidgetState extends State<MoiOtziviWidget> {
                 ),
               ),
             ),
-            StreamBuilder<List<ReviewsRecord>>(
-              stream: queryReviewsRecord(
-                queryBuilder: (reviewsRecord) => reviewsRecord
-                    .where(
-                      'user_who_wrote_the_review',
-                      isEqualTo: currentUserReference,
-                    )
-                    .orderBy('date', descending: true),
-              ),
-              builder: (context, snapshot) {
-                // Customize what your widget looks like when it's loading.
-                if (!snapshot.hasData) {
-                  return Center(
-                    child: SizedBox(
-                      width: 50.0,
-                      height: 50.0,
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          FlutterFlowTheme.of(context).primary,
+            Expanded(
+              child: _loading
+                  ? Center(
+                      child: SizedBox(
+                        width: 50.0,
+                        height: 50.0,
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            FlutterFlowTheme.of(context).primary,
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                }
-                List<ReviewsRecord> listViewReviewsRecordList = snapshot.data!;
-                if (listViewReviewsRecordList.isEmpty) {
-                  return Container(
-                    height: 900.0,
-                    child: RewEmptWidget(),
-                  );
-                }
-
-                return ListView.separated(
-                  padding: EdgeInsets.fromLTRB(
-                    0,
-                    0,
-                    0,
-                    50.0,
-                  ),
-                  shrinkWrap: true,
-                  scrollDirection: Axis.vertical,
-                  itemCount: listViewReviewsRecordList.length,
-                  separatorBuilder: (_, __) => SizedBox(height: 5.0),
-                  itemBuilder: (context, listViewIndex) {
-                    final listViewReviewsRecord =
-                        listViewReviewsRecordList[listViewIndex];
-                    return OtzivWidget(
-                      key: Key(
-                          'Keybnb_${listViewIndex}_of_${listViewReviewsRecordList.length}'),
-                      rewDoc: listViewReviewsRecord,
-                    );
-                  },
-                );
-              },
+                    )
+                  : _buildList(_reviews ?? const []),
             ),
           ].divide(SizedBox(height: 5.0)),
         ),

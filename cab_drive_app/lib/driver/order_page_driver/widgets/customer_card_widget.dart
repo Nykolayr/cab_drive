@@ -1,7 +1,7 @@
 import '../../../auth/firebase_auth/auth_util.dart';
+import '../../../backend/api/chat_open.dart';
 import '../../../backend/api/file_storage_service.dart';
-import '../../../chat/chat/chat_widget.dart';
-import '../../../flutter_flow/custom_functions.dart' as functions;
+import '../../../backend/api/users_record_api.dart';
 import '../order_page_driver_model.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -38,7 +38,7 @@ class CustomerCardWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(18.0),
       ),
       child: FutureBuilder<UsersRecord>(
-        future: UsersRecord.getDocumentOnce(order.userCustomer!),
+        future: UsersRecordApi.getOnce(order.userCustomer!),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(
@@ -170,42 +170,11 @@ class CustomerCardWidget extends StatelessWidget {
                       Expanded(
                         child: FFButtonWidget(
                           onPressed: () async {
-                            var shouldSetState = false;
-                            model.mychats = await queryChatsRecordOnce(
-                              queryBuilder: (chatsRecord) => chatsRecord.where('users', arrayContains: currentUserReference),
+                            await openPeerChat(
+                              context,
+                              peerUid: user.reference.id,
+                              name: '${user.displayName} ${user.surname}',
                             );
-                            shouldSetState = true;
-                            final existing = model.mychats!.where((e) => e.users.contains(user.reference)).toList();
-                            if (existing.isNotEmpty) {
-                              context.pushNamed(
-                                ChatWidget.routeName,
-                                queryParameters: {
-                                  'chat': serializeParam(existing.first.reference, ParamType.DocumentReference),
-                                  'name': serializeParam('${user.displayName} ${user.surname}', ParamType.String),
-                                }.withoutNulls,
-                              );
-                              if (shouldSetState) {}
-                              return;
-                            } else {
-                              var chatsRecordReference = ChatsRecord.collection.doc();
-                              await chatsRecordReference.set({
-                                ...createChatsRecordData(dateCreated: getCurrentTimestamp, support: false),
-                                ...mapToFirestore({'users': functions.comnineUsers(user.reference, currentUserReference!)}),
-                              });
-                              model.newchat = ChatsRecord.getDocumentFromData({
-                                ...createChatsRecordData(dateCreated: getCurrentTimestamp, support: false),
-                                ...mapToFirestore({'users': functions.comnineUsers(user.reference, currentUserReference!)}),
-                              }, chatsRecordReference);
-                              context.pushNamed(
-                                ChatWidget.routeName,
-                                queryParameters: {
-                                  'chat': serializeParam(model.newchat?.reference, ParamType.DocumentReference),
-                                  'name': serializeParam('${user.displayName} ${user.surname}', ParamType.String),
-                                }.withoutNulls,
-                              );
-                              if (shouldSetState) {}
-                              return;
-                            }
                           },
                           text: 'Написать',
                           options: FFButtonOptions(

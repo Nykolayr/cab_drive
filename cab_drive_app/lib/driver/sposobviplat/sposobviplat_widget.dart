@@ -1,4 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
+import '/backend/api/saved_cards_record_mapper.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
 import '/driver/new_card/new_card_widget.dart';
@@ -33,6 +35,10 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
 
   late StreamSubscription<bool> _keyboardVisibilitySubscription;
   bool _isKeyboardVisible = false;
+  Timer? _poll;
+  List<SavedCardsRecord>? _cards;
+  bool _loadingCards = true;
+  bool _useFsCards = false;
 
   @override
   void setState(VoidCallback callback) {
@@ -44,6 +50,8 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => SposobviplatModel());
+    unawaited(_reloadCards());
+    _poll = Timer.periodic(const Duration(seconds: 8), (_) => _reloadCards());
 
     if (!isWeb) {
       _keyboardVisibilitySubscription =
@@ -55,8 +63,78 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
     }
   }
 
+  Future<void> _reloadCards() async {
+    try {
+      final rows = await AppMeApi.listCards();
+      if (!mounted) return;
+      setState(() {
+        _cards = rows.map(SavedCardsRecordMapper.fromApi).toList();
+        _loadingCards = false;
+        _useFsCards = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _cards = const [];
+        _useFsCards = false;
+        _loadingCards = false;
+      });
+    }
+  }
+
+  Widget _cardsList(List<SavedCardsRecord> listViewSavedCardsRecordList) {
+    return ListView.builder(
+      padding: EdgeInsets.zero,
+      primary: false,
+      shrinkWrap: true,
+      scrollDirection: Axis.vertical,
+      itemCount: listViewSavedCardsRecordList.length,
+      itemBuilder: (context, listViewIndex) {
+        final listViewSavedCardsRecord =
+            listViewSavedCardsRecordList[listViewIndex];
+        return Row(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            FlutterFlowIconButton(
+              borderRadius: 8.0,
+              buttonSize: 50.0,
+              icon: FaIcon(
+                FontAwesomeIcons.trashAlt,
+                color: FlutterFlowTheme.of(context).error,
+                size: 18.0,
+              ),
+              onPressed: () async {
+                final id = listViewSavedCardsRecord.reference.id;
+                final ok = await AppMeApi.deleteCard(id);
+                if (!ok) {
+                  // ignore: avoid_print
+                  print('[sposobviplat] deleteCard failed id=$id');
+                }
+                await _reloadCards();
+              },
+            ),
+            Expanded(
+              child: ChipsCardWidget(
+                key: Key(
+                    'Key5wk_${listViewIndex}_of_${listViewSavedCardsRecordList.length}'),
+                text: listViewSavedCardsRecord.pan,
+                selectedItem: _model.select,
+                action: (text) async {
+                  _model.select = text;
+                  _model.card = listViewSavedCardsRecord;
+                  safeSetState(() {});
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
+    _poll?.cancel();
     _model.maybeDispose();
 
     if (!isWeb) {
@@ -164,7 +242,7 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                                 AuthUserStreamWidget(
                                   builder: (context) {
                                     final mainBalance = valueOrDefault(
-                                        currentUserDocument?.balance, 0.0);
+                                        effectiveBalance, 0.0);
                                     final bonus = valueOrDefault(
                                         currentUserDocument?.bonusBalance, 0.0);
                                     return Column(
@@ -219,7 +297,7 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                                     builder: (context) => Text(
                                       'Комиссия за вывод: ${formatNumber(
                                         functions.proc(valueOrDefault(
-                                                currentUserDocument?.balance,
+                                                effectiveBalance,
                                                 0.0)) +
                                             50.round(),
                                         formatType: FormatType.custom,
@@ -261,12 +339,12 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                                   builder: (context) => Text(
                                     'Вы получите на карту: ${formatNumber(
                                       (valueOrDefault(
-                                                  currentUserDocument?.balance,
+                                                  effectiveBalance,
                                                   0.0) -
                                               50) -
                                           functions
                                               .proc(valueOrDefault(
-                                                  currentUserDocument?.balance,
+                                                  effectiveBalance,
                                                   0.0))
                                               .round(),
                                       formatType: FormatType.custom,
@@ -291,14 +369,8 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                       Padding(
                         padding:
                             EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
-                        child: StreamBuilder<List<SavedCardsRecord>>(
-                          stream: querySavedCardsRecord(
-                            parent: currentUserReference,
-                          ),
-                          builder: (context, snapshot) {
-                            // Customize what your widget looks like when it's loading.
-                            if (!snapshot.hasData) {
-                              return Center(
+                        child: _loadingCards
+                            ? Center(
                                 child: SizedBox(
                                   width: 50.0,
                                   height: 50.0,
@@ -308,57 +380,8 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                                     ),
                                   ),
                                 ),
-                              );
-                            }
-                            List<SavedCardsRecord>
-                                listViewSavedCardsRecordList = snapshot.data!;
-
-                            return ListView.builder(
-                              padding: EdgeInsets.zero,
-                              primary: false,
-                              shrinkWrap: true,
-                              scrollDirection: Axis.vertical,
-                              itemCount: listViewSavedCardsRecordList.length,
-                              itemBuilder: (context, listViewIndex) {
-                                final listViewSavedCardsRecord =
-                                    listViewSavedCardsRecordList[listViewIndex];
-                                return Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    FlutterFlowIconButton(
-                                      borderRadius: 8.0,
-                                      buttonSize: 50.0,
-                                      icon: FaIcon(
-                                        FontAwesomeIcons.trashAlt,
-                                        color:
-                                            FlutterFlowTheme.of(context).error,
-                                        size: 18.0,
-                                      ),
-                                      onPressed: () async {
-                                        await listViewSavedCardsRecord.reference
-                                            .delete();
-                                      },
-                                    ),
-                                    Expanded(
-                                      child: ChipsCardWidget(
-                                        key: Key(
-                                            'Key5wk_${listViewIndex}_of_${listViewSavedCardsRecordList.length}'),
-                                        text: listViewSavedCardsRecord.pan,
-                                        selectedItem: _model.select,
-                                        action: (text) async {
-                                          _model.select = text;
-                                          _model.card =
-                                              listViewSavedCardsRecord;
-                                          safeSetState(() {});
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                        ),
+                              )
+                            : _cardsList(_cards ?? const []),
                       ),
                       Padding(
                         padding: EdgeInsetsDirectional.fromSTEB(
@@ -377,7 +400,10 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                                   ),
                                 );
                               },
-                            ).then((value) => safeSetState(() {}));
+                            ).then((value) async {
+                              await _reloadCards();
+                              safeSetState(() {});
+                            });
                           },
                           text: 'Добавить карту',
                           options: FFButtonOptions(
@@ -435,7 +461,7 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                 onPressed: () async {
                   var _shouldSetState = false;
                   final _withdrawableBalance =
-                      valueOrDefault(currentUserDocument?.balance, 0.0);
+                      valueOrDefault(effectiveBalance, 0.0);
                   final _bonusForAudit =
                       valueOrDefault(currentUserDocument?.bonusBalance, 0.0);
                   final _amountForPayout = _withdrawableBalance -
@@ -450,10 +476,10 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                       accountNumber:
                           functions.cleanCardNumber(_model.card!.pan),
                       amount:
-                          valueOrDefault(currentUserDocument?.balance, 0.0) -
+                          valueOrDefault(effectiveBalance, 0.0) -
                               functions
                                   .proc(valueOrDefault(
-                                      currentUserDocument?.balance, 0.0))
+                                      effectiveBalance, 0.0))
                                   .round(),
                     );
 
@@ -517,10 +543,10 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                       accountNumber:
                           functions.cleanCardNumber(_model.card!.pan),
                       amount:
-                          valueOrDefault(currentUserDocument?.balance, 0.0) -
+                          valueOrDefault(effectiveBalance, 0.0) -
                               functions
                                   .proc(valueOrDefault(
-                                      currentUserDocument?.balance, 0.0))
+                                      effectiveBalance, 0.0))
                                   .round(),
                       customerPaymentId: '${currentUserReference?.id}ff',
                     );

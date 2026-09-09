@@ -72,6 +72,7 @@ def edit_verification_data():
         data['avatar'] = transform_photo_urls([data.get('avatar')])[0]
 
     update_fields = {
+        'id': data.get('id'),
         'avatar': data.get('avatar'),
         'name': data.get('name'),
         'surname': data.get('surname'),
@@ -98,6 +99,47 @@ def edit_verification_data():
         return utils.get_error(str(e), status=200)
 
     return utils.get_answer('Сохранено')
+
+
+@app.route('/verification/approve', methods=['POST'])
+def verification_approve():
+    user = utils.get_user()
+    if user is None:
+        return abort(401)
+    data = request.get_json(silent=True) or {}
+    user_id = (data.get('user_id') or data.get('id') or '').strip()
+    if not user_id:
+        return utils.get_error('user_id required', status=200)
+    try:
+        import app_verifications_ops
+
+        result = app_verifications_ops.approve_by_user_id(user_id)
+        return utils.get_answer('Заявка одобрена', {'result': result})
+    except IncorrectDataValue as e:
+        return utils.get_error(e.message, status=200)
+    except Exception as e:
+        return utils.get_error(str(e), status=200)
+
+
+@app.route('/verification/reject', methods=['POST'])
+def verification_reject():
+    user = utils.get_user()
+    if user is None:
+        return abort(401)
+    data = request.get_json(silent=True) or {}
+    user_id = (data.get('user_id') or data.get('id') or '').strip()
+    if not user_id:
+        return utils.get_error('user_id required', status=200)
+    try:
+        import app_verifications_ops
+
+        result = app_verifications_ops.reject_by_user_id(user_id)
+        return utils.get_answer('Заявка отклонена', {'result': result})
+    except IncorrectDataValue as e:
+        return utils.get_error(e.message, status=200)
+    except Exception as e:
+        return utils.get_error(str(e), status=200)
+
 
 @app.route('/remove', methods=['POST'])
 def remove_user():

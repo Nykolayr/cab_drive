@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -6,8 +7,6 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'dart:async';
 import 'dart:ui';
-import '/flutter_flow/custom_functions.dart' as functions;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -447,47 +446,26 @@ class _CreateRewievsWidgetState extends State<CreateRewievsWidget> {
                             _model.textController.text == ''))
                     ? null
                     : () async {
-                        await ReviewsRecord.collection
-                            .doc()
-                            .set(createReviewsRecordData(
-                              userWhoWasReviewed: widget!.user,
-                              userWhoWroteTheReview: currentUserReference,
-                              text: _model.textController.text,
-                              rating: _model.rait,
-                              date: getCurrentTimestamp,
-                              nameUserWhoWrote:
-                                  '${currentUserDisplayName} ${valueOrDefault(currentUserDocument?.surname, '')}',
-                            ));
-                        if (FFAppState().driver) {
-                          await widget!.order!.update(createOrderRecordData(
-                            customerReviewed: true,
-                          ));
-                        } else {
-                          await widget!.order!.update(createOrderRecordData(
-                            driverReviewed: true,
-                          ));
+                        final reviewedUid = widget!.user!.id;
+                        final orderId = widget!.order?.id ?? '';
+                        final name =
+                            '${currentUserDisplayName} ${valueOrDefault(currentUserDocument?.surname, '')}';
+                        final created = await AppMeApi.createReview({
+                          'reviewed_user_id': reviewedUid,
+                          'text': _model.textController.text,
+                          'rating': _model.rait,
+                          'name_author': name,
+                          'order_id': orderId,
+                          'as_driver': FFAppState().driver,
+                        });
+                        if (created == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Не удалось отправить отзыв'),
+                            ),
+                          );
+                          return;
                         }
-
-                        _model.user =
-                            await UsersRecord.getDocumentOnce(widget!.user!);
-                        unawaited(
-                          () async {
-                            await widget!.user!.update({
-                              ...createUsersRecordData(
-                                averageRating:
-                                    functions.recalculateRatingWithNewReview(
-                                        _model.user!.numberOfReviews,
-                                        _model.user!.averageRating,
-                                        _model.rait!),
-                              ),
-                              ...mapToFirestore(
-                                {
-                                  'number_of_reviews': FieldValue.increment(1),
-                                },
-                              ),
-                            });
-                          }(),
-                        );
                         Navigator.pop(context);
 
                         safeSetState(() {});

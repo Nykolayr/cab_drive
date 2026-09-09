@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../auth/firebase_auth/auth_util.dart';
 
 import '../flutter_flow/flutter_flow_util.dart';
+import 'api/app_me_api.dart';
 import 'schema/util/firestore_util.dart';
 
 import 'schema/users_record.dart';
@@ -549,37 +550,28 @@ Future<FFFirestorePage<T>> queryCollectionPage<T>(
   return FFFirestorePage(data, dataStream, nextPageToken);
 }
 
-// Creates a Firestore document representing the logged in user if it doesn't yet exist
+// Ensures Postgres user row for logged-in Firebase user (no Firestore write).
 Future maybeCreateUser(User user) async {
-  final userRecord = UsersRecord.collection.doc(user.uid);
-  final userExists = await userRecord.get().then((u) => u.exists);
-  if (userExists) {
-    currentUserDocument = await UsersRecord.getDocumentOnce(userRecord);
-    return;
-  }
-
-
   final email = (user.email ??
-      FirebaseAuth.instance.currentUser?.email ??
-      user.providerData.firstOrNull?.email) ?? '';
-
-  final userData = createUsersRecordData(
-    email: user.email ??
-        FirebaseAuth.instance.currentUser?.email ??
-        user.providerData.firstOrNull?.email,
-    displayName:
-        user.displayName ?? FirebaseAuth.instance.currentUser?.displayName,
-    photoUrl: user.photoURL,
-    uid: user.uid,
-    phoneNumber: '+7'+email.split('@').first,
-    createdTime: getCurrentTimestamp,
-  );
-
-  await userRecord.set(userData);
-  currentUserDocument = UsersRecord.getDocumentFromData(userData, userRecord);
+          FirebaseAuth.instance.currentUser?.email ??
+          user.providerData.firstOrNull?.email) ??
+      '';
+  final phone = email.contains('@') ? '+7${email.split('@').first}' : '';
+  await AppMeApi.patchMe({
+    'email': email,
+    if (user.displayName != null && user.displayName!.isNotEmpty)
+      'display_name': user.displayName,
+    if (user.photoURL != null && user.photoURL!.isNotEmpty)
+      'photo_url': user.photoURL,
+    if (phone.isNotEmpty) 'phone_number': phone,
+    'fb_id': user.uid,
+    'login_complete': false,
+  });
+  await refreshAppMeCache();
 }
 
 Future updateUserDocument({String? email}) async {
-  await currentUserDocument?.reference
-      .update(createUsersRecordData(email: email));
+  if (email == null || email.isEmpty) return;
+  await AppMeApi.patchMe({'email': email});
+  await refreshAppMeCache();
 }

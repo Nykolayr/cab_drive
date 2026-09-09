@@ -1,0 +1,20 @@
+[Unit]
+Description=Cab Drive WSS chat hub
+After=network.target redis.service postgresql.service
+Wants=redis.service
+
+[Service]
+EnvironmentFile=-/root/cab_drive_database_url.env
+User=root
+Group=www-data
+WorkingDirectory=/root/projects/cab_drive
+Environment=PATH=/root/projects/cab_drive/venv/bin
+Environment=CAB_WSS_HOST=127.0.0.1
+Environment=CAB_WSS_PORT=5001
+Environment=REDIS_URL=redis://127.0.0.1:6379/0
+ExecStart=/root/projects/cab_drive/venv/bin/python /root/projects/cab_drive/wss_server.py
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

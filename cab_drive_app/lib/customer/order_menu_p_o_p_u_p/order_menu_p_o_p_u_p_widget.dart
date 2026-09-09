@@ -1,6 +1,7 @@
 import 'package:cab_drive/customer/edit_order/edit_order_page.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
 import '/customer/otmena_zakaza/otmena_zakaza_widget.dart';
@@ -105,26 +106,33 @@ class _OrderMenuPOPUPWidgetState extends State<OrderMenuPOPUPWidget> {
                           onPressed: () async {
                             if (widget!.order?.status == StatusOrder.hidden) {
                               Navigator.pop(context);
-
-                              await widget!.order!.reference
-                                  .update(createOrderRecordData(
-                                status: widget!.order?.statusDoHidden,
-                                dateUpd: getCurrentTimestamp,
-                              ));
+                              final oid = widget!.order!.reference.id;
+                              final ok =
+                                  await AppMeApi.hideOrder(oid, unhide: true);
+                              if (!ok) {
+                                await widget!.order!.reference
+                                    .update(createOrderRecordData(
+                                  status: widget!.order?.statusDoHidden,
+                                  dateUpd: getCurrentTimestamp,
+                                ));
+                              }
                               return;
                             } else {
                               Navigator.pop(context);
+                              final oid = widget!.order!.reference.id;
+                              final ok = await AppMeApi.hideOrder(oid);
+                              if (!ok) {
+                                await widget!.order!.reference
+                                    .update(createOrderRecordData(
+                                  statusDoHidden: widget!.order?.status,
+                                ));
 
-                              await widget!.order!.reference
-                                  .update(createOrderRecordData(
-                                statusDoHidden: widget!.order?.status,
-                              ));
-
-                              await widget!.order!.reference
-                                  .update(createOrderRecordData(
-                                status: StatusOrder.hidden,
-                                dateUpd: getCurrentTimestamp,
-                              ));
+                                await widget!.order!.reference
+                                    .update(createOrderRecordData(
+                                  status: StatusOrder.hidden,
+                                  dateUpd: getCurrentTimestamp,
+                                ));
+                              }
                               return;
                             }
                           },

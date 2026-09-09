@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
@@ -232,23 +233,42 @@ class _SposobOplatyWidgetState extends State<SposobOplatyWidget> {
                       ))
                         FFButtonWidget(
                           onPressed: () async {
-                            var payOrderRecordReference =
-                                PayOrderRecord.collection.doc();
-                            await payOrderRecordReference
-                                .set(createPayOrderRecordData(
-                              orderId: getCurrentTimestamp
-                                  .millisecondsSinceEpoch
-                                  .toString(),
-                              isPaid: false,
-                              amountInCop: 100,
-                              user: currentUserReference,
-                              paymentType: PaymentType.initRecurrent,
-                            ));
+                            final orderIdMs = getCurrentTimestamp
+                                .millisecondsSinceEpoch
+                                .toString();
+                            final created = await AppMeApi.createPayment({
+                              'order_id': orderIdMs,
+                              'orderId': orderIdMs,
+                              'is_paid': false,
+                              'amount_in_cop': 100,
+                              'amountInCop': 100,
+                              'payment_type':
+                                  PaymentType.initRecurrent.serialize(),
+                              'paymentType':
+                                  PaymentType.initRecurrent.serialize(),
+                            });
+                            DocumentReference payOrderRecordReference;
+                            if (created != null &&
+                                (created['id']?.toString().isNotEmpty ??
+                                    false)) {
+                              payOrderRecordReference =
+                                  PayOrderRecord.collection
+                                      .doc(created['id'].toString());
+                            } else {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Не удалось создать платёж. Попробуйте ещё раз.',
+                                    ),
+                                  ),
+                                );
+                              }
+                              return;
+                            }
                             _model.order = PayOrderRecord.getDocumentFromData(
-                                await createPayOrderRecordData(
-                                  orderId: getCurrentTimestamp
-                                      .millisecondsSinceEpoch
-                                      .toString(),
+                                createPayOrderRecordData(
+                                  orderId: orderIdMs,
                                   isPaid: false,
                                   amountInCop: 100,
                                   user: currentUserReference,
