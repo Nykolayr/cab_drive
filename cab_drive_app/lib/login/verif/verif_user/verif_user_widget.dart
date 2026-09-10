@@ -1,7 +1,8 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api/app_me_api.dart';
 import '/backend/backend.dart';
-import '/core/utils/formatters/phone_mask_input_formatter.dart';
+import '/core/utils/formatters/ru_phone.dart';
+import '/core/widgets/phone_masked_field.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -328,78 +329,23 @@ class _VerifUserWidgetState extends State<VerifUserWidget> {
                           Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 16.0, 20.0, 16.0, 0.0),
-                            child: Container(
-                              width: double.infinity,
-                              child: TextFormField(
-                                controller: _model.additionalPhoneTextController,
-                                focusNode: _model.additionalPhoneFocusNode,
-                                autofillHints: [AutofillHints.telephoneNumber],
-                                keyboardType: TextInputType.phone,
-                                textInputAction: TextInputAction.go,
-                                obscureText: false,
-                                decoration: InputDecoration(
-                                  isDense: false,
-                                  hintText: '+7 (___) ___-__-__',
-                                  hintStyle: FlutterFlowTheme.of(context)
-                                      .labelMedium
-                                      .override(
-                                        fontFamily: 'SF',
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryText,
-                                        fontSize: 20.0,
-                                        letterSpacing: 0.0,
-                                      ),
-                                  enabledBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color:
-                                          FlutterFlowTheme.of(context).primary,
-                                      width: 3.0,
-                                    ),
-                                    borderRadius: BorderRadius.circular(0.0),
+                            child: PhoneMaskedField(
+                              controller:
+                                  _model.additionalPhoneTextController!,
+                              focusNode: _model.additionalPhoneFocusNode,
+                              underlineStyle: false,
+                              labelText: null,
+                              textInputAction: TextInputAction.go,
+                              style: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .override(
+                                    fontFamily: 'SF',
+                                    fontSize: 20.0,
+                                    letterSpacing: 0.0,
                                   ),
-                                  focusedBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color:
-                                          FlutterFlowTheme.of(context).primary,
-                                      width: 3.0,
-                                    ),
-                                    borderRadius: BorderRadius.circular(0.0),
-                                  ),
-                                  errorBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: FlutterFlowTheme.of(context).error,
-                                      width: 3.0,
-                                    ),
-                                    borderRadius: BorderRadius.circular(0.0),
-                                  ),
-                                  focusedErrorBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: FlutterFlowTheme.of(context).error,
-                                      width: 3.0,
-                                    ),
-                                    borderRadius: BorderRadius.circular(0.0),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.transparent,
-                                  contentPadding:
-                                      EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 0.0, 0.0, 16.0),
-                                  hoverColor: Colors.transparent,
-                                ),
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      fontFamily: 'SF',
-                                      fontSize: 20.0,
-                                      letterSpacing: 0.0,
-                                    ),
-                                minLines: 1,
-                                cursorColor: Colors.transparent,
-                                validator: _model
-                                    .additionalPhoneTextControllerValidator
-                                    .asValidator(context),
-                                inputFormatters: [_model.additionalPhoneMask],
-                              ),
+                              validator: _model
+                                  .additionalPhoneTextControllerValidator
+                                  ?.asValidator(context),
                             ),
                           ),
                         ],

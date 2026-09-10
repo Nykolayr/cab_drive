@@ -382,7 +382,7 @@ def insert_message(
                     (preview[:500], now, chat_id),
                 )
             conn.commit()
-        return {
+        out = {
             "id": msg_id,
             "chat_id": chat_id,
             "sender_id": sender_id,
@@ -391,6 +391,53 @@ def insert_message(
             "read": False,
             "date_created": now.isoformat(),
         }
+        _notify_chat_peers(chat_id, sender_id, text=text, list_images=imgs)
+        return out
     except Exception:
         logger.exception("[app_chat_pg] insert_message failed")
         return None
+
+
+def _notify_chat_peers(
+    chat_id: str,
+    sender_id: str,
+    *,
+    text: str = "",
+    list_images: Optional[list] = None,
+) -> None:
+    """FCM остальным участникам чата (HTTP + WSS общий путь)."""
+    try:
+        import app_fcm_ops
+
+        chat = get_chat(chat_id) or {}
+        members = chat.get("users") or []
+        recipients = [
+            str(u).strip()
+            for u in members
+            if str(u).strip() and str(u).strip() != sender_id
+        ]
+        if not recipients:
+            return
+        me = app_pg.get_me(sender_id) or {}
+        name = (me.get("display_name") or "").strip() or "Сообщение"
+        surname = (me.get("surname") or "").strip()
+        title = f"{name} {surname}".strip() if surname else name
+        imgs = list_images or []
+        if (text or "").strip():
+            body = (text or "").strip()[:200]
+        elif len(imgs) > 1:
+            body = f"{len(imgs)} фото"
+        elif imgs:
+            body = "Фотография"
+        else:
+            body = "Новое сообщение"
+        app_fcm_ops.notify_safe(
+            recipients,
+            title=title,
+            body=body,
+            initial_page_name="Chat",
+            parameter_data={"chat": chat_id, "name": title},
+            data={"chat_id": chat_id, "event": "chat_message"},
+        )
+    except Exception:
+        logger.exception("[app_chat_pg] chat fcm notify failed")

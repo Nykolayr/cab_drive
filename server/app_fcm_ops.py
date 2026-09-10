@@ -161,6 +161,36 @@ def send_to_user(
     )
 
 
+def notify_safe(
+    user_ids: list[str],
+    *,
+    title: str,
+    body: str,
+    data: Optional[dict[str, Any]] = None,
+    initial_page_name: Optional[str] = None,
+    parameter_data: Optional[Any] = None,
+) -> dict[str, Any]:
+    """FCM best-effort: ошибки не пробрасываем (не ломаем accept/chat/patch)."""
+    try:
+        return send_to_users(
+            user_ids,
+            title=title,
+            body=body,
+            data=data,
+            initial_page_name=initial_page_name,
+            parameter_data=parameter_data,
+        )
+    except Exception:
+        logger.exception("[app_fcm] notify_safe failed")
+        return {
+            "success": False,
+            "error": "notify_safe exception",
+            "success_count": 0,
+            "failure_count": 0,
+            "tokens_cleaned": 0,
+        }
+
+
 def _tokens_from_firestore(user_ids: list[str]) -> list[str]:
     try:
         import utils

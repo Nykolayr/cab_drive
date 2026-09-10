@@ -65,7 +65,7 @@ Flask /api/app/*  +  WSS /ws/
 | `app_reviews_ops.py` | reviews create/list + soft FS |
 | `app_verifications_ops.py` | driver KYC create/list/approve/reject + soft FS |
 | `app_profile_ops.py` | addresses add/remove + saved_cards CRUD + soft FS |
-| `app_fcm_ops.py` | FCM send via `app_user_fcm_tokens` (PG) |
+| `app_fcm_ops.py` | FCM send via `app_user_fcm_tokens` (PG); `notify_safe` |
 | `app_client_errors_ops.py` | приём ошибок МП → `app_client_errors` |
 | `wss_server.py` | WSS hub (отдельный процесс) |
 | `tinkoff/webhook.py` | PG-first paid + accept_bid card |
@@ -163,6 +163,7 @@ Health: `fs_mirror=false`, `sot=postgres`. Soft FS writes с сервера **н
 - Login/OTP bootstrap — `patchMe` + `ensureSupportChat` (без FS user/chat set)  
 - FCM: register + `/push` через PG tokens  
 - Client errors → `app_client_errors`  
+- FCM server-first: `accept_bid` → водитель; `extra_accept` → клиент; `patch_order` цена → откликнувшиеся; `insert_message` → peer чата  
 - Dashboard: user edit / order edit / point / auto-hide timer / mark-read — PG SoT + soft_fs only  
 - Pickup / extra / admin balance-stats — PG-first  
 

@@ -1,18 +1,9 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
-import '/core/utils/formatters/phone_mask_input_formatter.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
+import '/core/utils/formatters/ru_phone.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
-import '/index.dart';
 import 'verif_user_widget.dart' show VerifUserWidget;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 class VerifUserModel extends FlutterFlowModel<VerifUserWidget> {
   ///  Local state fields for this page.
@@ -39,7 +30,8 @@ class VerifUserModel extends FlutterFlowModel<VerifUserWidget> {
   final formKey = GlobalKey<FormState>();
   // State field(s) for Name widget.
   FocusNode? nameFocusNode;
-  TextEditingController? nameTextController = TextEditingController(text: currentUserDocument?.displayName);
+  TextEditingController? nameTextController =
+      TextEditingController(text: currentUserDocument?.displayName);
   String? Function(BuildContext, String?)? nameTextControllerValidator;
   String? _nameTextControllerValidator(BuildContext context, String? val) {
     if (val == null || val.isEmpty) {
@@ -60,15 +52,18 @@ class VerifUserModel extends FlutterFlowModel<VerifUserWidget> {
 
   // State field(s) for AdditionalPhone widget.
   FocusNode? additionalPhoneFocusNode;
-  TextEditingController? additionalPhoneTextController = TextEditingController(text: currentUserDocument?.additionalPhoneNumber);
-  final PhoneMaskInputFormatter additionalPhoneMask = PhoneMaskInputFormatter();
-  String? Function(BuildContext, String?)? additionalPhoneTextControllerValidator;
-  String? _additionalPhoneTextControllerValidator(BuildContext context, String? val) {
-    if (val == null || val.isEmpty) {
+  TextEditingController? additionalPhoneTextController = TextEditingController(
+    text: RuPhone.mask(currentUserDocument?.additionalPhoneNumber),
+  );
+  String? Function(BuildContext, String?)?
+      additionalPhoneTextControllerValidator;
+  String? _additionalPhoneTextControllerValidator(
+      BuildContext context, String? val) {
+    if (val == null || val.trim().isEmpty) {
       return null;
     }
-    if (!RegExp(r'^\+?[0-9\s\-\(\)]{5,20}$').hasMatch(val)) {
-      return 'Некорректный номер';
+    if (!RuPhone.isComplete(val)) {
+      return 'Введите номер полностью';
     }
     return null;
   }
@@ -76,7 +71,8 @@ class VerifUserModel extends FlutterFlowModel<VerifUserWidget> {
   @override
   void initState(BuildContext context) {
     nameTextControllerValidator = _nameTextControllerValidator;
-    additionalPhoneTextControllerValidator = _additionalPhoneTextControllerValidator;
+    additionalPhoneTextControllerValidator =
+        _additionalPhoneTextControllerValidator;
   }
 
   @override

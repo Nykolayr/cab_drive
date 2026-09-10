@@ -1,19 +1,7 @@
-import '/auth/firebase_auth/auth_util.dart';
-import '/backend/schema/structs/index.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
+import '/core/utils/formatters/ru_phone.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:async';
-import 'dart:ui';
 import 'sender_widget.dart' show SenderWidget;
-import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
-import 'package:provider/provider.dart';
 
 class SenderModel extends FlutterFlowModel<SenderWidget> {
   ///  State fields for stateful widgets in this component.
@@ -43,13 +31,14 @@ class SenderModel extends FlutterFlowModel<SenderWidget> {
   // State field(s) for phone widget.
   FocusNode? phoneFocusNode;
   TextEditingController? phoneTextController;
-  late MaskTextInputFormatter phoneMask;
   String? Function(BuildContext, String?)? phoneTextControllerValidator;
   String? _phoneTextControllerValidator(BuildContext context, String? val) {
     if (val == null || val.isEmpty) {
       return 'Обязательно для заполнения';
     }
-
+    if (!RuPhone.isComplete(val)) {
+      return 'Введите номер полностью';
+    }
     return null;
   }
 

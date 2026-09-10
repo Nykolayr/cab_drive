@@ -342,6 +342,22 @@ def accept_bid(
         driver_ref.update({"active_orders_queue": ArrayUnion([order_ref])})
 
     app_fs_mirror.soft_fs("accept_bid", _fs)
+
+    # Server-first FCM: клиентский push ненадёжен (фон / card webhook).
+    try:
+        import app_fcm_ops
+
+        app_fcm_ops.notify_safe(
+            [driver_uid],
+            title="Заказчик выбрал вас!",
+            body="Перейдите в заказ, чтобы начать работу",
+            initial_page_name="order_Page_Driver",
+            parameter_data={"order": order_id},
+            data={"order_id": order_id, "event": "accept_bid"},
+        )
+    except Exception:
+        logger.exception("[accept_bid] fcm notify failed")
+
     return {
         "order_id": order_id,
         "driver_uid": driver_uid,
@@ -415,6 +431,25 @@ def extra_accept(driver_uid: str, order_id: str) -> dict[str, Any]:
         driver_ref.update({"active_orders_queue": ArrayUnion([order_ref])})
 
     app_fs_mirror.soft_fs("extra_accept", _fs)
+
+    cust = _ref_uid(order.get("user_customer")) or _ref_uid(
+        order.get("user_customer_id")
+    )
+    if cust:
+        try:
+            import app_fcm_ops
+
+            app_fcm_ops.notify_safe(
+                [cust],
+                title="Водитель принял заказ",
+                body="Перейдите в заказ, чтобы отслеживать выполнение",
+                initial_page_name="order_Page_Customer",
+                parameter_data={"order": order_id},
+                data={"order_id": order_id, "event": "extra_accept"},
+            )
+        except Exception:
+            logger.exception("[extra_accept] fcm notify failed")
+
     return {
         "order_id": order_id,
         "queue_size": queue_size,
@@ -707,6 +742,68 @@ def patch_order_by_customer(
         db.collection("order").document(order_id).update(patch)
 
     app_fs_mirror.soft_fs("patch_order", _fs)
+
+    price_keys = {"budget", "currentPrice", "current_price"}
+    if price_keys & set(fields.keys()):
+        new_price = (
+            fields.get("currentPrice")
+            if "currentPrice" in fields
+            else fields.get("current_price")
+            if "current_price" in fields
+            else fields.get("budget")
+        )
+        recipients: list[str] = []
+        respondents = (
+            order.get("user_who_responced")
+            or order.get("userWhoResponced")
+            or []
+        )
+        if isinstance(respondents, list):
+            for r in respondents:
+                uid = _ref_uid(r)
+                if uid:
+                    recipients.append(uid)
+        drv = _ref_uid(order.get("selected_driver")) or _ref_uid(
+            order.get("selected_driver_id")
+        )
+        if drv:
+            recipients.append(drv)
+        # unique, no customer
+        seen: set[str] = set()
+        uniq: list[str] = []
+        for u in recipients:
+            if u and u != customer_uid and u not in seen:
+                seen.add(u)
+                uniq.append(u)
+        if uniq:
+            try:
+                import app_fcm_ops
+
+                price_txt = (
+                    f"{int(new_price)} ₽"
+                    if isinstance(new_price, (int, float))
+                    or (
+                        isinstance(new_price, str)
+                        and new_price.replace(".", "", 1).isdigit()
+                    )
+                    else str(new_price or "")
+                )
+                body = (
+                    f"Заказчик изменил цену до {price_txt}"
+                    if price_txt
+                    else "Заказчик изменил цену заказа"
+                )
+                app_fcm_ops.notify_safe(
+                    uniq,
+                    title="Цена заказа изменилась",
+                    body=body,
+                    initial_page_name="order_Page_Driver",
+                    parameter_data={"order": order_id},
+                    data={"order_id": order_id, "event": "price_changed"},
+                )
+            except Exception:
+                logger.exception("[patch_order] fcm notify failed")
+
     return {
         "order_id": order_id,
         "fields": list(fields.keys()),

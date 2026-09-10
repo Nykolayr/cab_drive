@@ -1,5 +1,7 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/schema/structs/index.dart';
+import '/core/utils/formatters/ru_phone.dart';
+import '/core/widgets/phone_masked_field.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -11,7 +13,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
 import 'recipient_model.dart';
 export 'recipient_model.dart';
@@ -54,11 +55,15 @@ class _RecipientWidgetState extends State<RecipientWidget> {
         TextEditingController(text: (widget.point == 'B'  ?  FFAppState().pointB : FFAppState().pointC).sender.name);
     _model.nameFocusNode ??= FocusNode();
 
-    _model.phoneTextController ??=
-        TextEditingController(text: (widget.point == 'B'  ?  FFAppState().pointB : FFAppState().pointC).sender.phone);
+    _model.phoneTextController ??= TextEditingController(
+      text: RuPhone.mask(
+        (widget.point == 'B' ? FFAppState().pointB : FFAppState().pointC)
+            .sender
+            .phone,
+      ),
+    );
     _model.phoneFocusNode ??= FocusNode();
 
-    _model.phoneMask = MaskTextInputFormatter(mask: '###########');
     _model.switchValue = (widget.point == 'B'  ?  FFAppState().pointB : FFAppState().pointC).sender.itsMe;
   }
 
@@ -236,74 +241,15 @@ class _RecipientWidgetState extends State<RecipientWidget> {
                           ],
                         ),
                       ),
-                      Container(
-                        width: double.infinity,
-                        child: TextFormField(
-                          controller: _model.phoneTextController,
-                          focusNode: _model.phoneFocusNode,
-                          onChanged: (_) => EasyDebounce.debounce(
-                            '_model.phoneTextController',
-                            Duration(milliseconds: 0),
-                            () => safeSetState(() {}),
-                          ),
-                          autofocus: false,
-                          textCapitalization: TextCapitalization.none,
-                          textInputAction: TextInputAction.done,
-                          obscureText: false,
-                          decoration: InputDecoration(
-                            isDense: false,
-                            labelText: 'Номер телефона',
-                            labelStyle: FlutterFlowTheme.of(context)
-                                .labelMedium
-                                .override(
-                                  fontFamily: 'SF',
-                                  color: Color(0xFF8F8F8E),
-                                  fontSize: 16.0,
-                                  letterSpacing: 0.0,
-                                ),
-                            enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Color(0xFFD0CFCE),
-                                width: 0.3,
-                              ),
-                              borderRadius: BorderRadius.circular(0.0),
-                            ),
-                            focusedBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Color(0xFFD0CFCE),
-                                width: 0.3,
-                              ),
-                              borderRadius: BorderRadius.circular(0.0),
-                            ),
-                            errorBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(
-                                color: FlutterFlowTheme.of(context).error,
-                                width: 0.3,
-                              ),
-                              borderRadius: BorderRadius.circular(0.0),
-                            ),
-                            focusedErrorBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(
-                                color: FlutterFlowTheme.of(context).error,
-                                width: 0.3,
-                              ),
-                              borderRadius: BorderRadius.circular(0.0),
-                            ),
-                            contentPadding: EdgeInsetsDirectional.fromSTEB(
-                                0.0, 16.0, 0.0, 16.0),
-                            hoverColor: Colors.transparent,
-                          ),
-                          style:
-                              FlutterFlowTheme.of(context).bodyMedium.override(
-                                    fontFamily: 'SF',
-                                    fontSize: 16.0,
-                                    letterSpacing: 0.0,
-                                  ),
-                          keyboardType: TextInputType.phone,
-                          cursorColor: FlutterFlowTheme.of(context).primaryText,
-                          validator: _model.phoneTextControllerValidator
-                              .asValidator(context),
-                          inputFormatters: [_model.phoneMask],
+                      PhoneMaskedField(
+                        controller: _model.phoneTextController!,
+                        focusNode: _model.phoneFocusNode,
+                        validator: _model.phoneTextControllerValidator
+                            ?.asValidator(context),
+                        onChanged: (_) => EasyDebounce.debounce(
+                          '_model.phoneTextController',
+                          Duration(milliseconds: 0),
+                          () => safeSetState(() {}),
                         ),
                       ),
                       Padding(
@@ -335,12 +281,9 @@ class _RecipientWidgetState extends State<RecipientWidget> {
                                         currentUserDisplayName;
                                   });
                                   safeSetState(() {
-                                    _model.phoneTextController?.text =
-                                        currentPhoneNumber;
-                                    _model.phoneMask.updateMask(
-                                      newValue: TextEditingValue(
-                                        text: _model.phoneTextController!.text,
-                                      ),
+                                    PhoneMaskedField.setMaskedText(
+                                      _model.phoneTextController!,
+                                      currentPhoneNumber,
                                     );
                                   });
                                 } else {
@@ -410,7 +353,9 @@ class _RecipientWidgetState extends State<RecipientWidget> {
                         (e) => e
                           ..sender = SenderStruct(
                             name: _model.nameTextController.text,
-                            phone: _model.phoneTextController.text,
+                            phone: RuPhone.forStorage(
+                              _model.phoneTextController?.text,
+                            ),
                             itsMe: false,
                           ),
                       );
@@ -432,7 +377,9 @@ class _RecipientWidgetState extends State<RecipientWidget> {
                             (e) => e
                           ..sender = SenderStruct(
                             name: _model.nameTextController.text,
-                            phone: _model.phoneTextController.text,
+                            phone: RuPhone.forStorage(
+                              _model.phoneTextController?.text,
+                            ),
                             itsMe: false,
                           ),
                       );
