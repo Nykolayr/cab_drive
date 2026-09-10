@@ -31,12 +31,26 @@ def health():
 @app.route("/me", methods=["GET"])
 def me():
     """Профиль текущего пользователя МП (Firebase Bearer → Postgres)."""
-    uid, _ = app_auth_mp.verify_firebase_uid()
+    uid, claims = app_auth_mp.verify_firebase_uid()
     data = app_pg.get_me(uid)
     if not data:
-        # минимальный PG upsert (без Firestore SoT)
-        app_pg.mirror_user_fields(uid, {"login_complete": False})
+        # минимальный PG upsert (без Firestore SoT); телефон из claims/email
+        seed: dict = {"login_complete": False}
+        phone = (claims.get("phone_number") or claims.get("phone") or "").strip()
+        email = (claims.get("email") or "").strip()
+        if not phone and "@" in email:
+            local = email.split("@", 1)[0]
+            digits = "".join(ch for ch in local if ch.isdigit())
+            if len(digits) >= 10:
+                phone = digits[-10:]
+        if phone:
+            seed["phone_number"] = phone
+        if email:
+            seed["email"] = email
+        app_pg.mirror_user_fields(uid, seed)
         data = app_pg.get_me(uid)
+    if data:
+        data = app_pg.heal_session_user(uid, claims) or data
     if not data:
         return utils.get_error("user not found", status=404)
     return utils.get_answer("ok", info={"user": data, "uid": uid})
@@ -828,5 +842,62 @@ def chat_send_http(chat_id: str):
         except Exception:
             pass
         return utils.get_answer("ok", info={"message": msg, "uid": uid})
+    except Exception as e:
+        return _me_op_error(e)
+
+
+@app.route("/client-errors", methods=["POST"])
+def client_errors_post():
+    """Приём ошибок МП (шаблон ClientErrorReporter). Auth опционален."""
+    try:
+        import app_client_errors_ops
+
+        body = request.get_json(silent=True) or {}
+        uid = app_auth_mp.optional_firebase_uid()
+        login = None
+        role = None
+        if uid:
+            me = app_pg.get_me(uid) or {}
+            login = (
+                str(me.get("phone_number") or me.get("email") or uid).strip()[:128]
+                or None
+            )
+            if me.get("is_driver"):
+                role = "driver"
+            elif me.get("login_complete"):
+                role = "client"
+
+        ok = app_client_errors_ops.insert_client_error(
+            message=str(body.get("message") or ""),
+            stack=body.get("stack"),
+            tag=body.get("tag"),
+            platform=body.get("platform"),
+            app_version=body.get("appVersion") or body.get("app_version"),
+            build_number=body.get("buildNumber") or body.get("build_number"),
+            fatal=bool(body.get("fatal")),
+            device_info=body.get("deviceInfo") or body.get("device_info"),
+            user_id=uid,
+            login=login,
+            role=role,
+        )
+        if not ok:
+            return utils.get_error("CLIENT_ERRORS_STORAGE_NOT_READY", status=503)
+        return ("", 204)
+    except ValueError as e:
+        return utils.get_error(str(e), status=400)
+    except Exception as e:
+        return _me_op_error(e)
+
+
+@app.route("/client-errors", methods=["GET"])
+def client_errors_list():
+    """Список последних ошибок МП (admin session)."""
+    _require_admin()
+    try:
+        import app_client_errors_ops
+
+        limit = request.args.get("limit", type=int) or 50
+        items = app_client_errors_ops.list_client_errors(limit)
+        return utils.get_answer("ok", info={"items": items})
     except Exception as e:
         return _me_op_error(e)

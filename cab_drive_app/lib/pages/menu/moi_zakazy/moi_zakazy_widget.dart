@@ -134,6 +134,7 @@ class _MoiZakazyWidgetState extends State<MoiZakazyWidget> {
               : OrderCardCustomerWidget(
                   key: Key('Keym8i_${index}_of_${list.length}'),
                   order: order,
+                  onPriceCommitted: () => unawaited(_reload()),
                 ),
         );
       },

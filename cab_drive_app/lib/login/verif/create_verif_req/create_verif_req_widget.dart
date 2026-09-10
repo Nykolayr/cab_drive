@@ -159,84 +159,17 @@ class _CreateVerifReqWidgetState extends State<CreateVerifReqWidget> {
           await refreshAppMeCache();
         } catch (_) {}
       } else {
-        // FS fallback
-        _model.count = await queryRequestVereficationRecordCount();
-        numberId = (_model.count!) + 1;
-        var requestVereficationRecordReference =
-            RequestVereficationRecord.collection.doc();
-        await requestVereficationRecordReference.set({
-          ...createRequestVereficationRecordData(
-            city: widget!.city,
-            commissionPercent: widget.commissionPercent,
-            name: widget!.name,
-            surname: widget!.surnme,
-            numberAvto: widget!.nomer,
-            phoneNumber: currentPhoneNumber,
-            dfb: widget!.dtb,
-            user: currentUserReference,
-            status: StatusVerif.onVerif,
-            dateCreated: functions.toUtc(),
-            numberId: numberId,
-            email: widget!.mail,
-            avatar: currentUserPhoto,
-            marka: widget!.marka,
-          ),
-          ...mapToFirestore(
-            {
-              'photo_doc': widget!.photoDoc,
-              'photo_avto': _model.uploadedFileUrls_uploadData1tw,
-            },
-          ),
-        });
-        verifRef = requestVereficationRecordReference;
-        _model.verif = RequestVereficationRecord.getDocumentFromData({
-          ...createRequestVereficationRecordData(
-            city: widget!.city,
-            name: widget!.name,
-            surname: widget!.surnme,
-            commissionPercent: widget.commissionPercent,
-            numberAvto: widget!.nomer,
-            phoneNumber: currentPhoneNumber,
-            dfb: widget!.dtb,
-            user: currentUserReference,
-            status: StatusVerif.onVerif,
-            dateCreated: functions.toUtc(),
-            numberId: numberId,
-            email: widget!.mail,
-            avatar: currentUserPhoto,
-            marka: widget!.marka,
-          ),
-          ...mapToFirestore(
-            {
-              'photo_doc': widget!.photoDoc,
-              'photo_avto': _model.uploadedFileUrls_uploadData1tw,
-            },
-          ),
-        }, requestVereficationRecordReference);
-
-        await currentUserReference!.update(createUsersRecordData(
-          displayName: widget!.name,
-          loginComplete: true,
-          isDriver: true,
-          admin: false,
-          surname: widget!.surnme,
-          city: widget!.city,
-          commissionPercent: widget.commissionPercent,
-          dfb: widget!.dtb,
-          verifCompl: false,
-          onVerifNow: true,
-          car: updateCarStruct(
-            CarStruct(
-              nomer: widget!.nomer,
-              images: _model.uploadedFileUrls_uploadData1tw,
-              mark: widget!.marka,
+        // PG SoT: без FS-fallback (APP_FS_MIRROR=0 — регистрация иначе «теряется»)
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Не удалось отправить заявку. Проверьте интернет и попробуйте снова.',
+              ),
             ),
-            clearUnsetFields: false,
-          ),
-          verifNeProidena: false,
-          verifId: numberId,
-          emailUser: widget!.mail,
-        ));
+          );
+        }
+        return;
       }
       _model.admin = await queryUsersRecordOnce(
         queryBuilder: (usersRecord) => usersRecord.where(

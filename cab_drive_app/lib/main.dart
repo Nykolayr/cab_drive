@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io' show Platform;
+import 'dart:ui';
 
 import 'package:cab_drive/core/utils/shared_prefs.dart';
 import 'package:cab_drive/customer/create_map_page/data/datasources/orders_remote_data_source.dart';
@@ -23,6 +24,7 @@ import '/core/config/app_env.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'auth/firebase_auth/auth_util.dart';
 import 'auth/firebase_auth/firebase_user_provider.dart';
+import 'backend/api/client_error_reporter.dart';
 import 'backend/api_requests/payments_api_config.dart';
 import 'backend/firebase/firebase_config.dart';
 import 'backend/push_notifications/fb_messages.dart';
@@ -43,6 +45,30 @@ void main() async {
 
   await AppEnv.load();
   await initFirebase();
+
+  ClientErrorReporter.install();
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    unawaited(
+      ClientErrorReporter.instance?.report(
+        message: details.exceptionAsString(),
+        tag: 'FlutterError',
+        stack: details.stack?.toString(),
+        fatal: true,
+      ),
+    );
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    unawaited(
+      ClientErrorReporter.instance?.report(
+        message: '$error',
+        tag: 'PlatformDispatcher',
+        stack: stack.toString(),
+        fatal: true,
+      ),
+    );
+    return true;
+  };
 
   // Register background message handler BEFORE any other Firebase calls
   // This handler will be called when app is in background or terminated

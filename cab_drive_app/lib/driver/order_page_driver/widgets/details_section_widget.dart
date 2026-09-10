@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 
 import '../../../auth/firebase_auth/auth_util.dart';
+import '../../../backend/api/order_record_mapper.dart';
 import '../../../backend/schema/enums/enums.dart';
 import '../../../flutter_flow/flutter_flow_icon_button.dart';
 import '../order_page_driver_model.dart';
@@ -49,7 +50,7 @@ class DetailsSectionWidget extends StatelessWidget {
             ),
             if (point.comment != null && point.comment != '') SizedBox(height: 8.0),
             if (point.comment != null && point.comment != '') TextInfoWidget(tittle: 'Комментарий водителю', pole: point.comment),
-            TextInfoWidget(tittle: 'Контакт отправителя', pole: '${point.sender.phone}, ${point.sender.name}'),
+            TextInfoWidget(tittle: 'Контакт отправителя', pole: OrderRecordMapper.senderContactLine(point.sender)),
           ],
         ),
       ),
@@ -86,7 +87,7 @@ class DetailsSectionWidget extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextInfoWidget(tittle: 'Ожидаемая стоимость', pole: '${order.budget.toString()} ₽'),
+                TextInfoWidget(tittle: 'Ожидаемая стоимость', pole: OrderRecordMapper.expectedPriceText(order)),
                 TextInfoWidget(tittle: 'Итоговая стоимость доставки', pole: '${order.currentPrice.toString()} ₽'),
                 TextInfoWidget(tittle: 'Способ оплаты', pole: order.payMethod == PayMethod.card ? 'Оплата картой' : 'Оплата наличными'),
                 TextInfoWidget(tittle: 'Время и дистанция', pole: '${order.time}, ${order.distanceStr}'),

@@ -53,6 +53,12 @@ class _LoadWidgetState extends State<LoadWidget> {
         return;
       }
 
+      // До ветвления — актуальный /me (иначе race → Vibor / Geo)
+      try {
+        await refreshAppMeCache();
+      } catch (_) {}
+      if (!context.mounted) return;
+
       if (valueOrDefault<bool>(currentUserDocument?.admin, false)) {
         context.goNamed(
           VerifAdminWidget.routeName,
@@ -85,11 +91,15 @@ class _LoadWidgetState extends State<LoadWidget> {
             return;
           }
 
-          // Роль с сервера (Firestore) важнее локального FFAppState на новом устройстве.
+          // Роль с сервера (PG /me) важнее локального FFAppState на новом устройстве.
           final firestoreIsDriver =
               valueOrDefault<bool>(currentUserDocument?.isDriver, false);
           if (firestoreIsDriver) {
             FFAppState().driver = true;
+            FFAppState().roleSelected = true;
+          } else {
+            // Клиент с login_complete: не гоняем на Vibor из‑за пустого local storage
+            FFAppState().driver = false;
             FFAppState().roleSelected = true;
           }
 

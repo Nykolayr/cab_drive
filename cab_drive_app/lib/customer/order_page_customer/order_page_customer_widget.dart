@@ -2739,7 +2739,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                       child: TextInfoWidget(
                                         tittle: 'Контакт отправителя',
                                         pole:
-                                            '${orderPageCustomerOrderRecord.pointA.sender.phone}, ${orderPageCustomerOrderRecord.pointA.sender.name}',
+                                            '${OrderRecordMapper.senderContactLine(orderPageCustomerOrderRecord.pointA.sender)}',
                                       ),
                                     ),
                                   ],
@@ -2954,7 +2954,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                         child: TextInfoWidget(
                                           tittle: 'Контакт отправителя',
                                           pole:
-                                              '${orderPageCustomerOrderRecord.pointC.sender.phone}, ${orderPageCustomerOrderRecord.pointC.sender.name}',
+                                              '${OrderRecordMapper.senderContactLine(orderPageCustomerOrderRecord.pointC.sender)}',
                                         ),
                                       ),
                                     ],
@@ -3164,7 +3164,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                       child: TextInfoWidget(
                                         tittle: 'Контакт отправителя',
                                         pole:
-                                            '${orderPageCustomerOrderRecord.pointB.sender.phone}, ${orderPageCustomerOrderRecord.pointB.sender.name}',
+                                            '${OrderRecordMapper.senderContactLine(orderPageCustomerOrderRecord.pointB.sender)}',
                                       ),
                                     ),
                                   ],
@@ -3193,7 +3193,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                     TextInfoWidget(
                                       tittle: 'Ожидаемая стоимость',
                                       pole:
-                                          '${orderPageCustomerOrderRecord.budget.toString()} ₽',
+                                          '${OrderRecordMapper.expectedPriceText(orderPageCustomerOrderRecord)}',
                                     ),
                                     if ((orderPageCustomerOrderRecord.status ==
                                             StatusOrder.spec_set) ||

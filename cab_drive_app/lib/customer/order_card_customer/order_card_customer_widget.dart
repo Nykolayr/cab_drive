@@ -88,7 +88,11 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
     try {
       final ok = await AppMeApi.patchOrder(
         widget.order!.reference.id,
-        {'currentPrice': newPrice},
+        {
+          'currentPrice': newPrice,
+          // UI «Ожидаемая» на старых экранах читает budget — синхронизируем
+          'budget': newPrice,
+        },
       );
       if (!ok) {
         if (mounted) {
@@ -477,6 +481,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
         'movers': src.movers,
         'description': src.description,
         'budget': src.budget,
+        'currentPrice': src.currentPrice > 0 ? src.currentPrice : src.budget,
         'dateTime_created': functions.toUtc().toIso8601String(),
         'status': 'newOrder',
         'distance': src.distance,

@@ -19,8 +19,11 @@ String get currentUserEmail =>
 
 String get currentUserUid => currentUser?.uid ?? '';
 
-String get currentUserDisplayName =>
-    currentUserDocument?.displayName ?? currentUser?.displayName ?? '';
+String get currentUserDisplayName {
+  final fromDoc = (currentUserDocument?.displayName ?? '').trim();
+  if (fromDoc.isNotEmpty) return fromDoc;
+  return (currentUser?.displayName ?? '').trim();
+}
 
 String get currentUserPhoto {
   final photoUrl = currentUserDocument?.photoUrl ?? currentUser?.photoUrl ?? '';
@@ -28,9 +31,11 @@ String get currentUserPhoto {
   return FileStorageService.getImageUrl(photoUrl);
 }
 
-String get currentPhoneNumber =>
-    '${currentUserDocument?.phoneNumber ?? currentUser?.phoneNumber ?? ' '}';
-
+String get currentPhoneNumber {
+  final fromDoc = (currentUserDocument?.phoneNumber ?? '').trim();
+  if (fromDoc.isNotEmpty) return fromDoc;
+  return (currentUser?.phoneNumber ?? '').trim();
+}
 String get currentJwtToken => _currentJwtToken ?? '';
 
 bool get currentUserEmailVerified => currentUser?.emailVerified ?? false;
@@ -125,7 +130,14 @@ Future<void> refreshAppMeCache() async {
     appMeCache = AppMe.fromJson(raw);
     ensureAuthenticatedUserSession();
     _emitMerged();
-  } catch (_) {}
+    debugPrint(
+      '[refreshAppMeCache] ok uid=${currentUserDocument?.uid} '
+      'login_complete=${currentUserDocument?.loginComplete} '
+      'name=${currentUserDocument?.displayName}',
+    );
+  } catch (e, st) {
+    debugPrint('[refreshAppMeCache] FAIL $e\n$st');
+  }
 }
 
 /// PG-first session stream: только /me poll (без FS user stream).

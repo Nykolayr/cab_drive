@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import '/backend/schema/util/firestore_util.dart';
 import '/backend/schema/util/schema_util.dart';
 import '/backend/schema/enums/enums.dart';
@@ -207,54 +208,96 @@ class UsersRecord extends FirestoreRecord {
       _activeOrdersQueue ?? const [];
   bool hasActiveOrdersQueue() => _activeOrdersQueue != null;
 
+  static bool? _asBool(dynamic v) {
+    if (v is bool) return v;
+    if (v is num) return v != 0;
+    if (v is String) {
+      final s = v.trim().toLowerCase();
+      if (s == 'true' || s == '1' || s == 'on') return true;
+      if (s == 'false' || s == '0' || s == 'off') return false;
+    }
+    return null;
+  }
+
   void _initializeFields() {
-    print(snapshotData);
-    _email = snapshotData['email'] as String?;
-    _displayName = snapshotData['display_name'] as String?;
-    _photoUrl = snapshotData['photo_url'] as String?;
-    _uid = snapshotData['uid'] as String?;
+    _email = snapshotData['email']?.toString();
+    _displayName = snapshotData['display_name']?.toString();
+    _photoUrl = snapshotData['photo_url']?.toString();
+    _uid = snapshotData['uid']?.toString();
     _createdTime = snapshotData['created_time'] as DateTime?;
-    _phoneNumber = snapshotData['phone_number'] as String? ?? (_email ?? '').split('@').first;
-    _loginComplete = snapshotData['login_complete'] as bool?;
-    _isDriver = snapshotData['is_driver'] as bool?;
-    _admin = snapshotData['admin'] as bool?;
-    _surname = snapshotData['surname'] as String?;
+    _phoneNumber = snapshotData['phone_number']?.toString() ??
+        (_email ?? '').split('@').first;
+    _loginComplete = _asBool(snapshotData['login_complete']);
+    _isDriver = _asBool(snapshotData['is_driver']);
+    _admin = _asBool(snapshotData['admin']);
+    _surname = snapshotData['surname']?.toString();
     _dfb = snapshotData['dfb'] as DateTime?;
-    _city = snapshotData['city'] as String?;
-    _verifCompl = snapshotData['verif_compl'] is String ? snapshotData['verif_compl'] == 'on' : snapshotData['verif_compl'] as bool?;
-    _isBlocked = snapshotData['is_blocked'] as bool?;
+    _city = snapshotData['city']?.toString();
+    _verifCompl = snapshotData['verif_compl'] is String
+        ? snapshotData['verif_compl'] == 'on'
+        : _asBool(snapshotData['verif_compl']);
+    _isBlocked = _asBool(snapshotData['is_blocked']);
     _chatWithSupport = snapshotData['chat_with_support'] as DocumentReference?;
-    _balance = (snapshotData['balance'] as num?)?.toDouble(); // Handle null safely
+    _balance = (snapshotData['balance'] as num?)?.toDouble();
     _bonusBalance = (snapshotData['bonus_balance'] as num?)?.toDouble();
     _averageRating = castToType<double>(snapshotData['average_rating']);
-    _onVerifNow = snapshotData['on_verif_now'] as bool?;
-    _addresses = getStructList(
-      snapshotData['addresses'],
-      PointStruct.fromMap,
-    );
+    _onVerifNow = _asBool(snapshotData['on_verif_now']);
+    // Нельзя ронять весь UsersRecord из‑за одного битого адреса — иначе session=/me «пустой».
+    try {
+      _addresses = getStructList(
+        snapshotData['addresses'],
+        PointStruct.fromMap,
+      );
+    } catch (e) {
+      debugPrint('[UsersRecord] addresses parse fail: $e');
+      _addresses = null;
+    }
     _numberOfReviews = castToType<int>(snapshotData['number_of_reviews']);
-    _car = snapshotData['car'] is CarStruct
-        ? snapshotData['car']
-        : CarStruct.maybeFromMap(snapshotData['car']);
+    try {
+      _car = snapshotData['car'] is CarStruct
+          ? snapshotData['car'] as CarStruct
+          : CarStruct.maybeFromMap(snapshotData['car']);
+    } catch (e) {
+      debugPrint('[UsersRecord] car parse fail: $e');
+      _car = null;
+    }
     _lastOnline = snapshotData['last_online'] as DateTime?;
-    _verifNeProidena = snapshotData['verif_ne_proidena'] is String ? snapshotData['verif_ne_proidena'] != 'on' : snapshotData['verif_ne_proidena'] as bool?;
+    _verifNeProidena = snapshotData['verif_ne_proidena'] is String
+        ? snapshotData['verif_ne_proidena'] != 'on'
+        : _asBool(snapshotData['verif_ne_proidena']);
     _verifId = castToType<int>(snapshotData['verif_id']);
-    _emailUser = snapshotData['email_user'] as String?;
-    _currentOrder = snapshotData['current_order'] is CurrentOrderStruct
-        ? snapshotData['current_order']
-        : CurrentOrderStruct.maybeFromMap(snapshotData['current_order']);
+    _emailUser = snapshotData['email_user']?.toString();
+    try {
+      _currentOrder = snapshotData['current_order'] is CurrentOrderStruct
+          ? snapshotData['current_order'] as CurrentOrderStruct
+          : CurrentOrderStruct.maybeFromMap(snapshotData['current_order']);
+    } catch (e) {
+      debugPrint('[UsersRecord] current_order parse fail: $e');
+      _currentOrder = null;
+    }
     _contractorID = castToType<int>(snapshotData['ContractorID']);
-    _onShift = snapshotData['on_shift'] as bool?;
-    _commissionPercent = (snapshotData['commission_percent'] as num?)?.toDouble(); // Handle null safely
-    _currentCommision = (snapshotData['current_commision'] as num?)?.toDouble(); // Handle null safely
-    _fine = snapshotData['fine'] as bool?;
+    _onShift = _asBool(snapshotData['on_shift']);
+    _commissionPercent =
+        (snapshotData['commission_percent'] as num?)?.toDouble();
+    _currentCommision =
+        (snapshotData['current_commision'] as num?)?.toDouble();
+    _fine = _asBool(snapshotData['fine']);
     _shiftCompletionDateTime =
         snapshotData['shift_completion_date_time'] as DateTime?;
     _shiftStartDateTime = snapshotData['shift_start_date_time'] as DateTime?;
-    _cityLatlng = snapshotData['cityLatlng'] as LatLng?;
-    _region = snapshotData['region'] as String?;
-    _additionalPhoneNumber = snapshotData['additional_phone_number'] as String?;
-    _activeOrdersQueue = getDataList(snapshotData['active_orders_queue']);
+    _cityLatlng = PointStruct.parseLatLng(snapshotData['cityLatlng']) ??
+        (snapshotData['cityLatlng'] is LatLng
+            ? snapshotData['cityLatlng'] as LatLng
+            : null);
+    _region = snapshotData['region']?.toString();
+    _additionalPhoneNumber =
+        snapshotData['additional_phone_number']?.toString();
+    try {
+      _activeOrdersQueue = getDataList(snapshotData['active_orders_queue']);
+    } catch (e) {
+      debugPrint('[UsersRecord] active_orders_queue parse fail: $e');
+      _activeOrdersQueue = null;
+    }
   }
 
   static CollectionReference get collection =>

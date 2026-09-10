@@ -360,7 +360,15 @@ class _KartaWidgetState extends State<KartaWidget> {
                               return;
                             }
 
-                            final point = resolved.toPoint();
+                            final prev = widget.point == 'A'
+                                ? FFAppState().pointA
+                                : (widget.point == 'C'
+                                    ? FFAppState().pointC
+                                    : FFAppState().pointB);
+                            final point = resolved.toPoint(
+                              sender:
+                                  prev.hasSender() ? prev.sender : null,
+                            );
                             debugPrint(
                               '[Search.$tag] apply label="${resolved.addressLabel}"',
                             );

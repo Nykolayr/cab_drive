@@ -66,6 +66,7 @@ Flask /api/app/*  +  WSS /ws/
 | `app_verifications_ops.py` | driver KYC create/list/approve/reject + soft FS |
 | `app_profile_ops.py` | addresses add/remove + saved_cards CRUD + soft FS |
 | `app_fcm_ops.py` | FCM send via `app_user_fcm_tokens` (PG) |
+| `app_client_errors_ops.py` | приём ошибок МП → `app_client_errors` |
 | `wss_server.py` | WSS hub (отдельный процесс) |
 | `tinkoff/webhook.py` | PG-first paid + accept_bid card |
 | `chats/api.py` | dashboard: PG-first list/send |
@@ -79,6 +80,37 @@ Flask /api/app/*  +  WSS /ws/
 - payments POST/GET/PATCH  
 - chats: ensure, list, messages (HTTP + WSS)  
 - reviews / verifications / addresses / cards / push / peer public  
+- `POST /client-errors` (МП, auth optional), `GET /client-errors` (admin)  
+
+### Session `/me` → UsersRecord (важно)
+
+JSON `/me` мапится в `UsersRecord` через `UsersRecordMapper`.  
+Адреса с PG приходят как `latlng: {_geo:{lat,lng}}`. Жёсткий `as LatLng?` в `PointStruct` **ронял весь парсер** → `refreshAppMeCache` глотал exception → `currentUserDocument == null` → Vibor/пустой профиль при живом `login_complete` в логах.  
+Парсить через `PointStruct.parseLatLng`; ошибки `addresses`/`car`/`current_order` не должны валить весь документ.
+
+### Логин / онбординг (МП)
+
+Память профиля = **Postgres `/me`**, не локальный storage.
+
+```
+OTP / Load → refreshAppMeCache()
+  ├─ login_complete → MainUser | MainDriver
+  └─ иначе → Geo → Vibor → Onbord → VerifUser
+```
+
+- **Vibor / VerifUser:** при `login_complete` сразу Main*; иначе префилл name/phone из `/me`+OTP.  
+- Не гонять зарегистрированного клиента снова на «знакомиться» из‑за пустого `FFAppState.roleSelected`.  
+- Симптом «в логах login_complete:true, а UI пустой» → сначала проверить, что `UsersRecord` не упал на адресах (см. выше).
+
+### Client errors (мини-Sentry из шаблона)
+
+Источник: `_my_template/digitalsquare` `ClientErrorReporter` + `fastify-api` `client-errors`.
+
+- МП: хуки в `main.dart` (`FlutterError` / `PlatformDispatcher`) → `POST /api/app/client-errors`  
+- PG: `app_client_errors` (`006_client_errors.sql`)  
+- Список: `GET /api/app/client-errors?limit=50` (admin session)  
+- Auth на POST опционален; при Bearer пишется `user_id` / телефон / role  
+- Деплой helper: `cab_drive_app/tool/_deploy_client_errors.py`  
 
 ### WSS протокол
 
@@ -92,6 +124,8 @@ Flask /api/app/*  +  WSS /ws/
 | Слой | Файлы |
 |------|--------|
 | API HTTP | `lib/backend/api/app_me_api.dart` |
+| Client errors | `lib/backend/api/client_error_reporter.dart` → `POST /api/app/client-errors` |
+| Login / роль | `load_widget`, `otp_login`, `vibor`, `verif_user` — ветвление по `/me.login_complete` |
 | WSS чаты | `lib/backend/api/app_chat_ws.dart` |
 | Open chat | `lib/backend/api/chat_open.dart` |
 | Кэш профиля | `auth_util.dart` → `appMeCache`, `effectiveBalance`, `effectiveActiveOrdersQueue`, `refreshAppMeCache` |
@@ -104,20 +138,23 @@ Flask /api/app/*  +  WSS /ws/
 ## Postgres таблицы (app)
 
 `app_users`, `app_orders`, `app_order_responses`, `app_pay_orders`, `app_user_fcm_tokens`,  
-`app_chats`, `app_chat_members`, `app_messages`, `app_reviews`, `app_verifications`, `app_saved_cards`  
-(+ миграции `001`…`005_saved_cards.sql`)
+`app_chats`, `app_chat_members`, `app_messages`, `app_reviews`, `app_verifications`, `app_saved_cards`,  
+`app_client_errors`  
+(+ миграции `001`…`006_client_errors.sql`)
 
 ---
 
-## Статус cutover (актуально, 2026-09-09)
+## Статус cutover (актуально, 2026-09-10)
 
 ### Прод: `APP_FS_MIRROR=0`
 
 Health: `fs_mirror=false`, `sot=postgres`. Soft FS writes с сервера **не идут**.
+Релиз МП с client-errors + session-fix: **1.1.94+94** (`D:\Temp\cab_drive_1_94.apk`).
 
 ### Уже PG SoT (МП + сервер)
 
 - Session `/me` poll (+ `PATCH /me` профиль: city/name/phone/photo/`fb_id`/role/…) — без FS user stream  
+- Login: Load/OTP/Vibor/VerifUser уважают `login_complete`; heal session на сервере  
 - Create / repeat order, edit order load+save — API; точки через `pointToApiMap` (не сырой LatLng)  
 - Feed / order detail / bids / my_orders / moi_zakazy / map — API poll, без FS stream fallback  
 - Pay wait / cards / addresses / reviews — API  
@@ -125,6 +162,7 @@ Health: `fs_mirror=false`, `sot=postgres`. Soft FS writes с сервера **н
 - Чаты: ensure + WSS/HTTP history+send; inbox poll; chat_bar без FS write  
 - Login/OTP bootstrap — `patchMe` + `ensureSupportChat` (без FS user/chat set)  
 - FCM: register + `/push` через PG tokens  
+- Client errors → `app_client_errors`  
 - Dashboard: user edit / order edit / point / auto-hide timer / mark-read — PG SoT + soft_fs only  
 - Pickup / extra / admin balance-stats — PG-first  
 
@@ -134,6 +172,7 @@ Health: `fs_mirror=false`, `sot=postgres`. Soft FS writes с сервера **н
 2. Редкие admin UI (если ещё FS stream) → dashboard API  
 3. Legacy PDF URL в «О приложении» (бывший Storage) — перенести PDF на свой files  
 4. Tinkoff GetCardList sync — optional  
+5. `ClientErrorReporter.appVersion` — синхронизировать с `pubspec` при релизе (или package_info)  
 
 ### Оценка
 
@@ -149,13 +188,14 @@ Health: `fs_mirror=false`, `sot=postgres`. Soft FS writes с сервера **н
 4. Прод: `APP_FS_MIRROR=0` — не включать `1` без причины (откат).  
 5. Не путать MySQL `cab` и Postgres `app_*`.  
 6. Документ плана: `docs/CUTOVER_OWN_DB.md`.  
-7. APK/bundle — только по явной просьбе пользователя.
+7. APK/bundle — только по явной просьбе пользователя.  
+8. Client errors — смотреть `app_client_errors` / admin GET при жалобах заказчика.  
 
 ---
 
 ## Следующие пакеты (приоритет)
 
-1. Smoke на релизе (заказ / чат / профиль / смена)  
+1. Smoke на релизе 1.1.94 (заказ / чат / профиль / смена / логин)  
 2. Выпил `cloud_firestore` из pubspec  
 3. PDF политики → свой files + убрать legacy Storage URL  
 4. Tinkoff cards sync (optional)  

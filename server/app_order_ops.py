@@ -158,6 +158,10 @@ def create_order_for_customer(actor_uid: str, body: dict[str, Any]) -> dict[str,
     payload["user_customer_id"] = actor_uid
     if not payload.get("dateTime_created"):
         payload["dateTime_created"] = now.isoformat()
+    # expected price UI: currentPrice || budget — при create выравниваем
+    if payload.get("currentPrice") is None and payload.get("current_price") is None:
+        if payload.get("budget") is not None:
+            payload["currentPrice"] = payload["budget"]
 
     if not app_pg.create_order(order_id, payload):
         raise RuntimeError("postgres create_order failed")

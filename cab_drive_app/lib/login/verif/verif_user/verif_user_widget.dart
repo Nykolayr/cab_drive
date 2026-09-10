@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
 import '/backend/backend.dart';
 import '/core/utils/formatters/phone_mask_input_formatter.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -7,8 +8,8 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'dart:ui';
 import '/index.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -45,6 +46,58 @@ class _VerifUserWidgetState extends State<VerifUserWidget> {
 
     _model.additionalPhoneTextController ??= TextEditingController();
     _model.additionalPhoneFocusNode ??= FocusNode();
+
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      await _hydrateFromMe();
+    });
+  }
+
+  Future<void> _hydrateFromMe() async {
+    try {
+      await refreshAppMeCache();
+    } catch (_) {}
+    if (!mounted) return;
+
+    if (valueOrDefault<bool>(currentUserDocument?.loginComplete, false)) {
+      FFAppState().roleSelected = true;
+      FFAppState().driver = false;
+      debugPrint('[VerifUser] already login_complete → MainUser');
+      context.goNamed(MainUserWidget.routeName);
+      return;
+    }
+
+    final name = currentUserDisplayName.trim();
+    if (name.isNotEmpty &&
+        (_model.nameTextController?.text.trim().isEmpty ?? true)) {
+      _model.nameTextController?.text = name;
+    }
+
+    final phone = _otpPhoneMasked();
+    if (phone != null &&
+        (_model.additionalPhoneTextController?.text.trim().isEmpty ?? true)) {
+      _model.additionalPhoneTextController?.text = phone;
+    }
+    if (mounted) safeSetState(() {});
+  }
+
+  /// Телефон из OTP /me / Auth в маске поля «+7 (___) ___-__-__».
+  String? _otpPhoneMasked() {
+    var raw = FFAppState().phone.trim();
+    if (raw.isEmpty) {
+      raw = currentPhoneNumber.trim();
+    }
+    var digits = raw.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.startsWith('8') && digits.length == 11) {
+      digits = '7${digits.substring(1)}';
+    }
+    if (digits.length == 10) {
+      digits = '7$digits';
+    }
+    if (digits.length != 11 || !digits.startsWith('7')) {
+      return null;
+    }
+    return '+7 (${digits.substring(1, 4)}) ${digits.substring(4, 7)}-'
+        '${digits.substring(7, 9)}-${digits.substring(9, 11)}';
   }
 
   @override
@@ -362,16 +415,35 @@ class _VerifUserWidgetState extends State<VerifUserWidget> {
                             return;
                           }
 
-                          await currentUserReference!
-                              .update(createUsersRecordData(
-                            displayName: _model.nameTextController.text,
-                            additionalPhoneNumber: _model
+                          final patched = await AppMeApi.patchMe({
+                            'display_name': _model.nameTextController.text,
+                            'phone_number': _otpPhoneMasked() ??
+                                FFAppState().phone.trim(),
+                            'additional_phone_number': _model
                                 .additionalPhoneTextController.text
                                 .trim(),
-                            isDriver: false,
-                            loginComplete: true,
-                          ));
+                            'is_driver': false,
+                            'login_complete': true,
+                          });
+                          if (patched == null) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Не удалось сохранить профиль. Попробуйте ещё раз.',
+                                  ),
+                                ),
+                              );
+                            }
+                            return;
+                          }
+                          try {
+                            await refreshAppMeCache();
+                          } catch (_) {}
+                          FFAppState().roleSelected = true;
+                          FFAppState().driver = false;
 
+                          if (!context.mounted) return;
                           context.goNamed(MainUserWidget.routeName);
                         },
                         text: 'Далее',

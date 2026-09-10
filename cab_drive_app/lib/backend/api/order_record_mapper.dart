@@ -106,6 +106,25 @@ class OrderRecordMapper {
     );
   }
 
+  /// Контакт точки: не показывать «,» при пустых phone/name.
+  static String senderContactLine(SenderStruct sender) {
+    final phone = sender.phone.trim();
+    final name = sender.name.trim();
+    if ((phone.isEmpty || phone == ',' || phone == ' ') && name.isEmpty) {
+      return '—';
+    }
+    if (phone.isEmpty || phone == ',' || phone == ' ') return name;
+    if (name.isEmpty) return phone;
+    return '$phone, $name';
+  }
+
+  /// Ожидаемая стоимость: raised currentPrice, иначе budget.
+  static String expectedPriceText(OrderRecord order) {
+    final cp = order.currentPrice;
+    final value = cp > 0 ? cp : order.budget;
+    return '${value.toString()} ₽';
+  }
+
   static ResponsesRecord bidFromApi(Map<String, dynamic> m, String orderId) {
     final id = m['id']?.toString() ?? '';
     final driver = userRef(m['user_driver'] ?? m['driver_id']);

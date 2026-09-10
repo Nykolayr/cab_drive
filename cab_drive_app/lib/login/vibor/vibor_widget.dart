@@ -9,6 +9,7 @@ import '/index.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'vibor_model.dart';
@@ -33,6 +34,28 @@ class _ViborWidgetState extends State<ViborWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => ViborModel());
+
+    // Уже зарегистрированный пользователь не должен снова выбирать роль/онбординг.
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      try {
+        await refreshAppMeCache();
+      } catch (_) {}
+      if (!mounted) return;
+      final done =
+          valueOrDefault<bool>(currentUserDocument?.loginComplete, false);
+      if (!done) return;
+      FFAppState().roleSelected = true;
+      final isDriver =
+          valueOrDefault<bool>(currentUserDocument?.isDriver, false);
+      FFAppState().driver = isDriver;
+      debugPrint(
+        '[ViborWidget] already login_complete → '
+        '${isDriver ? 'MainDriver' : 'MainUser'}',
+      );
+      context.goNamed(
+        isDriver ? MainDriverWidget.routeName : MainUserWidget.routeName,
+      );
+    });
   }
 
   @override
@@ -169,6 +192,22 @@ class _ViborWidgetState extends State<ViborWidget> {
                         FFAppState().roleSelected = true;
                         debugPrint('[ViborWidget] Selected role: driver');
                         safeSetState(() {});
+
+                        try {
+                          await refreshAppMeCache();
+                        } catch (_) {}
+                        if (!context.mounted) return;
+                        if (valueOrDefault<bool>(
+                                currentUserDocument?.loginComplete, false) &&
+                            valueOrDefault<bool>(
+                                currentUserDocument?.isDriver, false)) {
+                          debugPrint(
+                            '[ViborWidget] driver already complete → MainDriver',
+                          );
+                          context.goNamed(MainDriverWidget.routeName);
+                          return;
+                        }
+
                         _model.kek = null;
                         try {
                           _model.kek =
@@ -195,8 +234,6 @@ class _ViborWidgetState extends State<ViborWidget> {
                           if (_shouldSetState) safeSetState(() {});
                           return;
                         }
-
-                        if (_shouldSetState) safeSetState(() {});
                       },
                       text: 'Я - водитель',
                       options: FFButtonOptions(
@@ -228,6 +265,19 @@ class _ViborWidgetState extends State<ViborWidget> {
                           FFAppState().roleSelected = true;
                           debugPrint('[ViborWidget] Selected role: client');
                           safeSetState(() {});
+
+                          try {
+                            await refreshAppMeCache();
+                          } catch (_) {}
+                          if (!context.mounted) return;
+                          if (valueOrDefault<bool>(
+                              currentUserDocument?.loginComplete, false)) {
+                            debugPrint(
+                              '[ViborWidget] client already complete → MainUser',
+                            );
+                            context.goNamed(MainUserWidget.routeName);
+                            return;
+                          }
 
                           context.pushNamed(OnbordUserWidget.routeName);
                         },

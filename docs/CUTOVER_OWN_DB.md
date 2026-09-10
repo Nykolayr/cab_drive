@@ -2,7 +2,7 @@
 
 **Цель (достигнута на проде):** app-data SoT = Postgres. Firestore не используется как БД приложения (`APP_FS_MIRROR=0`). Google: Firebase Auth + доставка FCM. Файлы — свой `files/upload`. Remote Config — локальные константы.
 
-**Актуально:** 2026-09-09. Обзор для агента: `.cursor/rules/cab-drive-own-db-architecture.mdc`.
+**Актуально:** 2026-09-10. Обзор для агента: `.cursor/rules/cab-drive-own-db-architecture.mdc`.
 
 ---
 
@@ -31,7 +31,9 @@
 | 20 | P1 chats/verif/reviews/cards/addresses | **done** |
 | 21 | Login/OTP/profile без FS; strip FS fallbacks | **done** (2026-09-09) |
 | 22 | Remote Config → локальный конфиг | **done** |
-| 23 | Выпил `cloud_firestore` из pubspec | **pending** (хвост чистки) |
+| 23 | Session `/me` parse (`_geo` latlng) + login_complete routing | **done** (2026-09-10) |
+| 24 | Client errors → `app_client_errors` (шаблон digitalsquare) | **done** (2026-09-10); релиз МП **1.1.94+94** |
+| 25 | Выпил `cloud_firestore` из pubspec | **pending** (хвост чистки) |
 
 ### Правило записи
 
@@ -56,7 +58,12 @@ POST       /api/app/orders/:id/status|complete|cancel|accept-bid|dequeue|hide|ge
 POST/GET/DELETE /api/app/orders/:id/bids
 POST/GET/PATCH /api/app/payments…
 POST/GET   /api/app/chats…  (+ WSS /ws/)
+POST       /api/app/client-errors   (МП, auth optional)
+GET        /api/app/client-errors   (admin session)
 ```
+
+Источник: шаблон `_my_template/digitalsquare` (`ClientErrorReporter`) + `fastify-api` `002_client_errors.sql`.
+Таблица: `app_client_errors` (миграция `006_client_errors.sql`).
 
 Health: `GET /api/app/health` → `sot=postgres`, `fs_mirror=false`.
 

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '/backend/api_requests/api_calls.dart';
 import '/backend/schema/structs/point_struct.dart';
+import '/backend/schema/structs/sender_struct.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 
 /// Результат тапа по подсказке адреса.
@@ -33,7 +34,7 @@ class ResolvedPlaceSelection {
   final double? lat;
   final double? lng;
 
-  PointStruct toPoint() {
+  PointStruct toPoint({SenderStruct? sender}) {
     return PointStruct(
       latlng: (lat != null && lng != null) ? LatLng(lat!, lng!) : null,
       placeID: placeId,
@@ -41,6 +42,7 @@ class ResolvedPlaceSelection {
       fullAddress: fullAddress,
       city: city,
       region: region,
+      sender: sender,
     );
   }
 }

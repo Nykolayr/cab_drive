@@ -130,21 +130,43 @@ class PointStruct extends FFFirebaseStruct {
 
   bool hasRegion() => _region != null;
 
+  /// PG /me отдаёт latlng как `{_geo:{lat,lng}}`, не как LatLng — жёсткий cast ломал весь /me.
+  static LatLng? parseLatLng(dynamic value) {
+    if (value == null) return null;
+    if (value is LatLng) return value;
+    if (value is! Map) return null;
+    final m = Map<String, dynamic>.from(value);
+    final geo = m['_geo'];
+    if (geo is Map) {
+      final lat = geo['lat'];
+      final lng = geo['lng'];
+      if (lat is num && lng is num) {
+        return LatLng(lat.toDouble(), lng.toDouble());
+      }
+    }
+    final lat = m['lat'] ?? m['latitude'];
+    final lng = m['lng'] ?? m['longitude'];
+    if (lat is num && lng is num) {
+      return LatLng(lat.toDouble(), lng.toDouble());
+    }
+    return null;
+  }
+
   static PointStruct fromMap(Map<String, dynamic> data) => PointStruct(
-        latlng: data['latlng'] as LatLng?,
-        placeID: data['place_ID'] as String?,
-        address: data['address'] as String?,
-        fullAddress: data['fullAddress'] as String?,
+        latlng: parseLatLng(data['latlng']),
+        placeID: data['place_ID']?.toString(),
+        address: data['address']?.toString(),
+        fullAddress: data['fullAddress']?.toString(),
         entrance: castToType<int>(data['entrance']),
-        floor: castToType<int>(data['Floor']),
-        flat: data['flat'] as String?,
-        intercom: data['Intercom'] as String?,
-        comment: data['comment'] as String?,
+        floor: castToType<int>(data['Floor'] ?? data['floor']),
+        flat: data['flat']?.toString(),
+        intercom: data['Intercom']?.toString() ?? data['intercom']?.toString(),
+        comment: data['comment']?.toString(),
         sender: data['sender'] is SenderStruct
             ? data['sender']
             : SenderStruct.maybeFromMap(data['sender']),
-        city: data['city'] as String?,
-        region: data['region'] as String?,
+        city: data['city']?.toString(),
+        region: data['region']?.toString(),
       );
 
   static PointStruct? maybeFromMap(dynamic data) =>

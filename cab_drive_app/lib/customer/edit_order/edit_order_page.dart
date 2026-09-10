@@ -204,6 +204,7 @@ class _EditOrderPageState extends State<EditOrderPage> {
       {
         'description': _descriptionController.text.trim(),
         'budget': parsedBudget,
+        'currentPrice': parsedBudget,
         'dateTime': dateTime?.toUtc().toIso8601String(),
         'supply': supply,
         'movers': movers,

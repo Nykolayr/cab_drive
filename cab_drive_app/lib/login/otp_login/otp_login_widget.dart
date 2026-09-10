@@ -273,8 +273,14 @@ class _OtpLoginWidgetState extends State<OtpLoginWidget>
                                 return;
                               }
 
+                              try {
+                                await refreshAppMeCache();
+                              } catch (_) {}
+                              if (!context.mounted) return;
+
                               FFAppState().driver = valueOrDefault<bool>(
                                   currentUserDocument?.isDriver, false);
+                              FFAppState().roleSelected = true;
                               FFAppState().update(() {});
                               if (valueOrDefault<bool>(
                                   currentUserDocument?.loginComplete, false)) {

@@ -211,6 +211,7 @@ _PATCH_ME_KEYS = {
     "display_name",
     "photo_url",
     "phone_number",
+    "additional_phone_number",
     "is_driver",
     "surname",
     "city",
@@ -246,8 +247,12 @@ def patch_me(uid: str, body: dict[str, Any]) -> dict[str, Any]:
         fields["photo_url"] = body.get("photoUrl")
     if "phoneNumber" in body and "phone_number" not in fields:
         fields["phone_number"] = body.get("phoneNumber")
+    if "additionalPhoneNumber" in body and "additional_phone_number" not in fields:
+        fields["additional_phone_number"] = body.get("additionalPhoneNumber")
     if "isDriver" in body and "is_driver" not in fields:
         fields["is_driver"] = body.get("isDriver")
+    if "loginComplete" in body and "login_complete" not in fields:
+        fields["login_complete"] = body.get("loginComplete")
     if "fbId" in body and "fb_id" not in fields:
         fields["fb_id"] = body.get("fbId")
     if "currentOrder" in body and "current_order_json" not in fields:

@@ -128,6 +128,7 @@ def mirror_user_fields(user_id: str, fields: dict[str, Any]) -> bool:
         "fb_id",
         "chat_with_support_id",
         "current_order_json",
+        "additional_phone_number",
     }
     jsonb_keys = {"car_json", "addresses_json", "current_order_json"}
 
@@ -157,8 +158,8 @@ def mirror_user_fields(user_id: str, fields: dict[str, Any]) -> bool:
                 # пользователя ещё нет в PG — создаём минимальную строку
                 cur.execute(
                     """
-                    INSERT INTO app_users (id, updated_at)
-                    VALUES (%s, NOW())
+                    INSERT INTO app_users (id, created_time, updated_at)
+                    VALUES (%s, NOW(), NOW())
                     ON CONFLICT (id) DO NOTHING
                     """,
                     (user_id,),
@@ -179,8 +180,8 @@ def increment_user_balance(user_id: str, delta: float) -> bool:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO app_users (id, balance, updated_at)
-                VALUES (%s, %s, NOW())
+                INSERT INTO app_users (id, balance, created_time, updated_at)
+                VALUES (%s, %s, NOW(), NOW())
                 ON CONFLICT (id) DO UPDATE SET
                     balance = COALESCE(app_users.balance, 0) + EXCLUDED.balance,
                     updated_at = NOW()
@@ -199,8 +200,8 @@ def increment_user_bonus(user_id: str, delta: float) -> bool:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO app_users (id, bonus_balance, updated_at)
-                VALUES (%s, %s, NOW())
+                INSERT INTO app_users (id, bonus_balance, created_time, updated_at)
+                VALUES (%s, %s, NOW(), NOW())
                 ON CONFLICT (id) DO UPDATE SET
                     bonus_balance = COALESCE(app_users.bonus_balance, 0) + EXCLUDED.bonus_balance,
                     updated_at = NOW()
@@ -566,8 +567,8 @@ def mirror_user_queue_add(user_id: str, order_id: str) -> bool:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO app_users (id, active_orders_queue, updated_at)
-                VALUES (%s, ARRAY[%s]::text[], NOW())
+                INSERT INTO app_users (id, active_orders_queue, created_time, updated_at)
+                VALUES (%s, ARRAY[%s]::text[], NOW(), NOW())
                 ON CONFLICT (id) DO UPDATE SET
                     active_orders_queue = (
                         SELECT ARRAY(
@@ -711,8 +712,9 @@ def list_orders_for_user(
     def _run(conn):
         sql = [
             """
-            SELECT id, status, selected_driver_id, user_customer_id, budget, distance,
-                   date_time_created, is_paid, point_a_json, point_b_json, description, raw_json
+            SELECT id, status, selected_driver_id, user_customer_id, budget, current_price,
+                   distance, date_time_created, is_paid,
+                   point_a_json, point_b_json, point_c_json, description, raw_json
             FROM app_orders WHERE 1=1
             """
         ]
@@ -863,6 +865,76 @@ def get_me(user_id: str) -> Optional[dict]:
     except Exception:
         logger.exception("[app_pg] get_me failed id=%s", user_id)
         return None
+
+
+def heal_session_user(user_id: str, claims: Optional[dict] = None) -> Optional[dict]:
+    """
+    Починить cutover-дыры: stub login_complete=false у уже зарегистрированных,
+    телефон из Firebase claims / email {phone}@ydrive...
+    """
+    me = get_me(user_id)
+    if me is None:
+        return None
+    patch: dict[str, Any] = {}
+    claims = claims or {}
+
+    phone = (me.get("phone_number") or "").strip()
+    if not phone:
+        claim_phone = (claims.get("phone_number") or claims.get("phone") or "").strip()
+        email = (claims.get("email") or me.get("email") or "").strip()
+        if not claim_phone and "@" in email:
+            local = email.split("@", 1)[0]
+            digits = "".join(ch for ch in local if ch.isdigit())
+            if len(digits) >= 10:
+                claim_phone = digits[-10:]
+        if claim_phone:
+            patch["phone_number"] = claim_phone
+            me["phone_number"] = claim_phone
+
+    if not bool(me.get("login_complete")):
+        name = (me.get("display_name") or "").strip()
+        has_car = isinstance(me.get("car"), dict) and bool(me.get("car"))
+        has_queue = bool(me.get("active_orders_queue"))
+        evidence = (
+            bool(name)
+            or bool(me.get("verif_compl"))
+            or bool(me.get("on_verif_now"))
+            or (bool(me.get("is_driver")) and has_car)
+            or int(me.get("number_of_reviews") or 0) > 0
+            or float(me.get("balance") or 0) != 0
+            or has_queue
+        )
+        if not evidence:
+
+            def _has_orders(conn):
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        SELECT 1 FROM app_orders
+                        WHERE user_customer_id = %s OR selected_driver_id = %s
+                        LIMIT 1
+                        """,
+                        (user_id, user_id),
+                    )
+                    return cur.fetchone() is not None
+
+            try:
+                with connection() as conn:
+                    if conn is not None:
+                        evidence = bool(_has_orders(conn))
+            except Exception:
+                logger.exception("[app_pg] heal_session_user orders check failed")
+                evidence = False
+        if evidence:
+            patch["login_complete"] = True
+            me["login_complete"] = True
+
+    if patch:
+        mirror_user_fields(user_id, patch)
+        refreshed = get_me(user_id)
+        if refreshed:
+            return refreshed
+    return me
 
 
 def get_public_user(user_id: str) -> Optional[dict]:
@@ -1057,50 +1129,89 @@ def list_users(
     login_complete: Optional[bool] = None,
     query: Optional[str] = None,
     limit: int = 500,
+    offset: int = 0,
 ) -> list[dict]:
+    result = list_users_page(
+        is_driver=is_driver,
+        on_verif_now=on_verif_now,
+        login_complete=login_complete,
+        query=query,
+        limit=limit,
+        offset=offset,
+    )
+    return result.get("users") or []
+
+
+def list_users_page(
+    *,
+    is_driver: Optional[bool] = None,
+    on_verif_now: Optional[bool] = None,
+    login_complete: Optional[bool] = None,
+    query: Optional[str] = None,
+    limit: int = 500,
+    offset: int = 0,
+) -> dict:
+    """Admin/МП list: COUNT + OFFSET/LIMIT. Returns {users, total}."""
     if not enabled():
-        return []
+        return {"users": [], "total": 0}
 
     def _run(conn):
-        sql = [
-            """
-            SELECT id, admin, email, display_name, is_driver, login_complete, created_time,
-                   photo_url, phone_number, verif_ne_proidena, on_verif_now, verif_compl,
-                   balance, bonus_balance, commission_percent, fb_id, is_blocked, block_comment
-            FROM app_users WHERE 1=1
-            """
-        ]
+        where = ["1=1"]
         params: list[Any] = []
         if is_driver is not None:
-            sql.append(" AND is_driver = %s")
-            params.append(is_driver)
+            where.append("COALESCE(is_driver, false) = %s")
+            params.append(bool(is_driver))
         if on_verif_now is not None:
-            sql.append(" AND on_verif_now = %s")
-            params.append(on_verif_now)
+            where.append("COALESCE(on_verif_now, false) = %s")
+            params.append(bool(on_verif_now))
         if login_complete is not None:
-            sql.append(" AND login_complete = %s")
-            params.append(login_complete)
+            where.append("COALESCE(login_complete, false) = %s")
+            params.append(bool(login_complete))
         if query:
-            q = f"%{query.strip()}%"
-            sql.append(
-                " AND (phone_number ILIKE %s OR display_name ILIKE %s OR email ILIKE %s OR id ILIKE %s)"
+            q = query.strip()
+            like = f"%{q}%"
+            digits = "".join(ch for ch in q if ch.isdigit())
+            where.append(
+                "("
+                "phone_number ILIKE %s OR display_name ILIKE %s OR email ILIKE %s OR id ILIKE %s"
+                " OR (%s <> '' AND LENGTH(%s) >= 7 AND"
+                " RIGHT(REGEXP_REPLACE(COALESCE(phone_number,''), '[^0-9]', '', 'g'), 10) = RIGHT(%s, 10))"
+                " OR (%s <> '' AND LENGTH(%s) >= 7 AND"
+                " RIGHT(REGEXP_REPLACE(split_part(COALESCE(email,''), '@', 1), '[^0-9]', '', 'g'), 10) = RIGHT(%s, 10))"
+                ")"
             )
-            params.extend([q, q, q, q])
-        sql.append(" ORDER BY created_time DESC NULLS LAST LIMIT %s")
-        params.append(limit)
+            params.extend(
+                [like, like, like, like, digits, digits, digits, digits, digits, digits]
+            )
+        wh = " AND ".join(where)
+        lim = max(1, min(int(limit or 500), 2000))
+        off = max(0, int(offset or 0))
         with conn.cursor() as cur:
-            cur.execute("".join(sql), params)
+            cur.execute(f"SELECT COUNT(*) FROM app_users WHERE {wh}", params)
+            total = int(cur.fetchone()[0] or 0)
+            cur.execute(
+                f"""
+                SELECT id, admin, email, display_name, is_driver, login_complete, created_time,
+                       photo_url, phone_number, verif_ne_proidena, on_verif_now, verif_compl,
+                       balance, bonus_balance, commission_percent, fb_id, is_blocked, block_comment
+                FROM app_users WHERE {wh}
+                ORDER BY COALESCE(created_time, updated_at) DESC NULLS LAST
+                LIMIT %s OFFSET %s
+                """,
+                params + [lim, off],
+            )
             desc = [c[0] for c in cur.description]
-            return [_row_to_user_json(dict(zip(desc, row))) for row in cur.fetchall()]
+            users = [_row_to_user_json(dict(zip(desc, row))) for row in cur.fetchall()]
+            return {"users": users, "total": total}
 
     try:
         with connection() as conn:
             if conn is None:
-                return []
+                return {"users": [], "total": 0}
             return _run(conn)
     except Exception:
-        logger.exception("[app_pg] list_users failed")
-        return []
+        logger.exception("[app_pg] list_users_page failed")
+        return {"users": [], "total": 0}
 
 
 def list_orders(*, status: Optional[str] = None, limit: int = 100) -> list[dict]:
@@ -1162,8 +1273,9 @@ def list_orders_filtered(
             total = int(cur.fetchone()[0] or 0)
             cur.execute(
                 f"""
-                SELECT id, status, selected_driver_id, user_customer_id, budget, distance,
-                       date_time_created, is_paid, point_a_json, point_b_json, description, raw_json
+                SELECT id, status, selected_driver_id, user_customer_id, budget, current_price,
+                       distance, date_time_created, is_paid,
+                       point_a_json, point_b_json, point_c_json, description, raw_json
                 FROM app_orders WHERE {wh}
                 ORDER BY date_time_created DESC NULLS LAST
                 LIMIT %s OFFSET %s
@@ -1321,10 +1433,27 @@ def _order_row_to_admin_json(row: dict) -> dict:
             data["selected_driver"] = data["selected_driver_id"]
         if row.get("status"):
             data["status"] = row["status"]
+        # колонки SoT поверх устаревшего raw (цена / точки после patch)
+        if row.get("budget") is not None:
+            data["budget"] = row["budget"]
+        if row.get("current_price") is not None:
+            data["currentPrice"] = row["current_price"]
+            data["current_price"] = row["current_price"]
+        pa = _loads_json(row.get("point_a_json"))
+        pb = _loads_json(row.get("point_b_json"))
+        pc = _loads_json(row.get("point_c_json"))
+        if pa is not None:
+            data["pointA"] = pa
+        if pb is not None:
+            data["pointB"] = pb
+        if pc is not None:
+            data["pointC"] = pc
+        if row.get("distance") is not None:
+            data["distance"] = row["distance"]
         data["_source"] = "postgres"
         return data
 
-    return {
+    out = {
         "id": row.get("id"),
         "status": row.get("status"),
         "selected_driver": row.get("selected_driver_id"),
@@ -1335,9 +1464,14 @@ def _order_row_to_admin_json(row: dict) -> dict:
         "is_paid": row.get("is_paid"),
         "pointA": _loads_json(row.get("point_a_json")),
         "pointB": _loads_json(row.get("point_b_json")),
+        "pointC": _loads_json(row.get("point_c_json")),
         "description": row.get("description"),
         "_source": "postgres",
     }
+    if row.get("current_price") is not None:
+        out["currentPrice"] = row["current_price"]
+        out["current_price"] = row["current_price"]
+    return out
 
 
 def get_order(order_id: str) -> Optional[dict]:
@@ -1348,8 +1482,9 @@ def get_order(order_id: str) -> Optional[dict]:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT id, status, selected_driver_id, user_customer_id, budget, distance,
-                       date_time_created, is_paid, point_a_json, point_b_json, description, raw_json
+                SELECT id, status, selected_driver_id, user_customer_id, budget, current_price,
+                       distance, date_time_created, is_paid,
+                       point_a_json, point_b_json, point_c_json, description, raw_json
                 FROM app_orders WHERE id = %s
                 """,
                 (order_id,),
@@ -1527,8 +1662,8 @@ def upsert_fcm_token(user_id: str, token: str) -> bool:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO app_users (id, updated_at)
-                VALUES (%s, NOW())
+                INSERT INTO app_users (id, created_time, updated_at)
+                VALUES (%s, NOW(), NOW())
                 ON CONFLICT (id) DO NOTHING
                 """,
                 (user_id,),

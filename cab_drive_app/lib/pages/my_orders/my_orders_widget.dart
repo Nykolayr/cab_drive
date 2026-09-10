@@ -57,6 +57,7 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
     _priceBannerTimer = Timer(const Duration(seconds: 3), () {
       if (mounted) setState(() => _showPriceBanner = false);
     });
+    unawaited(_reloadMineOrders());
   }
 
   Future<void> _reloadMineOrders() async {

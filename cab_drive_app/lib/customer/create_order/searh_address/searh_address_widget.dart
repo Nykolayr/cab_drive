@@ -770,7 +770,12 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                           return;
                                         }
 
-                                        final point = resolved.toPoint();
+                                        final prev = FFAppState().pointA;
+                                        final point = resolved.toPoint(
+                                          sender: prev.hasSender()
+                                              ? prev.sender
+                                              : null,
+                                        );
                                         debugPrint(
                                           '[Search.A] apply label="${resolved.addressLabel}"',
                                         );
@@ -1046,7 +1051,12 @@ class _SearhAddressWidgetState extends State<SearhAddressWidget> {
                                           return;
                                         }
 
-                                        final point = resolved.toPoint();
+                                        final prev = FFAppState().pointB;
+                                        final point = resolved.toPoint(
+                                          sender: prev.hasSender()
+                                              ? prev.sender
+                                              : null,
+                                        );
                                         debugPrint(
                                           '[Search.B] apply label="${resolved.addressLabel}"',
                                         );

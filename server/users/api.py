@@ -390,33 +390,49 @@ def get_firebase_users(query: Optional[str] = None,
             try:
                 import app_pg
                 if app_pg.enabled():
-                    lim = 500 if is_all else max(per_page * 5, 50)
-                    pg_rows = app_pg.list_users(
+                    if page is None or page < 1:
+                        page = 1
+                    if per_page is None or per_page <= 0:
+                        per_page = 20
+                    if is_all:
+                        page_data = app_pg.list_users_page(
+                            is_driver=is_driver,
+                            on_verif_now=on_verif_now,
+                            query=query,
+                            limit=100,
+                            offset=0,
+                        )
+                        page_rows = page_data.get("users") or []
+                        total_users = int(page_data.get("total") or 0)
+                        return {
+                            "users": page_rows,
+                            "total_pages": 1,
+                            "total_users": total_users,
+                            "current_page": 1,
+                            "source": "postgres",
+                        }
+                    offset = (page - 1) * per_page
+                    page_data = app_pg.list_users_page(
                         is_driver=is_driver,
                         on_verif_now=on_verif_now,
                         query=query,
-                        limit=lim,
+                        limit=per_page,
+                        offset=offset,
                     )
-                    if pg_rows or on_verif_now is not None:
-                        total_users = len(pg_rows)
-                        if is_all:
-                            page_rows = pg_rows[:100]
-                            total_pages = 1
-                            current_page = 1
-                        else:
-                            if page is None or page < 1:
-                                page = 1
-                            if per_page is None or per_page <= 0:
-                                per_page = 20
-                            start = (page - 1) * per_page
-                            page_rows = pg_rows[start:start + per_page]
-                            total_pages = max(1, (total_users + per_page - 1) // per_page) if total_users else 1
-                            current_page = page
+                    page_rows = page_data.get("users") or []
+                    total_users = int(page_data.get("total") or 0)
+                    # пустой список при активном фильтре on_verif — тоже ответ PG
+                    if page_rows or on_verif_now is not None or total_users >= 0:
+                        total_pages = (
+                            max(1, (total_users + per_page - 1) // per_page)
+                            if total_users
+                            else 1
+                        )
                         return {
                             "users": page_rows,
                             "total_pages": total_pages,
                             "total_users": total_users,
-                            "current_page": current_page,
+                            "current_page": page,
                             "source": "postgres",
                         }
             except Exception:

@@ -155,8 +155,11 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                             children: [
                                               Flexible(
                                                 child: AuthUserStreamWidget(
-                                                  builder: (context) => Text(
-                                                    '${currentUserDisplayName} - ${() {
+                                                  builder: (context) {
+                                                    final name =
+                                                        currentUserDisplayName
+                                                            .trim();
+                                                    final carLabel = () {
                                                       if (currentUserDocument
                                                               ?.car?.mark ==
                                                           Car.fiat) {
@@ -168,18 +171,24 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                                       } else {
                                                         return 'Термобудка/S-M';
                                                       }
-                                                    }()}',
-                                                    style: FlutterFlowTheme.of(
-                                                            context)
-                                                        .bodyMedium
-                                                        .override(
-                                                          fontFamily: 'SF',
-                                                          fontSize: 17.0,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                        ),
-                                                  ),
+                                                    }();
+                                                    final title = name.isEmpty
+                                                        ? carLabel
+                                                        : '$name - $carLabel';
+                                                    return Text(
+                                                      title,
+                                                      style: FlutterFlowTheme.of(
+                                                              context)
+                                                          .bodyMedium
+                                                          .override(
+                                                            fontFamily: 'SF',
+                                                            fontSize: 17.0,
+                                                            letterSpacing: 0.0,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                          ),
+                                                    );
+                                                  },
                                                 ),
                                               ),
                                               AuthUserStreamWidget(
