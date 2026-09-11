@@ -75,6 +75,38 @@ def create_bid(driver_uid: str, order_id: str, body: dict[str, Any]) -> dict[str
         )
 
     app_fs_mirror.soft_fs("create_bid", _fs)
+
+    # Server-first FCM: клиентский triggerPush с телефона водителя ненадёжен.
+    cust = None
+    for key in ("user_customer", "user_customer_id"):
+        val = order.get(key)
+        if isinstance(val, dict) and val.get("_ref"):
+            cust = str(val["_ref"]).rsplit("/", 1)[-1]
+            break
+        if isinstance(val, str) and val:
+            cust = val.rsplit("/", 1)[-1] if "/" in val else val
+            break
+    if cust and cust != driver_uid:
+        try:
+            import app_fcm_ops
+
+            price = raw.get("price")
+            price_txt = ""
+            if isinstance(price, (int, float)):
+                price_txt = f" за {int(price)} ₽"
+            elif price is not None and str(price).strip():
+                price_txt = f" за {price} ₽"
+            app_fcm_ops.notify_safe(
+                [cust],
+                title="Новый отклик",
+                body=f"На ваш заказ откликнулся водитель{price_txt}",
+                initial_page_name="order_Page_Customer",
+                parameter_data={"order": order_id, "index": 1},
+                data={"order_id": order_id, "event": "create_bid", "bid_id": bid_id},
+            )
+        except Exception:
+            logger.exception("[create_bid] fcm notify failed")
+
     return {
         "bid_id": bid_id,
         "order_id": order_id,

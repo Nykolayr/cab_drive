@@ -1450,6 +1450,14 @@ def _order_row_to_admin_json(row: dict) -> dict:
             data["pointC"] = pc
         if row.get("distance") is not None:
             data["distance"] = row["distance"]
+        # колонка SoT для откликнувшихся (raw часто без актуального списка)
+        if "user_who_responced" in row and row.get("user_who_responced") is not None:
+            resp = row.get("user_who_responced") or []
+            if isinstance(resp, list):
+                data["user_who_responced"] = [str(x) for x in resp if x]
+                data["userWhoResponced"] = data["user_who_responced"]
+        if row.get("count_resp") is not None:
+            data["count_resp"] = row["count_resp"]
         data["_source"] = "postgres"
         return data
 
@@ -1471,6 +1479,13 @@ def _order_row_to_admin_json(row: dict) -> dict:
     if row.get("current_price") is not None:
         out["currentPrice"] = row["current_price"]
         out["current_price"] = row["current_price"]
+    if "user_who_responced" in row and row.get("user_who_responced") is not None:
+        resp = row.get("user_who_responced") or []
+        if isinstance(resp, list):
+            out["user_who_responced"] = [str(x) for x in resp if x]
+            out["userWhoResponced"] = out["user_who_responced"]
+    if row.get("count_resp") is not None:
+        out["count_resp"] = row["count_resp"]
     return out
 
 
@@ -1484,7 +1499,8 @@ def get_order(order_id: str) -> Optional[dict]:
                 """
                 SELECT id, status, selected_driver_id, user_customer_id, budget, current_price,
                        distance, date_time_created, is_paid,
-                       point_a_json, point_b_json, point_c_json, description, raw_json
+                       point_a_json, point_b_json, point_c_json, description, raw_json,
+                       user_who_responced, count_resp
                 FROM app_orders WHERE id = %s
                 """,
                 (order_id,),
@@ -1624,11 +1640,19 @@ def add_order_respondent(order_id: str, driver_uid: str) -> bool:
                         )
                     ),
                     raw_json = COALESCE(raw_json, '{}'::jsonb)
-                        || jsonb_build_object('count_resp', COALESCE(count_resp, 0) + 1),
+                        || jsonb_build_object(
+                            'count_resp', COALESCE(count_resp, 0) + 1,
+                            'user_who_responced', (
+                                SELECT COALESCE(jsonb_agg(to_jsonb(x)), '[]'::jsonb)
+                                FROM unnest(
+                                    COALESCE(user_who_responced, '{}'::text[]) || ARRAY[%s]::text[]
+                                ) AS t(x)
+                            )
+                        ),
                     updated_at = NOW()
                 WHERE id = %s
                 """,
-                (driver_uid, order_id),
+                (driver_uid, driver_uid, order_id),
             )
 
     return soft_execute("add_order_respondent", _run)

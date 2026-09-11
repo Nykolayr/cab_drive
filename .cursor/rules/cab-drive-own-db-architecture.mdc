@@ -60,7 +60,7 @@ Flask /api/app/*  +  WSS /ws/
 | `app_fs_mirror.py` | soft_fs / APP_FS_MIRROR |
 | `app_me_ops.py` | shift, fine, me/location |
 | `app_order_ops.py` | complete, status, accept-bid, dequeue, cancel, hide, geo, patch |
-| `app_bids_ops.py` | bids CRUD, FCM token |
+| `app_bids_ops.py` | bids CRUD, FCM token; `create_bid` → FCM клиенту |
 | `app_chat_pg.py` | chats/messages PG |
 | `app_reviews_ops.py` | reviews create/list + soft FS |
 | `app_verifications_ops.py` | driver KYC create/list/approve/reject + soft FS |
@@ -163,7 +163,7 @@ Health: `fs_mirror=false`, `sot=postgres`. Soft FS writes с сервера **н
 - Login/OTP bootstrap — `patchMe` + `ensureSupportChat` (без FS user/chat set)  
 - FCM: register + `/push` через PG tokens  
 - Client errors → `app_client_errors`  
-- FCM server-first: `accept_bid` → водитель; `extra_accept` → клиент; `patch_order` цена → откликнувшиеся; `insert_message` → peer чата  
+- FCM server-first: `create_bid` → клиент; `accept_bid` → водитель; `extra_accept` → клиент; `patch_order` цена → откликнувшиеся (колонка PG + fallback responses); `insert_message` → peer чата  
 - Dashboard: user edit / order edit / point / auto-hide timer / mark-read — PG SoT + soft_fs only  
 - Pickup / extra / admin balance-stats — PG-first  
 

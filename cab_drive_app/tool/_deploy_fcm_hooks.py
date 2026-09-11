@@ -21,6 +21,8 @@ FILES = [
     "app_fcm_ops.py",
     "app_order_ops.py",
     "app_chat_pg.py",
+    "app_bids_ops.py",
+    "app_pg.py",
 ]
 
 

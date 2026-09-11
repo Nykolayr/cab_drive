@@ -763,6 +763,17 @@ def patch_order_by_customer(
                 uid = _ref_uid(r)
                 if uid:
                     recipients.append(uid)
+        # fallback: водители из app_order_responses (если колонка/raw пусты)
+        if not recipients:
+            try:
+                for bid in app_pg.list_order_responses(order_id) or []:
+                    uid = _ref_uid(bid.get("driver_id")) or _ref_uid(
+                        bid.get("user_driver")
+                    )
+                    if uid:
+                        recipients.append(uid)
+            except Exception:
+                logger.exception("[patch_order] list_order_responses for fcm failed")
         drv = _ref_uid(order.get("selected_driver")) or _ref_uid(
             order.get("selected_driver_id")
         )
@@ -793,7 +804,7 @@ def patch_order_by_customer(
                     if price_txt
                     else "Заказчик изменил цену заказа"
                 )
-                app_fcm_ops.notify_safe(
+                result = app_fcm_ops.notify_safe(
                     uniq,
                     title="Цена заказа изменилась",
                     body=body,
@@ -801,8 +812,19 @@ def patch_order_by_customer(
                     parameter_data={"order": order_id},
                     data={"order_id": order_id, "event": "price_changed"},
                 )
+                logger.info(
+                    "[patch_order] fcm price_changed order=%s recipients=%s result=%s",
+                    order_id,
+                    uniq,
+                    result,
+                )
             except Exception:
                 logger.exception("[patch_order] fcm notify failed")
+        else:
+            logger.info(
+                "[patch_order] fcm price_changed skip: no recipients order=%s",
+                order_id,
+            )
 
     return {
         "order_id": order_id,
