@@ -23,6 +23,8 @@ Monorepo: `D:\Projects\cab_drive`
 | **Firebase Auth** | телефон / ID token; Bearer для `/api/app/*` |
 | **FCM** | доставка пушей (токены в PG `app_user_fcm_tokens`) |
 
+Админка **Тинькофф**: переключатель ТЕСТ↔ПРОД с модалкой подтверждения → сразу POST `tinkoff_mode` в `settings_model/model.json`. URL — отдельно. Ключи — `config.py`.
+
 **Не SoT / не Google DB:**
 - Файлы → свой `files/upload` + `files/get` (Firebase Storage SDK в МП не вызывается)
 - Remote Config → локальные константы (`firebase_remote_config_util.dart`), без fetch Google

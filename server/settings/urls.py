@@ -5,6 +5,7 @@ import traceback
 import utils
 import settings
 import config
+from logger import logger
 
 
 app = blueprints.Blueprint('settings', __name__, url_prefix='/kek/settings')
@@ -129,18 +130,31 @@ def tinkoff_settings():
             'prod_keys_set': bool(getattr(cfg, 'TINKOFF_PROD_TERMINAL_KEY', None)),
         })
 
-    data = request.json or {}
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return utils.get_error("Ожидался JSON body", status=200)
+    mode = data.get("mode")
+    payments_base_url = data.get("payments_base_url")
+    if mode is None and payments_base_url is None:
+        return utils.get_error("Укажите mode и/или payments_base_url", status=200)
     try:
-        settings.update_tinkoff_settings(
-            mode=data.get('mode'),
-            payments_base_url=data.get('payments_base_url'),
+        model = settings.update_tinkoff_settings(
+            mode=mode,
+            payments_base_url=payments_base_url,
         )
     except IncorrectDataValue as e:
         return utils.get_error(e.message, status=200)
     except Exception as e:
+        logger.exception("[settings.tinkoff] save failed")
         return utils.get_error(str(e), status=200)
 
-    return utils.get_answer('Сохранено')
+    return utils.get_answer(
+        "Сохранено",
+        info={
+            "mode": model.tinkoff_mode or "test",
+            "payments_base_url": model.payments_base_url or "https://cab.artean.ru",
+        },
+    )
 
 
 @app.route('/polygons', methods=['POST'])

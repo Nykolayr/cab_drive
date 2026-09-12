@@ -5,7 +5,6 @@
 <div class="row">
     <div class="col-12">
         <h4>Тинькофф / платежи</h4>
-        <p class="text-muted">Только для суперадмина. Любое изменение — через подтверждение.</p>
 
         <ul class="nav nav-tabs mb-3" role="tablist">
             <li class="nav-item">
@@ -19,20 +18,15 @@
         <div class="tab-content">
             <div class="tab-pane fade show active" id="tab-settings" role="tabpanel">
                 <div class="card card-body col-lg-8">
-                    <div class="mb-3">
+                    <div class="mb-4">
                         <label class="form-label">Режим терминала</label>
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" id="tinkoff_prod_switch"
                                    {% if mode == 'prod' %}checked{% endif %}>
                             <label class="form-check-label" for="tinkoff_prod_switch">
-                                <span id="mode_label">{% if mode == 'prod' %}ПРОД (боевой){% else %}ТЕСТ{% endif %}</span>
+                                <span id="mode_label">{% if mode == 'prod' %}ПРОД{% else %}ТЕСТ{% endif %}</span>
                             </label>
                         </div>
-                        <small class="text-muted">
-                            Ключи теста: {% if test_keys_set %}<span class="text-success">заданы</span>{% else %}<span class="text-danger">нет</span>{% endif %};
-                            боя: {% if prod_keys_set %}<span class="text-success">заданы</span>{% else %}<span class="text-danger">нет</span>{% endif %}
-                            (в config.py на сервере, не в UI).
-                        </small>
                     </div>
 
                     <div class="mb-3">
@@ -40,10 +34,9 @@
                         <input type="url" class="form-control" id="payments_base_url"
                                value="{{ payments_base_url }}"
                                placeholder="https://cab.artean.ru">
-                        <small class="text-muted">МП запрашивает его при старте. Смена домена без обновления стора.</small>
                     </div>
 
-                    <button type="button" class="btn btn-primary" onclick="saveTinkoffSettings()">Сохранить</button>
+                    <button type="button" class="btn btn-primary" onclick="savePaymentsUrl()">Сохранить URL</button>
                 </div>
             </div>
 
@@ -124,55 +117,83 @@
 
 {% block script %}
 <script>
-    const initialMode = '{{ mode or "test" }}';
-    const initialUrl = {{ payments_base_url|tojson }};
+    let savedMode = '{{ mode or "test" }}';
     let logOffset = 0;
     const logLimit = 100;
     let logTypesLoaded = false;
 
+    function setModeUi(mode) {
+        const prod = mode === 'prod';
+        document.getElementById('tinkoff_prod_switch').checked = prod;
+        document.getElementById('mode_label').textContent = prod ? 'ПРОД' : 'ТЕСТ';
+    }
+
+    function applyMode(mode) {
+        sendRequest({
+            url: '/kek/settings/tinkoff',
+            method: 'post',
+            is_json: true,
+            data: { mode: mode },
+            success_callback: function (r) {
+                if (r['status'] !== 'ok') {
+                    setModeUi(savedMode);
+                    return showError(r['message'] || 'Ошибка сохранения');
+                }
+                savedMode = (r['mode'] || mode || '').toLowerCase();
+                setModeUi(savedMode);
+                showSuccess('Готово', savedMode === 'prod' ? 'Включён ПРОД' : 'Включён ТЕСТ');
+            },
+            error_callback: function () {
+                setModeUi(savedMode);
+                showError('Не удалось сохранить режим');
+            }
+        });
+    }
+
     document.getElementById('tinkoff_prod_switch').addEventListener('change', function () {
         const wantProd = this.checked;
-        const label = document.getElementById('mode_label');
-        label.textContent = wantProd ? 'ПРОД (боевой)' : 'ТЕСТ';
+        // пока не подтвердили — оставляем текущий сохранённый режим
+        setModeUi(savedMode);
+        const newMode = wantProd ? 'prod' : 'test';
+        if (newMode === savedMode) return;
+
+        if (newMode === 'prod') {
+            showConfirm(
+                'Включить ПРОД?',
+                'Будут реальные списания с карт. Продолжить?',
+                'Включить ПРОД',
+                function () { applyMode('prod'); }
+            );
+        } else {
+            showConfirm(
+                'Включить ТЕСТ?',
+                'Оплаты пойдут через тестовый терминал. Продолжить?',
+                'Включить ТЕСТ',
+                function () { applyMode('test'); }
+            );
+        }
     });
 
     document.getElementById('tab-logs-link').addEventListener('shown.bs.tab', function () {
         loadTinkoffLogs(true);
     });
 
-    function currentMode() {
-        return document.getElementById('tinkoff_prod_switch').checked ? 'prod' : 'test';
-    }
-
-    function saveTinkoffSettings() {
-        const mode = currentMode();
+    function savePaymentsUrl() {
         const url = document.getElementById('payments_base_url').value.trim();
         if (!url) return showError('Укажите URL');
 
-        let title = 'Сохранить настройки?';
-        let msg = 'Режим: <b>' + (mode === 'prod' ? 'ПРОД' : 'ТЕСТ') + '</b><br>URL: <b>' + url + '</b>';
-        if (mode === 'prod' && initialMode !== 'prod') {
-            title = 'Включить ПРОД?';
-            msg = 'Будут использоваться <b>боевые</b> ключи T‑Банка. Реальные списания.<br><br>' + msg;
-        }
-        if (url !== initialUrl) {
-            msg += '<br><br>МП начнёт ходить на новый URL после следующей загрузки конфига.';
-        }
-
-        showConfirm(title, msg, 'Подтвердить', function () {
+        showConfirm('Сохранить URL?', '<b>' + url + '</b>', 'Сохранить', function () {
             sendRequest({
                 url: '/kek/settings/tinkoff',
                 method: 'post',
                 is_json: true,
-                data: {
-                    mode: mode,
-                    payments_base_url: url
-                },
+                data: { payments_base_url: url },
                 success_callback: function (r) {
-                    if (r['status'] !== 'ok') return showError(r['message']);
-                    showSuccess('Сохранено', r['message'], function () {
-                        window.location.reload();
-                    });
+                    if (r['status'] !== 'ok') return showError(r['message'] || 'Ошибка');
+                    showSuccess('Сохранено', 'URL обновлён');
+                },
+                error_callback: function () {
+                    showError('Не удалось сохранить URL');
                 }
             });
         });
