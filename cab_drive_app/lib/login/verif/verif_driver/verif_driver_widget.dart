@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
 import '/backend/schema/enums/enums.dart';
@@ -20,7 +21,6 @@ import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -393,11 +393,11 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                     null &&
                                                 _model.uploadedFileUrl_uploadData2pb2 !=
                                                     '') {
-                                              await currentUserReference!
-                                                  .update(createUsersRecordData(
-                                                photoUrl: _model
+                                              await AppMeApi.patchMe({
+                                                'photo_url': _model
                                                     .uploadedFileUrl_uploadData2pb2,
-                                              ));
+                                              });
+                                              await refreshAppMeCache();
                                               FFAppState().deleteOTP();
                                               FFAppState().OTP = '';
 

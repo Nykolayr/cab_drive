@@ -129,6 +129,7 @@ def mirror_user_fields(user_id: str, fields: dict[str, Any]) -> bool:
         "chat_with_support_id",
         "current_order_json",
         "additional_phone_number",
+        "contractor_id",
     }
     jsonb_keys = {"car_json", "addresses_json", "current_order_json"}
 
@@ -821,6 +822,12 @@ def _row_to_me_json(row: dict) -> dict:
             else 0,
             "additional_phone_number": row.get("additional_phone_number"),
             "chat_with_support_id": row.get("chat_with_support_id"),
+            "contractor_id": int(row["contractor_id"])
+            if row.get("contractor_id") is not None
+            else None,
+            "ContractorID": int(row["contractor_id"])
+            if row.get("contractor_id") is not None
+            else None,
             "addresses": addresses if isinstance(addresses, list) else addresses,
             "car": car if isinstance(car, dict) else None,
             "current_order": current_order if isinstance(current_order, dict) else None,
@@ -846,7 +853,8 @@ def get_me(user_id: str) -> Optional[dict]:
                        active_orders_queue, driver_lat, driver_lng,
                        dfb, city_lat, city_lng, shift_start_date_time, shift_completion_date_time,
                        average_rating, number_of_reviews, additional_phone_number,
-                       chat_with_support_id, car_json, addresses_json, current_order_json
+                       chat_with_support_id, car_json, addresses_json, current_order_json,
+                       contractor_id
                 FROM app_users WHERE id = %s
                 """,
                 (user_id,),
@@ -1681,6 +1689,15 @@ def remove_order_respondent(order_id: str, driver_uid: str) -> bool:
 def upsert_fcm_token(user_id: str, token: str) -> bool:
     if not user_id or not token:
         return False
+    token = str(token).strip()
+    # отсекаем Firestore doc id (≈20) и прочий мусор из миграции
+    if len(token) < 80 or ":" not in token:
+        logger.warning(
+            "[app_pg] reject invalid fcm token user=%s len=%s",
+            user_id,
+            len(token),
+        )
+        return False
 
     def _run(conn):
         with conn.cursor() as cur:
@@ -1714,7 +1731,10 @@ def list_fcm_tokens(user_ids: list[str]) -> list[str]:
             cur.execute(
                 """
                 SELECT DISTINCT token FROM app_user_fcm_tokens
-                WHERE user_id = ANY(%s) AND token IS NOT NULL AND token <> ''
+                WHERE user_id = ANY(%s)
+                  AND token IS NOT NULL AND token <> ''
+                  AND length(token) >= 80
+                  AND position(':' in token) > 0
                 """,
                 (ids,),
             )

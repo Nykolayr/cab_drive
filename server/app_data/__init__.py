@@ -417,6 +417,26 @@ def me_fcm():
         return _me_op_error(e)
 
 
+@app.route("/me/payout", methods=["POST"])
+def me_payout():
+    """Вывод на карту через Jump + списание balance в Postgres (без Firestore)."""
+    uid, _ = app_auth_mp.verify_firebase_uid()
+    try:
+        import app_payout_ops
+
+        body = request.get_json(silent=True) or {}
+        result = app_payout_ops.create_payout(
+            uid,
+            pan=str(body.get("pan") or body.get("account_number") or ""),
+            phone=str(body.get("phone") or ""),
+            first_name=str(body.get("first_name") or body.get("firstName") or ""),
+            last_name=str(body.get("last_name") or body.get("lastName") or ""),
+        )
+        return utils.get_answer("ok", info={"result": result, "uid": uid})
+    except Exception as e:
+        return _me_op_error(e)
+
+
 @app.route("/push", methods=["POST"])
 def send_push():
     """Прямая FCM-отправка (Bearer). Токены из Postgres."""
@@ -442,6 +462,26 @@ def send_push():
             parameter_data=body.get("parameter_data") or body.get("parameterData"),
         )
         return utils.get_answer("ok", info={"result": result, "uid": uid})
+    except Exception as e:
+        return _me_op_error(e)
+
+
+@app.route("/push/smoke", methods=["POST"])
+def push_smoke():
+    """Тестовый пуш по телефону — только суперадмин (dashboard session)."""
+    if utils.require_super_admin() is None:
+        abort(403)
+    try:
+        import app_push
+
+        body = request.get_json(silent=True) or {}
+        phone = (body.get("phone") or "").strip()
+        if not phone:
+            return utils.get_error("phone required", status=400)
+        title = (body.get("title") or "Cab Drive тест").strip()
+        text = (body.get("text") or body.get("body") or "Проверка пуша с сервера").strip()
+        result = app_push.smoke_to_phone(phone, title=title, body=text)
+        return utils.get_answer("ok", info={"result": result})
     except Exception as e:
         return _me_op_error(e)
 

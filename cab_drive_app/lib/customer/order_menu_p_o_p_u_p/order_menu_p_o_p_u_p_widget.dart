@@ -110,11 +110,8 @@ class _OrderMenuPOPUPWidgetState extends State<OrderMenuPOPUPWidget> {
                               final ok =
                                   await AppMeApi.hideOrder(oid, unhide: true);
                               if (!ok) {
-                                await widget!.order!.reference
-                                    .update(createOrderRecordData(
-                                  status: widget!.order?.statusDoHidden,
-                                  dateUpd: getCurrentTimestamp,
-                                ));
+                                print(
+                                    '[order_menu.hide] unhide API failed oid=$oid');
                               }
                               return;
                             } else {
@@ -122,16 +119,8 @@ class _OrderMenuPOPUPWidgetState extends State<OrderMenuPOPUPWidget> {
                               final oid = widget!.order!.reference.id;
                               final ok = await AppMeApi.hideOrder(oid);
                               if (!ok) {
-                                await widget!.order!.reference
-                                    .update(createOrderRecordData(
-                                  statusDoHidden: widget!.order?.status,
-                                ));
-
-                                await widget!.order!.reference
-                                    .update(createOrderRecordData(
-                                  status: StatusOrder.hidden,
-                                  dateUpd: getCurrentTimestamp,
-                                ));
+                                print(
+                                    '[order_menu.hide] hide API failed oid=$oid');
                               }
                               return;
                             }

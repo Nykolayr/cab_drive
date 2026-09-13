@@ -1,3 +1,4 @@
+import '/backend/api/app_me_api.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -128,8 +129,14 @@ class _DeleteCardWidgetState extends State<DeleteCardWidget> {
                 children: [
                   FFButtonWidget(
                     onPressed: () async {
-                      await widget!.card!.delete();
-                      Navigator.pop(context);
+                      final id = widget!.card?.id ?? '';
+                      if (id.isNotEmpty) {
+                        final ok = await AppMeApi.deleteCard(id);
+                        if (!ok) {
+                          print('[delete_card] API failed id=$id');
+                        }
+                      }
+                      if (context.mounted) Navigator.pop(context);
                     },
                     text: 'Удалить',
                     options: FFButtonOptions(

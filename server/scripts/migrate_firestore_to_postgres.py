@@ -273,8 +273,10 @@ def _upsert_user(cur, row: dict) -> None:
         },
     )
     for t in row.get("fcm_tokens") or []:
-        tok = (t.get("data") or {}).get("token") or t.get("id")
-        if not tok:
+        data = t.get("data") or {}
+        tok = data.get("fcm_token") or data.get("token")
+        # НЕ брать t.get("id") — это Firestore doc id (~20), не FCM
+        if not tok or len(str(tok)) < 80 or ":" not in str(tok):
             continue
         cur.execute(
             """
@@ -282,7 +284,7 @@ def _upsert_user(cur, row: dict) -> None:
             VALUES (%s, %s, %s::jsonb)
             ON CONFLICT (user_id, token) DO NOTHING
             """,
-            (uid, str(tok), json.dumps(t.get("data") or {}, ensure_ascii=False)),
+            (uid, str(tok), json.dumps(data, ensure_ascii=False)),
         )
 
 

@@ -179,6 +179,32 @@ def create_order_for_customer(actor_uid: str, body: dict[str, Any]) -> dict[str,
         db.collection("order").document(order_id).set(fs_doc, merge=True)
 
     app_fs_mirror.soft_fs("create_order", _fs)
+
+    # Server-first: «новый заказ» водителям на смене (клиентский listU пустой после cutover).
+    try:
+        import app_push
+
+        drivers = app_pg.list_drivers_for_geo(
+            on_shift=True, require_location=False, limit=500
+        )
+        uids = [
+            str(d.get("id"))
+            for d in (drivers or [])
+            if d.get("id") and str(d.get("id")) != actor_uid
+        ]
+        if uids:
+            app_push.notify(
+                "order_created",
+                uids,
+                title="Новый заказ",
+                body="В приложении появился новый заказ",
+                initial_page_name="order_Page_Driver",
+                parameter_data={"order": order_id},
+                data={"order_id": order_id, "event": "order_created"},
+            )
+    except Exception:
+        logger.exception("[create_order] fcm notify failed")
+
     return {
         "order_id": order_id,
         "status": payload["status"],
@@ -345,9 +371,10 @@ def accept_bid(
 
     # Server-first FCM: клиентский push ненадёжен (фон / card webhook).
     try:
-        import app_fcm_ops
+        import app_push
 
-        app_fcm_ops.notify_safe(
+        app_push.notify(
+            "accept_bid",
             [driver_uid],
             title="Заказчик выбрал вас!",
             body="Перейдите в заказ, чтобы начать работу",
@@ -437,9 +464,10 @@ def extra_accept(driver_uid: str, order_id: str) -> dict[str, Any]:
     )
     if cust:
         try:
-            import app_fcm_ops
+            import app_push
 
-            app_fcm_ops.notify_safe(
+            app_push.notify(
+                "extra_accept",
                 [cust],
                 title="Водитель принял заказ",
                 body="Перейдите в заказ, чтобы отслеживать выполнение",
@@ -788,7 +816,7 @@ def patch_order_by_customer(
                 uniq.append(u)
         if uniq:
             try:
-                import app_fcm_ops
+                import app_push
 
                 price_txt = (
                     f"{int(new_price)} ₽"
@@ -804,7 +832,8 @@ def patch_order_by_customer(
                     if price_txt
                     else "Заказчик изменил цену заказа"
                 )
-                result = app_fcm_ops.notify_safe(
+                result = app_push.notify(
+                    "price_changed",
                     uniq,
                     title="Цена заказа изменилась",
                     body=body,

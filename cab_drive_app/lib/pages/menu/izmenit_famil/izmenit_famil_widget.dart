@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -6,7 +7,6 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'dart:async';
 import 'dart:ui';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
@@ -263,17 +263,10 @@ class _IzmenitFamilWidgetState extends State<IzmenitFamilWidget> {
                   }
                   if (valueOrDefault(currentUserDocument?.surname, '') !=
                       _model.familTextController.text) {
-                    unawaited(
-                      () async {
-                        await currentUserReference!
-                            .update(createUsersRecordData(
-                          surname: _model.familTextController.text,
-                        ));
-                      }(),
-                    );
-                    await widget.action?.call(
-                      _model.familTextController.text,
-                    );
+                    final surname = _model.familTextController.text;
+                    await AppMeApi.patchMe({'surname': surname});
+                    await refreshAppMeCache();
+                    await widget.action?.call(surname);
                   }
                   Navigator.pop(context);
                 },

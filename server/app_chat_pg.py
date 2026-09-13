@@ -407,7 +407,7 @@ def _notify_chat_peers(
 ) -> None:
     """FCM остальным участникам чата (HTTP + WSS общий путь)."""
     try:
-        import app_fcm_ops
+        import app_push
 
         chat = get_chat(chat_id) or {}
         members = chat.get("users") or []
@@ -431,7 +431,8 @@ def _notify_chat_peers(
             body = "Фотография"
         else:
             body = "Новое сообщение"
-        app_fcm_ops.notify_safe(
+        app_push.notify(
+            "chat_message",
             recipients,
             title=title,
             body=body,

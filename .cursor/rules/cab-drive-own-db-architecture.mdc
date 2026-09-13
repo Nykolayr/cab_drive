@@ -25,6 +25,22 @@ Monorepo: `D:\Projects\cab_drive`
 
 Админка **Тинькофф**: переключатель ТЕСТ↔ПРОД с модалкой подтверждения → сразу POST `tinkoff_mode` в `settings_model/model.json`. URL — отдельно. Ключи — `config.py`.
 
+### Verify-before-done (процесс)
+
+Любая задача: после кода — smoke. Пуши: тестовый FCM на `+79526818276` (+ ещё аккаунт при наличии токена). Статусы: задеплоено / проверено мной / нужна твоя проверка / можно заказчику. Правило: `.cursor/rules/verify-before-done.mdc`.
+
+### Verify-before-done (процесс)
+
+Любая задача: после кода — smoke. Пуши: тестовый FCM на `+79526818276` (+ ещё аккаунт при наличии токена). Статусы: задеплоено / проверено мной / нужна твоя проверка / можно заказчику. Правило: `.cursor/rules/verify-before-done.mdc`.
+
+### Verify-before-done (процесс)
+
+Любая задача: после кода — smoke. Пуши: тестовый FCM на `+79526818276` (+ ещё аккаунт при наличии токена). Статусы: задеплоено / проверено мной / нужна твоя проверка / можно заказчику. Правило: `.cursor/rules/verify-before-done.mdc`.
+
+### Verify-before-done (процесс)
+
+Любая задача: после кода — smoke. Пуши: тестовый FCM на `+79526818276` (+ ещё аккаунт при наличии токена). Статусы: задеплоено / проверено мной / нужна твоя проверка / можно заказчику. Правило: `.cursor/rules/verify-before-done.mdc`.
+
 **Не SoT / не Google DB:**
 - Файлы → свой `files/upload` + `files/get` (Firebase Storage SDK в МП не вызывается)
 - Remote Config → локальные константы (`firebase_remote_config_util.dart`), без fetch Google
@@ -68,6 +84,7 @@ Flask /api/app/*  +  WSS /ws/
 | `app_verifications_ops.py` | driver KYC create/list/approve/reject + soft FS |
 | `app_profile_ops.py` | addresses add/remove + saved_cards CRUD + soft FS |
 | `app_fcm_ops.py` | FCM send via `app_user_fcm_tokens` (PG); `notify_safe` |
+| `app_push.py` | единая точка событий FCM + smoke по телефону; валидные токены only |
 | `app_client_errors_ops.py` | приём ошибок МП → `app_client_errors` |
 | `wss_server.py` | WSS hub (отдельный процесс) |
 | `tinkoff/webhook.py` | PG-first paid + accept_bid card |

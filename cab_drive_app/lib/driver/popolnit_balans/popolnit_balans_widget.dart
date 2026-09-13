@@ -414,27 +414,10 @@ class _PopolnitBalansWidgetState extends State<PopolnitBalansWidget> {
                                   payOrderRecordReference =
                                       PayOrderRecord.collection
                                           .doc(created['id'].toString());
-                                  try {
-                                    await payOrderRecordReference
-                                        .set(createPayOrderRecordData(
-                                      orderId: orderIdMs,
-                                      isPaid: false,
-                                      amountInCop: amountCop,
-                                      user: currentUserReference,
-                                      paymentType: PaymentType.regular,
-                                    ));
-                                  } catch (_) {}
                                 } else {
-                                  payOrderRecordReference =
-                                      PayOrderRecord.collection.doc();
-                                  await payOrderRecordReference
-                                      .set(createPayOrderRecordData(
-                                    orderId: orderIdMs,
-                                    isPaid: false,
-                                    amountInCop: amountCop,
-                                    user: currentUserReference,
-                                    paymentType: PaymentType.regular,
-                                  ));
+                                  print(
+                                      '[popolnit_balans] createPayment failed');
+                                  return;
                                 }
                                 _model.order =
                                     PayOrderRecord.getDocumentFromData(

@@ -376,14 +376,10 @@ class _RateAppWidgetState extends State<RateAppWidget> {
                               return;
                             }
 
-                            await RewiewsOfTheAppRecord.collection
-                                .doc()
-                                .set(createRewiewsOfTheAppRecordData(
-                                  chips: _model.chips,
-                                  comment: _model.nameInputTextController.text,
-                                  user: currentUserReference?.id,
-                                  date: getCurrentTimestamp,
-                                ));
+                            // Оценка приложения: раньше Firestore rewiews_of_the_app.
+                            // PG endpoint нет — не пишем в FS (SoT=Postgres).
+                            print(
+                                '[rate_app] SKIP FS write chips=${_model.chips}');
                             await _model.pageViewController?.nextPage(
                               duration: Duration(milliseconds: 300),
                               curve: Curves.ease,

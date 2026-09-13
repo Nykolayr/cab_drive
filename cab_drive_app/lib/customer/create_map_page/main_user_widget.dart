@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
@@ -79,9 +80,10 @@ class _MainUserWidgetState extends State<MainUserWidget> {
         }
       }
 
-      await currentUserReference!.update(createUsersRecordData(
-        fbId: FirebaseAuth.instance.currentUser!.uid,
-      ));
+      await AppMeApi.patchMe({
+        'fb_id': FirebaseAuth.instance.currentUser!.uid,
+      });
+      await refreshAppMeCache();
     });
   }
 

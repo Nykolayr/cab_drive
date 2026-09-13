@@ -38,6 +38,9 @@ class Production:
     # False, если на сервере нет Russian Trusted CA в store (иначе SSLCertVerificationError)
     TINKOFF_SSL_VERIFY = False
 
+    # Jump Finance payout (вывод средств)
+    JUMP_CLIENT_KEY = 'CHANGE_ME'
+
     SMS_NUMBER = 'CHANGE_ME'
     SMS_TOKEN = 'Bearer CHANGE_ME'
 

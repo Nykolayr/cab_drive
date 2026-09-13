@@ -96,6 +96,7 @@ class UsersRecordMapper {
     put('average_rating', m['average_rating']);
     put('number_of_reviews', m['number_of_reviews']);
     put('additional_phone_number', m['additional_phone_number']);
+    put('ContractorID', m['contractor_id'] ?? m['ContractorID']);
     put('created_time', _dt(m['created_time'] ?? m['createdTime']));
     put('dfb', _dt(m['dfb']));
     put('shift_start_date_time', _dt(m['shift_start_date_time']));

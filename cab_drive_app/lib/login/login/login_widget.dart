@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -10,7 +11,6 @@ import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/random_data_util.dart' as random_data;
 import '/index.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -157,46 +157,11 @@ class _LoginWidget_State extends State<LoginWidget_> {
                               return;
                             }
 
-                            await UsersRecord.collection
-                                .doc(user.uid)
-                                .update(createUsersRecordData(
-                                  email: _model.email,
-                                  // другие данные
-                                ));
-
-                            var chatsRecordReference =
-                                ChatsRecord.collection.doc();
-                            await chatsRecordReference.set({
-                              ...createChatsRecordData(
-                                dateCreated: getCurrentTimestamp,
-                                support: true,
-                              ),
-                              ...mapToFirestore(
-                                {
-                                  'users': functions
-                                      .combineUsers2(currentUserReference!),
-                                },
-                              ),
+                            await AppMeApi.patchMe({
+                              'email': _model.email,
                             });
-                            _model.chatWithSupport =
-                                ChatsRecord.getDocumentFromData({
-                              ...createChatsRecordData(
-                                dateCreated: getCurrentTimestamp,
-                                support: true,
-                              ),
-                              ...mapToFirestore(
-                                {
-                                  'users': functions
-                                      .combineUsers2(currentUserReference!),
-                                },
-                              ),
-                            }, chatsRecordReference);
-
-                            await currentUserReference!
-                                .update(createUsersRecordData(
-                              chatWithSupport:
-                                  _model.chatWithSupport?.reference,
-                            ));
+                            await AppMeApi.ensureSupportChat();
+                            await refreshAppMeCache();
 
                             context.goNamedAuth(
                               GeoWidget.routeName,

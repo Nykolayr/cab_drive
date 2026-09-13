@@ -88,7 +88,7 @@ def create_bid(driver_uid: str, order_id: str, body: dict[str, Any]) -> dict[str
             break
     if cust and cust != driver_uid:
         try:
-            import app_fcm_ops
+            import app_push
 
             price = raw.get("price")
             price_txt = ""
@@ -96,7 +96,8 @@ def create_bid(driver_uid: str, order_id: str, body: dict[str, Any]) -> dict[str
                 price_txt = f" за {int(price)} ₽"
             elif price is not None and str(price).strip():
                 price_txt = f" за {price} ₽"
-            app_fcm_ops.notify_safe(
+            app_push.notify(
+                "create_bid",
                 [cust],
                 title="Новый отклик",
                 body=f"На ваш заказ откликнулся водитель{price_txt}",

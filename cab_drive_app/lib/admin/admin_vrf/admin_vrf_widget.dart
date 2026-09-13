@@ -152,15 +152,8 @@ class _AdminVrfWidgetState extends State<AdminVrfWidget> {
                           ok = await AppMeApi.approveVerification(verId);
                         }
                         if (!ok) {
-                          await widget!.doc!.user!.update(createUsersRecordData(
-                            onVerifNow: false,
-                            verifCompl: true,
-                          ));
-
-                          await widget!.doc!.reference
-                              .update(createRequestVereficationRecordData(
-                            status: StatusVerif.Completed,
-                          ));
+                          print(
+                              '[admin_vrf.approve] API failed verId=$verId');
                         }
                       },
                       text: 'Одобрить',

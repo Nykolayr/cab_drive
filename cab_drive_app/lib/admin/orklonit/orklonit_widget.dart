@@ -149,14 +149,8 @@ class _OrklonitWidgetState extends State<OrklonitWidget> {
                             ok = await AppMeApi.rejectVerification(verId);
                           }
                           if (!ok) {
-                            await widget!.user!.update(createUsersRecordData(
-                              verifNeProidena: true,
-                            ));
-
-                            await widget!.verif!
-                                .update(createRequestVereficationRecordData(
-                              status: StatusVerif.otklonena,
-                            ));
+                            print(
+                                '[orklonit.reject] API failed verId=$verId');
                           }
                           triggerPushNotification(
                             notificationTitle: 'Верефикация не пройдена!',

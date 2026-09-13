@@ -3438,50 +3438,23 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                           final apiOk =
                               await AppMeApi.completeOrder(orderId) != null;
                           if (!apiOk) {
-                            await widget!.order!.update(createOrderRecordData(
-                              status: StatusOrder.completed,
-                            ));
-                            if (orderPageCustomerOrderRecord.payMethod ==
-                                PayMethod.card) {
-                              await orderPageCustomerOrderRecord.selectedDriver!
-                                  .update({
-                                ...mapToFirestore(
-                                  {
-                                    'balance': FieldValue.increment(
-                                        (orderPageCustomerOrderRecord
-                                                    .currentPrice
-                                                    .toDouble() /
-                                                100) *
-                                            currentUserDocument!
-                                                .commissionPercent),
-                                  },
+                            print(
+                                '[order_page_customer.complete] API failed order=$orderId');
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Не удалось завершить заказ',
+                                    style: TextStyle(
+                                      color: FlutterFlowTheme.of(context)
+                                          .primaryText,
+                                    ),
+                                  ),
+                                  duration: const Duration(milliseconds: 4000),
+                                  backgroundColor:
+                                      FlutterFlowTheme.of(context).secondary,
                                 ),
-                              });
-
-                              createPayOrderRecordData(
-                                isPaid: false,
-                                amountInCop: ((orderPageCustomerOrderRecord
-                                                .currentPrice
-                                                .toDouble() /
-                                            100) *
-                                        currentUserDocument!.commissionPercent)
-                                    .toInt(),
-                                user: currentUserReference,
-                                paymentType: PaymentType.finishedMyShift,
                               );
-                            } else {
-                              final driver = (UsersRecord.fromSnapshot(
-                                  await orderPageCustomerOrderRecord
-                                      .selectedDriver!
-                                      .get()));
-                              await orderPageCustomerOrderRecord.selectedDriver!
-                                  .update(createUsersRecordData(
-                                currentCommision: driver.currentCommision +
-                                    ((orderPageCustomerOrderRecord.currentPrice
-                                                .toDouble() /
-                                            100) *
-                                        currentUserDocument!.commissionPercent),
-                              ));
                             }
                           }
                         },

@@ -61,10 +61,9 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
       if (widget!.respDT!.viewed) {
         return;
       }
-
-      await widget!.respDT!.reference.update(createResponsesRecordData(
-        viewed: true,
-      ));
+      // PG SoT: viewed без Firestore write (косметика списка откликов).
+      print(
+          '[responsed_detail] skip FS viewed=true bid=${widget!.respDT!.reference.id}');
       return;
     });
   }
@@ -881,24 +880,26 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                                   containerUsersRecord.commissionPercent,
                             );
                             if (!ok) {
-                              await widget!.order!.reference
-                                  .update(createOrderRecordData(
-                                selectedDriver: containerUsersRecord.reference,
-                                status: StatusOrder.spec_set,
-                                commissionPercent: containerUsersRecord
-                                    .commissionPercent
-                                    .toInt(),
-                                currentPrice: widget!.respDT?.price,
-                              ));
-                              try {
-                                await containerUsersRecord.reference.update({
-                                  'active_orders_queue': FieldValue.arrayUnion(
-                                      [widget!.order!.reference]),
-                                });
-                              } catch (e) {
-                                print(
-                                    '[responsed_detail.assign] queue ERROR $e');
+                              print(
+                                  '[responsed_detail.accept] API failed order=${widget!.order!.reference.id}');
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Не удалось выбрать исполнителя',
+                                      style: TextStyle(
+                                        color: FlutterFlowTheme.of(context)
+                                            .primaryText,
+                                      ),
+                                    ),
+                                    duration:
+                                        const Duration(milliseconds: 4000),
+                                    backgroundColor:
+                                        FlutterFlowTheme.of(context).secondary,
+                                  ),
+                                );
                               }
+                              return;
                             }
                             Navigator.pop(context);
                           } else {
@@ -930,40 +931,32 @@ class _ResponsedDetailWidgetState extends State<ResponsedDetailWidget> {
                               'commission_percent':
                                   containerUsersRecord.commissionPercent,
                             });
-                            DocumentReference payOrderRecordReference;
-                            if (created != null &&
-                                (created['id']?.toString().isNotEmpty ??
-                                    false)) {
-                              payOrderRecordReference =
-                                  PayOrderRecord.collection
-                                      .doc(created['id'].toString());
-                              // FS doc для PayInit stream (пока poll не готов)
-                              try {
-                                await payOrderRecordReference
-                                    .set(createPayOrderRecordData(
-                                  orderId: orderIdMs,
-                                  isPaid: false,
-                                  amountInCop: amountCop,
-                                  user: currentUserReference,
-                                  paymentType: PaymentType.regularCustomer,
-                                  currentOrderDocRef: widget!.order?.reference,
-                                  driver: containerUsersRecord.reference,
-                                ));
-                              } catch (_) {}
-                            } else {
-                              payOrderRecordReference =
-                                  PayOrderRecord.collection.doc();
-                              await payOrderRecordReference
-                                  .set(createPayOrderRecordData(
-                                orderId: orderIdMs,
-                                isPaid: false,
-                                amountInCop: amountCop,
-                                user: currentUserReference,
-                                paymentType: PaymentType.regularCustomer,
-                                currentOrderDocRef: widget!.order?.reference,
-                                driver: containerUsersRecord.reference,
-                              ));
+                            if (created == null ||
+                                (created['id']?.toString().isEmpty ?? true)) {
+                              print(
+                                  '[responsed_detail.pay] createPayment failed');
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Не удалось создать платёж',
+                                      style: TextStyle(
+                                        color: FlutterFlowTheme.of(context)
+                                            .primaryText,
+                                      ),
+                                    ),
+                                    duration:
+                                        const Duration(milliseconds: 4000),
+                                    backgroundColor:
+                                        FlutterFlowTheme.of(context).secondary,
+                                  ),
+                                );
+                              }
+                              return;
                             }
+                            final payOrderRecordReference =
+                                PayOrderRecord.collection
+                                    .doc(created['id'].toString());
                             _model.order = PayOrderRecord.getDocumentFromData(
                                 createPayOrderRecordData(
                                   orderId: orderIdMs,

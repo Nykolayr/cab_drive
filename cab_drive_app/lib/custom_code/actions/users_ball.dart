@@ -10,24 +10,15 @@ import 'package:flutter/material.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
+/// Legacy: раньше писал balance в Firestore.
+/// Баланс = Postgres SoT (webhook Tinkoff / серверные ops). FS write отключён.
 Future usersBall(
   List<DocumentReference>? users,
   double summ,
 ) async {
-  // Если список пуст или равен null, выходим из функции
-  if (users == null) return;
-
-  // Проходим по каждому документу в списке
-  for (final userRef in users) {
-    try {
-      // Обновляем поле 'balance', прибавляя к нему значение summ
-      // FieldValue.increment обеспечивает атомарное обновление
-      await userRef.update({
-        'balance': FieldValue.increment(summ),
-      });
-    } catch (e) {
-      // Выводим ошибку в консоль, если обновление не удалось
-      print("Ошибка при обновлении баланса пользователя: $e");
-    }
-  }
+  print(
+    '[usersBall] SKIP Firestore write users=${users?.length ?? 0} summ=$summ '
+    '(SoT=Postgres)',
+  );
+  return;
 }

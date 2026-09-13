@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
 import '/custom_code/widgets/user_avatar_image.dart';
@@ -14,7 +15,6 @@ import '/pages/menu/izmenit_imya/izmenit_imya_widget.dart';
 import '/pages/menu/izmenit_pochtu/izmenit_pochtu_widget.dart';
 import 'dart:async';
 import 'dart:ui';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -210,11 +210,11 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
                                         null &&
                                     _model.uploadedFileUrl_uploadData2pb22 !=
                                         '') {
-                                  await currentUserReference!
-                                      .update(createUsersRecordData(
-                                    photoUrl:
+                                  await AppMeApi.patchMe({
+                                    'photo_url':
                                         _model.uploadedFileUrl_uploadData2pb22,
-                                  ));
+                                  });
+                                  await refreshAppMeCache();
                                 }
                               },
                               child: Container(
@@ -608,14 +608,13 @@ class _NastroikiWidgetState extends State<NastroikiWidget> {
                                 return;
                               }
 
-                              unawaited(
-                                () async {
-                                  await currentUserReference!
-                                      .update(createUsersRecordData(
-                                    dfb: _model.datePicked,
-                                  ));
-                                }(),
-                              );
+                              final picked = _model.datePicked;
+                              if (picked != null) {
+                                await AppMeApi.patchMe({
+                                  'dfb': picked.toIso8601String(),
+                                });
+                                await refreshAppMeCache();
+                              }
                               safeSetState(() {
                                 _model.dtbInputTextController?.text =
                                     dateTimeFormat(

@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -6,7 +7,6 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'dart:async';
 import 'dart:ui';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
@@ -257,17 +257,10 @@ class _IzmenitImyaWidgetState extends State<IzmenitImyaWidget> {
                   }
                   if (_model.nameInputTextController.text !=
                       currentUserDisplayName) {
-                    unawaited(
-                      () async {
-                        await currentUserReference!
-                            .update(createUsersRecordData(
-                          displayName: _model.nameInputTextController.text,
-                        ));
-                      }(),
-                    );
-                    await widget.action?.call(
-                      _model.nameInputTextController.text,
-                    );
+                    final name = _model.nameInputTextController.text;
+                    await AppMeApi.patchMe({'display_name': name});
+                    await refreshAppMeCache();
+                    await widget.action?.call(name);
                   }
                   Navigator.pop(context, _model.nameInputTextController.text);
                 },

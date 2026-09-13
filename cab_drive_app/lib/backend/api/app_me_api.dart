@@ -293,6 +293,27 @@ class AppMeApi {
     return r != null && r['_ok'] == true;
   }
 
+  /// Вывод на карту: Jump на сервере + списание balance в Postgres.
+  /// Возвращает null при сети; иначе map с `_ok` и `message` / `result`.
+  static Future<Map<String, dynamic>?> payout({
+    required String pan,
+    String? phone,
+    String? firstName,
+    String? lastName,
+  }) async {
+    return _request(
+      'POST',
+      '/api/app/me/payout',
+      body: {
+        'pan': pan,
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
+        if (firstName != null && firstName.isNotEmpty) 'first_name': firstName,
+        if (lastName != null && lastName.isNotEmpty) 'last_name': lastName,
+      },
+      timeout: const Duration(seconds: 50),
+    );
+  }
+
   static Future<Map<String, dynamic>?> completeOrder(String orderId) async {
     if (orderId.isEmpty) return null;
     final r = await _request('POST', '/api/app/orders/$orderId/complete');

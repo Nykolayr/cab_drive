@@ -73,8 +73,13 @@ class FirebaseAuthManager extends AuthManager
 
       final uid = currentUser?.uid;
       if (uid != null) {
-        await FirebaseFirestore.instance.collection('users').doc(uid).delete();
-        print('User document deleted from Firestore');
+        try {
+          await FirebaseFirestore.instance.collection('users').doc(uid).delete();
+          print('User document deleted from Firestore');
+        } catch (e) {
+          // PG SoT: FS user doc может отсутствовать.
+          print('skip FS user delete: $e');
+        }
       }
 
       await currentUser?.delete();

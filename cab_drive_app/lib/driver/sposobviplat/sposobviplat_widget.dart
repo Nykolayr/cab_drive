@@ -1,7 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api/app_me_api.dart';
 import '/backend/api/saved_cards_record_mapper.dart';
-import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
 import '/driver/new_card/new_card_widget.dart';
 import '/driver/succ/succ_widget.dart';
@@ -13,7 +12,6 @@ import '/pages/bottom/chips_card/chips_card_widget.dart';
 import 'dart:async';
 import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -459,156 +457,69 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                   )),
               child: FFButtonWidget(
                 onPressed: () async {
-                  var _shouldSetState = false;
-                  final _withdrawableBalance =
-                      valueOrDefault(effectiveBalance, 0.0);
-                  final _bonusForAudit =
-                      valueOrDefault(currentUserDocument?.bonusBalance, 0.0);
-                  final _amountForPayout = _withdrawableBalance -
-                      functions.proc(_withdrawableBalance).round();
-                  print(
-                      '[sposobviplat.payout] withdrawable=$_withdrawableBalance bonus=$_bonusForAudit amount=$_amountForPayout');
-                  if (valueOrDefault(currentUserDocument?.contractorID, 0) !=
-                      0) {
-                    _model.apiResultlwg = await PayoutCall.call(
-                      contractorId:
-                          valueOrDefault(currentUserDocument?.contractorID, 0),
-                      accountNumber:
-                          functions.cleanCardNumber(_model.card!.pan),
-                      amount:
-                          valueOrDefault(effectiveBalance, 0.0) -
-                              functions
-                                  .proc(valueOrDefault(
-                                      effectiveBalance, 0.0))
-                                  .round(),
-                    );
-
-                    _shouldSetState = true;
-                    if ((_model.apiResultlwg?.succeeded ?? true)) {
-                      if (PayoutCall.errorcode(
-                            (_model.apiResultlwg?.jsonBody ?? ''),
-                          ) !=
-                          null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Что-то пошло не так, обратитесь в поддержку или попробуйте позже',
-                              style: TextStyle(
-                                color: FlutterFlowTheme.of(context).primaryText,
-                              ),
-                            ),
-                            duration: Duration(milliseconds: 4000),
-                            backgroundColor:
-                                FlutterFlowTheme.of(context).secondary,
+                  final pan = functions.cleanCardNumber(_model.card?.pan ?? '');
+                  if (pan.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Выберите карту для вывода',
+                          style: TextStyle(
+                            color: FlutterFlowTheme.of(context).primaryText,
                           ),
-                        );
-                        if (_shouldSetState) safeSetState(() {});
-                        return;
-                      } else {
-                        unawaited(
-                          () async {
-                            await currentUserReference!.update({
-                              ...mapToFirestore(
-                                {
-                                  'balance': FieldValue.delete(),
-                                },
-                              ),
-                            });
-                          }(),
-                        );
-                      }
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Что-то пошло не так, обратитесь в поддержку или попробуйте позже',
-                            style: TextStyle(
-                              color: FlutterFlowTheme.of(context).primaryText,
-                            ),
-                          ),
-                          duration: Duration(milliseconds: 4000),
-                          backgroundColor:
-                              FlutterFlowTheme.of(context).secondary,
                         ),
-                      );
-                      if (_shouldSetState) safeSetState(() {});
-                      return;
-                    }
-                  } else {
-                    _model.apiResultabi = await CreateClientAndPayoutCall.call(
+                        duration: const Duration(milliseconds: 4000),
+                        backgroundColor:
+                            FlutterFlowTheme.of(context).secondary,
+                      ),
+                    );
+                    return;
+                  }
+
+                  final withdrawable =
+                      valueOrDefault(effectiveBalance, 0.0);
+                  print(
+                      '[sposobviplat.payout] withdrawable=$withdrawable pan=$pan');
+
+                  Map<String, dynamic>? resp;
+                  try {
+                    resp = await AppMeApi.payout(
+                      pan: pan,
                       phone: currentPhoneNumber,
+                      firstName: currentUserDisplayName,
                       lastName:
                           valueOrDefault(currentUserDocument?.surname, ''),
-                      firstName: currentUserDisplayName,
-                      accountNumber:
-                          functions.cleanCardNumber(_model.card!.pan),
-                      amount:
-                          valueOrDefault(effectiveBalance, 0.0) -
-                              functions
-                                  .proc(valueOrDefault(
-                                      effectiveBalance, 0.0))
-                                  .round(),
-                      customerPaymentId: '${currentUserReference?.id}ff',
                     );
-
-                    _shouldSetState = true;
-                    if ((_model.apiResultabi?.succeeded ?? true)) {
-                      if (CreateClientAndPayoutCall.errorcode(
-                            (_model.apiResultabi?.jsonBody ?? ''),
-                          ) !=
-                          null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Что-то пошло не так, обратитесь в поддержку или попробуйте позже',
-                              style: TextStyle(
-                                color: FlutterFlowTheme.of(context).primaryText,
-                              ),
-                            ),
-                            duration: Duration(milliseconds: 4000),
-                            backgroundColor:
-                                FlutterFlowTheme.of(context).secondary,
-                          ),
-                        );
-                        if (_shouldSetState) safeSetState(() {});
-                        return;
-                      } else {
-                        unawaited(
-                          () async {
-                            await currentUserReference!.update({
-                              ...createUsersRecordData(
-                                contractorID:
-                                    CreateClientAndPayoutCall.contractorID(
-                                  (_model.apiResultabi?.jsonBody ?? ''),
-                                ),
-                              ),
-                              ...mapToFirestore(
-                                {
-                                  'balance': FieldValue.delete(),
-                                },
-                              ),
-                            });
-                          }(),
-                        );
-                      }
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Что-то пошло не так, обратитесь в поддержку или попробуйте позже',
-                            style: TextStyle(
-                              color: FlutterFlowTheme.of(context).primaryText,
-                            ),
-                          ),
-                          duration: Duration(milliseconds: 4000),
-                          backgroundColor:
-                              FlutterFlowTheme.of(context).secondary,
-                        ),
-                      );
-                      if (_shouldSetState) safeSetState(() {});
-                      return;
-                    }
+                  } catch (e) {
+                    print('[sposobviplat.payout] ERROR $e');
+                    resp = null;
                   }
+
+                  if (!mounted) return;
+
+                  final ok = resp != null && resp['_ok'] == true;
+                  if (!ok) {
+                    final msg = (resp?['message'] ??
+                            'Не удалось вывести средства. Попробуйте позже.')
+                        .toString();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          msg,
+                          style: TextStyle(
+                            color: FlutterFlowTheme.of(context).primaryText,
+                          ),
+                        ),
+                        duration: const Duration(milliseconds: 5000),
+                        backgroundColor:
+                            FlutterFlowTheme.of(context).secondary,
+                      ),
+                    );
+                    return;
+                  }
+
+                  // Обновляем кэш /me из Postgres (без Firestore).
+                  await refreshAppMeCache();
+                  if (!mounted) return;
 
                   Navigator.pop(context);
                   await showModalBottomSheet(
@@ -624,8 +535,6 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                       );
                     },
                   ).then((value) => safeSetState(() {}));
-
-                  if (_shouldSetState) safeSetState(() {});
                 },
                 text: 'Вывести средства',
                 options: FFButtonOptions(

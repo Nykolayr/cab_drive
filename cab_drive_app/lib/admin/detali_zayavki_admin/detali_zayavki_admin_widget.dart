@@ -863,17 +863,8 @@ class _DetaliZayavkiAdminWidgetState extends State<DetaliZayavkiAdminWidget> {
                                         verId);
                                   }
                                   if (!ok) {
-                                    await widget!.docref!.update(
-                                        createRequestVereficationRecordData(
-                                      status: StatusVerif.Completed,
-                                    ));
-
-                                    await detaliZayavkiAdminRequestVereficationRecord
-                                        .user!
-                                        .update(createUsersRecordData(
-                                      onVerifNow: false,
-                                      verifCompl: true,
-                                    ));
+                                    print(
+                                        '[detali_zayavki.approve] API failed verId=$verId');
                                   }
                                   triggerPushNotification(
                                     notificationTitle: 'Верефикация пройдена!',
