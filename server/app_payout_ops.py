@@ -49,6 +49,35 @@ def _jump_headers() -> dict[str, str]:
     }
 
 
+def _jump_payment_item(payload: dict[str, Any]) -> dict[str, Any]:
+    item = payload.get("item")
+    return item if isinstance(item, dict) else {}
+
+
+def _jump_payment_status(item: dict[str, Any]) -> tuple[int, str, bool]:
+    """status_id, title, is_final из ответа Jump."""
+    st = item.get("status") or {}
+    if not isinstance(st, dict):
+        return 0, "", bool(item.get("is_final"))
+    try:
+        sid = int(st.get("id") or 0)
+    except (TypeError, ValueError):
+        sid = 0
+    title = str(st.get("title") or "").strip()
+    is_final = bool(item.get("is_final"))
+    return sid, title, is_final
+
+
+def _jump_payout_settled(item: dict[str, Any]) -> bool:
+    """Списываем balance только когда выплата реально завершена (оплачена)."""
+    if not item:
+        return False
+    sid, _, is_final = _jump_payment_status(item)
+    if sid == 1:
+        return True
+    return is_final and sid not in (4,)
+
+
 def _jump_error_message(payload: Any) -> str:
     if not isinstance(payload, dict):
         return "Ошибка вывода"
@@ -148,18 +177,44 @@ def create_payout(
     ):
         raise ValueError(_jump_error_message(payload))
 
-    new_contractor = contractor_id_int
+    item: dict[str, Any] = {}
     if isinstance(payload, dict):
-        item = payload.get("item") or {}
-        if isinstance(item, dict):
-            c = (item.get("contractor") or {}).get("id")
-            if c:
-                try:
-                    new_contractor = int(c)
-                except (TypeError, ValueError):
-                    pass
+        item = _jump_payment_item(payload)
 
-    # Списываем весь выводимый balance (бонус не трогаем)
+    new_contractor = contractor_id_int
+    if item:
+        c = (item.get("contractor") or {}).get("id")
+        if c:
+            try:
+                new_contractor = int(c)
+            except (TypeError, ValueError):
+                pass
+
+    sid, st_title, is_final = _jump_payment_status(item)
+    jump_payment_id = item.get("id")
+
+    # Сохраняем contractor_id из Jump даже если выплата ещё не финальна.
+    if new_contractor > 0 and new_contractor != contractor_id_int:
+        app_pg.mirror_user_fields(uid, {"contractor_id": new_contractor})
+
+    if not _jump_payout_settled(item):
+        logger.warning(
+            "[payout] jump pending uid=%s payment_id=%s status_id=%s title=%s",
+            uid,
+            jump_payment_id,
+            sid,
+            st_title,
+        )
+        hint = st_title or "ожидает обработки"
+        if sid == 4:
+            raise ValueError(
+                "Выплата создана в Jump, но требует подтверждения в личном кабинете Jump Finance. "
+                f"Баланс в приложении не списан ({hint})."
+            )
+        raise ValueError(
+            f"Выплата в Jump ещё не завершена ({hint}). Баланс не списан — попробуйте позже."
+        )
+
     fields: dict[str, Any] = {"balance": 0}
     if new_contractor > 0:
         fields["contractor_id"] = new_contractor
@@ -175,5 +230,7 @@ def create_payout(
         "balance_before": balance,
         "balance_after": 0,
         "contractor_id": new_contractor,
+        "jump_payment_id": jump_payment_id,
+        "jump_status_id": sid,
         "jump": payload if isinstance(payload, dict) else {"raw": str(payload)[:300]},
     }
