@@ -136,8 +136,11 @@ class ExtraOrdersListener {
 
         if (!ExtraOrdersDedup.tryAdd(id)) continue;
 
-        print('[ExtraOrdersListener.match] order_id=$id');
-        _showSheet(navContext, order);
+        print('[ExtraOrdersListener.match] order_id=$id '
+            '(no auto-sheet: only FCM additional_order with server route check)');
+        // Не открываем bottom sheet с клиента: poll смотрит только радиус 5км,
+        // без проверки «по пути». Попап — только по FCM от серверного
+        // extra_notify (там Google Directions / is_route_compatible).
         return;
       }
     } catch (e) {

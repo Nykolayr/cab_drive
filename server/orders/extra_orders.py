@@ -26,10 +26,12 @@ from logger import logger
 
 GOOGLE_DIRECTIONS_URL = "https://maps.googleapis.com/maps/api/directions/json"
 
-# Статусы заказа, при которых водитель считается «занят с пассажиром/едет к нему»
-ACTIVE_ORDER_STATUSES = ("spec_set", "place_pickup", "at_work")
+# Статусы, при которых водитель «в работе» и можно предлагать доп. «по пути».
+# spec_set (только что выбран) — НЕ включаем: иначе сразу после назначения
+# сыпется popup/FCM доп.заказа (жалоба на видео Дианы).
+ACTIVE_ORDER_STATUSES = ("place_pickup", "at_work")
 # Статусы, в которых водитель ещё едет к pointA (pickup ещё впереди)
-PRE_PICKUP_STATUSES = ("spec_set", "place_pickup")
+PRE_PICKUP_STATUSES = ("place_pickup",)
 
 
 # ----------------------------- утилиты -----------------------------

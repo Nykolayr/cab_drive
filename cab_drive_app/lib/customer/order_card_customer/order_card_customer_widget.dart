@@ -102,20 +102,8 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
         }
         return;
       }
-      // Уведомляем откликнувшихся водителей об изменении цены заказа.
-      final respondedDrivers = widget.order!.userWhoResponced;
-      if (respondedDrivers.isNotEmpty) {
-        triggerPushNotification(
-          notificationTitle: 'Цена заказа изменилась',
-          notificationText: 'Заказчик изменил цену до $newPrice ₽',
-          notificationSound: 'default',
-          userRefs: respondedDrivers,
-          initialPageName: 'order_Page_Driver',
-          parameterData: {
-            'order': widget.order!.reference,
-          },
-        );
-      }
+      // FCM откликнувшимся — только сервер (POST/PATCH /api/app/orders →
+      // app_push price_changed). Старый triggerPushNotification (FS) снят.
       if (!mounted) return;
       _priceFocus.unfocus();
       setState(() {

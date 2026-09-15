@@ -202,22 +202,10 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
   Timer? _extraSyncTimer;
 
   void _syncExtraOrdersFromMe() {
-    final queue = effectiveActiveOrdersQueue;
-    if (queue.isEmpty) {
-      ExtraOrdersListener.instance.stop();
-      return;
-    }
-    final orderId = queue.first;
-    final uid = currentUserUid;
-    final mark = currentUserDocument?.car?.mark?.name;
-    ExtraOrdersListener.instance.start(
-      activeOrderId: orderId,
-      driverUid: uid,
-      driverMark: mark,
-      driverLocation: currentUserLocationValue,
-      navigatorKey: appNavigatorKey,
-    );
-    ExtraOrdersListener.instance.updateDriverLocation(currentUserLocationValue);
+    // Авто-шит с клиента отключён (см. ExtraOrdersListener).
+    // Доп.заказ «по пути» — только FCM type=additional_order с сервера
+    // (route check; не в статусе spec_set сразу после назначения).
+    ExtraOrdersListener.instance.stop();
   }
 
   Widget _buildOrdersList(List<OrderRecord> containerOrderRecordList) {
@@ -240,10 +228,16 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
       );
     }
 
+    final hasActiveAssigned = orders.any(
+      (e) =>
+          e.selectedDriver == currentUserReference &&
+          (e.status == StatusOrder.place_pickup ||
+              e.status == StatusOrder.at_work),
+    );
     final canGetNew = orders
         .where((e) =>
-            e.userWhoResponced.contains(currentUserReference) &&
-                (e.status == StatusOrder.newOrder) ||
+            (e.userWhoResponced.contains(currentUserReference) &&
+                (e.status == StatusOrder.newOrder)) ||
             e.selectedDriver == currentUserReference)
         .isEmpty;
     final hasUnrespondedOrders = orders.any(
@@ -251,7 +245,9 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
           !e.userWhoResponced.contains(currentUserReference) &&
           e.selectedDriver != currentUserReference,
     );
-    final showExtraOrderBanner = !canGetNew && hasUnrespondedOrders;
+    // Баннер «доп. заказ» только когда уже есть назначенный активный заказ,
+    // а не сразу после обычного отклика на newOrder.
+    final showExtraOrderBanner = hasActiveAssigned && hasUnrespondedOrders;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
