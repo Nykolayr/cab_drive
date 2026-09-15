@@ -714,7 +714,7 @@ def list_orders_for_user(
         sql = [
             """
             SELECT id, status, selected_driver_id, user_customer_id, budget, current_price,
-                   distance, date_time_created, is_paid,
+                   distance, date_time_created, date_upd, status_do_hidden, is_paid,
                    point_a_json, point_b_json, point_c_json, description, raw_json
             FROM app_orders WHERE 1=1
             """
@@ -1155,6 +1155,7 @@ def list_users_page(
     is_driver: Optional[bool] = None,
     on_verif_now: Optional[bool] = None,
     login_complete: Optional[bool] = None,
+    verif_compl: Optional[bool] = None,
     query: Optional[str] = None,
     limit: int = 500,
     offset: int = 0,
@@ -1175,6 +1176,9 @@ def list_users_page(
         if login_complete is not None:
             where.append("COALESCE(login_complete, false) = %s")
             params.append(bool(login_complete))
+        if verif_compl is not None:
+            where.append("COALESCE(verif_compl, false) = %s")
+            params.append(bool(verif_compl))
         if query:
             q = query.strip()
             like = f"%{q}%"
@@ -1282,7 +1286,7 @@ def list_orders_filtered(
             cur.execute(
                 f"""
                 SELECT id, status, selected_driver_id, user_customer_id, budget, current_price,
-                       distance, date_time_created, is_paid,
+                       distance, date_time_created, date_upd, status_do_hidden, is_paid,
                        point_a_json, point_b_json, point_c_json, description, raw_json
                 FROM app_orders WHERE {wh}
                 ORDER BY date_time_created DESC NULLS LAST
@@ -1466,6 +1470,16 @@ def _order_row_to_admin_json(row: dict) -> dict:
                 data["userWhoResponced"] = data["user_who_responced"]
         if row.get("count_resp") is not None:
             data["count_resp"] = row["count_resp"]
+        if row.get("date_upd") is not None:
+            du = row["date_upd"]
+            data["date_upd"] = du.isoformat() if hasattr(du, "isoformat") else du
+        if row.get("date_time_created") is not None:
+            dc = row["date_time_created"]
+            data["dateTime_created"] = (
+                dc.isoformat() if hasattr(dc, "isoformat") else dc
+            )
+        if row.get("status_do_hidden") is not None:
+            data["status_do_hidden"] = row["status_do_hidden"]
         data["_source"] = "postgres"
         return data
 
@@ -1477,6 +1491,8 @@ def _order_row_to_admin_json(row: dict) -> dict:
         "budget": row.get("budget"),
         "distance": row.get("distance"),
         "dateTime_created": row.get("date_time_created"),
+        "date_upd": row.get("date_upd"),
+        "status_do_hidden": row.get("status_do_hidden"),
         "is_paid": row.get("is_paid"),
         "pointA": _loads_json(row.get("point_a_json")),
         "pointB": _loads_json(row.get("point_b_json")),
@@ -2118,6 +2134,34 @@ def count_verifications(*, user_id: str) -> int:
     except Exception:
         logger.exception("[app_pg] count_verifications failed")
         return 0
+
+
+def list_admin_uids(*, limit: int = 50) -> list[str]:
+    """UID админов из app_users (для FCM без FS)."""
+    if not enabled():
+        return []
+
+    def _run(conn):
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id FROM app_users
+                WHERE COALESCE(admin, false) = true
+                ORDER BY created_time DESC NULLS LAST
+                LIMIT %s
+                """,
+                (max(1, min(int(limit or 50), 200)),),
+            )
+            return [str(r[0]) for r in cur.fetchall() if r and r[0]]
+
+    try:
+        with connection() as conn:
+            if conn is None:
+                return []
+            return _run(conn)
+    except Exception:
+        logger.exception("[app_pg] list_admin_uids failed")
+        return []
 
 
 def set_verification_status(ver_id: str, status: str) -> bool:

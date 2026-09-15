@@ -12,10 +12,17 @@ import '/flutter_flow/flutter_flow_util.dart';
 /// Показывает компактный chip «В очереди: N заказ» на странице активного
 /// заказа, если у водителя есть дополнительные заказы в active_orders_queue.
 class QueueIndicatorWidget extends StatefulWidget {
-  const QueueIndicatorWidget({super.key, required this.currentOrderRef});
+  const QueueIndicatorWidget({
+    super.key,
+    required this.currentOrderRef,
+    required this.currentOrder,
+  });
 
   /// Reference на текущий заказ (его не показываем как «следующий»).
   final DocumentReference currentOrderRef;
+
+  /// Сам заказ — чтобы не показывать chip на чужом newOrder.
+  final OrderRecord currentOrder;
 
   @override
   State<QueueIndicatorWidget> createState() => _QueueIndicatorWidgetState();
@@ -43,6 +50,17 @@ class _QueueIndicatorWidgetState extends State<QueueIndicatorWidget> {
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
+    // Только на «своём» активном заказе (подача/в работе), не на чужом newOrder
+    // с кнопкой «Откликнуться» — иначе после назначения кажется, что
+    // «выскочил доп.заказ», хотя это просто чужая карточка + очередь.
+    final me = currentUserReference;
+    final cur = widget.currentOrder;
+    final isMyActive = me != null &&
+        cur.selectedDriver == me &&
+        (cur.status == StatusOrder.place_pickup ||
+            cur.status == StatusOrder.at_work);
+    if (!isMyActive) return const SizedBox.shrink();
+
     final queue = effectiveActiveOrdersQueue
         .where((id) => id != widget.currentOrderRef.id)
         .toList();

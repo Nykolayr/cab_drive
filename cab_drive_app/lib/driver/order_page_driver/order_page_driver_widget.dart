@@ -169,6 +169,7 @@ class _OrderPageDriverWidgetState extends State<OrderPageDriverWidget> {
                             if (!AppEnv.isTest)
                               QueueIndicatorWidget(
                                 currentOrderRef: widget.order!,
+                                currentOrder: orderRec,
                               ),
                             if (!AppEnv.isTest)
                               CustomerCardWidget(

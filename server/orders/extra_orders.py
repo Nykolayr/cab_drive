@@ -18,7 +18,6 @@ import traceback
 from typing import Any, Dict, List, Optional, Tuple
 
 import requests
-from firebase_admin import firestore
 
 import settings
 from logger import logger
@@ -310,24 +309,12 @@ def _list_active_orders_for_drivers() -> Dict[str, Dict[str, Any]]:
                 return out
     except Exception as e:
         logger.warning(f"[extra_orders._list_active_orders_for_drivers] PG failed: {e}")
-
-    db = firestore.client()
-    for status in ACTIVE_ORDER_STATUSES:
-        try:
-            docs = db.collection("order").where("status", "==", status).stream()
-            for doc in docs:
-                d = doc.to_dict() or {}
-                d["id"] = doc.id
-                drv_uid = _driver_uid_from_order(d)
-                if drv_uid and drv_uid not in out:
-                    out[drv_uid] = d
-        except Exception as e:
-            logger.warning(f"[extra_orders._list_active_orders_for_drivers] failed status={status}: {e}")
+    # FS fallback снят: SoT только Postgres.
     return out
 
 
 def _load_driver_user(driver_uid: str) -> Optional[Dict[str, Any]]:
-    """Профиль водителя: PG get_me, fallback Firestore."""
+    """Профиль водителя из PG (без Firestore)."""
     try:
         import app_pg
 
@@ -337,16 +324,7 @@ def _load_driver_user(driver_uid: str) -> Optional[Dict[str, Any]]:
                 return me
     except Exception as e:
         logger.warning(f"[extra_orders._load_driver_user] PG failed uid={driver_uid}: {e}")
-
-    try:
-        db = firestore.client()
-        user_doc = db.collection("users").document(driver_uid).get()
-        if not user_doc.exists:
-            return None
-        return user_doc.to_dict() or {}
-    except Exception as e:
-        logger.warning(f"[extra_orders._load_driver_user] FS failed uid={driver_uid}: {e}")
-        return None
+    return None
 
 
 def find_busy_drivers_for_order(new_order: Dict[str, Any], api_key: str) -> List[Dict[str, Any]]:

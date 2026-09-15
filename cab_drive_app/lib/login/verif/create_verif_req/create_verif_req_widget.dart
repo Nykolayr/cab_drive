@@ -2,7 +2,6 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api/app_me_api.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
-import '/backend/push_notifications/push_notifications_util.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -171,26 +170,7 @@ class _CreateVerifReqWidgetState extends State<CreateVerifReqWidget> {
         }
         return;
       }
-      _model.admin = await queryUsersRecordOnce(
-        queryBuilder: (usersRecord) => usersRecord.where(
-          'admin',
-          isEqualTo: true,
-        ),
-        singleRecord: true,
-      ).then((s) => s.firstOrNull);
-      if (_model.admin != null && verifRef != null) {
-        triggerPushNotification(
-          notificationTitle: 'Новый водитель!',
-          notificationText:
-              'В приложении появился новый водитель, перейдите на страницу заявки и рассмотрите ее',
-          notificationSound: 'default',
-          userRefs: [_model.admin!.reference],
-          initialPageName: 'Detali_zayavki_Admin',
-          parameterData: {
-            'docref': verifRef,
-          },
-        );
-      }
+      // Пуш админам — с сервера при create_verification (PG admin uids + FCM).
       FFAppState().driver = true;
       FFAppState().update(() {});
 

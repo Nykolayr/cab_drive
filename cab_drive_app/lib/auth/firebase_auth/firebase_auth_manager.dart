@@ -8,7 +8,6 @@ import '../base_auth_user_provider.dart';
 import '../../flutter_flow/flutter_flow_util.dart';
 
 import '/backend/backend.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:stream_transform/stream_transform.dart';
 import 'anonymous_auth.dart';
 import 'apple_auth.dart';
@@ -72,14 +71,9 @@ class FirebaseAuthManager extends AuthManager
       }
 
       final uid = currentUser?.uid;
+      // PG SoT: профиль в Postgres; FS users/{uid} не трогаем.
       if (uid != null) {
-        try {
-          await FirebaseFirestore.instance.collection('users').doc(uid).delete();
-          print('User document deleted from Firestore');
-        } catch (e) {
-          // PG SoT: FS user doc может отсутствовать.
-          print('skip FS user delete: $e');
-        }
+        print('deleteUser: auth only uid=$uid (no FS write)');
       }
 
       await currentUser?.delete();

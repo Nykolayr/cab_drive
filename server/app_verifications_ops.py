@@ -166,6 +166,28 @@ def create_verification(uid: str, body: dict[str, Any]) -> dict[str, Any]:
         )
 
     app_fs_mirror.soft_fs("create_verification", _fs)
+
+    # FCM админам через PG tokens (без FS queryUsersRecord)
+    try:
+        import app_push
+
+        admin_uids = app_pg.list_admin_uids(limit=50)
+        if admin_uids:
+            app_push.notify(
+                "new_driver_verif",
+                admin_uids,
+                title="Новый водитель!",
+                body=(
+                    "В приложении появился новый водитель, "
+                    "перейдите на страницу заявки и рассмотрите ее"
+                ),
+                initial_page_name="Detali_zayavki_Admin",
+                parameter_data={"docref": ver_id},
+                data={"verification_id": ver_id, "event": "new_driver_verif"},
+            )
+    except Exception:
+        logger.exception("[create_verification] admin FCM failed ver=%s", ver_id)
+
     return {
         "id": ver_id,
         "number_id": number_id,

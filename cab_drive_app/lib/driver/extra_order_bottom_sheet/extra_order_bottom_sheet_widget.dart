@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
+import '/backend/api/order_record_mapper.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
 import '/driver/create_otklick/create_otklick_widget.dart';
@@ -71,12 +73,13 @@ class _ExtraOrderBottomSheetWidgetState
     // Перед открытием формы отклика — освежаем статус, чтобы не открывать
     // сразу же на «протухшем» заказе.
     setState(() => _model.isSending = true);
-    OrderRecord? fresh;
+    OrderRecord fresh = widget.order;
     try {
-      fresh = await OrderRecord.getDocumentOnce(widget.order.reference);
-    } catch (_) {
-      fresh = widget.order;
-    }
+      final m = await AppMeApi.getOrder(widget.order.reference.id);
+      if (m != null) {
+        fresh = OrderRecordMapper.fromApi(m, widget.order.reference.id);
+      }
+    } catch (_) {}
     if (!mounted) return;
     setState(() => _model.isSending = false);
 

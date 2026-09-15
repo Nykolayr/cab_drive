@@ -1,4 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/backend/api/app_me_api.dart';
+import '/backend/api/order_record_mapper.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
 import '/driver/create_otklick/create_otklick_widget.dart';
@@ -70,12 +72,13 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
     print('[OrderCardDriver.respondAsExtra] tap order_id=${order.reference.id}');
 
     setState(() => _acceptingExtra = true);
-    OrderRecord fresh;
+    OrderRecord fresh = order;
     try {
-      fresh = await OrderRecord.getDocumentOnce(order.reference);
-    } catch (_) {
-      fresh = order;
-    }
+      final m = await AppMeApi.getOrder(order.reference.id);
+      if (m != null) {
+        fresh = OrderRecordMapper.fromApi(m, order.reference.id);
+      }
+    } catch (_) {}
     if (!mounted) return;
     setState(() => _acceptingExtra = false);
 

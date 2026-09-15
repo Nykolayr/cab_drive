@@ -582,6 +582,26 @@ class AppMeApi {
     return r != null && r['_ok'] == true;
   }
 
+  /// Admin: total users from PG (`/api/app/users`).
+  static Future<int> adminUsersTotal({
+    bool? isDriver,
+    bool? verifCompl,
+  }) async {
+    final q = StringBuffer('/api/app/users?limit=1&offset=0');
+    if (isDriver != null) {
+      q.write('&is_driver=${isDriver ? 'true' : 'false'}');
+    }
+    if (verifCompl != null) {
+      q.write('&verif_compl=${verifCompl ? 'true' : 'false'}');
+    }
+    final r = await _request('GET', q.toString());
+    if (r == null || r['_ok'] != true) return 0;
+    final total = r['total'];
+    if (total is int) return total;
+    if (total is num) return total.toInt();
+    return int.tryParse('$total') ?? 0;
+  }
+
   static Future<Map<String, dynamic>?> getPayment(String payId) async {
     final r = await _request('GET', '/api/app/payments/$payId');
     if (r == null || r['_ok'] != true) return null;

@@ -63,8 +63,19 @@ def _load_driver(uid: str) -> dict[str, Any]:
     raise ValueError("driver not found")
 
 
-def complete_order_by_customer(actor_uid: str, order_id: str) -> dict[str, Any]:
-    if not actor_uid or not order_id:
+def complete_order_by_customer(
+    actor_uid: str,
+    order_id: str,
+    *,
+    system: bool = False,
+) -> dict[str, Any]:
+    """Завершение on_confirmation → completed + комиссия.
+
+    system=True — автозакрытие по таймеру 12ч (актор = customer из заказа).
+    """
+    if not order_id:
+        raise ValueError("order_id required")
+    if not system and not actor_uid:
         raise ValueError("uid and order_id required")
 
     order = _load_order(order_id)
@@ -77,7 +88,9 @@ def complete_order_by_customer(actor_uid: str, order_id: str) -> dict[str, Any]:
     customer_uid = _ref_uid(order.get("user_customer"))
     if not customer_uid:
         raise ValueError("order has no user_customer")
-    if customer_uid != actor_uid:
+    if system:
+        actor_uid = customer_uid
+    elif customer_uid != actor_uid:
         raise ValueError("only order customer can complete")
 
     driver_uid = _ref_uid(order.get("selected_driver"))

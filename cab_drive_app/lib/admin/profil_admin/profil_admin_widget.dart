@@ -1,6 +1,6 @@
 import '/admin/navbar_admin/navbar_admin_widget.dart';
 import '/auth/firebase_auth/auth_util.dart';
-import '/backend/backend.dart';
+import '/backend/api/app_me_api.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -262,7 +262,7 @@ class _ProfilAdminWidgetState extends State<ProfilAdminWidget> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             FutureBuilder<int>(
-                              future: queryUsersRecordCount(),
+                              future: AppMeApi.adminUsersTotal(),
                               builder: (context, snapshot) {
                                 // Customize what your widget looks like when it's loading.
                                 if (!snapshot.hasData) {
@@ -328,16 +328,9 @@ class _ProfilAdminWidgetState extends State<ProfilAdminWidget> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             FutureBuilder<int>(
-                              future: queryUsersRecordCount(
-                                queryBuilder: (usersRecord) => usersRecord
-                                    .where(
-                                      'is_driver',
-                                      isEqualTo: true,
-                                    )
-                                    .where(
-                                      'verif_compl',
-                                      isEqualTo: true,
-                                    ),
+                              future: AppMeApi.adminUsersTotal(
+                                isDriver: true,
+                                verifCompl: true,
                               ),
                               builder: (context, snapshot) {
                                 // Customize what your widget looks like when it's loading.

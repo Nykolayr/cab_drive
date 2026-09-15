@@ -730,10 +730,31 @@ def list_users():
     driver_flag = None
     if is_driver is not None:
         driver_flag = str(is_driver).lower() in ("1", "true", "yes")
+    verif_compl = request.args.get("verif_compl")
+    verif_flag = None
+    if verif_compl is not None:
+        verif_flag = str(verif_compl).lower() in ("1", "true", "yes")
     q = request.args.get("q") or request.args.get("query")
     limit = int(request.args.get("limit") or 200)
-    rows = app_pg.list_users(is_driver=driver_flag, query=q, limit=min(limit, 1000))
-    return utils.get_answer("ok", info={"users": rows, "count": len(rows), "source": "postgres"})
+    offset = int(request.args.get("offset") or 0)
+    page = app_pg.list_users_page(
+        is_driver=driver_flag,
+        verif_compl=verif_flag,
+        query=q,
+        limit=min(limit, 1000),
+        offset=max(0, offset),
+    )
+    rows = page.get("users") or []
+    total = int(page.get("total") or 0)
+    return utils.get_answer(
+        "ok",
+        info={
+            "users": rows,
+            "count": len(rows),
+            "total": total,
+            "source": "postgres",
+        },
+    )
 
 
 @app.route("/orders", methods=["GET"])

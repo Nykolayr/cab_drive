@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart' show DocumentReference;
 import 'serialization_util.dart';
 import '../../auth/firebase_auth/auth_util.dart';
 import '../api/app_me_api.dart';
-import '../cloud_functions/cloud_functions.dart';
 import '../../core/utils/app_dio.dart';
 
 import 'package:flutter/foundation.dart';
@@ -61,24 +60,9 @@ final fcmTokenUserStream = authenticatedUserStream
       try {
         final ok = await AppMeApi.registerFcm(userTokenInfo.fcmToken);
         print('[FCM] AppMeApi.registerFcm: $ok');
+        return ok;
       } catch (e) {
         print('[FCM] ERROR AppMeApi.registerFcm: $e');
-      }
-
-      // Soft: keep CF for older builds / FS mirror until cutover complete
-      try {
-        final result = await makeCloudCall(
-          'addFcmToken',
-          {
-            'userDocPath': userTokenInfo.userPath,
-            'fcmToken': userTokenInfo.fcmToken,
-            'deviceType': Platform.isIOS ? 'iOS' : 'Android',
-          },
-        );
-        print('[FCM] Cloud Function result: $result');
-        return result;
-      } catch (e) {
-        print('[FCM] ERROR calling addFcmToken: $e');
         return null;
       }
     });

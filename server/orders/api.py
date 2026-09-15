@@ -951,6 +951,43 @@ def check_order_status():
                         logger.error(
                             f"[check_order_status.auto_hide] failed {oid}: {e}"
                         )
+
+            # Клиент не подтвердил вручение за 12ч → complete (комиссия как вручную)
+            confirm_deadline = timedelta(hours=12)
+            for order in app_pg.list_orders(status="on_confirmation", limit=batch_limit):
+                oid = order.get("id")
+                if not oid:
+                    continue
+                date_upd = order.get("date_upd") or order.get("dateUpd")
+                if isinstance(date_upd, str):
+                    try:
+                        date_upd = datetime.fromisoformat(
+                            date_upd.replace("Z", "+00:00")
+                        )
+                    except Exception:
+                        date_upd = None
+                if date_upd is None:
+                    continue
+                if date_upd.tzinfo is None:
+                    date_upd = date_upd.replace(tzinfo=utc_tz)
+                if now - date_upd < confirm_deadline:
+                    continue
+                try:
+                    import app_order_ops
+
+                    result = app_order_ops.complete_order_by_customer(
+                        "", oid, system=True
+                    )
+                    logger.info(
+                        "[check_order_status] AUTO-COMPLETE on_confirmation "
+                        "order=%s result=%s",
+                        oid,
+                        result,
+                    )
+                except Exception as e:
+                    logger.error(
+                        f"[check_order_status.auto_complete] failed {oid}: {e}"
+                    )
         except Exception as e:
             logger.error(f"[check_order_status] loop error: {e}")
         time.sleep(poll_sec)
