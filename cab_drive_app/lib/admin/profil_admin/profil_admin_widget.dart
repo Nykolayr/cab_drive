@@ -196,7 +196,7 @@ class _ProfilAdminWidgetState extends State<ProfilAdminWidget> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             FutureBuilder<int>(
-                              future: queryOrderRecordCount(),
+                              future: AppMeApi.adminOrdersTotal(),
                               builder: (context, snapshot) {
                                 // Customize what your widget looks like when it's loading.
                                 if (!snapshot.hasData) {
@@ -397,7 +397,7 @@ class _ProfilAdminWidgetState extends State<ProfilAdminWidget> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             FutureBuilder<int>(
-                              future: queryRewiewsOfTheAppRecordCount(),
+                              future: AppMeApi.adminReviewsTotal(),
                               builder: (context, snapshot) {
                                 // Customize what your widget looks like when it's loading.
                                 if (!snapshot.hasData) {

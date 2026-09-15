@@ -582,6 +582,29 @@ class AppMeApi {
     return r != null && r['_ok'] == true;
   }
 
+  /// Admin: totals from PG `/api/app/stats`.
+  static Future<Map<String, int>> adminStats() async {
+    final r = await _request('GET', '/api/app/stats');
+    if (r == null || r['_ok'] != true) {
+      return const {
+        'users_total': 0,
+        'orders_total': 0,
+        'reviews_total': 0,
+      };
+    }
+    int _i(dynamic v) {
+      if (v is int) return v;
+      if (v is num) return v.toInt();
+      return int.tryParse('$v') ?? 0;
+    }
+
+    return {
+      'users_total': _i(r['users_total']),
+      'orders_total': _i(r['orders_total']),
+      'reviews_total': _i(r['reviews_total']),
+    };
+  }
+
   /// Admin: total users from PG (`/api/app/users`).
   static Future<int> adminUsersTotal({
     bool? isDriver,
@@ -600,6 +623,16 @@ class AppMeApi {
     if (total is int) return total;
     if (total is num) return total.toInt();
     return int.tryParse('$total') ?? 0;
+  }
+
+  static Future<int> adminOrdersTotal() async {
+    final s = await adminStats();
+    return s['orders_total'] ?? 0;
+  }
+
+  static Future<int> adminReviewsTotal() async {
+    final s = await adminStats();
+    return s['reviews_total'] ?? 0;
   }
 
   static Future<Map<String, dynamic>?> getPayment(String payId) async {

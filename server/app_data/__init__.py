@@ -757,14 +757,50 @@ def list_users():
     )
 
 
+@app.route("/stats", methods=["GET"])
+def admin_stats():
+    """Счётчики для admin UI (без Firestore)."""
+    _require_admin()
+    users_total = int(
+        (app_pg.list_users_page(limit=1, offset=0) or {}).get("total") or 0
+    )
+    orders_total = int(
+        (app_pg.list_orders_filtered(limit=1, offset=0) or {}).get("total") or 0
+    )
+    reviews_total = int(app_pg.count_reviews() or 0)
+    return utils.get_answer(
+        "ok",
+        info={
+            "users_total": users_total,
+            "orders_total": orders_total,
+            "reviews_total": reviews_total,
+            "source": "postgres",
+        },
+    )
+
+
 @app.route("/orders", methods=["GET"])
 def list_orders():
     _require_admin()
     status = request.args.get("status")
     limit = int(request.args.get("limit") or 100)
-    rows = app_pg.list_orders(status=status, limit=min(limit, 500))
-    return utils.get_answer("ok", info={"orders": rows, "count": len(rows), "source": "postgres"})
-
+    offset = int(request.args.get("offset") or 0)
+    page = app_pg.list_orders_filtered(
+        status=status,
+        limit=min(limit, 500),
+        offset=max(0, offset),
+    )
+    rows = page.get("orders") or []
+    total = int(page.get("total") or 0)
+    return utils.get_answer(
+        "ok",
+        info={
+            "orders": rows,
+            "count": len(rows),
+            "total": total,
+            "source": "postgres",
+        },
+    )
 
 @app.route("/orders/<order_id>", methods=["GET"])
 def get_order(order_id: str):

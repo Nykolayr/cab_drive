@@ -1817,6 +1817,25 @@ def create_review(
     return soft_execute("create_review", _run)
 
 
+def count_reviews() -> int:
+    if not enabled():
+        return 0
+
+    def _run(conn):
+        with conn.cursor() as cur:
+            cur.execute("SELECT COUNT(*) FROM app_reviews")
+            return int(cur.fetchone()[0] or 0)
+
+    try:
+        with connection() as conn:
+            if conn is None:
+                return 0
+            return _run(conn)
+    except Exception:
+        logger.exception("[app_pg] count_reviews failed")
+        return 0
+
+
 def list_reviews(
     *,
     reviewed_user_id: Optional[str] = None,
