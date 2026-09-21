@@ -174,7 +174,32 @@ def _apply_paid_pg(body: dict[str, Any], data: dict[str, Any]) -> dict[str, Any]
     if not pay_id:
         return {"error": "no id"}
 
-    if body.get("is_paid") is True:
+    tinkoff_status = str(data.get("Status") or "")
+    payment_id = str(data.get("PaymentId") or body.get("paymentId") or "") or None
+
+    # Атомарный claim: параллельные AUTHORIZED+CONFIRMED на двух gunicorn
+    # больше не начисляют баланс дважды (Диана 18.09: +200×2 → 562).
+    claimed = app_pg.claim_pay_order_paid(
+        pay_id,
+        tinkoff_status=tinkoff_status,
+        payment_id=payment_id,
+    )
+    if not claimed:
+        try:
+            app_pg.mirror_pay_order_paid(
+                pay_id,
+                is_paid=True,
+                tinkoff_status=tinkoff_status,
+                payment_id=payment_id,
+            )
+        except Exception:
+            pass
+        logger.info(
+            "[tinkoff.webhook] skip already_paid pay_order=%s status=%s paymentId=%s",
+            pay_id,
+            tinkoff_status,
+            payment_id,
+        )
         return {"id": pay_id, "skipped": "already_paid"}
 
     amount_cop = body.get("amount_in_cop") or 0
@@ -191,13 +216,6 @@ def _apply_paid_pg(body: dict[str, Any], data: dict[str, Any]) -> dict[str, Any]
         except (TypeError, ValueError):
             pass
 
-    tinkoff_status = str(data.get("Status") or "")
-    app_pg.mirror_pay_order_paid(
-        pay_id,
-        is_paid=True,
-        tinkoff_status=tinkoff_status,
-        payment_id=str(data.get("PaymentId") or body.get("paymentId") or "") or None,
-    )
     app_pg.upsert_pay_order(
         pay_id,
         {

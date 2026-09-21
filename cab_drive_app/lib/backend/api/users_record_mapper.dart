@@ -87,6 +87,10 @@ class UsersRecordMapper {
     put('balance', m['balance']);
     put('bonus_balance', m['bonus_balance'] ?? m['bonusBalance']);
     put(
+      'balance_payout_pending',
+      m['balance_payout_pending'] ?? m['balancePayoutPending'],
+    );
+    put(
       'commission_percent',
       m['commission_percent'] ?? m['commission'],
     );

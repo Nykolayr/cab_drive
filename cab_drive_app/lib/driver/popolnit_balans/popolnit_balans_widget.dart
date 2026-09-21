@@ -384,9 +384,14 @@ class _PopolnitBalansWidgetState extends State<PopolnitBalansWidget> {
                                         effectiveBalance, 0.0) <
                                     0.0
                                 ? (_model.num <= 0.0)
-                                : (_model.num < 200.0))
+                                : (_model.num < 200.0)) ||
+                            _model.isSubmittingTopup
                             ? null
                             : () async {
+                                if (_model.isSubmittingTopup) return;
+                                _model.isSubmittingTopup = true;
+                                safeSetState(() {});
+                                try {
                                 final orderIdMs = DateTime
                                         .fromMicrosecondsSinceEpoch(
                                             getCurrentTimestamp
@@ -449,8 +454,14 @@ class _PopolnitBalansWidgetState extends State<PopolnitBalansWidget> {
                                 ).then((value) => safeSetState(() {}));
 
                                 safeSetState(() {});
+                                } finally {
+                                  _model.isSubmittingTopup = false;
+                                  if (mounted) safeSetState(() {});
+                                }
                               },
-                        text: 'Пополнить баланс',
+                        text: _model.isSubmittingTopup
+                            ? 'Оформляем…'
+                            : 'Пополнить баланс',
                         options: FFButtonOptions(
                           width: double.infinity,
                           height: 56.0,

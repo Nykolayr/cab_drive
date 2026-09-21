@@ -1,4 +1,4 @@
-﻿#Requires -Version 5.1
+#Requires -Version 5.1
 <#
 .SYNOPSIS
   Надёжная release-сборка Cab Drive: RuStore APK + Google Play AAB.
@@ -10,10 +10,19 @@
   4) APK с CAB_DRIVE_RUSTORE=true → D:\Temp\cabdrive_{N}_rustore.apk
   5) AAB без rustore → D:\Temp\cabdrive_{N}.aab
 
+  Gradle-кэш: GRADLE_USER_HOME = cab_drive_app\.gradle_home (не %USERPROFILE%\.gradle).
+  После одной успешной online-сборки: -Offline — Gradle не лезет в Maven.
+
 .EXAMPLE
   cd cab_drive_app
   powershell -File scripts/release_android.ps1
+  powershell -File scripts/release_android.ps1 -Offline
+  powershell -File scripts/release_android.ps1 -ApkOnly
 #>
+param(
+    [switch]$Offline,
+    [switch]$ApkOnly
+)
 $ErrorActionPreference = 'Stop'
 
 function Write-Step([string]$msg) {
@@ -39,11 +48,30 @@ $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
 $machinePath = [Environment]::GetEnvironmentVariable('Path', 'Machine')
 $env:Path = ($flutterBin + ';' + $sys32 + ';' + $psDir + ';' + $userPath + ';' + $machinePath)
 if (-not $env:PUB_CACHE) { $env:PUB_CACHE = 'D:\Projects\cab_drive\.pub-cache' }
-if (-not $env:GRADLE_USER_HOME) { $env:GRADLE_USER_HOME = Join-Path $root '.gradle_home' }
+# Всегда проектный кэш — не наследовать sandbox/%USERPROFILE%\.gradle
+$env:GRADLE_USER_HOME = Join-Path $root '.gradle_home'
+if (-not (Test-Path $env:GRADLE_USER_HOME)) {
+    New-Item -ItemType Directory -Force -Path $env:GRADLE_USER_HOME | Out-Null
+}
 Remove-Item Env:CAB_DRIVE_RUSTORE -ErrorAction SilentlyContinue
 
 $flutter = Join-Path $flutterBin 'flutter.bat'
 $dart = Join-Path $flutterBin 'dart.bat'
+
+# Offline: не через `flutter -- --offline` (Flutter ест это как target file).
+# Вместо этого init-скрипт Gradle startParameter.offline=true в GRADLE_USER_HOME.
+$gradleOfflineInit = Join-Path $env:GRADLE_USER_HOME 'init.d\cab_drive_offline.gradle'
+if ($Offline) {
+    $initDir = Split-Path $gradleOfflineInit
+    New-Item -ItemType Directory -Force -Path $initDir | Out-Null
+    Set-Content -Path $gradleOfflineInit -Value "gradle.startParameter.offline = true`r`n" -Encoding ASCII
+    Write-Host "OFFLINE: Gradle init $gradleOfflineInit" -ForegroundColor Yellow
+} else {
+    if (Test-Path $gradleOfflineInit) {
+        Remove-Item -Force $gradleOfflineInit -ErrorAction SilentlyContinue
+    }
+    Write-Host "ONLINE: Maven allowed if cache miss (cache: $env:GRADLE_USER_HOME)" -ForegroundColor DarkGray
+}
 
 # --- version ---
 $pubspec = Get-Content (Join-Path $root 'pubspec.yaml') -Raw
@@ -121,12 +149,22 @@ $aapt = Get-ChildItem "$env:LOCALAPPDATA\Android\Sdk\build-tools\*\aapt.exe" -Er
 # --- RuStore APK ---
 Write-Step 'RuStore APK (CAB_DRIVE_RUSTORE=true)'
 $env:CAB_DRIVE_RUSTORE = 'true'
-Invoke-ReleaseBuild { & $flutter build apk --release } 'APK'
+try {
+    Invoke-ReleaseBuild {
+        & $flutter build apk --release
+    } 'APK'
+} finally {
+    if (Test-Path $gradleOfflineInit) {
+        Remove-Item -Force $gradleOfflineInit -ErrorAction SilentlyContinue
+    }
+}
 Remove-Item Env:CAB_DRIVE_RUSTORE -ErrorAction SilentlyContinue
 
 $apkSrc = Join-Path $root 'build\app\outputs\flutter-apk\app-release.apk'
 $apkDst = "D:\Temp\cabdrive_${buildNumber}_rustore.apk"
+$apkAlias = "D:\Temp\cab_drive_1_${buildNumber}.apk"
 Copy-Item -Force $apkSrc $apkDst
+Copy-Item -Force $apkSrc $apkAlias
 if ($aapt) {
     $badging = & $aapt.FullName dump badging $apkDst | Select-String 'package:'
     Write-Host $badging
@@ -139,17 +177,38 @@ if ($aapt) {
     }
 }
 Write-Host "APK_OK $apkDst"
+Write-Host "APK_OK $apkAlias"
+
+if ($ApkOnly) {
+    Write-Step 'DONE (ApkOnly — AAB skipped)'
+    Get-Item $apkDst, $apkAlias | Format-List FullName, Length, LastWriteTime
+    Write-Host "Release $versionName+$buildNumber APK ready. Next time: -Offline if cache warm." -ForegroundColor Green
+    exit 0
+}
 
 # --- Play AAB ---
 Write-Step 'Google Play AAB (no rustore)'
 Remove-Item Env:CAB_DRIVE_RUSTORE -ErrorAction SilentlyContinue
-Invoke-ReleaseBuild { & $flutter build appbundle --release } 'AAB'
+if ($Offline) {
+    $initDir = Split-Path $gradleOfflineInit
+    New-Item -ItemType Directory -Force -Path $initDir | Out-Null
+    Set-Content -Path $gradleOfflineInit -Value "gradle.startParameter.offline = true`r`n" -Encoding ASCII
+}
+try {
+    Invoke-ReleaseBuild {
+        & $flutter build appbundle --release
+    } 'AAB'
+} finally {
+    if (Test-Path $gradleOfflineInit) {
+        Remove-Item -Force $gradleOfflineInit -ErrorAction SilentlyContinue
+    }
+}
 $aabSrc = Join-Path $root 'build\app\outputs\bundle\release\app-release.aab'
 $aabDst = "D:\Temp\cabdrive_${buildNumber}.aab"
 Copy-Item -Force $aabSrc $aabDst
 Write-Host "AAB_OK $aabDst"
 
 Write-Step 'DONE'
-Get-Item $apkDst, $aabDst | Format-List FullName, Length, LastWriteTime
-Write-Host "Release $versionName+$buildNumber ready." -ForegroundColor Green
+Get-Item $apkDst, $apkAlias, $aabDst | Format-List FullName, Length, LastWriteTime
+Write-Host "Release $versionName+$buildNumber ready. Next time: -Offline if cache warm." -ForegroundColor Green
 

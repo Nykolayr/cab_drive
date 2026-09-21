@@ -8,6 +8,7 @@ import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import '/flutter_flow/balance_payout_pending_note.dart';
 import '/pages/bottom/chips_card/chips_card_widget.dart';
 import 'dart:async';
 import 'dart:ui';
@@ -284,6 +285,7 @@ class _SposobviplatWidgetState extends State<SposobviplatWidget> {
                                                   ),
                                             ),
                                           ),
+                                        const BalancePayoutPendingNote(),
                                       ],
                                     );
                                   },

@@ -23,8 +23,8 @@ final class ClientErrorReporter {
   final Map<String, DateTime> _recentFingerprints = {};
 
   /// Версия из pubspec — обновлять вместе с `version:` (без package_info_plus).
-  static const String appVersion = '1.1.96';
-  static const String buildNumber = '94';
+  static const String appVersion = '1.1.100';
+  static const String buildNumber = '97';
 
   static void install() {
     instance = ClientErrorReporter._();

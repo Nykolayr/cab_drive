@@ -19,6 +19,8 @@ import 'package:provider/provider.dart';
 import 'package:webviewx_plus/webviewx_plus.dart';
 
 class PopolnitBalansModel extends FlutterFlowModel<PopolnitBalansWidget> {
+  /// Guards double-tap on «Пополнить баланс».
+  bool isSubmittingTopup = false;
   ///  Local state fields for this component.
 
   double num = 0.0;

@@ -51,6 +51,19 @@ def me():
         data = app_pg.get_me(uid)
     if data:
         data = app_pg.heal_session_user(uid, claims) or data
+        # Лёгкий sync вывода: если есть сумма на одобрении — сверить с Jump.
+        try:
+            pending = float(data.get("balance_payout_pending") or 0)
+        except (TypeError, ValueError):
+            pending = 0.0
+        if pending > 0:
+            try:
+                import app_payout_ops
+
+                app_payout_ops.sync_user_payouts(uid)
+                data = app_pg.get_me(uid) or data
+            except Exception:
+                pass
     if not data:
         return utils.get_error("user not found", status=404)
     return utils.get_answer("ok", info={"user": data, "uid": uid})

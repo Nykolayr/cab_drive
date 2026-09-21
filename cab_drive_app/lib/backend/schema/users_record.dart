@@ -101,6 +101,11 @@ class UsersRecord extends FirestoreRecord {
   double get bonusBalance => _bonusBalance ?? 0.0;
   bool hasBonusBalance() => _bonusBalance != null;
 
+  // "balance_payout_pending" — сумма на одобрении вывода Jump.
+  double? _balancePayoutPending;
+  double get balancePayoutPending => _balancePayoutPending ?? 0.0;
+  bool hasBalancePayoutPending() => _balancePayoutPending != null;
+
   // "average_rating" field.
   double? _averageRating;
   double get averageRating => _averageRating ?? 0.0; // Default to 0.0
@@ -240,6 +245,8 @@ class UsersRecord extends FirestoreRecord {
     _chatWithSupport = snapshotData['chat_with_support'] as DocumentReference?;
     _balance = (snapshotData['balance'] as num?)?.toDouble();
     _bonusBalance = (snapshotData['bonus_balance'] as num?)?.toDouble();
+    _balancePayoutPending =
+        (snapshotData['balance_payout_pending'] as num?)?.toDouble();
     _averageRating = castToType<double>(snapshotData['average_rating']);
     _onVerifNow = _asBool(snapshotData['on_verif_now']);
     // Нельзя ронять весь UsersRecord из‑за одного битого адреса — иначе session=/me «пустой».
@@ -353,6 +360,7 @@ Map<String, dynamic> createUsersRecordData({
   DocumentReference? chatWithSupport,
   double? balance,
   double? bonusBalance,
+  double? balancePayoutPending,
   double? averageRating,
   bool? onVerifNow,
   int? numberOfReviews,
@@ -393,6 +401,7 @@ Map<String, dynamic> createUsersRecordData({
       'chat_with_support': chatWithSupport,
       'balance': balance,
       'bonus_balance': bonusBalance,
+      'balance_payout_pending': balancePayoutPending,
       'average_rating': averageRating,
       'on_verif_now': onVerifNow,
       'number_of_reviews': numberOfReviews,
@@ -447,6 +456,7 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e1?.chatWithSupport == e2?.chatWithSupport &&
         e1?.balance == e2?.balance &&
         e1?.bonusBalance == e2?.bonusBalance &&
+        e1?.balancePayoutPending == e2?.balancePayoutPending &&
         e1?.averageRating == e2?.averageRating &&
         e1?.onVerifNow == e2?.onVerifNow &&
         listEquality.equals(e1?.addresses, e2?.addresses) &&
@@ -487,6 +497,7 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e?.chatWithSupport,
         e?.balance,
         e?.bonusBalance,
+        e?.balancePayoutPending,
         e?.averageRating,
         e?.onVerifNow,
         e?.addresses,

@@ -112,6 +112,7 @@ def mirror_user_fields(user_id: str, fields: dict[str, Any]) -> bool:
         "addresses_json",
         "balance",
         "bonus_balance",
+        "balance_payout_pending",
         "commission_percent",
         "current_commision",
         "on_shift",
@@ -239,6 +240,48 @@ def mirror_pay_order_paid(
             )
 
     return soft_execute("mirror_pay_order_paid", _run)
+
+
+def claim_pay_order_paid(
+    pay_order_id: str,
+    *,
+    tinkoff_status: str | None = None,
+    payment_id: str | None = None,
+) -> bool:
+    """Атомарно пометить pay_order оплаченным.
+
+    True — этот воркер первый (можно начислять баланс).
+    False — уже paid / нет строки (второй webhook AUTHORIZED/CONFIRMED).
+    """
+    if not pay_order_id:
+        return False
+
+    def _run(conn):
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE app_pay_orders
+                SET
+                    is_paid = TRUE,
+                    tinkoff_status = COALESCE(%s, tinkoff_status),
+                    payment_id = COALESCE(%s, payment_id),
+                    updated_at = NOW()
+                WHERE id = %s
+                  AND COALESCE(is_paid, FALSE) = FALSE
+                RETURNING id
+                """,
+                (tinkoff_status, payment_id, pay_order_id),
+            )
+            return cur.fetchone() is not None
+
+    try:
+        with connection() as conn:
+            if conn is None:
+                return False
+            return bool(_run(conn))
+    except Exception:
+        logger.exception("[pg] claim_pay_order_paid fail id=%s", pay_order_id)
+        return False
 
 
 def upsert_pay_order(pay_order_id: str, data: dict[str, Any]) -> bool:
@@ -772,6 +815,9 @@ def _row_to_user_json(row: dict) -> dict:
         "verif_id": int(row["verif_id"]) if row.get("verif_id") is not None else None,
         "balance": float(row["balance"]) if row.get("balance") is not None else 0,
         "bonus_balance": float(row["bonus_balance"]) if row.get("bonus_balance") is not None else 0,
+        "balance_payout_pending": float(row["balance_payout_pending"])
+        if row.get("balance_payout_pending") is not None
+        else 0,
         "commission": float(row["commission_percent"]) if row.get("commission_percent") is not None else None,
         "fb_id": row.get("fb_id"),
         "_source": "postgres",
@@ -848,7 +894,9 @@ def get_me(user_id: str) -> Optional[dict]:
                 SELECT id, admin, email, display_name, is_driver, login_complete, created_time,
                        photo_url, phone_number, verif_ne_proidena, on_verif_now, verif_compl,
                        verif_id,
-                       balance, bonus_balance, commission_percent, fb_id, is_blocked, block_comment,
+                       balance, bonus_balance,
+                       COALESCE(balance_payout_pending, 0) AS balance_payout_pending,
+                       commission_percent, fb_id, is_blocked, block_comment,
                        surname, city, region, on_shift, fine, current_commision, email_user,
                        active_orders_queue, driver_lat, driver_lng,
                        dfb, city_lat, city_lng, shift_start_date_time, shift_completion_date_time,
@@ -2448,3 +2496,279 @@ def delete_saved_card(card_id: str) -> bool:
             cur.execute("DELETE FROM app_saved_cards WHERE id = %s", (card_id,))
 
     return soft_execute("delete_saved_card", _run)
+
+
+def create_payout(
+    *,
+    payout_id: str,
+    user_id: str,
+    jump_payment_id: Optional[int],
+    amount_to_card: float,
+    commission: float,
+    balance_before: float,
+    balance_debited: float,
+    status: str,
+    jump_status_id: Optional[int] = None,
+    jump_status_title: Optional[str] = None,
+    pan_tail: str = "",
+    raw_json: Any = None,
+) -> bool:
+    if not payout_id or not user_id:
+        return False
+
+    def _run(conn):
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO app_payouts (
+                    id, user_id, jump_payment_id, amount_to_card, commission,
+                    balance_before, balance_debited, status,
+                    jump_status_id, jump_status_title, pan_tail, raw_json
+                ) VALUES (
+                    %s, %s, %s, %s, %s,
+                    %s, %s, %s,
+                    %s, %s, %s, %s::jsonb
+                )
+                ON CONFLICT (id) DO NOTHING
+                """,
+                (
+                    payout_id,
+                    user_id,
+                    jump_payment_id,
+                    amount_to_card,
+                    commission,
+                    balance_before,
+                    balance_debited,
+                    status or "pending",
+                    jump_status_id,
+                    jump_status_title,
+                    pan_tail or "",
+                    json.dumps(raw_json, ensure_ascii=False, default=str)
+                    if raw_json is not None
+                    else None,
+                ),
+            )
+
+    return soft_execute("create_payout", _run)
+
+
+def _payout_row_to_dict(d: dict[str, Any]) -> dict[str, Any]:
+    raw = _loads_json(d.get("raw_json")) if d.get("raw_json") is not None else None
+    return {
+        "id": d.get("id"),
+        "user_id": d.get("user_id"),
+        "jump_payment_id": d.get("jump_payment_id"),
+        "amount_to_card": float(d["amount_to_card"])
+        if d.get("amount_to_card") is not None
+        else 0.0,
+        "commission": float(d["commission"]) if d.get("commission") is not None else 0.0,
+        "balance_before": float(d["balance_before"])
+        if d.get("balance_before") is not None
+        else 0.0,
+        "balance_debited": float(d["balance_debited"])
+        if d.get("balance_debited") is not None
+        else 0.0,
+        "status": d.get("status") or "pending",
+        "jump_status_id": d.get("jump_status_id"),
+        "jump_status_title": d.get("jump_status_title"),
+        "pan_tail": d.get("pan_tail") or "",
+        "raw_json": raw,
+        "created_at": d.get("created_at").isoformat()
+        if d.get("created_at") is not None
+        else None,
+        "updated_at": d.get("updated_at").isoformat()
+        if d.get("updated_at") is not None
+        else None,
+    }
+
+
+def get_open_payout(user_id: str) -> Optional[dict]:
+    """Первая pending-заявка пользователя (блок повторного вывода)."""
+    if not user_id or not enabled():
+        return None
+
+    def _run(conn):
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, user_id, jump_payment_id, amount_to_card, commission,
+                       balance_before, balance_debited, status,
+                       jump_status_id, jump_status_title, pan_tail, raw_json,
+                       created_at, updated_at
+                FROM app_payouts
+                WHERE user_id = %s AND status = 'pending'
+                ORDER BY created_at ASC
+                LIMIT 1
+                """,
+                (user_id,),
+            )
+            row = cur.fetchone()
+            if not row:
+                return None
+            desc = [c[0] for c in cur.description]
+            return _payout_row_to_dict(dict(zip(desc, row)))
+
+    try:
+        with connection() as conn:
+            if conn is None:
+                return None
+            return _run(conn)
+    except Exception:
+        logger.exception("[app_pg] get_open_payout failed")
+        return None
+
+
+def get_payout_by_jump_id(jump_payment_id: int) -> Optional[dict]:
+    if not jump_payment_id or not enabled():
+        return None
+
+    def _run(conn):
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, user_id, jump_payment_id, amount_to_card, commission,
+                       balance_before, balance_debited, status,
+                       jump_status_id, jump_status_title, pan_tail, raw_json,
+                       created_at, updated_at
+                FROM app_payouts
+                WHERE jump_payment_id = %s
+                LIMIT 1
+                """,
+                (int(jump_payment_id),),
+            )
+            row = cur.fetchone()
+            if not row:
+                return None
+            desc = [c[0] for c in cur.description]
+            return _payout_row_to_dict(dict(zip(desc, row)))
+
+    try:
+        with connection() as conn:
+            if conn is None:
+                return None
+            return _run(conn)
+    except Exception:
+        logger.exception("[app_pg] get_payout_by_jump_id failed")
+        return None
+
+
+def list_payouts(
+    *,
+    user_id: str,
+    status: Optional[str] = None,
+    limit: int = 20,
+) -> list[dict]:
+    if not user_id or not enabled():
+        return []
+    lim = max(1, min(int(limit or 20), 100))
+
+    def _run(conn):
+        with conn.cursor() as cur:
+            if status:
+                cur.execute(
+                    """
+                    SELECT id, user_id, jump_payment_id, amount_to_card, commission,
+                           balance_before, balance_debited, status,
+                           jump_status_id, jump_status_title, pan_tail, raw_json,
+                           created_at, updated_at
+                    FROM app_payouts
+                    WHERE user_id = %s AND status = %s
+                    ORDER BY created_at DESC
+                    LIMIT %s
+                    """,
+                    (user_id, status, lim),
+                )
+            else:
+                cur.execute(
+                    """
+                    SELECT id, user_id, jump_payment_id, amount_to_card, commission,
+                           balance_before, balance_debited, status,
+                           jump_status_id, jump_status_title, pan_tail, raw_json,
+                           created_at, updated_at
+                    FROM app_payouts
+                    WHERE user_id = %s
+                    ORDER BY created_at DESC
+                    LIMIT %s
+                    """,
+                    (user_id, lim),
+                )
+            rows = cur.fetchall()
+            desc = [c[0] for c in cur.description]
+            return [_payout_row_to_dict(dict(zip(desc, r))) for r in rows]
+
+    try:
+        with connection() as conn:
+            if conn is None:
+                return []
+            return _run(conn)
+    except Exception:
+        logger.exception("[app_pg] list_payouts failed")
+        return []
+
+
+def list_pending_payout_user_ids(*, limit: int = 40) -> list[str]:
+    if not enabled():
+        return []
+    lim = max(1, min(int(limit or 40), 200))
+
+    def _run(conn):
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT DISTINCT user_id
+                FROM app_payouts
+                WHERE status = 'pending'
+                ORDER BY user_id
+                LIMIT %s
+                """,
+                (lim,),
+            )
+            return [str(r[0]) for r in cur.fetchall() if r and r[0]]
+
+    try:
+        with connection() as conn:
+            if conn is None:
+                return []
+            return _run(conn)
+    except Exception:
+        logger.exception("[app_pg] list_pending_payout_user_ids failed")
+        return []
+
+
+def update_payout(
+    payout_id: str,
+    *,
+    status: Optional[str] = None,
+    jump_status_id: Optional[int] = None,
+    jump_status_title: Optional[str] = None,
+    raw_json: Any = None,
+) -> bool:
+    if not payout_id:
+        return False
+
+    def _run(conn):
+        with conn.cursor() as cur:
+            sets = []
+            vals: list[Any] = []
+            if status is not None:
+                sets.append("status = %s")
+                vals.append(status)
+            if jump_status_id is not None:
+                sets.append("jump_status_id = %s")
+                vals.append(jump_status_id)
+            if jump_status_title is not None:
+                sets.append("jump_status_title = %s")
+                vals.append(jump_status_title)
+            if raw_json is not None:
+                sets.append("raw_json = %s::jsonb")
+                vals.append(json.dumps(raw_json, ensure_ascii=False, default=str))
+            if not sets:
+                return
+            sets.append("updated_at = NOW()")
+            vals.append(payout_id)
+            cur.execute(
+                f"UPDATE app_payouts SET {', '.join(sets)} WHERE id = %s",
+                vals,
+            )
+
+    return soft_execute("update_payout", _run)

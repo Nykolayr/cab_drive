@@ -131,12 +131,43 @@ def complete_order_by_customer(
         out["credit_field"] = "balance"
         out["driver_balance"] = new_balance
         driver_fs = {"balance": new_balance}
+        try:
+            import app_finance_log
+
+            app_finance_log.log_balance(
+                reason="order_complete_card",
+                uid=driver_uid,
+                balance_before=_num(driver.get("balance")),
+                balance_after=new_balance,
+                delta=commission,
+                order_id=order_id,
+                price=price,
+                commission=commission,
+                system=system,
+            )
+        except Exception:
+            logger.exception("[complete_order] finance log failed")
     else:
         new_comm = _num(driver.get("current_commision")) + commission
         app_pg.mirror_user_fields(driver_uid, {"current_commision": new_comm})
         out["credit_field"] = "current_commision"
         out["driver_current_commision"] = new_comm
         driver_fs = {"current_commision": new_comm}
+        try:
+            import app_finance_log
+
+            app_finance_log.log_event(
+                "commission",
+                reason="order_complete_cash",
+                uid=driver_uid,
+                order_id=order_id,
+                price=price,
+                commission=commission,
+                current_commision_after=new_comm,
+                system=system,
+            )
+        except Exception:
+            logger.exception("[complete_order] finance log failed")
 
     def _fs():
         import utils
@@ -805,21 +836,37 @@ def patch_order_by_customer(
                 if uid:
                     recipients.append(uid)
         # fallback: водители из app_order_responses (если колонка/raw пусты)
-        if not recipients:
-            try:
-                for bid in app_pg.list_order_responses(order_id) or []:
-                    uid = _ref_uid(bid.get("driver_id")) or _ref_uid(
-                        bid.get("user_driver")
-                    )
-                    if uid:
-                        recipients.append(uid)
-            except Exception:
-                logger.exception("[patch_order] list_order_responses for fcm failed")
+        try:
+            for bid in app_pg.list_order_responses(order_id) or []:
+                uid = _ref_uid(bid.get("driver_id")) or _ref_uid(
+                    bid.get("user_driver")
+                )
+                if uid:
+                    recipients.append(uid)
+        except Exception:
+            logger.exception("[patch_order] list_order_responses for fcm failed")
         drv = _ref_uid(order.get("selected_driver")) or _ref_uid(
             order.get("selected_driver_id")
         )
         if drv:
             recipients.append(drv)
+        # Пока заказ в поиске (newOrder) — как при create: пуш водителям на смене.
+        # Иначе при «Изменить цену» до первого отклика recipients пустой → пуша нет
+        # (цена в ленте обновляется поллом, но баннера нет — жалобы заказчика).
+        status_now = str(order.get("status") or "").strip()
+        if status_now in ("newOrder", "new_order", ""):
+            try:
+                drivers = app_pg.list_drivers_for_geo(
+                    on_shift=True, require_location=False, limit=500
+                )
+                for d in drivers or []:
+                    uid = str(d.get("id") or "").strip()
+                    if uid:
+                        recipients.append(uid)
+            except Exception:
+                logger.exception(
+                    "[patch_order] list_drivers_for_geo for price_changed failed"
+                )
         # unique, no customer
         seen: set[str] = set()
         uniq: list[str] = []

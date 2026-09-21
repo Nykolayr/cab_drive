@@ -988,6 +988,16 @@ def check_order_status():
                     logger.error(
                         f"[check_order_status.auto_complete] failed {oid}: {e}"
                     )
+
+            # Jump payouts: polling статусов (webhook в OpenAPI нет)
+            try:
+                import app_payout_ops
+
+                sync_res = app_payout_ops.sync_all_pending_payouts(limit=40)
+                if sync_res.get("users"):
+                    logger.info("[check_order_status] payout sync %s", sync_res)
+            except Exception as e:
+                logger.error(f"[check_order_status.payout_sync] failed: {e}")
         except Exception as e:
             logger.error(f"[check_order_status] loop error: {e}")
         time.sleep(poll_sec)

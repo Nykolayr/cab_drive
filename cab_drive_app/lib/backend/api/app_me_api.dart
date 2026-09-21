@@ -684,6 +684,7 @@ class AppMe {
     required this.id,
     required this.balance,
     required this.bonusBalance,
+    this.balancePayoutPending = 0,
     this.displayName,
     this.phoneNumber,
     this.isDriver,
@@ -697,6 +698,8 @@ class AppMe {
   final String id;
   final double balance;
   final double bonusBalance;
+  /// Сумма на одобрении вывода (Jump pending).
+  final double balancePayoutPending;
   final String? displayName;
   final String? phoneNumber;
   final bool? isDriver;
@@ -725,6 +728,9 @@ class AppMe {
       id: '${json['id'] ?? ''}',
       balance: asDouble(json['balance']),
       bonusBalance: asDouble(json['bonus_balance'] ?? json['bonusBalance']),
+      balancePayoutPending: asDouble(
+        json['balance_payout_pending'] ?? json['balancePayoutPending'],
+      ),
       displayName:
           json['display_name']?.toString() ?? json['displayName']?.toString(),
       phoneNumber:

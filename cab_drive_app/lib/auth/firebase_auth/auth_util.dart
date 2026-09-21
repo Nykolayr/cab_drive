@@ -47,6 +47,12 @@ double get effectiveBalance =>
 double get effectiveBonusBalance =>
     appMeCache?.bonusBalance ?? currentUserDocument?.bonusBalance ?? 0.0;
 
+/// Сумма на одобрении вывода (Jump).
+double get effectiveBalancePayoutPending =>
+    appMeCache?.balancePayoutPending ??
+    currentUserDocument?.balancePayoutPending ??
+    0.0;
+
 bool get effectiveOnShift =>
     appMeCache?.onShift ?? currentUserDocument?.onShift ?? false;
 

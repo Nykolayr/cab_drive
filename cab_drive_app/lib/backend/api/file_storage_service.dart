@@ -3,15 +3,28 @@ import 'package:dio/dio.dart';
 import '../../core/utils/app_dio.dart';
 
 class FileStorageService {
-  /// Загрузка файла на сервер
-  /// Возвращает UUID файла или null при ошибке
+  /// HTTPS через nginx — надёжнее сырого http://IP:5000 с мобильной сети.
+  static const String _httpsKekBase = 'https://cab.artean.ru/kek/';
+
+  static Dio get _dio => Dio(
+        BaseOptions(
+          baseUrl: _httpsKekBase,
+          headers: AppDio.headers,
+          connectTimeout: const Duration(seconds: 20),
+          receiveTimeout: const Duration(seconds: 60),
+          sendTimeout: const Duration(seconds: 60),
+        ),
+      );
+
+  /// Загрузка файла на сервер.
+  /// Возвращает UUID файла или null при ошибке.
   static Future<String?> uploadFile(Uint8List bytes, String filename) async {
     try {
       final formData = FormData.fromMap({
         'file': MultipartFile.fromBytes(bytes, filename: filename),
       });
 
-      final response = await AppDio.dio.post(
+      final response = await _dio.post(
         'files/upload',
         data: formData,
       );
@@ -26,33 +39,30 @@ class FileStorageService {
     }
   }
 
-  /// Получение URL для отображения изображения по UUID
+  /// Получение URL для отображения изображения по UUID.
   static String getFileUrl(String uuid) {
-    return '${AppDio.domain}files/get?uuid=$uuid';
+    return '${_httpsKekBase}files/get?uuid=$uuid';
   }
 
-  /// Проверяет, является ли строка Firebase URL (для обратной совместимости)
+  /// Проверяет, является ли строка Firebase URL (для обратной совместимости).
   static bool isFirebaseUrl(String value) {
     return value.startsWith('http://') ||
         value.startsWith('https://') ||
         value.contains('firebasestorage.googleapis.com');
   }
 
-  /// Получение URL для отображения - поддержка и UUID и старых Firebase URLs
+  /// Получение URL для отображения — UUID и старые Firebase URLs.
   static String getImageUrl(String uuidOrUrl) {
     if (isFirebaseUrl(uuidOrUrl)) {
-      // Старый Firebase URL - возвращаем как есть
       return uuidOrUrl;
     }
-    // Новый UUID - формируем URL
     return getFileUrl(uuidOrUrl);
   }
 
-  /// Загрузка нескольких файлов
-  /// Возвращает список UUIDs
+  /// Загрузка нескольких файлов. Возвращает список UUID.
   static Future<List<String>> uploadFiles(
-      List<MapEntry<Uint8List, String>> files,
-      ) async {
+    List<MapEntry<Uint8List, String>> files,
+  ) async {
     final results = await Future.wait(
       files.map((entry) => uploadFile(entry.key, entry.value)),
     );

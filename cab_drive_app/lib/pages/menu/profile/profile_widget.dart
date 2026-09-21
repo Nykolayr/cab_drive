@@ -21,6 +21,7 @@ import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/balance_payout_pending_note.dart';
 import '/index.dart';
 import '/login/verif/verification_preview/verification_preview_widget.dart';
 import '/pages/bottom/navbar/navbar_widget.dart';
@@ -310,13 +311,11 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                                           builder: (context) {
                                                             final mainBalance =
                                                                 valueOrDefault(
-                                                                    currentUserDocument
-                                                                        ?.balance,
+                                                                    effectiveBalance,
                                                                     0.0);
                                                             final bonus =
                                                                 valueOrDefault(
-                                                                    currentUserDocument
-                                                                        ?.bonusBalance,
+                                                                    effectiveBonusBalance,
                                                                     0.0);
                                                             final hasBonus =
                                                                 bonus > 0;
@@ -389,6 +388,11 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                                                           ),
                                                                     ),
                                                                   ),
+                                                                BalancePayoutPendingNote(
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .secondaryBackground,
+                                                                ),
                                                               ],
                                                             );
                                                           },
@@ -408,13 +412,11 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                                     onTap: () async {
                                                       final withdrawable =
                                                           valueOrDefault(
-                                                              currentUserDocument
-                                                                  ?.balance,
+                                                              effectiveBalance,
                                                               0.0);
                                                       final bonusOnly =
                                                           valueOrDefault(
-                                                              currentUserDocument
-                                                                  ?.bonusBalance,
+                                                              effectiveBonusBalance,
                                                               0.0);
                                                       if (withdrawable <
                                                               200.0 &&

@@ -203,7 +203,45 @@ class BottomActionsWidget extends StatelessWidget {
     }
   }
 
+  static const int _minCompletePhotos = 3;
+  static const int _maxCompletePhotos = 10;
+
+  int _photoCount() =>
+      model.images.where((f) => f.bytes != null && f.bytes!.isNotEmpty).length;
+
+  String _completeHint({required bool busy}) {
+    if (busy) {
+      return 'Идёт загрузка фото и завершение — подождите.';
+    }
+    final n = _photoCount();
+    if (n < _minCompletePhotos) {
+      final need = _minCompletePhotos - n;
+      return 'Нужно ещё $need фото (минимум $_minCompletePhotos, сейчас $n). Без этого заказ не завершить.';
+    }
+    if (n > _maxCompletePhotos) {
+      return 'Слишком много фото ($n). Нужно от $_minCompletePhotos до $_maxCompletePhotos.';
+    }
+    return 'Фото: $n. Можно нажать «Завершить заказ».';
+  }
+
+  void _snack(BuildContext context, String text) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  }
+
   Future<void> _finishWithPhoto(BuildContext context) async {
+    if (model.isDataUploading_uploadDataSk6) {
+      _snack(context, 'Сейчас завершаем заказ — подождите');
+      return;
+    }
+    if (_photoCount() >= _maxCompletePhotos) {
+      _snack(
+        context,
+        'Уже $_maxCompletePhotos фото — больше нельзя. Нажмите «Завершить заказ».',
+      );
+      return;
+    }
+
     if (!(await getPermissionStatus(cameraPermission))) {
       await requestPermission(cameraPermission);
       return;
@@ -244,6 +282,7 @@ class BottomActionsWidget extends StatelessWidget {
 
     if (newFiles.isEmpty) {
       print('[_finishWithPhoto] no valid files to add');
+      _snack(context, 'Фото не сохранилось — попробуйте ещё раз');
       return;
     }
 
@@ -254,92 +293,118 @@ class BottomActionsWidget extends StatelessWidget {
   }
 
   Future<void> _uploadAndComplete(BuildContext context) async {
-    model.isDataUploading_uploadDataSk6 = true;
-    var selectedUploadedFiles = <FFUploadedFile>[];
-    var selectedMedia = <SelectedFile>[];
-    var downloadUrls = <String>[];
-    try {
-      selectedUploadedFiles = model.images;
-      print('_uploadAndComplete: selectedUploadedFiles.length = ${selectedUploadedFiles.length}');
+    final withBytes = model.images
+        .where((f) => f.bytes != null && f.bytes!.isNotEmpty)
+        .toList();
+    if (withBytes.length < _minCompletePhotos) {
+      final need = _minCompletePhotos - withBytes.length;
+      _snack(
+        context,
+        'Нельзя завершить: нужно ещё $need фото (минимум $_minCompletePhotos).',
+      );
+      return;
+    }
+    if (withBytes.length > _maxCompletePhotos) {
+      _snack(
+        context,
+        'Слишком много фото. Нужно от $_minCompletePhotos до $_maxCompletePhotos.',
+      );
+      return;
+    }
 
-      selectedMedia = selectedFilesFromUploadedFiles(
-        selectedUploadedFiles,
+    try {
+      model.isDataUploading_uploadDataSk6 = true;
+      onStateChanged?.call();
+
+      final selectedMedia = selectedFilesFromUploadedFiles(
+        withBytes,
         isMultiData: true,
       );
-      print('_uploadAndComplete: selectedMedia.length = ${selectedMedia.length}');
-
-      final results = await Future.wait(selectedMedia
-          .map((m) async {
-            print('_uploadAndComplete: uploading ${m.storagePath} (${m.bytes.length} bytes)');
-            return await uploadData(m.storagePath, m.bytes);
-          }));
-
-      print('_uploadAndComplete: upload results = $results');
-
-      downloadUrls = results
+      print('_uploadAndComplete: uploading ${selectedMedia.length} file(s)');
+      final results = await Future.wait(selectedMedia.map((m) async {
+        print(
+          '_uploadAndComplete: uploading ${m.storagePath} (${m.bytes.length} bytes)',
+        );
+        return await uploadData(m.storagePath, m.bytes);
+      }));
+      final downloadUrls = results
           .where((u) => u != null)
           .map((u) => u!.toString())
           .toList();
-
       print('_uploadAndComplete: downloadUrls.length = ${downloadUrls.length}');
+
+      if (downloadUrls.length < _minCompletePhotos) {
+        _snack(
+          context,
+          'Не удалось загрузить фото на сервер '
+          '(успешно ${downloadUrls.length} из ${selectedMedia.length}). '
+          'Проверьте интернет и попробуйте снова — заказ не завершён.',
+        );
+        return;
+      }
+      if (downloadUrls.length != selectedMedia.length) {
+        _snack(
+          context,
+          'Загружено не всё фото (${downloadUrls.length}/${selectedMedia.length}). '
+          'Заказ не завершён — повторите.',
+        );
+        return;
+      }
+
+      model.uploadedLocalFile_uploadDataSk6 = withBytes;
+      model.uploadedFileUrl_uploadDataSk6 = downloadUrls;
+
+      final statusOk = await _pushOrderStatus(
+        StatusOrder.on_confirmation,
+        imageCompl: downloadUrls,
+      );
+      if (!statusOk) {
+        _snack(
+          context,
+          'Фото загружены, но статус заказа не обновился. Попробуйте ещё раз.',
+        );
+        return;
+      }
+
+      await _patchCurrentOrder(null);
+      try {
+        final dest = order.pointB.latlng;
+        if (dest != null) {
+          await actions.toggleRouteTracking(
+            'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
+            false,
+            widgetOrderRef,
+            dest,
+          );
+        }
+      } catch (e) {
+        print('[BottomActions.completeOrder] toggleRouteTracking ERROR $e');
+      }
+      try {
+        if (order.userCustomer != null) {
+          triggerPushNotification(
+            notificationTitle:
+                'Статус заказа изменен на \"Ожидает подтверждения клиента\"',
+            notificationText:
+                'Если вы не подтвердите вручение в течение 12 часов, заказ будет завершён автоматически.',
+            notificationSound: 'default',
+            userRefs: [order.userCustomer!],
+            initialPageName: 'order_Page_Customer',
+            parameterData: {'index': 1, 'order': widgetOrderRef},
+          );
+        }
+      } catch (e) {
+        print('[BottomActions.completeOrder] client push ERROR $e');
+      }
+
+      await _advanceQueue(context);
+    } catch (e, st) {
+      print('[BottomActions.completeOrder] FATAL $e\n$st');
+      _snack(context, 'Ошибка завершения: $e');
     } finally {
       model.isDataUploading_uploadDataSk6 = false;
+      onStateChanged?.call();
     }
-    if (selectedUploadedFiles.length == selectedMedia.length &&
-        downloadUrls.length == selectedMedia.length) {
-      model.uploadedLocalFile_uploadDataSk6 = selectedUploadedFiles;
-      model.uploadedFileUrl_uploadDataSk6 = downloadUrls;
-    } else {
-      print('_uploadAndComplete: FAILED - counts dont match: files=${selectedUploadedFiles.length}, media=${selectedMedia.length}, urls=${downloadUrls.length}');
-      await showModalBottomSheet(
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        context: context,
-        builder: (context) {
-          return GestureDetector(
-            onTap: () {
-              FocusScope.of(context).unfocus();
-              FocusManager.instance.primaryFocus?.unfocus();
-            },
-            child: Padding(
-              padding: MediaQuery.viewInsetsOf(context),
-              child: ErrorPopupWidget(
-                title: 'Ошибка загрузки',
-                text: 'Не удалось загрузить фотографии. Попробуйте ещё раз.',
-              ),
-            ),
-          );
-        },
-      );
-      return;
-    }
-
-    final statusOk = await _pushOrderStatus(
-      StatusOrder.on_confirmation,
-      imageCompl: model.uploadedFileUrl_uploadDataSk6,
-    );
-    if (!statusOk) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Не удалось обновить статус заказа')),
-      );
-      return;
-    }
-
-    await _patchCurrentOrder(null);
-    await actions.toggleRouteTracking('AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
-        false, widgetOrderRef, order.pointB.latlng!);
-    triggerPushNotification(
-      notificationTitle:
-          'Статус заказа изменен на \"Ожидает подтверждения клиента\"',
-      notificationText:
-          'Если вы не подтвердите вручение в течение 12 часов, заказ будет завершён автоматически.',
-      notificationSound: 'default',
-      userRefs: [order.userCustomer!],
-      initialPageName: 'order_Page_Customer',
-      parameterData: {'index': 1, 'order': widgetOrderRef},
-    );
-
-    await _advanceQueue(context);
   }
 
   /// Удаляет текущий orderRef из очереди и, если в очереди есть следующий
@@ -592,101 +657,147 @@ class BottomActionsWidget extends StatelessWidget {
 
     if ((order.selectedDriver == currentUserReference) &&
         (order.status == StatusOrder.place_delivery)) {
+      final photoCount = _photoCount();
+      final busy = model.isDataUploading_uploadDataSk6;
+      final canComplete = !busy &&
+          photoCount >= _minCompletePhotos &&
+          photoCount <= _maxCompletePhotos;
+      final theme = FlutterFlowTheme.of(context);
       return Container(
         width: double.infinity,
         decoration: BoxDecoration(
-            color: FlutterFlowTheme.of(context).secondary,
-            borderRadius: BorderRadius.only(
+            color: theme.secondary,
+            borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(18.0),
                 topRight: Radius.circular(18.0))),
-        child: Row(
-          children: [
-            if ((order.selectedDriver == currentUserReference) &&
-                (order.status == StatusOrder.place_delivery) &&
-                ((model.images.length > 2)))
-              SizedBox(width: 10,),
-            if ((order.selectedDriver == currentUserReference) &&
-                (order.status == StatusOrder.place_delivery) &&
-                ((model.images.length > 2)))
-            Expanded(
-                  child: Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(0, 8.0, 0, 35.0),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(10.0, 8.0, 10.0, 28.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(4.0, 0, 4.0, 8.0),
+                child: Text(
+                  _completeHint(busy: busy),
+                  textAlign: TextAlign.center,
+                  style: theme.bodySmall.override(
+                    fontFamily: 'SF',
+                    color: canComplete ? theme.secondaryText : theme.error,
+                    fontSize: 12.0,
+                    letterSpacing: 0.0,
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  Expanded(
                     child: FFButtonWidget(
                       onPressed: () async {
+                        if (busy) {
+                          _snack(context, 'Сейчас завершаем заказ — подождите');
+                          return;
+                        }
                         await _uploadAndComplete(context);
                       },
-                      text: 'Завершить заказ',
+                      text: busy ? 'Завершаем…' : 'Завершить заказ',
                       options: FFButtonOptions(
                         width: double.infinity,
                         height: 56.0,
-                        color: FlutterFlowTheme.of(context).tertiary,
-                        textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                        color: theme.tertiary,
+                        textStyle: theme.titleSmall.override(
                             fontFamily: 'SF',
-                            color: FlutterFlowTheme.of(context).primaryBackground),
+                            color: theme.primaryBackground),
+                        elevation: 0.0,
+                        borderRadius: BorderRadius.circular(16.0),
+                      ),
+                      showLoadingIndicator: true,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: FFButtonWidget(
+                      onPressed: () async {
+                        await _finishWithPhoto(context);
+                      },
+                      text: 'Сделать фото',
+                      options: FFButtonOptions(
+                        width: double.infinity,
+                        height: 56.0,
+                        color: theme.tertiary,
+                        textStyle: theme.titleSmall.override(
+                            fontFamily: 'SF',
+                            color: theme.primaryBackground),
                         elevation: 0.0,
                         borderRadius: BorderRadius.circular(16.0),
                       ),
                       showLoadingIndicator: false,
                     ),
-                  )),
-            SizedBox(width: 10,),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(00, 8.0, 0, 35.0),
-                child: FFButtonWidget(
-                  onPressed: () async {
-                    await _finishWithPhoto(context);
-                  },
-                  text: 'Сделать фото',
-                  options: FFButtonOptions(
-                    width: double.infinity,
-                    height: 56.0,
-                    color: FlutterFlowTheme.of(context).tertiary,
-                    textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                        fontFamily: 'SF',
-                        color: FlutterFlowTheme.of(context).primaryBackground),
-                    elevation: 0.0,
-                    borderRadius: BorderRadius.circular(16.0),
                   ),
-                  showLoadingIndicator: false,
-                ),
+                ],
               ),
-            ),
-            SizedBox(width: 10,),
-
-          ],
+            ],
+          ),
         ),
       );
     }
 
     if ((order.selectedDriver == currentUserReference) &&
-        (order.status == StatusOrder.at_work) &&
-        ((model.images.length > 3))) {
+        (order.status == StatusOrder.at_work)) {
+      final photoCount = _photoCount();
+      final busy = model.isDataUploading_uploadDataSk6;
+      final canComplete = !busy &&
+          photoCount >= _minCompletePhotos &&
+          photoCount <= _maxCompletePhotos;
+      final theme = FlutterFlowTheme.of(context);
       return Container(
         width: double.infinity,
         decoration: BoxDecoration(
-            color: FlutterFlowTheme.of(context).secondary,
-            borderRadius: BorderRadius.only(
+            color: theme.secondary,
+            borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(18.0),
                 topRight: Radius.circular(18.0))),
         child: Padding(
-          padding: EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 35.0),
-          child: FFButtonWidget(
-            onPressed: () async {
-              await _uploadAndComplete(context);
-            },
-            text: 'Завершить заказ',
-            options: FFButtonOptions(
-              width: double.infinity,
-              height: 56.0,
-              color: FlutterFlowTheme.of(context).tertiary,
-              textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                  fontFamily: 'SF',
-                  color: FlutterFlowTheme.of(context).primaryBackground),
-              elevation: 0.0,
-              borderRadius: BorderRadius.circular(16.0),
-            ),
-            showLoadingIndicator: false,
+          padding: const EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 28.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(4.0, 0, 4.0, 8.0),
+                child: Text(
+                  _completeHint(busy: busy),
+                  textAlign: TextAlign.center,
+                  style: theme.bodySmall.override(
+                    fontFamily: 'SF',
+                    color: canComplete ? theme.secondaryText : theme.error,
+                    fontSize: 12.0,
+                    letterSpacing: 0.0,
+                  ),
+                ),
+              ),
+              FFButtonWidget(
+                onPressed: () async {
+                  if (busy) {
+                    _snack(context, 'Сейчас завершаем заказ — подождите');
+                    return;
+                  }
+                  await _uploadAndComplete(context);
+                },
+                text: busy ? 'Завершаем…' : 'Завершить заказ',
+                options: FFButtonOptions(
+                  width: double.infinity,
+                  height: 56.0,
+                  color: theme.tertiary,
+                  textStyle: theme.titleSmall.override(
+                      fontFamily: 'SF',
+                      color: theme.primaryBackground),
+                  elevation: 0.0,
+                  borderRadius: BorderRadius.circular(16.0),
+                ),
+                showLoadingIndicator: true,
+              ),
+            ],
           ),
         ),
       );
