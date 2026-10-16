@@ -344,7 +344,7 @@ class _OrderPageCustomerWidgetState extends State<OrderPageCustomerWidget> {
                                 ),
                               ),
                               if ((orderPageCustomerOrderRecord.status ==
-                                      StatusOrder.newOrder) ||
+                                      StatusOrder.completed) ||
                                   (orderPageCustomerOrderRecord.status ==
                                       StatusOrder.hidden))
                                 Builder(

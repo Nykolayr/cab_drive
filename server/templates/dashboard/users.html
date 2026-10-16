@@ -80,6 +80,7 @@
                             <thead>
                             <tr>
                                 <th>ID</th>
+                                <th>Телефон</th>
                                 <th>Email</th>
                                 <th>Имя</th>
                                 <th>Дата регистрации</th>
@@ -88,10 +89,17 @@
                             </thead>
                             <tbody>
                             {% for _user in users_list %}
+                                {% set _phone = _user.get('phone_number') if _user is mapping else _user.phone_number %}
+                                {% set _email = _user.get('email') if _user is mapping else _user.email %}
+                                {% set _name = _user.get('display_name') if _user is mapping else _user.display_name %}
+                                {% if not _phone or _phone == 'None' %}{% set _phone = '' %}{% endif %}
+                                {% if not _email or _email == 'None' %}{% set _email = '' %}{% endif %}
+                                {% if not _name or _name == 'None' %}{% set _name = '' %}{% endif %}
                                 <tr>
                                     <td>{{ _user['id'] }}</td>
-                                    <td data-order="{{ _user['email'] }}">{{ _user['email'] }}</td>
-                                    <td>{{ _user['display_name'] }}</td>
+                                    <td data-order="{{ _phone }}">{% if _phone %}{{ _phone }}{% else %}—{% endif %}</td>
+                                    <td data-order="{{ _email }}">{% if _email %}{{ _email }}{% else %}—{% endif %}</td>
+                                    <td>{% if _name %}{{ _name }}{% else %}—{% endif %}</td>
                                     <td data-order="{{ _user['created_time'] }}">{{ _user['created_time'].strftime('%d.%m.%Y %H:%M') }}</td>
                                     <td>
                                         <a href="/d/user?id={{ _user.id }}">

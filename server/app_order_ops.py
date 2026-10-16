@@ -69,7 +69,10 @@ def complete_order_by_customer(
     *,
     system: bool = False,
 ) -> dict[str, Any]:
-    """Завершение on_confirmation → completed + комиссия.
+    """Завершение on_confirmation → hidden (архив МП) + комиссия.
+
+    МП архив и «Повторить заказ» смотрят status=hidden и
+    status_do_hidden=completed. Пишем hidden сразу, без ожидания auto-hide.
 
     system=True — автозакрытие по таймеру 12ч (актор = customer из заказа).
     """
@@ -80,8 +83,16 @@ def complete_order_by_customer(
 
     order = _load_order(order_id)
     status = (order.get("status") or "").strip()
-    if status.lower() == "completed":
-        return {"already_completed": True, "order_id": order_id, "status": "completed"}
+    prev_hidden = (order.get("status_do_hidden") or "").strip().lower()
+    if status.lower() == "completed" or (
+        status.lower() == "hidden" and prev_hidden == "completed"
+    ):
+        return {
+            "already_completed": True,
+            "order_id": order_id,
+            "status": status,
+            "status_do_hidden": order.get("status_do_hidden"),
+        }
     if status != "on_confirmation":
         raise ValueError(f"order status must be on_confirmation, got {status}")
 
@@ -108,7 +119,12 @@ def complete_order_by_customer(
     now = _now()
 
     if not app_pg.mirror_order_fields(
-        order_id, {"status": "completed", "date_upd": now.isoformat()}
+        order_id,
+        {
+            "status": "hidden",
+            "status_do_hidden": "completed",
+            "date_upd": now.isoformat(),
+        },
     ):
         if not app_pg.enabled():
             raise RuntimeError("postgres unavailable")
@@ -116,7 +132,8 @@ def complete_order_by_customer(
     out: dict[str, Any] = {
         "already_completed": False,
         "order_id": order_id,
-        "status": "completed",
+        "status": "hidden",
+        "status_do_hidden": "completed",
         "driver_uid": driver_uid,
         "pay_method": str(pay_method),
         "price": price,
@@ -176,7 +193,11 @@ def complete_order_by_customer(
         utils.init_firebase_client()
         db = firestore.client()
         db.collection("order").document(order_id).update(
-            {"status": "completed", "date_upd": now}
+            {
+                "status": "hidden",
+                "status_do_hidden": "completed",
+                "date_upd": now,
+            }
         )
         db.collection("users").document(driver_uid).update(driver_fs)
 

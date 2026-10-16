@@ -513,16 +513,16 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                                               .at_work) ||
                                                       (e.status ==
                                                           StatusOrder
-                                                              .on_confirmation) ||
-                                                      (e.status ==
-                                                          StatusOrder
-                                                              .completed))
+                                                              .on_confirmation))
 
                                                   : ((e.status ==
                                                           StatusOrder.hidden) ||
                                                       (e.status ==
                                                           StatusOrder
-                                                              .cancelled)))
+                                                              .cancelled) ||
+                                                      (e.status ==
+                                                          StatusOrder
+                                                              .completed)))
                                               .toList();
                                           if (containerVar.isEmpty) {
                                             return Container(

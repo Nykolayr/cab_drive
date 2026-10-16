@@ -796,19 +796,41 @@ def list_orders_for_user(
         return []
 
 
+def _clean_contact_str(value: Any) -> Optional[str]:
+    if value is None:
+        return None
+    s = str(value).strip()
+    if not s or s.lower() == "none":
+        return None
+    return s
+
+
+def _phone_from_email_local(email: Optional[str]) -> Optional[str]:
+    email = _clean_contact_str(email) or ""
+    if "@" not in email:
+        return None
+    local = email.split("@", 1)[0]
+    digits = "".join(ch for ch in local if ch.isdigit())
+    if len(digits) < 10:
+        return None
+    if len(digits) >= 11 and digits.startswith("7"):
+        return digits[-10:]
+    return digits[-10:]
+
+
 def _row_to_user_json(row: dict) -> dict:
     """Формат как users.api.firebase_user_to_json (для админки)."""
     value = {
         "id": row.get("id"),
         "admin": row.get("admin"),
-        "email": row.get("email"),
-        "display_name": row.get("display_name"),
+        "email": _clean_contact_str(row.get("email")),
+        "display_name": _clean_contact_str(row.get("display_name")),
         "is_driver": row.get("is_driver"),
         "login_complete": row.get("login_complete"),
         "created_time": row.get("created_time"),
         "fcm_tokens": [],
         "photo_url": row.get("photo_url"),
-        "phone_number": row.get("phone_number"),
+        "phone_number": _clean_contact_str(row.get("phone_number")),
         "verif_ne_proidena": row.get("verif_ne_proidena"),
         "on_verif_now": row.get("on_verif_now"),
         "verif_compl": row.get("verif_compl"),
@@ -826,6 +848,102 @@ def _row_to_user_json(row: dict) -> dict:
         value["is_blocked"] = row.get("is_blocked")
         value["block_comment"] = row.get("block_comment")
     return value
+
+
+def backfill_contacts_from_firebase_auth(*, limit: int = 500) -> dict[str, int]:
+    """
+    Для app_users с пустым phone/email — подтянуть из Firebase Auth
+    (phone_number или цифры из local-part email).
+    """
+    if not enabled():
+        return {"scanned": 0, "updated": 0, "auth_miss": 0, "errors": 0}
+
+    from firebase_admin import auth as fb_auth
+
+    stats = {"scanned": 0, "updated": 0, "auth_miss": 0, "errors": 0}
+
+    def _run(conn):
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, email, display_name, phone_number
+                FROM app_users
+                WHERE phone_number IS NULL OR btrim(phone_number) = '' OR phone_number = 'None'
+                   OR email IS NULL OR btrim(email) = '' OR email = 'None'
+                   OR display_name IS NULL OR btrim(display_name) = '' OR display_name = 'None'
+                ORDER BY COALESCE(created_time, updated_at) DESC NULLS LAST
+                LIMIT %s
+                """,
+                (max(1, min(int(limit or 500), 2000)),),
+            )
+            rows = list(cur.fetchall())
+
+            for uid, email, display_name, phone_number in rows:
+                stats["scanned"] += 1
+                patch: dict[str, Any] = {}
+                try:
+                    u = fb_auth.get_user(uid)
+                except Exception:
+                    stats["auth_miss"] += 1
+                    u = None
+                auth_email = _clean_contact_str(getattr(u, "email", None) if u else None)
+                auth_phone = _clean_contact_str(
+                    getattr(u, "phone_number", None) if u else None
+                )
+                auth_name = _clean_contact_str(
+                    getattr(u, "display_name", None) if u else None
+                )
+
+                if not _clean_contact_str(email) and auth_email:
+                    patch["email"] = auth_email
+                if not _clean_contact_str(display_name) and auth_name:
+                    patch["display_name"] = auth_name
+
+                phone = _clean_contact_str(phone_number)
+                if not phone:
+                    if auth_phone:
+                        digits = "".join(ch for ch in auth_phone if ch.isdigit())
+                        phone = digits if digits else None
+                    if not phone:
+                        phone = _phone_from_email_local(auth_email or email)
+                    if phone:
+                        digits = "".join(ch for ch in str(phone) if ch.isdigit())
+                        if len(digits) >= 11 and digits.startswith("7"):
+                            digits = digits[-10:]
+                        elif len(digits) > 10:
+                            digits = digits[-10:]
+                        if digits:
+                            patch["phone_number"] = digits
+
+                if not patch:
+                    continue
+                sets = []
+                vals: list[Any] = []
+                for k, v in patch.items():
+                    sets.append(f"{k} = %s")
+                    vals.append(v)
+                sets.append("updated_at = NOW()")
+                vals.append(uid)
+                try:
+                    cur.execute(
+                        f"UPDATE app_users SET {', '.join(sets)} WHERE id = %s",
+                        vals,
+                    )
+                    stats["updated"] += 1
+                except Exception:
+                    logger.exception("[app_pg] backfill update failed id=%s", uid)
+                    stats["errors"] += 1
+        return stats
+
+    try:
+        with connection() as conn:
+            if conn is None:
+                return stats
+            return _run(conn)
+    except Exception:
+        logger.exception("[app_pg] backfill_contacts_from_firebase_auth failed")
+        stats["errors"] += 1
+        return stats
 
 
 def _row_to_me_json(row: dict) -> dict:
@@ -1373,7 +1491,12 @@ def sum_driver_completed_budget(
             """
             SELECT COALESCE(SUM(budget), 0)
             FROM app_orders
-            WHERE selected_driver_id = %s AND status = 'completed'
+            WHERE selected_driver_id = %s
+              AND (
+                  status = 'completed'
+                  OR (status = 'hidden' AND status_do_hidden = 'completed')
+                  OR (status = 'hidden' AND completion_date_by_the_driver IS NOT NULL)
+              )
             """
         ]
         params: list[Any] = [driver_id]
@@ -1417,7 +1540,12 @@ def driver_order_stats(
                 """
                 SELECT COALESCE(SUM(budget), 0), COUNT(*), MAX(date_time_created)
                 FROM app_orders
-                WHERE selected_driver_id = %s AND status = 'completed'
+                WHERE selected_driver_id = %s
+                  AND (
+                      status = 'completed'
+                      OR (status = 'hidden' AND status_do_hidden = 'completed')
+                      OR (status = 'hidden' AND completion_date_by_the_driver IS NOT NULL)
+                  )
                 """,
                 (driver_id,),
             )

@@ -47,19 +47,19 @@
                         <div class="row mt-3">
                             <div class="col-12">
                                 <label for="">Email</label>
-                                <input type="text" class="form-control" value="{{ (client.email) }}" disabled>
+                                <input type="text" class="form-control" value="{% if client.email and client.email != 'None' %}{{ client.email }}{% endif %}" disabled>
                             </div>
                         </div>
                         <div class="row mt-3">
                             <div class="col-12">
                                 <label for="display_name">Имя</label>
-                                <input type="text" class="form-control" value="{% if client.display_name != None %}{{ client.display_name }}{% endif %}" id="display_name">
+                                <input type="text" class="form-control" value="{% if client.display_name and client.display_name != 'None' %}{{ client.display_name }}{% endif %}" id="display_name">
                             </div>
                         </div>
                         <div class="row mt-3">
                             <div class="col-12">
                                 <label for="phone_number">Номер</label>
-                                <input type="text" class="form-control" value="{{ client.phone_number }}" id="phone_number">
+                                <input type="text" class="form-control" value="{% if client.phone_number and client.phone_number != 'None' %}{{ client.phone_number }}{% endif %}" id="phone_number">
                             </div>
                         </div>
                         <div class="row mt-3">
