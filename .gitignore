@@ -26,6 +26,11 @@ pepk_out.zip
 google-services.json.bak
 
 # Flutter / Dart (app)
+/.pub-cache/
+cab_drive_app/.gradle_home/
+cab_drive_app/android/local-maven/
+hs_err_pid*.log
+replay_pid*.log
 cab_drive_app/.dart_tool/
 cab_drive_app/.flutter-plugins
 cab_drive_app/.flutter-plugins-dependencies
