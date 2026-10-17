@@ -236,7 +236,6 @@ class _PhotoVuCopyWidgetState extends State<PhotoVuCopyWidget> {
                       });
                     } else {
                       safeSetState(() {});
-                      return;
                     }
                   }
 

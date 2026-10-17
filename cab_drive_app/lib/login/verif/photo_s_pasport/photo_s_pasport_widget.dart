@@ -236,7 +236,6 @@ class _PhotoSPasportWidgetState extends State<PhotoSPasportWidget> {
                       });
                     } else {
                       safeSetState(() {});
-                      return;
                     }
                   }
 

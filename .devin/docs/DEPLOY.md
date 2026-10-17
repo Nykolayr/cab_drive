@@ -50,6 +50,8 @@ server {
     listen 443 ssl;
     server_name cab.artean.ru;
 
+    client_max_body_size 20m; # /kek/files/upload — фото документов >1МБ
+
     location / {
         proxy_pass http://127.0.0.1:5000;
         include proxy_params;

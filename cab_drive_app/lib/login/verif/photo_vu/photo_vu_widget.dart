@@ -236,7 +236,6 @@ class _PhotoVuWidgetState extends State<PhotoVuWidget> {
                       });
                     } else {
                       safeSetState(() {});
-                      return;
                     }
                   }
 

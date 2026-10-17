@@ -224,7 +224,6 @@ class _PhotoTehPaspWidgetState extends State<PhotoTehPaspWidget> {
                       });
                     } else {
                       safeSetState(() {});
-                      return;
                     }
                   }
 

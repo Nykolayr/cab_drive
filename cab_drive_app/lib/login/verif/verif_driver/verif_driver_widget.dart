@@ -385,6 +385,29 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                 });
                                               } else {
                                                 safeSetState(() {});
+                                                await showModalBottomSheet(
+                                                  isScrollControlled: true,
+                                                  backgroundColor:
+                                                      Colors.transparent,
+                                                  context: context,
+                                                  builder: (context) {
+                                                    return WebViewAware(
+                                                      child: Padding(
+                                                        padding: MediaQuery
+                                                            .viewInsetsOf(
+                                                                context),
+                                                        child:
+                                                            ErrorPopupWidget(
+                                                          title:
+                                                              'Что-то пошло не так',
+                                                          text:
+                                                              'Давайте попробуем позже.',
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                                ).then((value) =>
+                                                    safeSetState(() {}));
                                                 return;
                                               }
                                             }
@@ -3167,6 +3190,30 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                       });
                                                     } else {
                                                       safeSetState(() {});
+                                                      await showModalBottomSheet(
+                                                        isScrollControlled:
+                                                            true,
+                                                        backgroundColor:
+                                                            Colors.transparent,
+                                                        context: context,
+                                                        builder: (context) {
+                                                          return WebViewAware(
+                                                            child: Padding(
+                                                              padding: MediaQuery
+                                                                  .viewInsetsOf(
+                                                                      context),
+                                                              child:
+                                                                  ErrorPopupWidget(
+                                                                title:
+                                                                    'Что-то пошло не так',
+                                                                text:
+                                                                    'Давайте попробуем позже.',
+                                                              ),
+                                                            ),
+                                                          );
+                                                        },
+                                                      ).then((value) =>
+                                                          safeSetState(() {}));
                                                       return;
                                                     }
                                                   }

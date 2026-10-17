@@ -239,7 +239,6 @@ class _PassportWidgetState extends State<PassportWidget> {
                       });
                     } else {
                       safeSetState(() {});
-                      return;
                     }
                   }
 
