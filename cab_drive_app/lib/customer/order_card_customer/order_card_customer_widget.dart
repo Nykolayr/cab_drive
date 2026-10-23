@@ -126,12 +126,11 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
       OrderPageCustomerWidget.routeName,
       queryParameters: {
         'index': serializeParam(2, ParamType.int),
-        'order':
-            serializeParam(widget.order?.reference, ParamType.DocumentReference),
+        'order': serializeParam(
+            widget.order?.reference, ParamType.DocumentReference),
       }.withoutNulls,
     );
   }
-
 
   Widget _responseBadge(OrderRecord order) {
     final count = order.countResp;
@@ -326,8 +325,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
             _polylineMapPreview(height: 165.0),
             const SizedBox(height: 16.0),
             Padding(
-              padding:
-                  const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 6.0),
+              padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 6.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -379,8 +377,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                         ),
                       ),
                       Padding(
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 4.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
                         child: Icon(FFIcons.kcar01,
                             color: theme.secondaryText, size: 18.0),
                       ),
@@ -558,18 +555,20 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                         fontSize: 14.0,
                         letterSpacing: 0.0,
                       ),
-                  expiredStyle: FlutterFlowTheme.of(context).bodyMedium.override(
-                        fontFamily: 'SF',
-                        color: _kMutedText,
-                        fontSize: 14.0,
-                        letterSpacing: 0.0,
-                      ),
-                  descriptionTextStyle: FlutterFlowTheme.of(context).bodyMedium.override(
-                        fontFamily: 'SF',
-                        color: _kMutedText,
-                        fontSize: 14.0,
-                        letterSpacing: 0.0,
-                      ),
+                  expiredStyle:
+                      FlutterFlowTheme.of(context).bodyMedium.override(
+                            fontFamily: 'SF',
+                            color: _kMutedText,
+                            fontSize: 14.0,
+                            letterSpacing: 0.0,
+                          ),
+                  descriptionTextStyle:
+                      FlutterFlowTheme.of(context).bodyMedium.override(
+                            fontFamily: 'SF',
+                            color: _kMutedText,
+                            fontSize: 14.0,
+                            letterSpacing: 0.0,
+                          ),
                 ),
               ),
             )
@@ -670,18 +669,16 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: Container(
-                          height: 0.3,
-                          color: _kMutedText),
+                      child: Container(height: 0.3, color: _kMutedText),
                     ),
                     Padding(
-                      padding: EdgeInsetsDirectional.fromSTEB(4.0, 0.0, 4.0, 0.0),
-                      child: Icon(FFIcons.kcar01, color: _kMutedText, size: 18.0),
+                      padding:
+                          EdgeInsetsDirectional.fromSTEB(4.0, 0.0, 4.0, 0.0),
+                      child:
+                          Icon(FFIcons.kcar01, color: _kMutedText, size: 18.0),
                     ),
                     Expanded(
-                      child: Container(
-                          height: 0.3,
-                          color: _kMutedText),
+                      child: Container(height: 0.3, color: _kMutedText),
                     ),
                   ].divide(SizedBox(width: 4.0)),
                 ),
@@ -715,9 +712,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
         borderRadius: BorderRadius.circular(16.0),
         boxShadow: [
           BoxShadow(
-              blurRadius: 15.0,
-              color: Color(0x14181818),
-              offset: Offset(0, 0)),
+              blurRadius: 15.0, color: Color(0x14181818), offset: Offset(0, 0)),
         ],
       ),
       child: Padding(
@@ -1029,8 +1024,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                 8.0, 0.0, 8.0, 0.0),
                             child: CountdownOrExpired(
                               dateUpd: widget!.order?.dateUpd,
-                              durationMinutes:
-                                  FFAppState().deadlineMinutes,
+                              durationMinutes: FFAppState().deadlineMinutes,
                               label: 'Архивируется через',
                               expiredText: 'Архивируется…',
                               hideWhenExpired: false,
@@ -1050,15 +1044,14 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                     fontSize: 14.0,
                                     letterSpacing: 0.0,
                                   ),
-                              descriptionTextStyle:
-                                  FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        fontFamily: 'SF',
-                                        color: Color(0xFFA4A6B2),
-                                        fontSize: 14.0,
-                                        letterSpacing: 0.0,
-                                      ),
+                              descriptionTextStyle: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .override(
+                                    fontFamily: 'SF',
+                                    color: Color(0xFFA4A6B2),
+                                    fontSize: 14.0,
+                                    letterSpacing: 0.0,
+                                  ),
                             ),
                           ),
                         if (widget!.order?.countResp != 0)
@@ -1357,8 +1350,8 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                     ),
                   ),
                   FutureBuilder<UsersRecord>(
-                    future: UsersRecordApi.getOnce(
-                        widget!.order!.selectedDriver!),
+                    future:
+                        UsersRecordApi.getOnce(widget!.order!.selectedDriver!),
                     builder: (context, snapshot) {
                       // Customize what your widget looks like when it's loading.
                       if (!snapshot.hasData) {
@@ -1405,7 +1398,8 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                         borderRadius:
                                             BorderRadius.circular(8.0),
                                         child: Image.network(
-                                          FileStorageService.getImageUrl(containerUsersRecord.photoUrl),
+                                          FileStorageService.getImageUrl(
+                                              containerUsersRecord.photoUrl),
                                           width: 37.0,
                                           height: 48.0,
                                           fit: BoxFit.cover,
@@ -1740,8 +1734,8 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                     ),
                   if (widget!.order?.status == StatusOrder.hidden)
                     Padding(
-                      padding: EdgeInsetsDirectional.fromSTEB(
-                          16.0, 8.0, 16.0, 16.0),
+                      padding:
+                          EdgeInsetsDirectional.fromSTEB(16.0, 8.0, 16.0, 16.0),
                       child: Material(
                         color: Color(0xFFF4F5F8),
                         borderRadius: BorderRadius.circular(16.0),
@@ -1769,6 +1763,35 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                       ),
                     ),
                 ],
+              ),
+            if (((widget!.order?.status == StatusOrder.cancelled) ||
+                    (widget!.order?.status == StatusOrder.hidden)) &&
+                !_isDelivered())
+              Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(16.0, 8.0, 16.0, 16.0),
+                child: Material(
+                  color: Color(0xFFF4F5F8),
+                  borderRadius: BorderRadius.circular(16.0),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16.0),
+                    onTap: _repeatOrder,
+                    child: Container(
+                      height: 45.0,
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Повторить заказ',
+                        textAlign: TextAlign.center,
+                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                              fontFamily: 'SF',
+                              color: Color(0xFF007AFF),
+                              fontSize: 15.0,
+                              letterSpacing: 0.0,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
           ],
         ),

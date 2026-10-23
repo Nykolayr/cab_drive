@@ -30,12 +30,16 @@ class SearhAddressModel extends FlutterFlowModel<SearhAddressWidget> {
   String? Function(BuildContext, String?)? pointATextControllerValidator;
   // Stores action output result for [Backend Call - API (autocomplete)] action in pointA widget.
   ApiCallResponse? apiResult1veA;
+  // Запрос подсказок A в полёте (debounce + сеть) — «Ничего не найдено» не показывать.
+  bool apiLoadingA = false;
   // State field(s) for pointB widget.
   FocusNode? pointBFocusNode;
   TextEditingController? pointBTextController;
   String? Function(BuildContext, String?)? pointBTextControllerValidator;
   // Stores action output result for [Backend Call - API (autocomplete)] action in pointB widget.
   ApiCallResponse? apiResult1veB;
+  // Запрос подсказок B в полёте (debounce + сеть).
+  bool apiLoadingB = false;
   // Stores action output result for [Backend Call - API (geocode Place ID)] action in Container widget.
   ApiCallResponse? geocodeAAA;
   // Stores action output result for [Backend Call - API (DistanceMatrix)] action in Container widget.

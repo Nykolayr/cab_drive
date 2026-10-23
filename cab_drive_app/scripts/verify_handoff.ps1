@@ -31,6 +31,12 @@ $orderGoogle = Get-ChildItem -Path "lib\customer","lib\driver" -Filter "*.dart" 
 if ($orderGoogle) {
   throw "Order/driver screens still reference Google Maps UI"
 }
+$mapsHttp = Get-ChildItem -Path "lib" -Filter "*.dart" -Recurse -ErrorAction SilentlyContinue |
+  Select-String -Pattern "maps\.googleapis\.com" -ErrorAction SilentlyContinue
+if ($mapsHttp) {
+  $mapsHttp | ForEach-Object { Write-Host "$($_.Path):$($_.LineNumber): $($_.Line.Trim())" }
+  throw "lib/ still calls Google Maps HTTP APIs"
+}
 
 Write-Host "==> 2/4 mainDriver must not block UI on null location"
 if (Select-String -Path "lib\driver\main_driver\main_driver_widget.dart" -Pattern "currentUserLocationValue == null" -Quiet) {

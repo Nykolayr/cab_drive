@@ -67,6 +67,7 @@ class AutocompleteCall {
       final body = YandexGeocoderService.googleStyleAutocompleteBody(
         results,
         types: types ?? 'geocode',
+        slashHouse: (input ?? '').contains('/'),
       );
       return ApiCallResponse(
         body,
@@ -75,27 +76,9 @@ class AutocompleteCall {
       );
     }
 
-    return ApiManager.instance.makeApiCall(
-      callName: 'autocomplete',
-      apiUrl: 'https://maps.googleapis.com/maps/api/place/autocomplete/json',
-      callType: ApiCallType.GET,
-      headers: {},
-      params: {
-        'input': input,
-        'key': "AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY",
-        'language': "ru",
-        'components': "country:ru",
-        'types': types,
-        'radius': 50000,
-        'location': location,
-      },
-      returnBody: true,
-      encodeBodyUtf8: false,
-      decodeUtf8: false,
-      cache: false,
-      isStreamingApi: false,
-      alwaysAllowBody: false,
-    );
+    // Без ключа Яндекса подсказки недоступны — пустой ответ
+    // в Google-формате, который читают парсеры ниже.
+    return ApiCallResponse({'predictions': <dynamic>[]}, {}, 200);
   }
 
   static List<String>? placeid(dynamic response) => (getJsonField(
@@ -144,30 +127,14 @@ class GeocodeLatLngCall {
           lon: coords.longitude,
         );
         if (result != null) {
-          final body =
-              YandexGeocoderService.googleStyleGeocodeBody(result);
+          final body = YandexGeocoderService.googleStyleGeocodeBody(result);
           return ApiCallResponse(body, {}, 200);
         }
       }
     }
 
-    return ApiManager.instance.makeApiCall(
-      callName: 'geocode LatLng',
-      apiUrl: 'https://maps.googleapis.com/maps/api/geocode/json',
-      callType: ApiCallType.GET,
-      headers: {},
-      params: {
-        'latlng': latlng,
-        'key': "AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY",
-        'language': "ru",
-      },
-      returnBody: true,
-      encodeBodyUtf8: false,
-      decodeUtf8: false,
-      cache: false,
-      isStreamingApi: false,
-      alwaysAllowBody: false,
-    );
+    // Без ключа Яндекса геокодинг недоступен — пустой ответ в Google-формате.
+    return ApiCallResponse({'results': <dynamic>[]}, {}, 200);
   }
 
   static String? address(dynamic response) => castToType<String>(getJsonField(
@@ -205,6 +172,7 @@ class GeocodeLatLngCall {
     ));
     return value?.replaceAll(RegExp(r'^город\s+', caseSensitive: false), '');
   }
+
   static double? lat(dynamic response) => castToType<double>(getJsonField(
         response,
         r'''$.results[0].geometry.location.lat''',
@@ -220,8 +188,7 @@ class GeocodePlaceIDCall {
     String? placeId = '',
   }) async {
     if (YandexGeocoderService.hasApiKey) {
-      final result =
-          await YandexGeocoderService.resolvePlaceId(placeId ?? '');
+      final result = await YandexGeocoderService.resolvePlaceId(placeId ?? '');
       if (result != null) {
         final body = YandexGeocoderService.googleStyleGeocodeBody(result);
         return ApiCallResponse(body, {}, 200);
@@ -232,23 +199,8 @@ class GeocodePlaceIDCall {
       return ApiCallResponse({'results': <dynamic>[]}, {}, status);
     }
 
-    return ApiManager.instance.makeApiCall(
-      callName: 'geocode Place ID',
-      apiUrl: 'https://maps.googleapis.com/maps/api/geocode/json',
-      callType: ApiCallType.GET,
-      headers: {},
-      params: {
-        'key': "AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY",
-        'language': "ru",
-        'place_id': placeId,
-      },
-      returnBody: true,
-      encodeBodyUtf8: false,
-      decodeUtf8: false,
-      cache: false,
-      isStreamingApi: false,
-      alwaysAllowBody: false,
-    );
+    // Без ключа Яндекса геокодинг недоступен — пустой ответ в Google-формате.
+    return ApiCallResponse({'results': <dynamic>[]}, {}, 200);
   }
 
   static String? address(dynamic response) => castToType<String>(getJsonField(
@@ -286,6 +238,7 @@ class GeocodePlaceIDCall {
     ));
     return value?.replaceAll(RegExp(r'^город\s+', caseSensitive: false), '');
   }
+
   static double? lat(dynamic response) => castToType<double>(getJsonField(
         response,
         r'''$.results[0].geometry.location.lat''',
@@ -301,7 +254,6 @@ class DistanceMatrixCall {
     String? destination = '',
     String? origin = '',
     String? waypoints = '',
-
   }) async {
     final from = YandexGeocoderService.parseLatLngPair(origin ?? '');
     final to = YandexGeocoderService.parseLatLngPair(destination ?? '');
@@ -319,51 +271,35 @@ class DistanceMatrixCall {
       }
     }
 
-    return ApiManager.instance.makeApiCall(
-      callName: 'DistanceMatrix',
-      apiUrl:
-          'https://maps.googleapis.com/maps/api/distancematrix/json?destinations=${destination}&origins=${origin}&waypoint=${waypoints}&language=ru',
-      callType: ApiCallType.GET,
-      headers: {},
-      params: {
-        'key': "AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY",
-      },
-      returnBody: true,
-      encodeBodyUtf8: false,
-      decodeUtf8: false,
-      cache: false,
-      isStreamingApi: false,
-      alwaysAllowBody: false,
-    );
+    // Без ORS-матрицы данных нет — пустой ответ в Google-формате.
+    return ApiCallResponse({'rows': <dynamic>[]}, {}, 200);
   }
 
-  static int? distance(dynamic response)
-      {
-        final value = (castToType<String>(getJsonField(
-          response,
-          r'''$.rows[:].elements[:].distance.text''',
-        )));
+  static int? distance(dynamic response) {
+    final value = (castToType<String>(getJsonField(
+      response,
+      r'''$.rows[:].elements[:].distance.text''',
+    )));
 
-        print('distance value $value');
-        int x = 1;
+    print('distance value $value');
+    int x = 1;
 
-        String s = value ?? '0';
-        if(s.contains('км') || s.contains('km')) {
-          x = 1000;
-        }
+    String s = value ?? '0';
+    if (s.contains('км') || s.contains('km')) {
+      x = 1000;
+    }
 
-        s = s
-            .replaceAll(" ", "")
-            .replaceAll("км", "")
-            .replaceAll("km", "")
-            .replaceAll(",", ".");
+    s = s
+        .replaceAll(" ", "")
+        .replaceAll("км", "")
+        .replaceAll("km", "")
+        .replaceAll(",", ".");
 
+    final returned = ((double.tryParse(s) ?? 0.0) * x).toInt();
+    print(returned);
+    return returned;
+  }
 
-        final returned =  ((double.tryParse(s) ?? 0.0) * x).toInt();
-        print(returned);
-        return returned;
-
-      }
   static String? time(dynamic response) => (castToType<String>(getJsonField(
         response,
         r'''$.rows[:].elements[:].duration.text''',
@@ -454,7 +390,8 @@ class InitRecurrentPaymentCall {
       return await ApiManager.instance
           .makeApiCall(
             callName: 'initRecurrentPayment',
-            apiUrl: PaymentsApiConfig.path('/api/tinkoff/init-recurrent-payment'),
+            apiUrl:
+                PaymentsApiConfig.path('/api/tinkoff/init-recurrent-payment'),
             callType: ApiCallType.POST,
             headers: {
               'Content-Type': 'application/json',

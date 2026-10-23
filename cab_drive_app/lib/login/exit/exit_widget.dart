@@ -1,4 +1,5 @@
 import '/auth/firebase_auth/auth_util.dart';
+import '/custom_code/services/address_history_service.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -126,6 +127,8 @@ class _ExitWidgetState extends State<ExitWidget> {
                     onPressed: () async {
                       GoRouter.of(context).prepareAuthEvent();
                       await authManager.signOut();
+                      // Локальная история адресов — чистим при выходе.
+                      await AddressHistoryService.clear();
                       GoRouter.of(context).clearRedirectLocation();
 
                       context.goNamedAuth(

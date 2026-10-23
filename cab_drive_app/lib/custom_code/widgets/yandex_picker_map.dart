@@ -43,17 +43,20 @@ class _YandexPickerMapState extends State<YandexPickerMap> {
     super.dispose();
   }
 
+  void _reportIdle(LatLng latLng) {
+    if (_lastReported != null &&
+        _lastReported!.latitude == latLng.latitude &&
+        _lastReported!.longitude == latLng.longitude) {
+      return;
+    }
+    _lastReported = latLng;
+    widget.onCameraIdle?.call(latLng);
+  }
+
   void _scheduleIdle(Point target) {
     _idleTimer?.cancel();
     _idleTimer = Timer(const Duration(milliseconds: 350), () {
-      final latLng = LatLng(target.latitude, target.longitude);
-      if (_lastReported != null &&
-          _lastReported!.latitude == latLng.latitude &&
-          _lastReported!.longitude == latLng.longitude) {
-        return;
-      }
-      _lastReported = latLng;
-      widget.onCameraIdle?.call(latLng);
+      _reportIdle(LatLng(target.latitude, target.longitude));
     });
   }
 
@@ -67,7 +70,11 @@ class _YandexPickerMapState extends State<YandexPickerMap> {
       rotateGesturesEnabled: allow,
       tiltGesturesEnabled: allow,
       onCameraPositionChanged: (position, _, finished) {
-        if (!finished) {
+        if (finished) {
+          _idleTimer?.cancel();
+          _reportIdle(
+              LatLng(position.target.latitude, position.target.longitude));
+        } else {
           _scheduleIdle(position.target);
         }
       },

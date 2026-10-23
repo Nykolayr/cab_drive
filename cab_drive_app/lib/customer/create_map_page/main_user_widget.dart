@@ -58,14 +58,19 @@ class _MainUserWidgetState extends State<MainUserWidget> {
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-
-
-
       currentUserLocationValue =
           await getCurrentUserLocation(defaultLocation: const LatLng(0.0, 0.0));
+      if (currentUserLocationValue != null &&
+          (currentUserLocationValue!.latitude != 0.0 ||
+              currentUserLocationValue!.longitude != 0.0)) {
+        FFAppState().mskGeo = currentUserLocationValue;
+      }
       if (await getPermissionStatus(locationPermission)) {
         final controller = _model.yandexMapController;
-        if (controller != null && currentUserLocationValue != null) {
+        if (controller != null &&
+            currentUserLocationValue != null &&
+            (currentUserLocationValue!.latitude != 0.0 ||
+                currentUserLocationValue!.longitude != 0.0)) {
           await controller.moveCamera(
             CameraUpdate.newCameraPosition(
               CameraPosition(
@@ -77,6 +82,8 @@ class _MainUserWidgetState extends State<MainUserWidget> {
               ),
             ),
           );
+          safeSetState(() => _model.mapCenter = currentUserLocationValue);
+          FFAppState().lastPickerMapCenter = currentUserLocationValue;
         }
       }
 
@@ -99,258 +106,1212 @@ class _MainUserWidgetState extends State<MainUserWidget> {
     context.watch<FFAppState>();
 
     return BlocBuilder<OrdersBloc, OrdersState>(
-      builder: (context, ordersState) {
-        return GestureDetector(
-          onTap: () {
-            FocusScope.of(context).unfocus();
-            FocusManager.instance.primaryFocus?.unfocus();
-          },
-          child: Scaffold(
-            key: scaffoldKey,
-            resizeToAvoidBottomInset: false,
-            backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-            body: Builder(
-              builder: (context) {
-                if (valueOrDefault<bool>(
-                    currentUserDocument?.isBlocked,
-                    false))
-                  return AuthUserStreamWidget(
-                    builder: (context) => Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context)
-                            .secondaryBackground,
-                        borderRadius:
-                        BorderRadius.circular(18.0),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
+        builder: (context, ordersState) {
+      return GestureDetector(
+        onTap: () {
+          FocusScope.of(context).unfocus();
+          FocusManager.instance.primaryFocus?.unfocus();
+        },
+        child: Scaffold(
+          key: scaffoldKey,
+          resizeToAvoidBottomInset: false,
+          backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+          body: Builder(builder: (context) {
+            if (valueOrDefault<bool>(currentUserDocument?.isBlocked, false))
+              return AuthUserStreamWidget(
+                builder: (context) => Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: FlutterFlowTheme.of(context).secondaryBackground,
+                    borderRadius: BorderRadius.circular(18.0),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           mainAxisSize: MainAxisSize.max,
-                          crossAxisAlignment:
-                          CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Icon(
-                                  FFIcons.kalertHexagon,
-                                  color: FlutterFlowTheme.of(
-                                      context)
-                                      .error,
-                                  size: 20.0,
-                                ),
-                                Padding(
-                                  padding:
-                                  const EdgeInsetsDirectional
-                                      .fromSTEB(6.0, 0.0,
-                                      0.0, 0.0),
-                                  child: Text(
-                                    'Вы заблокированы',
-                                    style: FlutterFlowTheme
-                                        .of(context)
-                                        .bodyMedium
-                                        .override(
-                                      fontFamily: 'SF',
-                                      color: FlutterFlowTheme
-                                          .of(context)
-                                          .error,
-                                      fontSize: 16.0,
-                                      letterSpacing: 0.0,
-                                      fontWeight:
-                                      FontWeight.w600,
-                                      lineHeight: 1.0,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            Icon(
+                              FFIcons.kalertHexagon,
+                              color: FlutterFlowTheme.of(context).error,
+                              size: 20.0,
                             ),
                             Padding(
-                              padding: const EdgeInsetsDirectional
-                                  .fromSTEB(
-                                  0.0, 5.0, 0.0, 0.0),
+                              padding: const EdgeInsetsDirectional.fromSTEB(
+                                  6.0, 0.0, 0.0, 0.0),
                               child: Text(
-                                'Свяжитесь с поддержкой для получения доп инфы ',
-                                style: FlutterFlowTheme.of(
-                                    context)
+                                'Вы заблокированы',
+                                style: FlutterFlowTheme.of(context)
                                     .bodyMedium
                                     .override(
-                                  fontFamily: 'SF',
-                                  color:
-                                  const Color(0xFF4B4B4B),
-                                  letterSpacing: 0.0,
-                                  fontWeight:
-                                  FontWeight.normal,
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsetsDirectional
-                                  .fromSTEB(
-                                  0.0, 12.0, 0.0, 0.0),
-                              child: FFButtonWidget(
-                                onPressed: () async {
-
-
-                                  var chatsRecordReference =
-                                  ChatsRecord.collection
-                                      .doc();
-                                  if (currentUserDocument
-                                      ?.chatWithSupport ==
-                                      null) {
-                                    currentUserDocument!.chatWithSupport =
-                                        ChatsRecord
-                                            .getDocumentFromData({
-                                          ...createChatsRecordData(
-                                            dateCreated:
-                                            getCurrentTimestamp,
-                                            support: true,
-                                          ),
-                                          ...mapToFirestore(
-                                            {
-                                              'users':
-                                              functions.listusers(
-                                                  currentUserReference!),
-                                            },
-                                          ),
-                                        }, chatsRecordReference).reference;
-                                  }
-
-                                  print(serializeParam(
-                                    currentUserDocument
-                                        ?.chatWithSupport,
-                                    ParamType
-                                        .DocumentReference,
-                                  ));
-                                  return;
-                                  context.pushNamed(
-                                    ChatWidget.routeName,
-                                    queryParameters: {
-                                      'chat': serializeParam(
-                                        currentUserDocument
-                                            ?.chatWithSupport,
-                                        ParamType
-                                            .DocumentReference,
-                                      ),
-                                      'name': serializeParam(
-                                        'Поддержка',
-                                        ParamType.String,
-                                      ),
-                                    }.withoutNulls,
-                                  );
-                                },
-                                text: 'Чат с поддержкой',
-                                options: FFButtonOptions(
-                                  width: double.infinity,
-                                  height: 45.0,
-                                  padding:
-                                  const EdgeInsetsDirectional
-                                      .fromSTEB(0.0, 0.0,
-                                      0.0, 0.0),
-                                  iconPadding:
-                                  const EdgeInsetsDirectional
-                                      .fromSTEB(0.0, 0.0,
-                                      0.0, 0.0),
-                                  color: FlutterFlowTheme.of(
-                                      context)
-                                      .primaryBackground,
-                                  textStyle: FlutterFlowTheme
-                                      .of(context)
-                                      .titleSmall
-                                      .override(
-                                    fontFamily: 'SF',
-                                    color: FlutterFlowTheme
-                                        .of(context)
-                                        .tertiary,
-                                    fontSize: 15.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight:
-                                    FontWeight.w500,
-                                  ),
-                                  elevation: 0.0,
-                                  borderRadius:
-                                  BorderRadius.circular(
-                                      12.0),
-                                ),
-                                showLoadingIndicator: false,
+                                      fontFamily: 'SF',
+                                      color: FlutterFlowTheme.of(context).error,
+                                      fontSize: 16.0,
+                                      letterSpacing: 0.0,
+                                      fontWeight: FontWeight.w600,
+                                      lineHeight: 1.0,
+                                    ),
                               ),
                             ),
                           ],
                         ),
-                      ),
+                        Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                              0.0, 5.0, 0.0, 0.0),
+                          child: Text(
+                            'Свяжитесь с поддержкой для получения доп инфы ',
+                            style: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .override(
+                                  fontFamily: 'SF',
+                                  color: const Color(0xFF4B4B4B),
+                                  letterSpacing: 0.0,
+                                  fontWeight: FontWeight.normal,
+                                ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                              0.0, 12.0, 0.0, 0.0),
+                          child: FFButtonWidget(
+                            onPressed: () async {
+                              var chatsRecordReference =
+                                  ChatsRecord.collection.doc();
+                              if (currentUserDocument?.chatWithSupport ==
+                                  null) {
+                                currentUserDocument!.chatWithSupport =
+                                    ChatsRecord.getDocumentFromData({
+                                  ...createChatsRecordData(
+                                    dateCreated: getCurrentTimestamp,
+                                    support: true,
+                                  ),
+                                  ...mapToFirestore(
+                                    {
+                                      'users': functions
+                                          .listusers(currentUserReference!),
+                                    },
+                                  ),
+                                }, chatsRecordReference)
+                                        .reference;
+                              }
+
+                              print(serializeParam(
+                                currentUserDocument?.chatWithSupport,
+                                ParamType.DocumentReference,
+                              ));
+                              return;
+                              context.pushNamed(
+                                ChatWidget.routeName,
+                                queryParameters: {
+                                  'chat': serializeParam(
+                                    currentUserDocument?.chatWithSupport,
+                                    ParamType.DocumentReference,
+                                  ),
+                                  'name': serializeParam(
+                                    'Поддержка',
+                                    ParamType.String,
+                                  ),
+                                }.withoutNulls,
+                              );
+                            },
+                            text: 'Чат с поддержкой',
+                            options: FFButtonOptions(
+                              width: double.infinity,
+                              height: 45.0,
+                              padding: const EdgeInsetsDirectional.fromSTEB(
+                                  0.0, 0.0, 0.0, 0.0),
+                              iconPadding: const EdgeInsetsDirectional.fromSTEB(
+                                  0.0, 0.0, 0.0, 0.0),
+                              color: FlutterFlowTheme.of(context)
+                                  .primaryBackground,
+                              textStyle: FlutterFlowTheme.of(context)
+                                  .titleSmall
+                                  .override(
+                                    fontFamily: 'SF',
+                                    color:
+                                        FlutterFlowTheme.of(context).tertiary,
+                                    fontSize: 15.0,
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                              elevation: 0.0,
+                              borderRadius: BorderRadius.circular(12.0),
+                            ),
+                            showLoadingIndicator: false,
+                          ),
+                        ),
+                      ],
                     ),
-                  );
-                return Column(
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    Expanded(
-                      child: Builder(
-                        builder: (context) {
-                          if (valueOrDefault<bool>(
-                            FFAppState().pointB.latlng != null,
-                            false,
-                          )) {
-                            return Column(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Expanded(
-                                  child: Stack(
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(18.0),
-                                        child: Container(
-                                          width: double.infinity,
-                                          height: double.infinity,
-                                          decoration: BoxDecoration(
-                                            color: FlutterFlowTheme.of(context)
-                                                .secondaryBackground,
-                                            borderRadius: BorderRadius.circular(18.0),
-                                          ),
-                                          child: Container(
-                                            width:
-                                                MediaQuery.sizeOf(context).width * 1.0,
-                                            height: double.infinity,
-                                            child: custom_widgets.YandexOrderMap(
-                                              width: MediaQuery.sizeOf(context).width *
+                  ),
+                ),
+              );
+            return Column(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Expanded(
+                  child: Builder(
+                    builder: (context) {
+                      if (valueOrDefault<bool>(
+                        FFAppState().pointB.latlng != null,
+                        false,
+                      )) {
+                        return Column(
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            Expanded(
+                              child: Stack(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(18.0),
+                                    child: Container(
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      decoration: BoxDecoration(
+                                        color: FlutterFlowTheme.of(context)
+                                            .secondaryBackground,
+                                        borderRadius:
+                                            BorderRadius.circular(18.0),
+                                      ),
+                                      child: Container(
+                                        width:
+                                            MediaQuery.sizeOf(context).width *
+                                                1.0,
+                                        height: double.infinity,
+                                        child: custom_widgets.YandexOrderMap(
+                                          width:
+                                              MediaQuery.sizeOf(context).width *
                                                   1.0,
-                                              height: double.infinity,
-                                              startLatLng: FFAppState().pointA.latlng!,
-                                              endLatLng: FFAppState().pointB.latlng!,
-                                              isStatic: false,
-                                            ),
-                                          ),
+                                          height: double.infinity,
+                                          startLatLng:
+                                              FFAppState().pointA.latlng!,
+                                          endLatLng:
+                                              FFAppState().pointB.latlng!,
+                                          isStatic: false,
                                         ),
                                       ),
-                                      Align(
-                                        alignment: const AlignmentDirectional(-1.0, 1.0),
-                                        child: Padding(
-                                          padding: const EdgeInsetsDirectional.fromSTEB(
+                                    ),
+                                  ),
+                                  Align(
+                                    alignment:
+                                        const AlignmentDirectional(-1.0, 1.0),
+                                    child: Padding(
+                                      padding:
+                                          const EdgeInsetsDirectional.fromSTEB(
                                               16.0, 0.0, 0.0, 16.0),
-                                          child: FlutterFlowIconButton(
-                                            borderColor: Colors.transparent,
-                                            borderRadius: 88.0,
-                                            buttonSize: 48.0,
-                                            fillColor: FlutterFlowTheme.of(context)
-                                                .secondaryBackground,
-                                            icon: Icon(
-                                              FFIcons.kiconStroke,
-                                              color: FlutterFlowTheme.of(context)
-                                                  .primaryText,
-                                              size: 12.0,
+                                      child: FlutterFlowIconButton(
+                                        borderColor: Colors.transparent,
+                                        borderRadius: 88.0,
+                                        buttonSize: 48.0,
+                                        fillColor: FlutterFlowTheme.of(context)
+                                            .secondaryBackground,
+                                        icon: Icon(
+                                          FFIcons.kiconStroke,
+                                          color: FlutterFlowTheme.of(context)
+                                              .primaryText,
+                                          size: 12.0,
+                                        ),
+                                        onPressed: () async {
+                                          FFAppState().pointB = PointStruct();
+                                          FFAppState().pointA = PointStruct();
+                                          FFAppState().update(() {});
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: FlutterFlowTheme.of(context)
+                                    .secondaryBackground,
+                                borderRadius: BorderRadius.circular(18.0),
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  InkWell(
+                                    splashColor: Colors.transparent,
+                                    focusColor: Colors.transparent,
+                                    hoverColor: Colors.transparent,
+                                    highlightColor: Colors.transparent,
+                                    onTap: () async {
+                                      await showModalBottomSheet(
+                                        isScrollControlled: true,
+                                        backgroundColor: Colors.transparent,
+                                        context: context,
+                                        builder: (context) {
+                                          return WebViewAware(
+                                            child: GestureDetector(
+                                              onTap: () {
+                                                FocusScope.of(context)
+                                                    .unfocus();
+                                                FocusManager
+                                                    .instance.primaryFocus
+                                                    ?.unfocus();
+                                              },
+                                              child: Padding(
+                                                padding:
+                                                    MediaQuery.viewInsetsOf(
+                                                        context),
+                                                child: const SearhAddressWidget(
+                                                  index: 1,
+                                                ),
+                                              ),
                                             ),
-                                            onPressed: () async {
-                                              FFAppState().pointB = PointStruct();
-                                              FFAppState().pointA = PointStruct();
-                                              FFAppState().update(() {});
-                                            },
+                                          );
+                                        },
+                                      ).then((value) => safeSetState(() {}));
+                                    },
+                                    child: Container(
+                                      height: 60.0,
+                                      decoration: const BoxDecoration(),
+                                      child: Padding(
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(16.0, 0.0, 16.0, 0.0),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.max,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              width: 16.0,
+                                              height: 16.0,
+                                              decoration: BoxDecoration(
+                                                color:
+                                                    FlutterFlowTheme.of(context)
+                                                        .secondaryBackground,
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                  color:
+                                                      const Color(0xFFA4A6B2),
+                                                  width: 3.0,
+                                                ),
+                                              ),
+                                            ),
+                                            Flexible(
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsetsDirectional
+                                                        .fromSTEB(
+                                                        13.0, 0.0, 0.0, 0.0),
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.max,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.max,
+                                                      children: [
+                                                        Text(
+                                                          valueOrDefault<
+                                                              String>(
+                                                            FFAppState()
+                                                                .pointA
+                                                                .address,
+                                                            'Откуда забрать',
+                                                          ).maybeHandleOverflow(
+                                                            maxChars: 35,
+                                                            replacement: '…',
+                                                          ),
+                                                          maxLines: 1,
+                                                          style: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .bodyMedium
+                                                              .override(
+                                                                fontFamily:
+                                                                    'SF',
+                                                                color: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .primaryText,
+                                                                fontSize: 16.0,
+                                                                letterSpacing:
+                                                                    0.0,
+                                                              ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const Divider(
+                                                      height: 0.3,
+                                                      thickness: 0.3,
+                                                      color: Color(0xFFD0CFCE),
+                                                    ),
+                                                  ].divide(const SizedBox(
+                                                      height: 18.0)),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  InkWell(
+                                    splashColor: Colors.transparent,
+                                    focusColor: Colors.transparent,
+                                    hoverColor: Colors.transparent,
+                                    highlightColor: Colors.transparent,
+                                    onTap: () async {
+                                      await showModalBottomSheet(
+                                        isScrollControlled: true,
+                                        backgroundColor: Colors.transparent,
+                                        context: context,
+                                        builder: (context) {
+                                          return WebViewAware(
+                                            child: GestureDetector(
+                                              onTap: () {
+                                                FocusScope.of(context)
+                                                    .unfocus();
+                                                FocusManager
+                                                    .instance.primaryFocus
+                                                    ?.unfocus();
+                                              },
+                                              child: Padding(
+                                                padding:
+                                                    MediaQuery.viewInsetsOf(
+                                                        context),
+                                                child: const SearhAddressWidget(
+                                                  index: 2,
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ).then((value) => safeSetState(() {}));
+                                    },
+                                    child: Container(
+                                      height: 60.0,
+                                      decoration: const BoxDecoration(),
+                                      child: Padding(
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(16.0, 0.0, 16.0, 0.0),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.max,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              width: 16.0,
+                                              height: 16.0,
+                                              decoration: BoxDecoration(
+                                                color:
+                                                    FlutterFlowTheme.of(context)
+                                                        .secondaryBackground,
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                  color:
+                                                      const Color(0xFFA4A6B2),
+                                                  width: 3.0,
+                                                ),
+                                              ),
+                                            ),
+                                            Flexible(
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsetsDirectional
+                                                        .fromSTEB(
+                                                        13.0, 0.0, 0.0, 0.0),
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.max,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.max,
+                                                      children: [
+                                                        Flexible(
+                                                          child: Text(
+                                                            valueOrDefault<
+                                                                String>(
+                                                              FFAppState()
+                                                                  .pointB
+                                                                  .address,
+                                                              'Куда доставить',
+                                                            ).maybeHandleOverflow(
+                                                              maxChars: 35,
+                                                              replacement: '…',
+                                                            ),
+                                                            maxLines: 1,
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .bodyMedium
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'SF',
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .primaryText,
+                                                                  fontSize:
+                                                                      16.0,
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                ),
+                                                          ),
+                                                        ),
+                                                        if (FFAppState()
+                                                                    .distanceTime !=
+                                                                null &&
+                                                            FFAppState()
+                                                                    .distanceTime !=
+                                                                '')
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsetsDirectional
+                                                                    .fromSTEB(
+                                                                    6.0,
+                                                                    0.0,
+                                                                    6.0,
+                                                                    0.0),
+                                                            child: Container(
+                                                              width: 5.0,
+                                                              height: 5.0,
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                color: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .secondaryText,
+                                                                shape: BoxShape
+                                                                    .circle,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        Text(
+                                                          FFAppState()
+                                                              .distanceTime,
+                                                          style: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .bodyMedium
+                                                              .override(
+                                                                fontFamily:
+                                                                    'SF',
+                                                                color: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .secondaryText,
+                                                                fontSize: 16.0,
+                                                                letterSpacing:
+                                                                    0.0,
+                                                              ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const Divider(
+                                                      height: 0.3,
+                                                      thickness: 0.3,
+                                                      color: Color(0xFFD0CFCE),
+                                                    ),
+                                                  ].divide(const SizedBox(
+                                                      height: 18.0)),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            0.0, 8.0, 0.0, 8.0),
+                                    child: Container(
+                                      height: 100.0,
+                                      decoration: const BoxDecoration(),
+                                      child: SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.max,
+                                          children: [
+                                            InkWell(
+                                              splashColor: Colors.transparent,
+                                              focusColor: Colors.transparent,
+                                              hoverColor: Colors.transparent,
+                                              highlightColor:
+                                                  Colors.transparent,
+                                              onTap: () async {
+                                                _model.car = Car.largus;
+                                                safeSetState(() {});
+                                                HapticFeedback.mediumImpact();
+                                              },
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  color: valueOrDefault<Color>(
+                                                    _model.car == Car.largus
+                                                        ? FlutterFlowTheme.of(
+                                                                context)
+                                                            .tertiary
+                                                        : Colors.transparent,
+                                                    FlutterFlowTheme.of(context)
+                                                        .tertiary,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          12.0),
+                                                ),
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
+                                                          8.0, 0.0, 8.0, 0.0),
+                                                  child: Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      ClipRRect(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(0.0),
+                                                        child: Image.asset(
+                                                          'assets/images/1200x900_1.png',
+                                                          width: 96.9,
+                                                          height: 38.1,
+                                                          fit: BoxFit.cover,
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsetsDirectional
+                                                                .fromSTEB(6.0,
+                                                                12.0, 0.0, 0.0),
+                                                        child: Column(
+                                                          mainAxisSize:
+                                                              MainAxisSize.max,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Text(
+                                                              'Мини/S',
+                                                              style: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .bodyMedium
+                                                                  .override(
+                                                                    fontFamily:
+                                                                        'SF',
+                                                                    color: valueOrDefault<
+                                                                        Color>(
+                                                                      _model.car ==
+                                                                              Car
+                                                                                  .largus
+                                                                          ? FlutterFlowTheme.of(context)
+                                                                              .secondary
+                                                                          : FlutterFlowTheme.of(context)
+                                                                              .secondaryText,
+                                                                      FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .secondary,
+                                                                    ),
+                                                                    fontSize:
+                                                                        14.0,
+                                                                    letterSpacing:
+                                                                        0.0,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500,
+                                                                  ),
+                                                            ),
+                                                            RichText(
+                                                              textScaler:
+                                                                  MediaQuery.of(
+                                                                          context)
+                                                                      .textScaler,
+                                                              text: TextSpan(
+                                                                children: [
+                                                                  const TextSpan(
+                                                                    text: 'от ',
+                                                                    style:
+                                                                        TextStyle(
+                                                                      fontSize:
+                                                                          12.0,
+                                                                    ),
+                                                                  ),
+                                                                  TextSpan(
+                                                                    text: ordersState.mapOrNull(
+                                                                            loaded: (_) =>
+                                                                                _.prices?['largus']?.price.toString()) ??
+                                                                        '-',
+                                                                    style:
+                                                                        const TextStyle(
+                                                                      fontSize:
+                                                                          15.0,
+                                                                    ),
+                                                                  ),
+                                                                  const TextSpan(
+                                                                    text: ' ₽',
+                                                                    style:
+                                                                        TextStyle(
+                                                                      fontSize:
+                                                                          12.0,
+                                                                    ),
+                                                                  )
+                                                                ],
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyMedium
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'SF',
+                                                                      color: valueOrDefault<
+                                                                          Color>(
+                                                                        _model.car ==
+                                                                                Car.largus
+                                                                            ? FlutterFlowTheme.of(context).secondary
+                                                                            : FlutterFlowTheme.of(context).primaryText,
+                                                                        FlutterFlowTheme.of(context)
+                                                                            .secondary,
+                                                                      ),
+                                                                      fontSize:
+                                                                          16.0,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .normal,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            InkWell(
+                                              splashColor: Colors.transparent,
+                                              focusColor: Colors.transparent,
+                                              hoverColor: Colors.transparent,
+                                              highlightColor:
+                                                  Colors.transparent,
+                                              onTap: () async {
+                                                _model.car = Car.fiat;
+                                                safeSetState(() {});
+                                                HapticFeedback.mediumImpact();
+                                              },
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  color: valueOrDefault<Color>(
+                                                    _model.car == Car.fiat
+                                                        ? FlutterFlowTheme.of(
+                                                                context)
+                                                            .tertiary
+                                                        : Colors.transparent,
+                                                    Colors.transparent,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          12.0),
+                                                ),
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
+                                                          8.0, 0.0, 8.0, 0.0),
+                                                  child: Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      ClipRRect(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(0.0),
+                                                        child: Image.asset(
+                                                          'assets/images/fiat_16doblopackcv2fbc_sideview_1.png',
+                                                          width: 92.53,
+                                                          height: 39.2,
+                                                          fit: BoxFit.cover,
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsetsDirectional
+                                                                .fromSTEB(6.0,
+                                                                12.0, 0.0, 0.0),
+                                                        child: Column(
+                                                          mainAxisSize:
+                                                              MainAxisSize.max,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Text(
+                                                              'МиниПлюс/M',
+                                                              style: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .bodyMedium
+                                                                  .override(
+                                                                    fontFamily:
+                                                                        'SF',
+                                                                    color: valueOrDefault<
+                                                                        Color>(
+                                                                      _model.car ==
+                                                                              Car
+                                                                                  .fiat
+                                                                          ? FlutterFlowTheme.of(context)
+                                                                              .secondary
+                                                                          : FlutterFlowTheme.of(context)
+                                                                              .secondaryText,
+                                                                      FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .secondaryText,
+                                                                    ),
+                                                                    fontSize:
+                                                                        14.0,
+                                                                    letterSpacing:
+                                                                        0.0,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500,
+                                                                  ),
+                                                            ),
+                                                            RichText(
+                                                              textScaler:
+                                                                  MediaQuery.of(
+                                                                          context)
+                                                                      .textScaler,
+                                                              text: TextSpan(
+                                                                children: [
+                                                                  const TextSpan(
+                                                                    text: 'от ',
+                                                                    style:
+                                                                        TextStyle(
+                                                                      fontSize:
+                                                                          12.0,
+                                                                    ),
+                                                                  ),
+                                                                  TextSpan(
+                                                                    text: ordersState.mapOrNull(
+                                                                            loaded: (_) =>
+                                                                                _.prices?['fiat']?.price.toString()) ??
+                                                                        '-',
+                                                                    style:
+                                                                        const TextStyle(
+                                                                      fontSize:
+                                                                          15.0,
+                                                                    ),
+                                                                  ),
+                                                                  const TextSpan(
+                                                                    text: ' ₽',
+                                                                    style:
+                                                                        TextStyle(
+                                                                      fontSize:
+                                                                          12.0,
+                                                                    ),
+                                                                  )
+                                                                ],
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyMedium
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'SF',
+                                                                      color: valueOrDefault<
+                                                                          Color>(
+                                                                        _model.car ==
+                                                                                Car.fiat
+                                                                            ? FlutterFlowTheme.of(context).secondary
+                                                                            : FlutterFlowTheme.of(context).primaryText,
+                                                                        FlutterFlowTheme.of(context)
+                                                                            .primaryText,
+                                                                      ),
+                                                                      fontSize:
+                                                                          16.0,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .normal,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            InkWell(
+                                              splashColor: Colors.transparent,
+                                              focusColor: Colors.transparent,
+                                              hoverColor: Colors.transparent,
+                                              highlightColor:
+                                                  Colors.transparent,
+                                              onTap: () async {
+                                                _model.car = Car.largusTermo;
+                                                safeSetState(() {});
+                                                HapticFeedback.mediumImpact();
+                                              },
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  color: valueOrDefault<Color>(
+                                                    _model.car ==
+                                                            Car.largusTermo
+                                                        ? FlutterFlowTheme.of(
+                                                                context)
+                                                            .tertiary
+                                                        : Colors.transparent,
+                                                    Colors.transparent,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          12.0),
+                                                ),
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
+                                                          8.0, 0.0, 8.0, 0.0),
+                                                  child: Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      ClipRRect(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(0.0),
+                                                        child: Image.asset(
+                                                          'assets/images/ladalargus013_1.png',
+                                                          width: 99.9,
+                                                          height: 39.2,
+                                                          fit: BoxFit.cover,
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsetsDirectional
+                                                                .fromSTEB(6.0,
+                                                                12.0, 0.0, 0.0),
+                                                        child: Column(
+                                                          mainAxisSize:
+                                                              MainAxisSize.max,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Text(
+                                                              'Термобудка/S-M',
+                                                              style: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .bodyMedium
+                                                                  .override(
+                                                                    fontFamily:
+                                                                        'SF',
+                                                                    color: valueOrDefault<
+                                                                        Color>(
+                                                                      _model.car ==
+                                                                              Car
+                                                                                  .largusTermo
+                                                                          ? FlutterFlowTheme.of(context)
+                                                                              .secondary
+                                                                          : FlutterFlowTheme.of(context)
+                                                                              .secondaryText,
+                                                                      FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .secondaryText,
+                                                                    ),
+                                                                    fontSize:
+                                                                        14.0,
+                                                                    letterSpacing:
+                                                                        0.0,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500,
+                                                                  ),
+                                                            ),
+                                                            RichText(
+                                                              textScaler:
+                                                                  MediaQuery.of(
+                                                                          context)
+                                                                      .textScaler,
+                                                              text: TextSpan(
+                                                                children: [
+                                                                  const TextSpan(
+                                                                    text: 'от ',
+                                                                    style:
+                                                                        TextStyle(
+                                                                      fontSize:
+                                                                          12.0,
+                                                                    ),
+                                                                  ),
+                                                                  TextSpan(
+                                                                    text: ordersState.mapOrNull(
+                                                                            loaded: (_) =>
+                                                                                _.prices?['largustermo']?.price.toString()) ??
+                                                                        '-',
+                                                                    style:
+                                                                        const TextStyle(
+                                                                      fontSize:
+                                                                          15.0,
+                                                                    ),
+                                                                  ),
+                                                                  const TextSpan(
+                                                                    text: ' ₽',
+                                                                    style:
+                                                                        TextStyle(
+                                                                      fontSize:
+                                                                          12.0,
+                                                                    ),
+                                                                  )
+                                                                ],
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyMedium
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'SF',
+                                                                      color: valueOrDefault<
+                                                                          Color>(
+                                                                        _model.car ==
+                                                                                Car.largusTermo
+                                                                            ? FlutterFlowTheme.of(context).secondary
+                                                                            : FlutterFlowTheme.of(context).primaryText,
+                                                                        FlutterFlowTheme.of(context)
+                                                                            .primaryText,
+                                                                      ),
+                                                                      fontSize:
+                                                                          16.0,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .normal,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ]
+                                              .divide(
+                                                  const SizedBox(width: 8.0))
+                                              .addToStart(
+                                                  const SizedBox(width: 16.0))
+                                              .addToEnd(
+                                                  const SizedBox(width: 16.0)),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            8.0, 0.0, 8.0, 8.0),
+                                    child: Builder(builder: (context) {
+                                      final eta = ordersState.mapOrNull(
+                                          loaded: (_) =>
+                                              _.etas?[_model.car?.name ?? '']);
+                                      final bool loading =
+                                          ordersState.mapOrNull(
+                                                  loading: (_) => true) ??
+                                              false;
+                                      return FFButtonWidget(
+                                        onPressed: () async {
+                                          context.pushNamed(
+                                            DetaliySozdanieWidget.routeName,
+                                            queryParameters: {
+                                              'car': serializeParam(
+                                                _model.car,
+                                                ParamType.Enum,
+                                              ),
+                                            }.withoutNulls,
+                                          );
+                                        },
+                                        icon: eta?.etaText == null && !loading
+                                            ? GestureDetector(
+                                                onTap: () {
+                                                  CustomDialog(
+                                                    text: FFAppState()
+                                                                .pointB
+                                                                .latlng ==
+                                                            null
+                                                        ? 'Выберити точку разгрузки'
+                                                        : 'Поблизости нету водителей, для определения времени подачи, но вы можете создать заказ и если они появятся, то смогут откликнуться!',
+                                                  ).show(context);
+                                                },
+                                                child: Icon(
+                                                  Icons.info_outline,
+                                                  color: Colors.white,
+                                                  size: 17,
+                                                ))
+                                            : null,
+                                        text: loading
+                                            ? 'Загрузка...'
+                                            : eta?.etaText == null
+                                                ? 'Время подачи не определено'
+                                                : 'Подача через - ${eta?.etaText}',
+                                        options: FFButtonOptions(
+                                          width: double.infinity,
+                                          height: 56.0,
+                                          padding: const EdgeInsetsDirectional
+                                              .fromSTEB(0.0, 0.0, 0.0, 0.0),
+                                          iconPadding:
+                                              const EdgeInsetsDirectional
+                                                  .fromSTEB(0.0, 0.0, 0.0, 0.0),
+                                          color: FlutterFlowTheme.of(context)
+                                              .tertiary,
+                                          textStyle: FlutterFlowTheme.of(
+                                                  context)
+                                              .titleSmall
+                                              .override(
+                                                font: GoogleFonts.inter(
+                                                  fontWeight:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .titleSmall
+                                                          .fontWeight,
+                                                  fontStyle:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .titleSmall
+                                                          .fontStyle,
+                                                ),
+                                                color:
+                                                    FlutterFlowTheme.of(context)
+                                                        .primaryBackground,
+                                                letterSpacing: 0.0,
+                                                fontWeight:
+                                                    FlutterFlowTheme.of(context)
+                                                        .titleSmall
+                                                        .fontWeight,
+                                                fontStyle:
+                                                    FlutterFlowTheme.of(context)
+                                                        .titleSmall
+                                                        .fontStyle,
+                                              ),
+                                          elevation: 0.0,
+                                          borderRadius:
+                                              BorderRadius.circular(16.0),
+                                        ),
+                                        showLoadingIndicator: false,
+                                      );
+                                    }),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ].divide(const SizedBox(height: 5.0)),
+                        );
+                      } else {
+                        return Column(
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            Expanded(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(18.0),
+                                child: Container(
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  decoration: BoxDecoration(
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryBackground,
+                                    borderRadius: BorderRadius.circular(18.0),
+                                  ),
+                                  child: Stack(
+                                    children: [
+                                      custom_widgets.YandexPickerMap(
+                                        initialLocation: _model.mapCenter ??=
+                                            FFAppState().mskGeo!,
+                                        initialZoom: 15.0,
+                                        allowInteraction: true,
+                                        onCameraIdle: (latLng) async {
+                                          safeSetState(
+                                              () => _model.mapCenter = latLng);
+                                          FFAppState().lastPickerMapCenter =
+                                              latLng;
+                                          try {
+                                            final c =
+                                                _model.yandexMapController;
+                                            if (c != null) {
+                                              final pos =
+                                                  await c.getCameraPosition();
+                                              FFAppState().lastPickerMapZoom =
+                                                  pos.zoom;
+                                            }
+                                          } catch (_) {}
+                                        },
+                                        onMapCreated: (controller) {
+                                          _model.yandexMapController =
+                                              controller;
+                                        },
+                                      ),
+                                      Align(
+                                        alignment: const AlignmentDirectional(
+                                            0.0, 0.0),
+                                        child: PointerInterceptor(
+                                          intercepting: isWeb,
+                                          child: Padding(
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(0.0, 0.0, 0.0, 40.0),
+                                            child: FaIcon(
+                                              FontAwesomeIcons.mapPin,
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .tertiary,
+                                              size: 40.0,
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                                Container(
-                                  width: double.infinity,
+                              ),
+                            ),
+                            FutureBuilder<ApiCallResponse>(
+                              future: GeocodeLatLngCall.call(
+                                latlng:
+                                    functions.formatLatLng(_model.mapCenter!),
+                              ),
+                              builder: (context, snapshot) {
+                                // Customize what your widget looks like when it's loading.
+                                if (!snapshot.hasData) {
+                                  return const MainLoadWidget();
+                                }
+                                final containerGeocodeLatLngResponse =
+                                    snapshot.data!;
+
+                                return Container(
+                                  constraints: const BoxConstraints(
+                                    minHeight: 120.0,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: FlutterFlowTheme.of(context)
                                         .secondaryBackground,
@@ -358,7 +1319,8 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                   ),
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       InkWell(
                                         splashColor: Colors.transparent,
@@ -366,6 +1328,172 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                         hoverColor: Colors.transparent,
                                         highlightColor: Colors.transparent,
                                         onTap: () async {
+                                          context.read<OrdersBloc>().add(
+                                              OrdersEvent.getEtas(
+                                                  userLocation: LocationEntity(
+                                                      lat: _model
+                                                          .mapCenter!.latitude,
+                                                      lng: _model.mapCenter!
+                                                          .longitude)));
+
+                                          FFAppState().pointA = PointStruct(
+                                            latlng: _model.mapCenter,
+                                            placeID: GeocodeLatLngCall.placeId(
+                                              containerGeocodeLatLngResponse
+                                                  .jsonBody,
+                                            ),
+                                            address: () {
+                                              if ((GeocodeLatLngCall.street(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) !=
+                                                          null &&
+                                                      GeocodeLatLngCall.street(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) !=
+                                                          '') &&
+                                                  (GeocodeLatLngCall.number(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) !=
+                                                          null &&
+                                                      GeocodeLatLngCall.number(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) !=
+                                                          '')) {
+                                                return '${GeocodeLatLngCall.street(
+                                                  containerGeocodeLatLngResponse
+                                                      .jsonBody,
+                                                )}, ${GeocodeLatLngCall.number(
+                                                  containerGeocodeLatLngResponse
+                                                      .jsonBody,
+                                                )}';
+                                              } else if ((GeocodeLatLngCall
+                                                              .street(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) ==
+                                                          null ||
+                                                      GeocodeLatLngCall.street(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) ==
+                                                          '') &&
+                                                  (GeocodeLatLngCall.number(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) ==
+                                                          null ||
+                                                      GeocodeLatLngCall.number(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) ==
+                                                          '') &&
+                                                  (GeocodeLatLngCall.areal3(
+                                                        containerGeocodeLatLngResponse
+                                                            .jsonBody,
+                                                      ) !=
+                                                      null)) {
+                                                return valueOrDefault<String>(
+                                                  '${GeocodeLatLngCall.areal3(
+                                                    containerGeocodeLatLngResponse
+                                                        .jsonBody,
+                                                  ).toString()} район',
+                                                  'Откуда забрать',
+                                                );
+                                              } else if (GeocodeLatLngCall
+                                                          .street(
+                                                        containerGeocodeLatLngResponse
+                                                            .jsonBody,
+                                                      ) !=
+                                                      null &&
+                                                  GeocodeLatLngCall.street(
+                                                        containerGeocodeLatLngResponse
+                                                            .jsonBody,
+                                                      ) !=
+                                                      '') {
+                                                return GeocodeLatLngCall.street(
+                                                  containerGeocodeLatLngResponse
+                                                      .jsonBody,
+                                                );
+                                              } else if ((GeocodeLatLngCall
+                                                              .street(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) ==
+                                                          null ||
+                                                      GeocodeLatLngCall.street(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) ==
+                                                          '') &&
+                                                  (GeocodeLatLngCall.number(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) ==
+                                                          null ||
+                                                      GeocodeLatLngCall.number(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) ==
+                                                          '') &&
+                                                  (GeocodeLatLngCall.areal3(
+                                                        containerGeocodeLatLngResponse
+                                                            .jsonBody,
+                                                      ) ==
+                                                      null) &&
+                                                  (GeocodeLatLngCall.city(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) !=
+                                                          null &&
+                                                      GeocodeLatLngCall.city(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) !=
+                                                          '') &&
+                                                  (GeocodeLatLngCall.areal(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) !=
+                                                          null &&
+                                                      GeocodeLatLngCall.areal(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) !=
+                                                          '')) {
+                                                return '${GeocodeLatLngCall.city(
+                                                  containerGeocodeLatLngResponse
+                                                      .jsonBody,
+                                                )}, ${GeocodeLatLngCall.areal(
+                                                  containerGeocodeLatLngResponse
+                                                      .jsonBody,
+                                                )}';
+                                              } else {
+                                                return GeocodeLatLngCall
+                                                    .address(
+                                                  containerGeocodeLatLngResponse
+                                                      .jsonBody,
+                                                );
+                                              }
+                                            }(),
+                                            fullAddress:
+                                                GeocodeLatLngCall.address(
+                                              containerGeocodeLatLngResponse
+                                                  .jsonBody,
+                                            ),
+                                            city: GeocodeLatLngCall.areal2(
+                                                  containerGeocodeLatLngResponse
+                                                      .jsonBody,
+                                                ) ??
+                                                GeocodeLatLngCall.city(
+                                                  containerGeocodeLatLngResponse
+                                                      .jsonBody,
+                                                ),
+                                          );
+                                          safeSetState(() {});
                                           await showModalBottomSheet(
                                             isScrollControlled: true,
                                             backgroundColor: Colors.transparent,
@@ -374,28 +1502,33 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                               return WebViewAware(
                                                 child: GestureDetector(
                                                   onTap: () {
-                                                    FocusScope.of(context).unfocus();
-                                                    FocusManager.instance.primaryFocus
+                                                    FocusScope.of(context)
+                                                        .unfocus();
+                                                    FocusManager
+                                                        .instance.primaryFocus
                                                         ?.unfocus();
                                                   },
                                                   child: Padding(
-                                                    padding: MediaQuery.viewInsetsOf(
-                                                        context),
-                                                    child: const SearhAddressWidget(
+                                                    padding:
+                                                        MediaQuery.viewInsetsOf(
+                                                            context),
+                                                    child:
+                                                        const SearhAddressWidget(
                                                       index: 1,
                                                     ),
                                                   ),
                                                 ),
                                               );
                                             },
-                                          ).then((value) => safeSetState(() {}));
+                                          ).then(
+                                              (value) => safeSetState(() {}));
                                         },
                                         child: Container(
                                           height: 60.0,
                                           decoration: const BoxDecoration(),
                                           child: Padding(
-                                            padding: const EdgeInsetsDirectional.fromSTEB(
-                                                16.0, 0.0, 16.0, 0.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(16.0, 0.0, 16.0, 0.0),
                                             child: Row(
                                               mainAxisSize: MainAxisSize.max,
                                               crossAxisAlignment:
@@ -405,11 +1538,13 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                   width: 16.0,
                                                   height: 16.0,
                                                   decoration: BoxDecoration(
-                                                    color: FlutterFlowTheme.of(context)
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
                                                         .secondaryBackground,
                                                     shape: BoxShape.circle,
                                                     border: Border.all(
-                                                      color: const Color(0xFFA4A6B2),
+                                                      color: const Color(
+                                                          0xFFA4A6B2),
                                                       width: 3.0,
                                                     ),
                                                   ),
@@ -417,50 +1552,379 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                 Flexible(
                                                   child: Padding(
                                                     padding:
-                                                        const EdgeInsetsDirectional.fromSTEB(
-                                                            13.0, 0.0, 0.0, 0.0),
+                                                        const EdgeInsetsDirectional
+                                                            .fromSTEB(13.0, 0.0,
+                                                            0.0, 0.0),
                                                     child: Column(
-                                                      mainAxisSize: MainAxisSize.max,
+                                                      mainAxisSize:
+                                                          MainAxisSize.max,
                                                       mainAxisAlignment:
                                                           MainAxisAlignment.end,
                                                       crossAxisAlignment:
-                                                          CrossAxisAlignment.start,
+                                                          CrossAxisAlignment
+                                                              .start,
                                                       children: [
                                                         Row(
                                                           mainAxisSize:
                                                               MainAxisSize.max,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
                                                           children: [
-                                                            Text(
-                                                              valueOrDefault<String>(
-                                                                FFAppState()
-                                                                    .pointA
-                                                                    .address,
+                                                            if ((GeocodeLatLngCall
+                                                                            .street(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) ==
+                                                                        null ||
+                                                                    GeocodeLatLngCall
+                                                                            .street(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) ==
+                                                                        '') &&
+                                                                (GeocodeLatLngCall
+                                                                            .number(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) ==
+                                                                        null ||
+                                                                    GeocodeLatLngCall
+                                                                            .number(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) ==
+                                                                        '') &&
+                                                                (GeocodeLatLngCall
+                                                                        .areal3(
+                                                                      containerGeocodeLatLngResponse
+                                                                          .jsonBody,
+                                                                    ) ==
+                                                                    null) &&
+                                                                (GeocodeLatLngCall
+                                                                            .city(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) ==
+                                                                        null ||
+                                                                    GeocodeLatLngCall
+                                                                            .city(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) ==
+                                                                        '') &&
+                                                                (GeocodeLatLngCall
+                                                                            .areal(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) ==
+                                                                        null ||
+                                                                    GeocodeLatLngCall
+                                                                            .areal(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) ==
+                                                                        ''))
+                                                              Text(
                                                                 'Откуда забрать',
-                                                              ).maybeHandleOverflow(
-                                                                maxChars: 35,
-                                                                replacement: '…',
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyMedium
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'SF',
+                                                                      color: const Color(
+                                                                          0xFFA4A6B2),
+                                                                      fontSize:
+                                                                          16.0,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                    ),
                                                               ),
-                                                              maxLines: 1,
-                                                              style: FlutterFlowTheme
-                                                                      .of(context)
-                                                                  .bodyMedium
-                                                                  .override(
-                                                                    fontFamily: 'SF',
-                                                                    color: FlutterFlowTheme
-                                                                            .of(context)
-                                                                        .primaryText,
-                                                                    fontSize: 16.0,
-                                                                    letterSpacing: 0.0,
-                                                                  ),
-                                                            ),
+                                                            if ((GeocodeLatLngCall
+                                                                            .street(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) ==
+                                                                        null ||
+                                                                    GeocodeLatLngCall
+                                                                            .street(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) ==
+                                                                        '') &&
+                                                                (GeocodeLatLngCall
+                                                                            .number(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) ==
+                                                                        null ||
+                                                                    GeocodeLatLngCall
+                                                                            .number(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) ==
+                                                                        '') &&
+                                                                (GeocodeLatLngCall
+                                                                        .areal3(
+                                                                      containerGeocodeLatLngResponse
+                                                                          .jsonBody,
+                                                                    ) ==
+                                                                    null) &&
+                                                                (GeocodeLatLngCall
+                                                                            .city(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) ==
+                                                                        null ||
+                                                                    GeocodeLatLngCall
+                                                                            .city(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) ==
+                                                                        '') &&
+                                                                (GeocodeLatLngCall
+                                                                            .areal(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) !=
+                                                                        null &&
+                                                                    GeocodeLatLngCall
+                                                                            .areal(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) !=
+                                                                        ''))
+                                                              Text(
+                                                                GeocodeLatLngCall
+                                                                    .areal(
+                                                                  containerGeocodeLatLngResponse
+                                                                      .jsonBody,
+                                                                )!,
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyMedium
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'SF',
+                                                                      color: const Color(
+                                                                          0xFFA4A6B2),
+                                                                      fontSize:
+                                                                          16.0,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                    ),
+                                                              ),
+                                                            if ((GeocodeLatLngCall
+                                                                            .street(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) ==
+                                                                        null ||
+                                                                    GeocodeLatLngCall
+                                                                            .street(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) ==
+                                                                        '') &&
+                                                                (GeocodeLatLngCall
+                                                                            .number(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) ==
+                                                                        null ||
+                                                                    GeocodeLatLngCall
+                                                                            .number(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) ==
+                                                                        '') &&
+                                                                (GeocodeLatLngCall
+                                                                        .areal3(
+                                                                      containerGeocodeLatLngResponse
+                                                                          .jsonBody,
+                                                                    ) ==
+                                                                    null) &&
+                                                                (GeocodeLatLngCall
+                                                                            .city(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) !=
+                                                                        null &&
+                                                                    GeocodeLatLngCall
+                                                                            .city(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) !=
+                                                                        '') &&
+                                                                (GeocodeLatLngCall
+                                                                            .areal(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) !=
+                                                                        null &&
+                                                                    GeocodeLatLngCall
+                                                                            .areal(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) !=
+                                                                        ''))
+                                                              Text(
+                                                                '${GeocodeLatLngCall.city(
+                                                                  containerGeocodeLatLngResponse
+                                                                      .jsonBody,
+                                                                )}, ${GeocodeLatLngCall.areal(
+                                                                  containerGeocodeLatLngResponse
+                                                                      .jsonBody,
+                                                                )}',
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyMedium
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'SF',
+                                                                      color: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .primaryText,
+                                                                      fontSize:
+                                                                          16.0,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                    ),
+                                                              ),
+                                                            if ((GeocodeLatLngCall
+                                                                            .street(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) ==
+                                                                        null ||
+                                                                    GeocodeLatLngCall
+                                                                            .street(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) ==
+                                                                        '') &&
+                                                                (GeocodeLatLngCall
+                                                                            .number(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) ==
+                                                                        null ||
+                                                                    GeocodeLatLngCall
+                                                                            .number(
+                                                                          containerGeocodeLatLngResponse
+                                                                              .jsonBody,
+                                                                        ) ==
+                                                                        '') &&
+                                                                (GeocodeLatLngCall
+                                                                        .areal3(
+                                                                      containerGeocodeLatLngResponse
+                                                                          .jsonBody,
+                                                                    ) !=
+                                                                    null))
+                                                              Text(
+                                                                valueOrDefault<
+                                                                    String>(
+                                                                  '${GeocodeLatLngCall.areal3(
+                                                                    containerGeocodeLatLngResponse
+                                                                        .jsonBody,
+                                                                  ).toString()} район',
+                                                                  'Откуда забрать',
+                                                                ),
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyMedium
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'SF',
+                                                                      color: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .primaryText,
+                                                                      fontSize:
+                                                                          16.0,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                    ),
+                                                              ),
+                                                            if (GeocodeLatLngCall
+                                                                        .street(
+                                                                      containerGeocodeLatLngResponse
+                                                                          .jsonBody,
+                                                                    ) !=
+                                                                    null &&
+                                                                GeocodeLatLngCall
+                                                                        .street(
+                                                                      containerGeocodeLatLngResponse
+                                                                          .jsonBody,
+                                                                    ) !=
+                                                                    '')
+                                                              Text(
+                                                                GeocodeLatLngCall
+                                                                    .street(
+                                                                  containerGeocodeLatLngResponse
+                                                                      .jsonBody,
+                                                                )!,
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyMedium
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'SF',
+                                                                      color: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .primaryText,
+                                                                      fontSize:
+                                                                          16.0,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                    ),
+                                                              ),
+                                                            if (GeocodeLatLngCall
+                                                                        .number(
+                                                                      containerGeocodeLatLngResponse
+                                                                          .jsonBody,
+                                                                    ) !=
+                                                                    null &&
+                                                                GeocodeLatLngCall
+                                                                        .number(
+                                                                      containerGeocodeLatLngResponse
+                                                                          .jsonBody,
+                                                                    ) !=
+                                                                    '')
+                                                              Text(
+                                                                valueOrDefault<
+                                                                    String>(
+                                                                  ' , ${GeocodeLatLngCall.number(
+                                                                    containerGeocodeLatLngResponse
+                                                                        .jsonBody,
+                                                                  )}',
+                                                                  'Откуда забрать',
+                                                                ),
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyMedium
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'SF',
+                                                                      color: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .primaryText,
+                                                                      fontSize:
+                                                                          16.0,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                    ),
+                                                              ),
                                                           ],
                                                         ),
                                                         const Divider(
                                                           height: 0.3,
                                                           thickness: 0.3,
-                                                          color: Color(0xFFD0CFCE),
+                                                          color:
+                                                              Color(0xFFD0CFCE),
                                                         ),
-                                                      ].divide(const SizedBox(height: 18.0)),
+                                                      ].divide(const SizedBox(
+                                                          height: 18.0)),
                                                     ),
                                                   ),
                                                 ),
@@ -475,6 +1939,172 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                         hoverColor: Colors.transparent,
                                         highlightColor: Colors.transparent,
                                         onTap: () async {
+                                          context.read<OrdersBloc>().add(
+                                              OrdersEvent.getEtas(
+                                                  userLocation: LocationEntity(
+                                                      lat: _model
+                                                          .mapCenter!.latitude,
+                                                      lng: _model.mapCenter!
+                                                          .longitude)));
+
+                                          FFAppState().pointA = PointStruct(
+                                            latlng: _model.mapCenter,
+                                            placeID: GeocodeLatLngCall.placeId(
+                                              containerGeocodeLatLngResponse
+                                                  .jsonBody,
+                                            ),
+                                            address: () {
+                                              if ((GeocodeLatLngCall.street(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) !=
+                                                          null &&
+                                                      GeocodeLatLngCall.street(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) !=
+                                                          '') &&
+                                                  (GeocodeLatLngCall.number(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) !=
+                                                          null &&
+                                                      GeocodeLatLngCall.number(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) !=
+                                                          '')) {
+                                                return '${GeocodeLatLngCall.street(
+                                                  containerGeocodeLatLngResponse
+                                                      .jsonBody,
+                                                )}, ${GeocodeLatLngCall.number(
+                                                  containerGeocodeLatLngResponse
+                                                      .jsonBody,
+                                                )}';
+                                              } else if ((GeocodeLatLngCall
+                                                              .street(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) ==
+                                                          null ||
+                                                      GeocodeLatLngCall.street(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) ==
+                                                          '') &&
+                                                  (GeocodeLatLngCall.number(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) ==
+                                                          null ||
+                                                      GeocodeLatLngCall.number(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) ==
+                                                          '') &&
+                                                  (GeocodeLatLngCall.areal3(
+                                                        containerGeocodeLatLngResponse
+                                                            .jsonBody,
+                                                      ) !=
+                                                      null)) {
+                                                return valueOrDefault<String>(
+                                                  '${GeocodeLatLngCall.areal3(
+                                                    containerGeocodeLatLngResponse
+                                                        .jsonBody,
+                                                  ).toString()} район',
+                                                  'Откуда забрать',
+                                                );
+                                              } else if (GeocodeLatLngCall
+                                                          .street(
+                                                        containerGeocodeLatLngResponse
+                                                            .jsonBody,
+                                                      ) !=
+                                                      null &&
+                                                  GeocodeLatLngCall.street(
+                                                        containerGeocodeLatLngResponse
+                                                            .jsonBody,
+                                                      ) !=
+                                                      '') {
+                                                return GeocodeLatLngCall.street(
+                                                  containerGeocodeLatLngResponse
+                                                      .jsonBody,
+                                                );
+                                              } else if ((GeocodeLatLngCall
+                                                              .street(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) ==
+                                                          null ||
+                                                      GeocodeLatLngCall.street(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) ==
+                                                          '') &&
+                                                  (GeocodeLatLngCall.number(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) ==
+                                                          null ||
+                                                      GeocodeLatLngCall.number(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) ==
+                                                          '') &&
+                                                  (GeocodeLatLngCall.areal3(
+                                                        containerGeocodeLatLngResponse
+                                                            .jsonBody,
+                                                      ) ==
+                                                      null) &&
+                                                  (GeocodeLatLngCall.city(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) !=
+                                                          null &&
+                                                      GeocodeLatLngCall.city(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) !=
+                                                          '') &&
+                                                  (GeocodeLatLngCall.areal(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) !=
+                                                          null &&
+                                                      GeocodeLatLngCall.areal(
+                                                            containerGeocodeLatLngResponse
+                                                                .jsonBody,
+                                                          ) !=
+                                                          '')) {
+                                                return '${GeocodeLatLngCall.city(
+                                                  containerGeocodeLatLngResponse
+                                                      .jsonBody,
+                                                )}, ${GeocodeLatLngCall.areal(
+                                                  containerGeocodeLatLngResponse
+                                                      .jsonBody,
+                                                )}';
+                                              } else {
+                                                return GeocodeLatLngCall
+                                                    .address(
+                                                  containerGeocodeLatLngResponse
+                                                      .jsonBody,
+                                                );
+                                              }
+                                            }(),
+                                            fullAddress:
+                                                GeocodeLatLngCall.address(
+                                              containerGeocodeLatLngResponse
+                                                  .jsonBody,
+                                            ),
+                                            city: GeocodeLatLngCall.areal2(
+                                                  containerGeocodeLatLngResponse
+                                                      .jsonBody,
+                                                ) ??
+                                                GeocodeLatLngCall.city(
+                                                  containerGeocodeLatLngResponse
+                                                      .jsonBody,
+                                                ),
+                                          );
+                                          safeSetState(() {});
                                           await showModalBottomSheet(
                                             isScrollControlled: true,
                                             backgroundColor: Colors.transparent,
@@ -483,28 +2113,33 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                               return WebViewAware(
                                                 child: GestureDetector(
                                                   onTap: () {
-                                                    FocusScope.of(context).unfocus();
-                                                    FocusManager.instance.primaryFocus
+                                                    FocusScope.of(context)
+                                                        .unfocus();
+                                                    FocusManager
+                                                        .instance.primaryFocus
                                                         ?.unfocus();
                                                   },
                                                   child: Padding(
-                                                    padding: MediaQuery.viewInsetsOf(
-                                                        context),
-                                                    child: const SearhAddressWidget(
+                                                    padding:
+                                                        MediaQuery.viewInsetsOf(
+                                                            context),
+                                                    child:
+                                                        const SearhAddressWidget(
                                                       index: 2,
                                                     ),
                                                   ),
                                                 ),
                                               );
                                             },
-                                          ).then((value) => safeSetState(() {}));
+                                          ).then(
+                                              (value) => safeSetState(() {}));
                                         },
                                         child: Container(
                                           height: 60.0,
                                           decoration: const BoxDecoration(),
                                           child: Padding(
-                                            padding: const EdgeInsetsDirectional.fromSTEB(
-                                                16.0, 0.0, 16.0, 0.0),
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(16.0, 0.0, 16.0, 0.0),
                                             child: Row(
                                               mainAxisSize: MainAxisSize.max,
                                               crossAxisAlignment:
@@ -514,106 +2149,62 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                   width: 16.0,
                                                   height: 16.0,
                                                   decoration: BoxDecoration(
-                                                    color: FlutterFlowTheme.of(context)
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
                                                         .secondaryBackground,
                                                     shape: BoxShape.circle,
                                                     border: Border.all(
-                                                      color: const Color(0xFFA4A6B2),
+                                                      color: const Color(
+                                                          0xFFA4A6B2),
                                                       width: 3.0,
                                                     ),
                                                   ),
                                                 ),
-                                                Flexible(
+                                                Expanded(
                                                   child: Padding(
                                                     padding:
-                                                        const EdgeInsetsDirectional.fromSTEB(
-                                                            13.0, 0.0, 0.0, 0.0),
+                                                        const EdgeInsetsDirectional
+                                                            .fromSTEB(13.0, 0.0,
+                                                            0.0, 0.0),
                                                     child: Column(
-                                                      mainAxisSize: MainAxisSize.max,
+                                                      mainAxisSize:
+                                                          MainAxisSize.max,
                                                       mainAxisAlignment:
                                                           MainAxisAlignment.end,
                                                       crossAxisAlignment:
-                                                          CrossAxisAlignment.start,
+                                                          CrossAxisAlignment
+                                                              .start,
                                                       children: [
-                                                        Row(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          children: [
-                                                            Flexible(
-                                                              child: Text(
-                                                                valueOrDefault<String>(
-                                                                  FFAppState()
-                                                                      .pointB
-                                                                      .address,
-                                                                  'Куда доставить',
-                                                                ).maybeHandleOverflow(
-                                                                  maxChars: 35,
-                                                                  replacement: '…',
-                                                                ),
-                                                                maxLines: 1,
-                                                                style: FlutterFlowTheme
-                                                                        .of(context)
-                                                                    .bodyMedium
-                                                                    .override(
-                                                                      fontFamily: 'SF',
-                                                                      color: FlutterFlowTheme
-                                                                              .of(context)
-                                                                          .primaryText,
-                                                                      fontSize: 16.0,
-                                                                      letterSpacing:
-                                                                          0.0,
-                                                                    ),
-                                                              ),
-                                                            ),
-                                                            if (FFAppState()
-                                                                        .distanceTime !=
-                                                                    null &&
-                                                                FFAppState()
-                                                                        .distanceTime !=
-                                                                    '')
-                                                              Padding(
-                                                                padding:
-                                                                    const EdgeInsetsDirectional
-                                                                        .fromSTEB(
-                                                                            6.0,
-                                                                            0.0,
-                                                                            6.0,
-                                                                            0.0),
-                                                                child: Container(
-                                                                  width: 5.0,
-                                                                  height: 5.0,
-                                                                  decoration:
-                                                                      BoxDecoration(
-                                                                    color: FlutterFlowTheme
-                                                                            .of(context)
-                                                                        .secondaryText,
-                                                                    shape:
-                                                                        BoxShape.circle,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            Text(
-                                                              FFAppState().distanceTime,
+                                                        Expanded(
+                                                          child: Align(
+                                                            alignment:
+                                                                const AlignmentDirectional(
+                                                                    -1.0, 0.0),
+                                                            child: Text(
+                                                              'Куда доставить',
                                                               style: FlutterFlowTheme
                                                                       .of(context)
                                                                   .bodyMedium
                                                                   .override(
-                                                                    fontFamily: 'SF',
-                                                                    color: FlutterFlowTheme
-                                                                            .of(context)
-                                                                        .secondaryText,
-                                                                    fontSize: 16.0,
-                                                                    letterSpacing: 0.0,
+                                                                    fontFamily:
+                                                                        'SF',
+                                                                    color: const Color(
+                                                                        0xFFA4A6B2),
+                                                                    fontSize:
+                                                                        16.0,
+                                                                    letterSpacing:
+                                                                        0.0,
                                                                   ),
                                                             ),
-                                                          ],
+                                                          ),
                                                         ),
                                                         const Divider(
                                                           height: 0.3,
                                                           thickness: 0.3,
-                                                          color: Color(0xFFD0CFCE),
+                                                          color:
+                                                              Color(0xFFD0CFCE),
                                                         ),
-                                                      ].divide(const SizedBox(height: 18.0)),
+                                                      ],
                                                     ),
                                                   ),
                                                 ),
@@ -623,10 +2214,10 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                         ),
                                       ),
                                       Padding(
-                                        padding: const EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 8.0, 0.0, 8.0),
+                                        padding: const EdgeInsetsDirectional
+                                            .fromSTEB(0.0, 8.0, 0.0, 8.0),
                                         child: Container(
-                                          height: 100.0,
+                                          height: 100.77,
                                           decoration: const BoxDecoration(),
                                           child: SingleChildScrollView(
                                             scrollDirection: Axis.horizontal,
@@ -634,43 +2225,58 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                               mainAxisSize: MainAxisSize.max,
                                               children: [
                                                 InkWell(
-                                                  splashColor: Colors.transparent,
-                                                  focusColor: Colors.transparent,
-                                                  hoverColor: Colors.transparent,
-                                                  highlightColor: Colors.transparent,
+                                                  splashColor:
+                                                      Colors.transparent,
+                                                  focusColor:
+                                                      Colors.transparent,
+                                                  hoverColor:
+                                                      Colors.transparent,
+                                                  highlightColor:
+                                                      Colors.transparent,
                                                   onTap: () async {
                                                     _model.car = Car.largus;
                                                     safeSetState(() {});
-                                                    HapticFeedback.mediumImpact();
+                                                    HapticFeedback
+                                                        .mediumImpact();
                                                   },
                                                   child: Container(
                                                     decoration: BoxDecoration(
-                                                      color: valueOrDefault<Color>(
+                                                      color:
+                                                          valueOrDefault<Color>(
                                                         _model.car == Car.largus
-                                                            ? FlutterFlowTheme.of(
-                                                                    context)
+                                                            ? FlutterFlowTheme
+                                                                    .of(context)
                                                                 .tertiary
-                                                            : Colors.transparent,
-                                                        FlutterFlowTheme.of(context)
+                                                            : Colors
+                                                                .transparent,
+                                                        FlutterFlowTheme.of(
+                                                                context)
                                                             .tertiary,
                                                       ),
                                                       borderRadius:
-                                                          BorderRadius.circular(12.0),
+                                                          BorderRadius.circular(
+                                                              12.0),
                                                     ),
                                                     child: Padding(
-                                                      padding: const EdgeInsetsDirectional
-                                                          .fromSTEB(8.0, 0.0, 8.0, 0.0),
+                                                      padding:
+                                                          const EdgeInsetsDirectional
+                                                              .fromSTEB(8.0,
+                                                              0.0, 8.0, 0.0),
                                                       child: Column(
-                                                        mainAxisSize: MainAxisSize.max,
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
                                                         mainAxisAlignment:
-                                                            MainAxisAlignment.center,
+                                                            MainAxisAlignment
+                                                                .center,
                                                         crossAxisAlignment:
-                                                            CrossAxisAlignment.start,
+                                                            CrossAxisAlignment
+                                                                .start,
                                                         children: [
                                                           ClipRRect(
                                                             borderRadius:
-                                                                BorderRadius.circular(
-                                                                    0.0),
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        0.0),
                                                             child: Image.asset(
                                                               'assets/images/1200x900_1.png',
                                                               width: 96.9,
@@ -681,72 +2287,71 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                           Padding(
                                                             padding:
                                                                 const EdgeInsetsDirectional
-                                                                    .fromSTEB(6.0, 12.0,
-                                                                        0.0, 0.0),
+                                                                    .fromSTEB(
+                                                                    6.0,
+                                                                    12.0,
+                                                                    0.0,
+                                                                    0.0),
                                                             child: Column(
                                                               mainAxisSize:
-                                                                  MainAxisSize.max,
+                                                                  MainAxisSize
+                                                                      .max,
                                                               crossAxisAlignment:
                                                                   CrossAxisAlignment
                                                                       .start,
                                                               children: [
                                                                 Text(
                                                                   'Мини/S',
-                                                                  style: FlutterFlowTheme
-                                                                          .of(context)
+                                                                  style: FlutterFlowTheme.of(
+                                                                          context)
                                                                       .bodyMedium
                                                                       .override(
                                                                         fontFamily:
                                                                             'SF',
-                                                                        color:
-                                                                            valueOrDefault<
-                                                                                Color>(
-                                                                          _model.car ==
-                                                                                  Car
-                                                                                      .largus
-                                                                              ? FlutterFlowTheme.of(
-                                                                                      context)
-                                                                                  .secondary
-                                                                              : FlutterFlowTheme.of(
-                                                                                      context)
-                                                                                  .secondaryText,
-                                                                          FlutterFlowTheme.of(
-                                                                                  context)
-                                                                              .secondary,
+                                                                        color: valueOrDefault<
+                                                                            Color>(
+                                                                          _model.car == Car.largus
+                                                                              ? Colors.white
+                                                                              : FlutterFlowTheme.of(context).secondaryText,
+                                                                          Colors
+                                                                              .white,
                                                                         ),
-                                                                        fontSize: 14.0,
+                                                                        fontSize:
+                                                                            14.0,
                                                                         letterSpacing:
                                                                             0.0,
                                                                         fontWeight:
-                                                                            FontWeight
-                                                                                .w500,
+                                                                            FontWeight.w500,
                                                                       ),
                                                                 ),
                                                                 RichText(
-                                                                  textScaler:
-                                                                      MediaQuery.of(
-                                                                              context)
-                                                                          .textScaler,
-                                                                  text: TextSpan(
+                                                                  textScaler: MediaQuery.of(
+                                                                          context)
+                                                                      .textScaler,
+                                                                  text:
+                                                                      TextSpan(
                                                                     children: [
                                                                       const TextSpan(
-                                                                        text: 'от ',
+                                                                        text:
+                                                                            'от ',
                                                                         style:
                                                                             TextStyle(
                                                                           fontSize:
                                                                               12.0,
                                                                         ),
                                                                       ),
-                                                                      TextSpan(
-                                                                        text:  ordersState.mapOrNull(loaded: (_) => _.prices?['largus']?.price.toString()) ?? '-',
+                                                                      const TextSpan(
+                                                                        text:
+                                                                            '797',
                                                                         style:
-                                                                            const TextStyle(
+                                                                            TextStyle(
                                                                           fontSize:
                                                                               15.0,
                                                                         ),
                                                                       ),
                                                                       const TextSpan(
-                                                                        text: ' ₽',
+                                                                        text:
+                                                                            ' ₽',
                                                                         style:
                                                                             TextStyle(
                                                                           fontSize:
@@ -754,33 +2359,25 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                                         ),
                                                                       )
                                                                     ],
-                                                                    style: FlutterFlowTheme
-                                                                            .of(context)
+                                                                    style: FlutterFlowTheme.of(
+                                                                            context)
                                                                         .bodyMedium
                                                                         .override(
                                                                           fontFamily:
                                                                               'SF',
                                                                           color:
-                                                                              valueOrDefault<
-                                                                                  Color>(
-                                                                            _model.car ==
-                                                                                    Car
-                                                                                        .largus
-                                                                                ? FlutterFlowTheme.of(context)
-                                                                                    .secondary
-                                                                                : FlutterFlowTheme.of(context)
-                                                                                    .primaryText,
-                                                                            FlutterFlowTheme.of(
-                                                                                    context)
-                                                                                .secondary,
+                                                                              valueOrDefault<Color>(
+                                                                            _model.car == Car.largus
+                                                                                ? Colors.white
+                                                                                : FlutterFlowTheme.of(context).primaryText,
+                                                                            Colors.white,
                                                                           ),
                                                                           fontSize:
                                                                               16.0,
                                                                           letterSpacing:
                                                                               0.0,
                                                                           fontWeight:
-                                                                              FontWeight
-                                                                                  .normal,
+                                                                              FontWeight.normal,
                                                                         ),
                                                                   ),
                                                                 ),
@@ -793,42 +2390,56 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                   ),
                                                 ),
                                                 InkWell(
-                                                  splashColor: Colors.transparent,
-                                                  focusColor: Colors.transparent,
-                                                  hoverColor: Colors.transparent,
-                                                  highlightColor: Colors.transparent,
+                                                  splashColor:
+                                                      Colors.transparent,
+                                                  focusColor:
+                                                      Colors.transparent,
+                                                  hoverColor:
+                                                      Colors.transparent,
+                                                  highlightColor:
+                                                      Colors.transparent,
                                                   onTap: () async {
                                                     _model.car = Car.fiat;
                                                     safeSetState(() {});
-                                                    HapticFeedback.mediumImpact();
+                                                    HapticFeedback
+                                                        .mediumImpact();
                                                   },
                                                   child: Container(
                                                     decoration: BoxDecoration(
-                                                      color: valueOrDefault<Color>(
+                                                      color:
+                                                          valueOrDefault<Color>(
                                                         _model.car == Car.fiat
-                                                            ? FlutterFlowTheme.of(
-                                                                    context)
+                                                            ? FlutterFlowTheme
+                                                                    .of(context)
                                                                 .tertiary
-                                                            : Colors.transparent,
+                                                            : Colors
+                                                                .transparent,
                                                         Colors.transparent,
                                                       ),
                                                       borderRadius:
-                                                          BorderRadius.circular(12.0),
+                                                          BorderRadius.circular(
+                                                              12.0),
                                                     ),
                                                     child: Padding(
-                                                      padding: const EdgeInsetsDirectional
-                                                          .fromSTEB(8.0, 0.0, 8.0, 0.0),
+                                                      padding:
+                                                          const EdgeInsetsDirectional
+                                                              .fromSTEB(8.0,
+                                                              0.0, 8.0, 0.0),
                                                       child: Column(
-                                                        mainAxisSize: MainAxisSize.max,
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
                                                         mainAxisAlignment:
-                                                            MainAxisAlignment.center,
+                                                            MainAxisAlignment
+                                                                .center,
                                                         crossAxisAlignment:
-                                                            CrossAxisAlignment.start,
+                                                            CrossAxisAlignment
+                                                                .start,
                                                         children: [
                                                           ClipRRect(
                                                             borderRadius:
-                                                                BorderRadius.circular(
-                                                                    0.0),
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        0.0),
                                                             child: Image.asset(
                                                               'assets/images/fiat_16doblopackcv2fbc_sideview_1.png',
                                                               width: 92.53,
@@ -839,72 +2450,71 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                           Padding(
                                                             padding:
                                                                 const EdgeInsetsDirectional
-                                                                    .fromSTEB(6.0, 12.0,
-                                                                        0.0, 0.0),
+                                                                    .fromSTEB(
+                                                                    6.0,
+                                                                    12.0,
+                                                                    0.0,
+                                                                    0.0),
                                                             child: Column(
                                                               mainAxisSize:
-                                                                  MainAxisSize.max,
+                                                                  MainAxisSize
+                                                                      .max,
                                                               crossAxisAlignment:
                                                                   CrossAxisAlignment
                                                                       .start,
                                                               children: [
                                                                 Text(
                                                                   'МиниПлюс/M',
-                                                                  style: FlutterFlowTheme
-                                                                          .of(context)
+                                                                  style: FlutterFlowTheme.of(
+                                                                          context)
                                                                       .bodyMedium
                                                                       .override(
                                                                         fontFamily:
                                                                             'SF',
-                                                                        color:
-                                                                            valueOrDefault<
-                                                                                Color>(
-                                                                          _model.car ==
-                                                                                  Car
-                                                                                      .fiat
-                                                                              ? FlutterFlowTheme.of(
-                                                                                      context)
-                                                                                  .secondary
-                                                                              : FlutterFlowTheme.of(
-                                                                                      context)
-                                                                                  .secondaryText,
-                                                                          FlutterFlowTheme.of(
-                                                                                  context)
+                                                                        color: valueOrDefault<
+                                                                            Color>(
+                                                                          _model.car == Car.fiat
+                                                                              ? FlutterFlowTheme.of(context).secondary
+                                                                              : FlutterFlowTheme.of(context).secondaryText,
+                                                                          FlutterFlowTheme.of(context)
                                                                               .secondaryText,
                                                                         ),
-                                                                        fontSize: 14.0,
+                                                                        fontSize:
+                                                                            14.0,
                                                                         letterSpacing:
                                                                             0.0,
                                                                         fontWeight:
-                                                                            FontWeight
-                                                                                .w500,
+                                                                            FontWeight.w500,
                                                                       ),
                                                                 ),
                                                                 RichText(
-                                                                  textScaler:
-                                                                      MediaQuery.of(
-                                                                              context)
-                                                                          .textScaler,
-                                                                  text: TextSpan(
+                                                                  textScaler: MediaQuery.of(
+                                                                          context)
+                                                                      .textScaler,
+                                                                  text:
+                                                                      TextSpan(
                                                                     children: [
                                                                       const TextSpan(
-                                                                        text: 'от ',
+                                                                        text:
+                                                                            'от ',
                                                                         style:
                                                                             TextStyle(
                                                                           fontSize:
                                                                               12.0,
                                                                         ),
                                                                       ),
-                                                                      TextSpan(
-                                                                        text: ordersState.mapOrNull(loaded: (_) => _.prices?['fiat']?.price.toString()) ?? '-',
+                                                                      const TextSpan(
+                                                                        text:
+                                                                            '1035',
                                                                         style:
-                                                                            const TextStyle(
+                                                                            TextStyle(
                                                                           fontSize:
                                                                               15.0,
                                                                         ),
                                                                       ),
                                                                       const TextSpan(
-                                                                        text: ' ₽',
+                                                                        text:
+                                                                            ' ₽',
                                                                         style:
                                                                             TextStyle(
                                                                           fontSize:
@@ -912,33 +2522,25 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                                         ),
                                                                       )
                                                                     ],
-                                                                    style: FlutterFlowTheme
-                                                                            .of(context)
+                                                                    style: FlutterFlowTheme.of(
+                                                                            context)
                                                                         .bodyMedium
                                                                         .override(
                                                                           fontFamily:
                                                                               'SF',
                                                                           color:
-                                                                              valueOrDefault<
-                                                                                  Color>(
-                                                                            _model.car ==
-                                                                                    Car
-                                                                                        .fiat
-                                                                                ? FlutterFlowTheme.of(context)
-                                                                                    .secondary
-                                                                                : FlutterFlowTheme.of(context)
-                                                                                    .primaryText,
-                                                                            FlutterFlowTheme.of(
-                                                                                    context)
-                                                                                .primaryText,
+                                                                              valueOrDefault<Color>(
+                                                                            _model.car == Car.fiat
+                                                                                ? FlutterFlowTheme.of(context).secondary
+                                                                                : FlutterFlowTheme.of(context).primaryText,
+                                                                            FlutterFlowTheme.of(context).primaryText,
                                                                           ),
                                                                           fontSize:
                                                                               16.0,
                                                                           letterSpacing:
                                                                               0.0,
                                                                           fontWeight:
-                                                                              FontWeight
-                                                                                  .normal,
+                                                                              FontWeight.normal,
                                                                         ),
                                                                   ),
                                                                 ),
@@ -951,42 +2553,58 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                   ),
                                                 ),
                                                 InkWell(
-                                                  splashColor: Colors.transparent,
-                                                  focusColor: Colors.transparent,
-                                                  hoverColor: Colors.transparent,
-                                                  highlightColor: Colors.transparent,
+                                                  splashColor:
+                                                      Colors.transparent,
+                                                  focusColor:
+                                                      Colors.transparent,
+                                                  hoverColor:
+                                                      Colors.transparent,
+                                                  highlightColor:
+                                                      Colors.transparent,
                                                   onTap: () async {
-                                                    _model.car = Car.largusTermo;
+                                                    _model.car =
+                                                        Car.largusTermo;
                                                     safeSetState(() {});
-                                                    HapticFeedback.mediumImpact();
+                                                    HapticFeedback
+                                                        .mediumImpact();
                                                   },
                                                   child: Container(
                                                     decoration: BoxDecoration(
-                                                      color: valueOrDefault<Color>(
-                                                        _model.car == Car.largusTermo
-                                                            ? FlutterFlowTheme.of(
-                                                                    context)
+                                                      color:
+                                                          valueOrDefault<Color>(
+                                                        _model.car ==
+                                                                Car.largusTermo
+                                                            ? FlutterFlowTheme
+                                                                    .of(context)
                                                                 .tertiary
-                                                            : Colors.transparent,
+                                                            : Colors
+                                                                .transparent,
                                                         Colors.transparent,
                                                       ),
                                                       borderRadius:
-                                                          BorderRadius.circular(12.0),
+                                                          BorderRadius.circular(
+                                                              12.0),
                                                     ),
                                                     child: Padding(
-                                                      padding: const EdgeInsetsDirectional
-                                                          .fromSTEB(8.0, 0.0, 8.0, 0.0),
+                                                      padding:
+                                                          const EdgeInsetsDirectional
+                                                              .fromSTEB(8.0,
+                                                              0.0, 8.0, 0.0),
                                                       child: Column(
-                                                        mainAxisSize: MainAxisSize.max,
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
                                                         mainAxisAlignment:
-                                                            MainAxisAlignment.center,
+                                                            MainAxisAlignment
+                                                                .center,
                                                         crossAxisAlignment:
-                                                            CrossAxisAlignment.start,
+                                                            CrossAxisAlignment
+                                                                .start,
                                                         children: [
                                                           ClipRRect(
                                                             borderRadius:
-                                                                BorderRadius.circular(
-                                                                    0.0),
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        0.0),
                                                             child: Image.asset(
                                                               'assets/images/ladalargus013_1.png',
                                                               width: 99.9,
@@ -997,72 +2615,71 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                           Padding(
                                                             padding:
                                                                 const EdgeInsetsDirectional
-                                                                    .fromSTEB(6.0, 12.0,
-                                                                        0.0, 0.0),
+                                                                    .fromSTEB(
+                                                                    6.0,
+                                                                    12.0,
+                                                                    0.0,
+                                                                    0.0),
                                                             child: Column(
                                                               mainAxisSize:
-                                                                  MainAxisSize.max,
+                                                                  MainAxisSize
+                                                                      .max,
                                                               crossAxisAlignment:
                                                                   CrossAxisAlignment
                                                                       .start,
                                                               children: [
                                                                 Text(
                                                                   'Термобудка/S-M',
-                                                                  style: FlutterFlowTheme
-                                                                          .of(context)
+                                                                  style: FlutterFlowTheme.of(
+                                                                          context)
                                                                       .bodyMedium
                                                                       .override(
                                                                         fontFamily:
                                                                             'SF',
-                                                                        color:
-                                                                            valueOrDefault<
-                                                                                Color>(
-                                                                          _model.car ==
-                                                                                  Car
-                                                                                      .largusTermo
-                                                                              ? FlutterFlowTheme.of(
-                                                                                      context)
-                                                                                  .secondary
-                                                                              : FlutterFlowTheme.of(
-                                                                                      context)
-                                                                                  .secondaryText,
-                                                                          FlutterFlowTheme.of(
-                                                                                  context)
+                                                                        color: valueOrDefault<
+                                                                            Color>(
+                                                                          _model.car == Car.largusTermo
+                                                                              ? FlutterFlowTheme.of(context).secondary
+                                                                              : FlutterFlowTheme.of(context).secondaryText,
+                                                                          FlutterFlowTheme.of(context)
                                                                               .secondaryText,
                                                                         ),
-                                                                        fontSize: 14.0,
+                                                                        fontSize:
+                                                                            14.0,
                                                                         letterSpacing:
                                                                             0.0,
                                                                         fontWeight:
-                                                                            FontWeight
-                                                                                .w500,
+                                                                            FontWeight.w500,
                                                                       ),
                                                                 ),
                                                                 RichText(
-                                                                  textScaler:
-                                                                      MediaQuery.of(
-                                                                              context)
-                                                                          .textScaler,
-                                                                  text: TextSpan(
+                                                                  textScaler: MediaQuery.of(
+                                                                          context)
+                                                                      .textScaler,
+                                                                  text:
+                                                                      TextSpan(
                                                                     children: [
                                                                       const TextSpan(
-                                                                        text: 'от ',
+                                                                        text:
+                                                                            'от ',
                                                                         style:
                                                                             TextStyle(
                                                                           fontSize:
                                                                               12.0,
                                                                         ),
                                                                       ),
-                                                                      TextSpan(
-                                                                        text: ordersState.mapOrNull(loaded: (_) => _.prices?['largustermo']?.price.toString()) ?? '-',
+                                                                      const TextSpan(
+                                                                        text:
+                                                                            '2500',
                                                                         style:
-                                                                            const TextStyle(
+                                                                            TextStyle(
                                                                           fontSize:
                                                                               15.0,
                                                                         ),
                                                                       ),
                                                                       const TextSpan(
-                                                                        text: ' ₽',
+                                                                        text:
+                                                                            ' ₽',
                                                                         style:
                                                                             TextStyle(
                                                                           fontSize:
@@ -1070,33 +2687,25 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                                         ),
                                                                       )
                                                                     ],
-                                                                    style: FlutterFlowTheme
-                                                                            .of(context)
+                                                                    style: FlutterFlowTheme.of(
+                                                                            context)
                                                                         .bodyMedium
                                                                         .override(
                                                                           fontFamily:
                                                                               'SF',
                                                                           color:
-                                                                              valueOrDefault<
-                                                                                  Color>(
-                                                                            _model.car ==
-                                                                                    Car
-                                                                                        .largusTermo
-                                                                                ? FlutterFlowTheme.of(context)
-                                                                                    .secondary
-                                                                                : FlutterFlowTheme.of(context)
-                                                                                    .primaryText,
-                                                                            FlutterFlowTheme.of(
-                                                                                    context)
-                                                                                .primaryText,
+                                                                              valueOrDefault<Color>(
+                                                                            _model.car == Car.largusTermo
+                                                                                ? FlutterFlowTheme.of(context).secondary
+                                                                                : FlutterFlowTheme.of(context).primaryText,
+                                                                            FlutterFlowTheme.of(context).primaryText,
                                                                           ),
                                                                           fontSize:
                                                                               16.0,
                                                                           letterSpacing:
                                                                               0.0,
                                                                           fontWeight:
-                                                                              FontWeight
-                                                                                  .normal,
+                                                                              FontWeight.normal,
                                                                         ),
                                                                   ),
                                                                 ),
@@ -1109,1553 +2718,39 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                                   ),
                                                 ),
                                               ]
-                                                  .divide(const SizedBox(width: 8.0))
-                                                  .addToStart(const SizedBox(width: 16.0))
-                                                  .addToEnd(const SizedBox(width: 16.0)),
+                                                  .divide(const SizedBox(
+                                                      width: 8.0))
+                                                  .addToStart(const SizedBox(
+                                                      width: 16.0))
+                                                  .addToEnd(const SizedBox(
+                                                      width: 16.0)),
                                             ),
                                           ),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsetsDirectional.fromSTEB(
-                                            8.0, 0.0, 8.0, 8.0),
-                                        child: Builder(
-                                          builder: (context) {
-                                            final eta = ordersState.mapOrNull(loaded: (_) => _.etas?[_model.car?.name ?? '']);
-                                            final bool loading = ordersState.mapOrNull(loading:(_)=> true) ?? false;
-                                            return FFButtonWidget(
-                                              onPressed: () async {
-                                                context.pushNamed(
-                                                  DetaliySozdanieWidget.routeName,
-                                                  queryParameters: {
-                                                    'car': serializeParam(
-                                                      _model.car,
-                                                      ParamType.Enum,
-                                                    ),
-                                                  }.withoutNulls,
-                                                );
-                                              },
-                                              icon: eta?.etaText == null && !loading ?GestureDetector(
-                                                  onTap:  () {
-                                                    CustomDialog(text: FFAppState().pointB.latlng == null ? 'Выберити точку разгрузки' : 'Поблизости нету водителей, для определения времени подачи, но вы можете создать заказ и если они появятся, то смогут откликнуться!',).show(context);
-                                                  },
-                                                  child: Icon(Icons.info_outline, color: Colors.white, size: 17,)) : null,
-                                              text: loading ? 'Загрузка...' : eta?.etaText == null ? 'Время подачи не определено' : 'Подача через - ${eta?.etaText}',
-                                              options: FFButtonOptions(
-                                                width: double.infinity,
-                                                height: 56.0,
-                                                padding: const EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 0.0, 0.0, 0.0),
-                                                iconPadding: const EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 0.0, 0.0, 0.0),
-                                                color:
-                                                    FlutterFlowTheme.of(context).tertiary,
-                                                textStyle: FlutterFlowTheme.of(context)
-                                                    .titleSmall
-                                                    .override(
-                                                      font: GoogleFonts.inter(
-                                                        fontWeight:
-                                                            FlutterFlowTheme.of(context)
-                                                                .titleSmall
-                                                                .fontWeight,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(context)
-                                                                .titleSmall
-                                                                .fontStyle,
-                                                      ),
-                                                      color: FlutterFlowTheme.of(context)
-                                                          .primaryBackground,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FlutterFlowTheme.of(context)
-                                                              .titleSmall
-                                                              .fontWeight,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(context)
-                                                              .titleSmall
-                                                              .fontStyle,
-                                                    ),
-                                                elevation: 0.0,
-                                                borderRadius: BorderRadius.circular(16.0),
-                                              ),
-                                              showLoadingIndicator: false,
-                                            );
-                                          }
                                         ),
                                       ),
                                     ],
                                   ),
-                                ),
-                              ].divide(const SizedBox(height: 5.0)),
-                            );
-                          } else {
-                            return Column(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Expanded(
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(18.0),
-                                    child: Container(
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                      decoration: BoxDecoration(
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryBackground,
-                                        borderRadius: BorderRadius.circular(18.0),
-                                      ),
-                                      child: Stack(
-                                        children: [
-                                          custom_widgets.YandexPickerMap(
-                                            initialLocation: _model.mapCenter ??=
-                                                FFAppState().mskGeo!,
-                                            initialZoom: 15.0,
-                                            allowInteraction: true,
-                                            onCameraIdle: (latLng) async {
-                                              safeSetState(
-                                                  () => _model.mapCenter = latLng);
-                                              FFAppState().lastPickerMapCenter = latLng;
-                                              try {
-                                                final c = _model.yandexMapController;
-                                                if (c != null) {
-                                                  final pos =
-                                                      await c.getCameraPosition();
-                                                  FFAppState().lastPickerMapZoom =
-                                                      pos.zoom;
-                                                }
-                                              } catch (_) {}
-                                            },
-                                            onMapCreated: (controller) {
-                                              _model.yandexMapController = controller;
-                                            },
-                                          ),
-                                          Align(
-                                            alignment: const AlignmentDirectional(0.0, 0.0),
-                                            child: PointerInterceptor(
-                                              intercepting: isWeb,
-                                              child: Padding(
-                                                padding: const EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 0.0, 0.0, 40.0),
-                                                child: FaIcon(
-                                                  FontAwesomeIcons.mapPin,
-                                                  color: FlutterFlowTheme.of(context)
-                                                      .tertiary,
-                                                  size: 40.0,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                FutureBuilder<ApiCallResponse>(
-                                  future: GeocodeLatLngCall.call(
-                                    latlng: functions
-                                        .formatLatLng(_model.mapCenter!),
-                                  ),
-                                  builder: (context, snapshot) {
-                                    // Customize what your widget looks like when it's loading.
-                                    if (!snapshot.hasData) {
-                                      return const MainLoadWidget();
-                                    }
-                                    final containerGeocodeLatLngResponse =
-                                        snapshot.data!;
-
-                                    return Container(
-                                      constraints: const BoxConstraints(
-                                        minHeight: 120.0,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryBackground,
-                                        borderRadius: BorderRadius.circular(18.0),
-                                      ),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          InkWell(
-                                            splashColor: Colors.transparent,
-                                            focusColor: Colors.transparent,
-                                            hoverColor: Colors.transparent,
-                                            highlightColor: Colors.transparent,
-                                            onTap: () async {
-                                              context.read<OrdersBloc>().add(OrdersEvent.getEtas(userLocation: LocationEntity(lat: _model.mapCenter!.latitude, lng: _model.mapCenter!.longitude)));
-
-                                              FFAppState().pointA = PointStruct(
-                                                latlng: _model.mapCenter,
-                                                placeID: GeocodeLatLngCall.placeId(
-                                                  containerGeocodeLatLngResponse
-                                                      .jsonBody,
-                                                ),
-                                                address: () {
-                                                  if ((GeocodeLatLngCall.street(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) !=
-                                                              null &&
-                                                          GeocodeLatLngCall.street(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) !=
-                                                              '') &&
-                                                      (GeocodeLatLngCall.number(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) !=
-                                                              null &&
-                                                          GeocodeLatLngCall.number(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) !=
-                                                              '')) {
-                                                    return '${GeocodeLatLngCall.street(
-                                                      containerGeocodeLatLngResponse
-                                                          .jsonBody,
-                                                    )}, ${GeocodeLatLngCall.number(
-                                                      containerGeocodeLatLngResponse
-                                                          .jsonBody,
-                                                    )}';
-                                                  } else if ((GeocodeLatLngCall.street(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) ==
-                                                              null ||
-                                                          GeocodeLatLngCall.street(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) ==
-                                                              '') &&
-                                                      (GeocodeLatLngCall.number(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) ==
-                                                              null ||
-                                                          GeocodeLatLngCall.number(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) ==
-                                                              '') &&
-                                                      (GeocodeLatLngCall.areal3(
-                                                            containerGeocodeLatLngResponse
-                                                                .jsonBody,
-                                                          ) !=
-                                                          null)) {
-                                                    return valueOrDefault<String>(
-                                                      '${GeocodeLatLngCall.areal3(
-                                                        containerGeocodeLatLngResponse
-                                                            .jsonBody,
-                                                      ).toString()} район',
-                                                      'Откуда забрать',
-                                                    );
-                                                  } else if (GeocodeLatLngCall.street(
-                                                            containerGeocodeLatLngResponse
-                                                                .jsonBody,
-                                                          ) !=
-                                                          null &&
-                                                      GeocodeLatLngCall.street(
-                                                            containerGeocodeLatLngResponse
-                                                                .jsonBody,
-                                                          ) !=
-                                                          '') {
-                                                    return GeocodeLatLngCall.street(
-                                                      containerGeocodeLatLngResponse
-                                                          .jsonBody,
-                                                    );
-                                                  } else if ((GeocodeLatLngCall.street(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) ==
-                                                              null ||
-                                                          GeocodeLatLngCall.street(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) ==
-                                                              '') &&
-                                                      (GeocodeLatLngCall.number(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) ==
-                                                              null ||
-                                                          GeocodeLatLngCall.number(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) ==
-                                                              '') &&
-                                                      (GeocodeLatLngCall.areal3(
-                                                            containerGeocodeLatLngResponse
-                                                                .jsonBody,
-                                                          ) ==
-                                                          null) &&
-                                                      (GeocodeLatLngCall.city(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) !=
-                                                              null &&
-                                                          GeocodeLatLngCall.city(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) !=
-                                                              '') &&
-                                                      (GeocodeLatLngCall.areal(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) !=
-                                                              null &&
-                                                          GeocodeLatLngCall.areal(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) !=
-                                                              '')) {
-                                                    return '${GeocodeLatLngCall.city(
-                                                      containerGeocodeLatLngResponse
-                                                          .jsonBody,
-                                                    )}, ${GeocodeLatLngCall.areal(
-                                                      containerGeocodeLatLngResponse
-                                                          .jsonBody,
-                                                    )}';
-                                                  } else {
-                                                    return GeocodeLatLngCall.address(
-                                                      containerGeocodeLatLngResponse
-                                                          .jsonBody,
-                                                    );
-                                                  }
-                                                }(),
-                                                fullAddress: GeocodeLatLngCall.address(
-                                                  containerGeocodeLatLngResponse
-                                                      .jsonBody,
-                                                ),
-                                                city: GeocodeLatLngCall.areal2(
-                                                  containerGeocodeLatLngResponse
-                                                      .jsonBody,
-                                                ) ?? GeocodeLatLngCall.city(
-                                                  containerGeocodeLatLngResponse
-                                                      .jsonBody,
-                                                ),
-                                              );
-                                              safeSetState(() {});
-                                              await showModalBottomSheet(
-                                                isScrollControlled: true,
-                                                backgroundColor: Colors.transparent,
-                                                context: context,
-                                                builder: (context) {
-                                                  return WebViewAware(
-                                                    child: GestureDetector(
-                                                      onTap: () {
-                                                        FocusScope.of(context)
-                                                            .unfocus();
-                                                        FocusManager
-                                                            .instance.primaryFocus
-                                                            ?.unfocus();
-                                                      },
-                                                      child: Padding(
-                                                        padding:
-                                                            MediaQuery.viewInsetsOf(
-                                                                context),
-                                                        child: const SearhAddressWidget(
-                                                          index: 1,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                              ).then((value) => safeSetState(() {}));
-                                            },
-                                            child: Container(
-                                              height: 60.0,
-                                              decoration: const BoxDecoration(),
-                                              child: Padding(
-                                                padding: const EdgeInsetsDirectional.fromSTEB(
-                                                    16.0, 0.0, 16.0, 0.0),
-                                                child: Row(
-                                                  mainAxisSize: MainAxisSize.max,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  children: [
-                                                    Container(
-                                                      width: 16.0,
-                                                      height: 16.0,
-                                                      decoration: BoxDecoration(
-                                                        color:
-                                                            FlutterFlowTheme.of(context)
-                                                                .secondaryBackground,
-                                                        shape: BoxShape.circle,
-                                                        border: Border.all(
-                                                          color: const Color(0xFFA4A6B2),
-                                                          width: 3.0,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Flexible(
-                                                      child: Padding(
-                                                        padding: const EdgeInsetsDirectional
-                                                            .fromSTEB(
-                                                                13.0, 0.0, 0.0, 0.0),
-                                                        child: Column(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment.end,
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment.start,
-                                                          children: [
-                                                            Row(
-                                                              mainAxisSize:
-                                                                  MainAxisSize.max,
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .center,
-                                                              children: [
-                                                                if ((GeocodeLatLngCall
-                                                                                .street(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) ==
-                                                                            null ||
-                                                                        GeocodeLatLngCall
-                                                                                .street(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) ==
-                                                                            '') &&
-                                                                    (GeocodeLatLngCall
-                                                                                .number(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) ==
-                                                                            null ||
-                                                                        GeocodeLatLngCall
-                                                                                .number(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) ==
-                                                                            '') &&
-                                                                    (GeocodeLatLngCall
-                                                                            .areal3(
-                                                                          containerGeocodeLatLngResponse
-                                                                              .jsonBody,
-                                                                        ) ==
-                                                                        null) &&
-                                                                    (GeocodeLatLngCall
-                                                                                .city(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) ==
-                                                                            null ||
-                                                                        GeocodeLatLngCall
-                                                                                .city(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) ==
-                                                                            '') &&
-                                                                    (GeocodeLatLngCall
-                                                                                .areal(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) ==
-                                                                            null ||
-                                                                        GeocodeLatLngCall
-                                                                                .areal(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) ==
-                                                                            ''))
-                                                                  Text(
-                                                                    'Откуда забрать',
-                                                                    style: FlutterFlowTheme
-                                                                            .of(context)
-                                                                        .bodyMedium
-                                                                        .override(
-                                                                          fontFamily:
-                                                                              'SF',
-                                                                          color: const Color(
-                                                                              0xFFA4A6B2),
-                                                                          fontSize:
-                                                                              16.0,
-                                                                          letterSpacing:
-                                                                              0.0,
-                                                                        ),
-                                                                  ),
-                                                                if ((GeocodeLatLngCall
-                                                                                .street(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) ==
-                                                                            null ||
-                                                                        GeocodeLatLngCall
-                                                                                .street(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) ==
-                                                                            '') &&
-                                                                    (GeocodeLatLngCall
-                                                                                .number(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) ==
-                                                                            null ||
-                                                                        GeocodeLatLngCall
-                                                                                .number(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) ==
-                                                                            '') &&
-                                                                    (GeocodeLatLngCall
-                                                                            .areal3(
-                                                                          containerGeocodeLatLngResponse
-                                                                              .jsonBody,
-                                                                        ) ==
-                                                                        null) &&
-                                                                    (GeocodeLatLngCall
-                                                                                .city(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) ==
-                                                                            null ||
-                                                                        GeocodeLatLngCall
-                                                                                .city(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) ==
-                                                                            '') &&
-                                                                    (GeocodeLatLngCall
-                                                                                .areal(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) !=
-                                                                            null &&
-                                                                        GeocodeLatLngCall
-                                                                                .areal(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) !=
-                                                                            ''))
-                                                                  Text(
-                                                                    GeocodeLatLngCall
-                                                                        .areal(
-                                                                      containerGeocodeLatLngResponse
-                                                                          .jsonBody,
-                                                                    )!,
-                                                                    style: FlutterFlowTheme
-                                                                            .of(context)
-                                                                        .bodyMedium
-                                                                        .override(
-                                                                          fontFamily:
-                                                                              'SF',
-                                                                          color: const Color(
-                                                                              0xFFA4A6B2),
-                                                                          fontSize:
-                                                                              16.0,
-                                                                          letterSpacing:
-                                                                              0.0,
-                                                                        ),
-                                                                  ),
-                                                                if ((GeocodeLatLngCall
-                                                                                .street(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) ==
-                                                                            null ||
-                                                                        GeocodeLatLngCall
-                                                                                .street(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) ==
-                                                                            '') &&
-                                                                    (GeocodeLatLngCall
-                                                                                .number(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) ==
-                                                                            null ||
-                                                                        GeocodeLatLngCall
-                                                                                .number(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) ==
-                                                                            '') &&
-                                                                    (GeocodeLatLngCall
-                                                                            .areal3(
-                                                                          containerGeocodeLatLngResponse
-                                                                              .jsonBody,
-                                                                        ) ==
-                                                                        null) &&
-                                                                    (GeocodeLatLngCall
-                                                                                .city(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) !=
-                                                                            null &&
-                                                                        GeocodeLatLngCall
-                                                                                .city(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) !=
-                                                                            '') &&
-                                                                    (GeocodeLatLngCall
-                                                                                .areal(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) !=
-                                                                            null &&
-                                                                        GeocodeLatLngCall
-                                                                                .areal(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) !=
-                                                                            ''))
-                                                                  Text(
-                                                                    '${GeocodeLatLngCall.city(
-                                                                      containerGeocodeLatLngResponse
-                                                                          .jsonBody,
-                                                                    )}, ${GeocodeLatLngCall.areal(
-                                                                      containerGeocodeLatLngResponse
-                                                                          .jsonBody,
-                                                                    )}',
-                                                                    style: FlutterFlowTheme
-                                                                            .of(context)
-                                                                        .bodyMedium
-                                                                        .override(
-                                                                          fontFamily:
-                                                                              'SF',
-                                                                          color: FlutterFlowTheme.of(
-                                                                                  context)
-                                                                              .primaryText,
-                                                                          fontSize:
-                                                                              16.0,
-                                                                          letterSpacing:
-                                                                              0.0,
-                                                                        ),
-                                                                  ),
-                                                                if ((GeocodeLatLngCall
-                                                                                .street(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) ==
-                                                                            null ||
-                                                                        GeocodeLatLngCall
-                                                                                .street(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) ==
-                                                                            '') &&
-                                                                    (GeocodeLatLngCall
-                                                                                .number(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) ==
-                                                                            null ||
-                                                                        GeocodeLatLngCall
-                                                                                .number(
-                                                                              containerGeocodeLatLngResponse
-                                                                                  .jsonBody,
-                                                                            ) ==
-                                                                            '') &&
-                                                                    (GeocodeLatLngCall
-                                                                            .areal3(
-                                                                          containerGeocodeLatLngResponse
-                                                                              .jsonBody,
-                                                                        ) !=
-                                                                        null))
-                                                                  Text(
-                                                                    valueOrDefault<
-                                                                        String>(
-                                                                      '${GeocodeLatLngCall.areal3(
-                                                                        containerGeocodeLatLngResponse
-                                                                            .jsonBody,
-                                                                      ).toString()} район',
-                                                                      'Откуда забрать',
-                                                                    ),
-                                                                    style: FlutterFlowTheme
-                                                                            .of(context)
-                                                                        .bodyMedium
-                                                                        .override(
-                                                                          fontFamily:
-                                                                              'SF',
-                                                                          color: FlutterFlowTheme.of(
-                                                                                  context)
-                                                                              .primaryText,
-                                                                          fontSize:
-                                                                              16.0,
-                                                                          letterSpacing:
-                                                                              0.0,
-                                                                        ),
-                                                                  ),
-                                                                if (GeocodeLatLngCall
-                                                                            .street(
-                                                                          containerGeocodeLatLngResponse
-                                                                              .jsonBody,
-                                                                        ) !=
-                                                                        null &&
-                                                                    GeocodeLatLngCall
-                                                                            .street(
-                                                                          containerGeocodeLatLngResponse
-                                                                              .jsonBody,
-                                                                        ) !=
-                                                                        '')
-                                                                  Text(
-                                                                    GeocodeLatLngCall
-                                                                        .street(
-                                                                      containerGeocodeLatLngResponse
-                                                                          .jsonBody,
-                                                                    )!,
-                                                                    style: FlutterFlowTheme
-                                                                            .of(context)
-                                                                        .bodyMedium
-                                                                        .override(
-                                                                          fontFamily:
-                                                                              'SF',
-                                                                          color: FlutterFlowTheme.of(
-                                                                                  context)
-                                                                              .primaryText,
-                                                                          fontSize:
-                                                                              16.0,
-                                                                          letterSpacing:
-                                                                              0.0,
-                                                                        ),
-                                                                  ),
-                                                                if (GeocodeLatLngCall
-                                                                            .number(
-                                                                          containerGeocodeLatLngResponse
-                                                                              .jsonBody,
-                                                                        ) !=
-                                                                        null &&
-                                                                    GeocodeLatLngCall
-                                                                            .number(
-                                                                          containerGeocodeLatLngResponse
-                                                                              .jsonBody,
-                                                                        ) !=
-                                                                        '')
-                                                                  Text(
-                                                                    valueOrDefault<
-                                                                        String>(
-                                                                      ' , ${GeocodeLatLngCall.number(
-                                                                        containerGeocodeLatLngResponse
-                                                                            .jsonBody,
-                                                                      )}',
-                                                                      'Откуда забрать',
-                                                                    ),
-                                                                    style: FlutterFlowTheme
-                                                                            .of(context)
-                                                                        .bodyMedium
-                                                                        .override(
-                                                                          fontFamily:
-                                                                              'SF',
-                                                                          color: FlutterFlowTheme.of(
-                                                                                  context)
-                                                                              .primaryText,
-                                                                          fontSize:
-                                                                              16.0,
-                                                                          letterSpacing:
-                                                                              0.0,
-                                                                        ),
-                                                                  ),
-                                                              ],
-                                                            ),
-                                                            const Divider(
-                                                              height: 0.3,
-                                                              thickness: 0.3,
-                                                              color: Color(0xFFD0CFCE),
-                                                            ),
-                                                          ].divide(
-                                                              const SizedBox(height: 18.0)),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          InkWell(
-                                            splashColor: Colors.transparent,
-                                            focusColor: Colors.transparent,
-                                            hoverColor: Colors.transparent,
-                                            highlightColor: Colors.transparent,
-                                            onTap: () async {
-                                              context.read<OrdersBloc>().add(OrdersEvent.getEtas(userLocation: LocationEntity(lat: _model.mapCenter!.latitude, lng: _model.mapCenter!.longitude)));
-
-                                              FFAppState().pointA = PointStruct(
-                                                latlng: _model.mapCenter,
-                                                placeID: GeocodeLatLngCall.placeId(
-                                                  containerGeocodeLatLngResponse
-                                                      .jsonBody,
-                                                ),
-                                                address: () {
-                                                  if ((GeocodeLatLngCall.street(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) !=
-                                                              null &&
-                                                          GeocodeLatLngCall.street(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) !=
-                                                              '') &&
-                                                      (GeocodeLatLngCall.number(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) !=
-                                                              null &&
-                                                          GeocodeLatLngCall.number(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) !=
-                                                              '')) {
-                                                    return '${GeocodeLatLngCall.street(
-                                                      containerGeocodeLatLngResponse
-                                                          .jsonBody,
-                                                    )}, ${GeocodeLatLngCall.number(
-                                                      containerGeocodeLatLngResponse
-                                                          .jsonBody,
-                                                    )}';
-                                                  } else if ((GeocodeLatLngCall.street(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) ==
-                                                              null ||
-                                                          GeocodeLatLngCall.street(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) ==
-                                                              '') &&
-                                                      (GeocodeLatLngCall.number(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) ==
-                                                              null ||
-                                                          GeocodeLatLngCall.number(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) ==
-                                                              '') &&
-                                                      (GeocodeLatLngCall.areal3(
-                                                            containerGeocodeLatLngResponse
-                                                                .jsonBody,
-                                                          ) !=
-                                                          null)) {
-                                                    return valueOrDefault<String>(
-                                                      '${GeocodeLatLngCall.areal3(
-                                                        containerGeocodeLatLngResponse
-                                                            .jsonBody,
-                                                      ).toString()} район',
-                                                      'Откуда забрать',
-                                                    );
-                                                  } else if (GeocodeLatLngCall.street(
-                                                            containerGeocodeLatLngResponse
-                                                                .jsonBody,
-                                                          ) !=
-                                                          null &&
-                                                      GeocodeLatLngCall.street(
-                                                            containerGeocodeLatLngResponse
-                                                                .jsonBody,
-                                                          ) !=
-                                                          '') {
-                                                    return GeocodeLatLngCall.street(
-                                                      containerGeocodeLatLngResponse
-                                                          .jsonBody,
-                                                    );
-                                                  } else if ((GeocodeLatLngCall.street(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) ==
-                                                              null ||
-                                                          GeocodeLatLngCall.street(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) ==
-                                                              '') &&
-                                                      (GeocodeLatLngCall.number(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) ==
-                                                              null ||
-                                                          GeocodeLatLngCall.number(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) ==
-                                                              '') &&
-                                                      (GeocodeLatLngCall.areal3(
-                                                            containerGeocodeLatLngResponse
-                                                                .jsonBody,
-                                                          ) ==
-                                                          null) &&
-                                                      (GeocodeLatLngCall.city(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) !=
-                                                              null &&
-                                                          GeocodeLatLngCall.city(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) !=
-                                                              '') &&
-                                                      (GeocodeLatLngCall.areal(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) !=
-                                                              null &&
-                                                          GeocodeLatLngCall.areal(
-                                                                containerGeocodeLatLngResponse
-                                                                    .jsonBody,
-                                                              ) !=
-                                                              '')) {
-                                                    return '${GeocodeLatLngCall.city(
-                                                      containerGeocodeLatLngResponse
-                                                          .jsonBody,
-                                                    )}, ${GeocodeLatLngCall.areal(
-                                                      containerGeocodeLatLngResponse
-                                                          .jsonBody,
-                                                    )}';
-                                                  } else {
-                                                    return GeocodeLatLngCall.address(
-                                                      containerGeocodeLatLngResponse
-                                                          .jsonBody,
-                                                    );
-                                                  }
-                                                }(),
-                                                fullAddress: GeocodeLatLngCall.address(
-                                                  containerGeocodeLatLngResponse
-                                                      .jsonBody,
-                                                ),
-                                                city: GeocodeLatLngCall.areal2(
-                                                  containerGeocodeLatLngResponse
-                                                      .jsonBody,
-                                                ) ?? GeocodeLatLngCall.city(
-                                                  containerGeocodeLatLngResponse
-                                                      .jsonBody,
-                                                ),
-                                              );
-                                              safeSetState(() {});
-                                              await showModalBottomSheet(
-                                                isScrollControlled: true,
-                                                backgroundColor: Colors.transparent,
-                                                context: context,
-                                                builder: (context) {
-                                                  return WebViewAware(
-                                                    child: GestureDetector(
-                                                      onTap: () {
-                                                        FocusScope.of(context)
-                                                            .unfocus();
-                                                        FocusManager
-                                                            .instance.primaryFocus
-                                                            ?.unfocus();
-                                                      },
-                                                      child: Padding(
-                                                        padding:
-                                                            MediaQuery.viewInsetsOf(
-                                                                context),
-                                                        child: const SearhAddressWidget(
-                                                          index: 2,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                              ).then((value) => safeSetState(() {}));
-                                            },
-                                            child: Container(
-                                              height: 60.0,
-                                              decoration: const BoxDecoration(),
-                                              child: Padding(
-                                                padding: const EdgeInsetsDirectional.fromSTEB(
-                                                    16.0, 0.0, 16.0, 0.0),
-                                                child: Row(
-                                                  mainAxisSize: MainAxisSize.max,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  children: [
-                                                    Container(
-                                                      width: 16.0,
-                                                      height: 16.0,
-                                                      decoration: BoxDecoration(
-                                                        color:
-                                                            FlutterFlowTheme.of(context)
-                                                                .secondaryBackground,
-                                                        shape: BoxShape.circle,
-                                                        border: Border.all(
-                                                          color: const Color(0xFFA4A6B2),
-                                                          width: 3.0,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Expanded(
-                                                      child: Padding(
-                                                        padding: const EdgeInsetsDirectional
-                                                            .fromSTEB(
-                                                                13.0, 0.0, 0.0, 0.0),
-                                                        child: Column(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment.end,
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment.start,
-                                                          children: [
-                                                            Expanded(
-                                                              child: Align(
-                                                                alignment:
-                                                                    const AlignmentDirectional(
-                                                                        -1.0, 0.0),
-                                                                child: Text(
-                                                                  'Куда доставить',
-                                                                  style: FlutterFlowTheme
-                                                                          .of(context)
-                                                                      .bodyMedium
-                                                                      .override(
-                                                                        fontFamily:
-                                                                            'SF',
-                                                                        color: const Color(
-                                                                            0xFFA4A6B2),
-                                                                        fontSize: 16.0,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                      ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            const Divider(
-                                                              height: 0.3,
-                                                              thickness: 0.3,
-                                                              color: Color(0xFFD0CFCE),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsetsDirectional.fromSTEB(
-                                                0.0, 8.0, 0.0, 8.0),
-                                            child: Container(
-                                              height: 100.77,
-                                              decoration: const BoxDecoration(),
-                                              child: SingleChildScrollView(
-                                                scrollDirection: Axis.horizontal,
-                                                child: Row(
-                                                  mainAxisSize: MainAxisSize.max,
-                                                  children: [
-                                                    InkWell(
-                                                      splashColor: Colors.transparent,
-                                                      focusColor: Colors.transparent,
-                                                      hoverColor: Colors.transparent,
-                                                      highlightColor:
-                                                          Colors.transparent,
-                                                      onTap: () async {
-                                                        _model.car = Car.largus;
-                                                        safeSetState(() {});
-                                                        HapticFeedback.mediumImpact();
-                                                      },
-                                                      child: Container(
-                                                        decoration: BoxDecoration(
-                                                          color: valueOrDefault<Color>(
-                                                            _model.car == Car.largus
-                                                                ? FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .tertiary
-                                                                : Colors.transparent,
-                                                            FlutterFlowTheme.of(context)
-                                                                .tertiary,
-                                                          ),
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                  12.0),
-                                                        ),
-                                                        child: Padding(
-                                                          padding: const EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  8.0, 0.0, 8.0, 0.0),
-                                                          child: Column(
-                                                            mainAxisSize:
-                                                                MainAxisSize.max,
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .center,
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              ClipRRect(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(0.0),
-                                                                child: Image.asset(
-                                                                  'assets/images/1200x900_1.png',
-                                                                  width: 96.9,
-                                                                  height: 38.1,
-                                                                  fit: BoxFit.cover,
-                                                                ),
-                                                              ),
-                                                              Padding(
-                                                                padding:
-                                                                    const EdgeInsetsDirectional
-                                                                        .fromSTEB(
-                                                                            6.0,
-                                                                            12.0,
-                                                                            0.0,
-                                                                            0.0),
-                                                                child: Column(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize.max,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    Text(
-                                                                      'Мини/S',
-                                                                      style: FlutterFlowTheme
-                                                                              .of(context)
-                                                                          .bodyMedium
-                                                                          .override(
-                                                                            fontFamily:
-                                                                                'SF',
-                                                                            color: valueOrDefault<
-                                                                                Color>(
-                                                                              _model.car ==
-                                                                                      Car
-                                                                                          .largus
-                                                                                  ? Colors
-                                                                                      .white
-                                                                                  : FlutterFlowTheme.of(context)
-                                                                                      .secondaryText,
-                                                                              Colors
-                                                                                  .white,
-                                                                            ),
-                                                                            fontSize:
-                                                                                14.0,
-                                                                            letterSpacing:
-                                                                                0.0,
-                                                                            fontWeight:
-                                                                                FontWeight
-                                                                                    .w500,
-                                                                          ),
-                                                                    ),
-                                                                    RichText(
-                                                                      textScaler:
-                                                                          MediaQuery.of(
-                                                                                  context)
-                                                                              .textScaler,
-                                                                      text: TextSpan(
-                                                                        children: [
-                                                                          const TextSpan(
-                                                                            text: 'от ',
-                                                                            style:
-                                                                                TextStyle(
-                                                                              fontSize:
-                                                                                  12.0,
-                                                                            ),
-                                                                          ),
-                                                                          const TextSpan(
-                                                                            text: '797',
-                                                                            style:
-                                                                                TextStyle(
-                                                                              fontSize:
-                                                                                  15.0,
-                                                                            ),
-                                                                          ),
-                                                                          const TextSpan(
-                                                                            text: ' ₽',
-                                                                            style:
-                                                                                TextStyle(
-                                                                              fontSize:
-                                                                                  12.0,
-                                                                            ),
-                                                                          )
-                                                                        ],
-                                                                        style: FlutterFlowTheme.of(
-                                                                                context)
-                                                                            .bodyMedium
-                                                                            .override(
-                                                                              fontFamily:
-                                                                                  'SF',
-                                                                              color: valueOrDefault<
-                                                                                  Color>(
-                                                                                _model.car ==
-                                                                                        Car.largus
-                                                                                    ? Colors.white
-                                                                                    : FlutterFlowTheme.of(context).primaryText,
-                                                                                Colors
-                                                                                    .white,
-                                                                              ),
-                                                                              fontSize:
-                                                                                  16.0,
-                                                                              letterSpacing:
-                                                                                  0.0,
-                                                                              fontWeight:
-                                                                                  FontWeight
-                                                                                      .normal,
-                                                                            ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    InkWell(
-                                                      splashColor: Colors.transparent,
-                                                      focusColor: Colors.transparent,
-                                                      hoverColor: Colors.transparent,
-                                                      highlightColor:
-                                                          Colors.transparent,
-                                                      onTap: () async {
-                                                        _model.car = Car.fiat;
-                                                        safeSetState(() {});
-                                                        HapticFeedback.mediumImpact();
-                                                      },
-                                                      child: Container(
-                                                        decoration: BoxDecoration(
-                                                          color: valueOrDefault<Color>(
-                                                            _model.car == Car.fiat
-                                                                ? FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .tertiary
-                                                                : Colors.transparent,
-                                                            Colors.transparent,
-                                                          ),
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                  12.0),
-                                                        ),
-                                                        child: Padding(
-                                                          padding: const EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  8.0, 0.0, 8.0, 0.0),
-                                                          child: Column(
-                                                            mainAxisSize:
-                                                                MainAxisSize.max,
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .center,
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              ClipRRect(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(0.0),
-                                                                child: Image.asset(
-                                                                  'assets/images/fiat_16doblopackcv2fbc_sideview_1.png',
-                                                                  width: 92.53,
-                                                                  height: 39.2,
-                                                                  fit: BoxFit.cover,
-                                                                ),
-                                                              ),
-                                                              Padding(
-                                                                padding:
-                                                                    const EdgeInsetsDirectional
-                                                                        .fromSTEB(
-                                                                            6.0,
-                                                                            12.0,
-                                                                            0.0,
-                                                                            0.0),
-                                                                child: Column(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize.max,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    Text(
-                                                                      'МиниПлюс/M',
-                                                                      style: FlutterFlowTheme
-                                                                              .of(context)
-                                                                          .bodyMedium
-                                                                          .override(
-                                                                            fontFamily:
-                                                                                'SF',
-                                                                            color: valueOrDefault<
-                                                                                Color>(
-                                                                              _model.car ==
-                                                                                      Car
-                                                                                          .fiat
-                                                                                  ? FlutterFlowTheme.of(context)
-                                                                                      .secondary
-                                                                                  : FlutterFlowTheme.of(context)
-                                                                                      .secondaryText,
-                                                                              FlutterFlowTheme.of(
-                                                                                      context)
-                                                                                  .secondaryText,
-                                                                            ),
-                                                                            fontSize:
-                                                                                14.0,
-                                                                            letterSpacing:
-                                                                                0.0,
-                                                                            fontWeight:
-                                                                                FontWeight
-                                                                                    .w500,
-                                                                          ),
-                                                                    ),
-                                                                    RichText(
-                                                                      textScaler:
-                                                                          MediaQuery.of(
-                                                                                  context)
-                                                                              .textScaler,
-                                                                      text: TextSpan(
-                                                                        children: [
-                                                                          const TextSpan(
-                                                                            text: 'от ',
-                                                                            style:
-                                                                                TextStyle(
-                                                                              fontSize:
-                                                                                  12.0,
-                                                                            ),
-                                                                          ),
-                                                                          const TextSpan(
-                                                                            text:
-                                                                                '1035',
-                                                                            style:
-                                                                                TextStyle(
-                                                                              fontSize:
-                                                                                  15.0,
-                                                                            ),
-                                                                          ),
-                                                                          const TextSpan(
-                                                                            text: ' ₽',
-                                                                            style:
-                                                                                TextStyle(
-                                                                              fontSize:
-                                                                                  12.0,
-                                                                            ),
-                                                                          )
-                                                                        ],
-                                                                        style: FlutterFlowTheme.of(
-                                                                                context)
-                                                                            .bodyMedium
-                                                                            .override(
-                                                                              fontFamily:
-                                                                                  'SF',
-                                                                              color: valueOrDefault<
-                                                                                  Color>(
-                                                                                _model.car ==
-                                                                                        Car.fiat
-                                                                                    ? FlutterFlowTheme.of(context).secondary
-                                                                                    : FlutterFlowTheme.of(context).primaryText,
-                                                                                FlutterFlowTheme.of(context)
-                                                                                    .primaryText,
-                                                                              ),
-                                                                              fontSize:
-                                                                                  16.0,
-                                                                              letterSpacing:
-                                                                                  0.0,
-                                                                              fontWeight:
-                                                                                  FontWeight
-                                                                                      .normal,
-                                                                            ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    InkWell(
-                                                      splashColor: Colors.transparent,
-                                                      focusColor: Colors.transparent,
-                                                      hoverColor: Colors.transparent,
-                                                      highlightColor:
-                                                          Colors.transparent,
-                                                      onTap: () async {
-                                                        _model.car = Car.largusTermo;
-                                                        safeSetState(() {});
-                                                        HapticFeedback.mediumImpact();
-                                                      },
-                                                      child: Container(
-                                                        decoration: BoxDecoration(
-                                                          color: valueOrDefault<Color>(
-                                                            _model.car ==
-                                                                    Car.largusTermo
-                                                                ? FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .tertiary
-                                                                : Colors.transparent,
-                                                            Colors.transparent,
-                                                          ),
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                  12.0),
-                                                        ),
-                                                        child: Padding(
-                                                          padding: const EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  8.0, 0.0, 8.0, 0.0),
-                                                          child: Column(
-                                                            mainAxisSize:
-                                                                MainAxisSize.max,
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .center,
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              ClipRRect(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(0.0),
-                                                                child: Image.asset(
-                                                                  'assets/images/ladalargus013_1.png',
-                                                                  width: 99.9,
-                                                                  height: 39.2,
-                                                                  fit: BoxFit.cover,
-                                                                ),
-                                                              ),
-                                                              Padding(
-                                                                padding:
-                                                                    const EdgeInsetsDirectional
-                                                                        .fromSTEB(
-                                                                            6.0,
-                                                                            12.0,
-                                                                            0.0,
-                                                                            0.0),
-                                                                child: Column(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize.max,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    Text(
-                                                                      'Термобудка/S-M',
-                                                                      style: FlutterFlowTheme
-                                                                              .of(context)
-                                                                          .bodyMedium
-                                                                          .override(
-                                                                            fontFamily:
-                                                                                'SF',
-                                                                            color: valueOrDefault<
-                                                                                Color>(
-                                                                              _model.car ==
-                                                                                      Car
-                                                                                          .largusTermo
-                                                                                  ? FlutterFlowTheme.of(context)
-                                                                                      .secondary
-                                                                                  : FlutterFlowTheme.of(context)
-                                                                                      .secondaryText,
-                                                                              FlutterFlowTheme.of(
-                                                                                      context)
-                                                                                  .secondaryText,
-                                                                            ),
-                                                                            fontSize:
-                                                                                14.0,
-                                                                            letterSpacing:
-                                                                                0.0,
-                                                                            fontWeight:
-                                                                                FontWeight
-                                                                                    .w500,
-                                                                          ),
-                                                                    ),
-                                                                    RichText(
-                                                                      textScaler:
-                                                                          MediaQuery.of(
-                                                                                  context)
-                                                                              .textScaler,
-                                                                      text: TextSpan(
-                                                                        children: [
-                                                                          const TextSpan(
-                                                                            text: 'от ',
-                                                                            style:
-                                                                                TextStyle(
-                                                                              fontSize:
-                                                                                  12.0,
-                                                                            ),
-                                                                          ),
-                                                                          const TextSpan(
-                                                                            text:
-                                                                                '2500',
-                                                                            style:
-                                                                                TextStyle(
-                                                                              fontSize:
-                                                                                  15.0,
-                                                                            ),
-                                                                          ),
-                                                                          const TextSpan(
-                                                                            text: ' ₽',
-                                                                            style:
-                                                                                TextStyle(
-                                                                              fontSize:
-                                                                                  12.0,
-                                                                            ),
-                                                                          )
-                                                                        ],
-                                                                        style: FlutterFlowTheme.of(
-                                                                                context)
-                                                                            .bodyMedium
-                                                                            .override(
-                                                                              fontFamily:
-                                                                                  'SF',
-                                                                              color: valueOrDefault<
-                                                                                  Color>(
-                                                                                _model.car ==
-                                                                                        Car.largusTermo
-                                                                                    ? FlutterFlowTheme.of(context).secondary
-                                                                                    : FlutterFlowTheme.of(context).primaryText,
-                                                                                FlutterFlowTheme.of(context)
-                                                                                    .primaryText,
-                                                                              ),
-                                                                              fontSize:
-                                                                                  16.0,
-                                                                              letterSpacing:
-                                                                                  0.0,
-                                                                              fontWeight:
-                                                                                  FontWeight
-                                                                                      .normal,
-                                                                            ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ]
-                                                      .divide(const SizedBox(width: 8.0))
-                                                      .addToStart(const SizedBox(width: 16.0))
-                                                      .addToEnd(const SizedBox(width: 16.0)),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ].divide(const SizedBox(height: 5.0)),
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                    wrapWithModel(
-                      model: _model.navbarModel,
-                      updateCallback: () => safeSetState(() {}),
-                      child: const NavbarWidget(
-                        index: 3,
-                      ),
-                    ),
-                  ].divide(const SizedBox(height: 5.0)),
-                );
-              }
-            ),
-          ),
-        );
-      }
-    );
+                                );
+                              },
+                            ),
+                          ].divide(const SizedBox(height: 5.0)),
+                        );
+                      }
+                    },
+                  ),
+                ),
+                wrapWithModel(
+                  model: _model.navbarModel,
+                  updateCallback: () => safeSetState(() {}),
+                  child: const NavbarWidget(
+                    index: 3,
+                  ),
+                ),
+              ].divide(const SizedBox(height: 5.0)),
+            );
+          }),
+        ),
+      );
+    });
   }
 }

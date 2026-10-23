@@ -34,8 +34,6 @@ class BottomActionsWidget extends StatelessWidget {
   final DocumentReference widgetOrderRef;
   final VoidCallback? onStateChanged;
 
-
-
   Future<bool> _pushOrderStatus(
     StatusOrder status, {
     LatLng? loc,
@@ -59,8 +57,7 @@ class BottomActionsWidget extends StatelessWidget {
 
   Future<void> _patchCurrentOrder(String? orderId) async {
     await AppMeApi.patchMe({
-      'current_order_json':
-          orderId == null ? null : {'order_id': orderId},
+      'current_order_json': orderId == null ? null : {'order_id': orderId},
     });
     await refreshAppMeCache();
   }
@@ -77,14 +74,10 @@ class BottomActionsWidget extends StatelessWidget {
       }
       await _patchCurrentOrder(order.reference.id);
       await actions.toggleRouteTracking(
-          'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
-          true,
-          widgetOrderRef,
-          order.pointB.latlng!);
+          '', true, widgetOrderRef, order.pointB.latlng!);
       triggerPushNotification(
         notificationTitle: 'Статус заказа изменен на \"Готов к подаче\"',
-        notificationText:
-        'Водитель ожидает подачи в течении 10 минут',
+        notificationText: 'Водитель ожидает подачи в течении 10 минут',
         notificationSound: 'default',
         userRefs: [order.userCustomer!],
         initialPageName: 'order_Page_Customer',
@@ -123,14 +116,11 @@ class BottomActionsWidget extends StatelessWidget {
       }
       await _patchCurrentOrder(order.reference.id);
       await actions.toggleRouteTracking(
-          'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
-          true,
-          widgetOrderRef,
-          order.pointB.latlng!);
+          '', true, widgetOrderRef, order.pointB.latlng!);
       triggerPushNotification(
         notificationTitle: 'Статус заказа изменен на \"Готов к разгрузке\"',
         notificationText:
-        'Водитель ожидает в месте разгрузки. У вас есть 10 минут',
+            'Водитель ожидает в месте разгрузки. У вас есть 10 минут',
         notificationSound: 'default',
         userRefs: [order.userCustomer!],
         initialPageName: 'order_Page_Customer',
@@ -169,10 +159,7 @@ class BottomActionsWidget extends StatelessWidget {
       }
       await _patchCurrentOrder(order.reference.id);
       await actions.toggleRouteTracking(
-          'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
-          true,
-          widgetOrderRef,
-          order.pointB.latlng!);
+          '', true, widgetOrderRef, order.pointB.latlng!);
       triggerPushNotification(
         notificationTitle: 'Статус заказа изменен на \"В работе\"',
         notificationText:
@@ -256,7 +243,8 @@ class BottomActionsWidget extends StatelessWidget {
     // Юзер закрыл камеру или не дал ни одного файла — молча выходим.
     if (selectedMedia == null || selectedMedia.isEmpty) return;
 
-    if (!selectedMedia.every((m) => validateFileFormat(m.storagePath, context))) {
+    if (!selectedMedia
+        .every((m) => validateFileFormat(m.storagePath, context))) {
       return;
     }
 
@@ -265,7 +253,8 @@ class BottomActionsWidget extends StatelessWidget {
     try {
       for (final m in selectedMedia) {
         if (m.bytes == null || m.bytes!.isEmpty) {
-          print('[_finishWithPhoto] WARNING: media has no bytes path=${m.storagePath}');
+          print(
+              '[_finishWithPhoto] WARNING: media has no bytes path=${m.storagePath}');
           continue;
         }
         newFiles.add(FFUploadedFile(
@@ -288,7 +277,8 @@ class BottomActionsWidget extends StatelessWidget {
 
     model.uploadedLocalFile_uploadDataG298 = newFiles;
     model.images.addAll(newFiles);
-    print('[_finishWithPhoto] added ${newFiles.length} file(s), total=${model.images.length}');
+    print(
+        '[_finishWithPhoto] added ${newFiles.length} file(s), total=${model.images.length}');
     onStateChanged?.call();
   }
 
@@ -327,10 +317,8 @@ class BottomActionsWidget extends StatelessWidget {
         );
         return await uploadData(m.storagePath, m.bytes);
       }));
-      final downloadUrls = results
-          .where((u) => u != null)
-          .map((u) => u!.toString())
-          .toList();
+      final downloadUrls =
+          results.where((u) => u != null).map((u) => u!.toString()).toList();
       print('_uploadAndComplete: downloadUrls.length = ${downloadUrls.length}');
 
       if (downloadUrls.length < _minCompletePhotos) {
@@ -371,7 +359,7 @@ class BottomActionsWidget extends StatelessWidget {
         final dest = order.pointB.latlng;
         if (dest != null) {
           await actions.toggleRouteTracking(
-            'AIzaSyBSKcBWb1nCdTBjrOPC9okX-lVa3PdjzcY',
+            '',
             false,
             widgetOrderRef,
             dest,
@@ -431,7 +419,8 @@ class BottomActionsWidget extends StatelessWidget {
 
     final nextId = apiResult['next_order_id']?.toString();
     final remaining = apiResult['remaining'];
-    print('[BottomActions.completeOrder] API dequeue ok next=$nextId remaining=$remaining');
+    print(
+        '[BottomActions.completeOrder] API dequeue ok next=$nextId remaining=$remaining');
     if (nextId == null || nextId.isEmpty) return;
     if (!context.mounted) return;
     Navigator.of(context).pushReplacement(
@@ -706,8 +695,7 @@ class BottomActionsWidget extends StatelessWidget {
                         height: 56.0,
                         color: theme.tertiary,
                         textStyle: theme.titleSmall.override(
-                            fontFamily: 'SF',
-                            color: theme.primaryBackground),
+                            fontFamily: 'SF', color: theme.primaryBackground),
                         elevation: 0.0,
                         borderRadius: BorderRadius.circular(16.0),
                       ),
@@ -726,8 +714,7 @@ class BottomActionsWidget extends StatelessWidget {
                         height: 56.0,
                         color: theme.tertiary,
                         textStyle: theme.titleSmall.override(
-                            fontFamily: 'SF',
-                            color: theme.primaryBackground),
+                            fontFamily: 'SF', color: theme.primaryBackground),
                         elevation: 0.0,
                         borderRadius: BorderRadius.circular(16.0),
                       ),
@@ -790,8 +777,7 @@ class BottomActionsWidget extends StatelessWidget {
                   height: 56.0,
                   color: theme.tertiary,
                   textStyle: theme.titleSmall.override(
-                      fontFamily: 'SF',
-                      color: theme.primaryBackground),
+                      fontFamily: 'SF', color: theme.primaryBackground),
                   elevation: 0.0,
                   borderRadius: BorderRadius.circular(16.0),
                 ),

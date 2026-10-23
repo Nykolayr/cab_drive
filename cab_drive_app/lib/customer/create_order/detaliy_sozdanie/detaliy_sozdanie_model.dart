@@ -45,7 +45,7 @@ class DetaliySozdanieModel extends FlutterFlowModel<DetaliySozdanieWidget> {
   String select = 'Оплата картой';
 
   /// Вариант заказа: false = Обычный, true = Быстрый.
-  bool isFastOrder = false;
+  bool isFastOrder = true;
 
   /// Поле ввода бюджета («Сумма»). Если пусто — берётся авто-расчёт по машине.
   FocusNode? budgetFocusNode;
@@ -88,21 +88,21 @@ class DetaliySozdanieModel extends FlutterFlowModel<DetaliySozdanieWidget> {
   TextEditingController? entranceBTextController;
   String? Function(BuildContext, String?)? entranceBTextControllerValidator;
   // State field(s) for flat_B widget.
-FocusNode? flatBFocusNode;
-TextEditingController? flatBTextController;
-String? Function(BuildContext, String?)? flatBTextControllerValidator;
+  FocusNode? flatBFocusNode;
+  TextEditingController? flatBTextController;
+  String? Function(BuildContext, String?)? flatBTextControllerValidator;
 // State field(s) for Floor_B widget.
-FocusNode? floorBFocusNode;
-TextEditingController? floorBTextController;
-String? Function(BuildContext, String?)? floorBTextControllerValidator;
+  FocusNode? floorBFocusNode;
+  TextEditingController? floorBTextController;
+  String? Function(BuildContext, String?)? floorBTextControllerValidator;
 // State field(s) for Intercom_B widget.
-FocusNode? intercomBFocusNode;
-TextEditingController? intercomBTextController;
-String? Function(BuildContext, String?)? intercomBTextControllerValidator;
+  FocusNode? intercomBFocusNode;
+  TextEditingController? intercomBTextController;
+  String? Function(BuildContext, String?)? intercomBTextControllerValidator;
 // State field(s) for comment_B widget.
-FocusNode? commentBFocusNode;
-TextEditingController? commentBTextController;
-String? Function(BuildContext, String?)? commentBTextControllerValidator;
+  FocusNode? commentBFocusNode;
+  TextEditingController? commentBTextController;
+  String? Function(BuildContext, String?)? commentBTextControllerValidator;
 
 // State field(s) for flat_C widget.
   FocusNode? flatCFocusNode;
@@ -173,7 +173,6 @@ String? Function(BuildContext, String?)? commentBTextControllerValidator;
     commentBFocusNode?.dispose();
     commentBTextController?.dispose();
 
-
     entranceCFocusNode?.dispose();
     entranceCTextController?.dispose();
 
@@ -188,7 +187,6 @@ String? Function(BuildContext, String?)? commentBTextControllerValidator;
 
     commentCFocusNode?.dispose();
     commentCTextController?.dispose();
-
 
     descriptionFocusNode?.dispose();
     descriptionTextController?.dispose();
