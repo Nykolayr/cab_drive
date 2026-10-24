@@ -6,6 +6,15 @@
 - После обычного фикса — `flutter run` / `flutter test`, не сборка стора.
 - Commit/push кода ≠ разрешение на релиз.
 
+### Что отдаём
+
+| Ситуация | Артефакт |
+|----------|----------|
+| «для заказчика» / APK на проверку | **только RuStore APK** (`com.appwawe.YDrive`) в `D:\Temp` |
+| «в сторы» / релиз | **весь набор**: RuStore APK + Play AAB (и iOS, если просят) |
+
+Заказчику AAB не нужен — не собирать лишнего.
+
 ## Android
 
 ### Версии
@@ -75,7 +84,8 @@ Copy-Item build\app\outputs\bundle\release\app-release.aab D:\Temp\cabdrive_{bui
 - **Не** гонять холостой `flutter build` перед `--stop`.
 - APK и AAB — **по очереди**, не параллельно.
 - `flutter clean` — только при lock/OOM/битом cache.
-- Симптом `l8DexDesugarLibRelease` / файл занят → `gradlew --stop`, удалить `build/app/intermediates/desugar_lib_dex`, повторить **один** раз.
+- Симптом `l8DexDesugarLibRelease` / файл занят → `gradlew --stop`, удалить `build/app/intermediates/desugar_lib_dex` (или `dex/`), повторить **один** раз.
+- `CAB_DRIVE_RUSTORE` — **env-переменная** (читается в `build.gradle` через `System.getenv`), НЕ `--dart-define`. С `--dart-define` сборка тихо идёт с `com.cab.drive` — всегда сверять `aapt dump badging`.
 
 ---
 
