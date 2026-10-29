@@ -11,6 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:webviewx_plus/webviewx_plus.dart';
 import 'passport_model.dart';
+import '/backend/api/client_error_reporter.dart';
 export 'passport_model.dart';
 
 class PassportWidget extends StatefulWidget {
@@ -38,6 +39,7 @@ class _PassportWidgetState extends State<PassportWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => PassportModel());
+    ClientErrorReporter.instance?.crumb('verif', 'photo_sheet=passport');
   }
 
   @override

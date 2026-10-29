@@ -1,5 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api/app_me_api.dart';
+import '/backend/api/client_error_reporter.dart';
 import '/backend/backend.dart';
 import '/core/utils/formatters/ru_phone.dart';
 import '/core/widgets/phone_masked_field.dart';
@@ -49,6 +50,7 @@ class _VerifUserWidgetState extends State<VerifUserWidget> {
     _model.additionalPhoneFocusNode ??= FocusNode();
 
     SchedulerBinding.instance.addPostFrameCallback((_) async {
+      ClientErrorReporter.instance?.crumb('verif', 'verif_user_opened');
       await _hydrateFromMe();
     });
   }
@@ -330,8 +332,7 @@ class _VerifUserWidgetState extends State<VerifUserWidget> {
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 16.0, 20.0, 16.0, 0.0),
                             child: PhoneMaskedField(
-                              controller:
-                                  _model.additionalPhoneTextController!,
+                              controller: _model.additionalPhoneTextController!,
                               focusNode: _model.additionalPhoneFocusNode,
                               underlineStyle: false,
                               labelText: null,
@@ -363,8 +364,8 @@ class _VerifUserWidgetState extends State<VerifUserWidget> {
 
                           final patched = await AppMeApi.patchMe({
                             'display_name': _model.nameTextController.text,
-                            'phone_number': _otpPhoneMasked() ??
-                                FFAppState().phone.trim(),
+                            'phone_number':
+                                _otpPhoneMasked() ?? FFAppState().phone.trim(),
                             'additional_phone_number': _model
                                 .additionalPhoneTextController.text
                                 .trim(),

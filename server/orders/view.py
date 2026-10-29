@@ -39,7 +39,7 @@ class PickupCalculateView:
             etas = orders.pickup_api.get_pickup_times_all_tariffs(body.user_location.lat,
                                                                   body.user_location.lng,
                                                                   config.Production.GOOGLE_API_KEY,
-                                                                  10)
+                                                                  body.radius_km or 20)
         except IncorrectDataValue as e:
             return utils.get_error(e.message)
         except Exception as e:

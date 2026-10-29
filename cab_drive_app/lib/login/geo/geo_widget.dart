@@ -7,6 +7,7 @@ import '/flutter_flow/permissions_util.dart';
 import '/index.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -208,6 +209,15 @@ class _GeoWidgetState extends State<GeoWidget> {
                     child: FFButtonWidget(
                       onPressed: () async {
                         await requestPermission(locationPermission);
+                        // Runtime-права есть, но системный GPS-тумблер
+                        // может быть выключен — ведём в настройки.
+                        try {
+                          final serviceOn =
+                              await Geolocator.isLocationServiceEnabled();
+                          if (!serviceOn) {
+                            await Geolocator.openLocationSettings();
+                          }
+                        } catch (_) {}
                       },
                       text: 'Разрешить',
                       options: FFButtonOptions(

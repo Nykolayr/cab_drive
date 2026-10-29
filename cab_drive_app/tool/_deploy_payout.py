@@ -10,7 +10,7 @@ USER = "root"
 PASSWORD = (
     os.environ.get("CAB_DRIVE_SSH_PASSWORD")
     or os.environ.get("CAB_SSH_PASSWORD")
-    or "wZX++X-+TJ7kqn"
+   
 )
 REMOTE_ROOT = "/root/projects/cab_drive"
 LOCAL_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "server"))

@@ -8,24 +8,17 @@ import 'package:flutter/material.dart';
 class CreateOtklickModel extends FlutterFlowModel<CreateOtklickWidget> {
   final formKey = GlobalKey<FormState>();
 
-  // Comment input.
+  // Comment input (optional).
   FocusNode? commentBFocusNode;
   TextEditingController? commentBTextController;
   String? Function(BuildContext, String?)? commentBTextControllerValidator;
-  String? _commentBTextControllerValidator(BuildContext context, String? val) {
-    if (val == null || val.trim().length < 3) {
-      return 'Напишите хотя бы пару слов';
-    }
-    return null;
-  }
 
   // Custom price input (visible when priceMode == 2).
   FocusNode? customPriceFocusNode;
   TextEditingController? customPriceTextController;
 
-  // ETA input (optional).
-  FocusNode? etaFocusNode;
-  TextEditingController? etaTextController;
+  // ETA preset selection: 0 = none, 1..3 = preset buttons, 4 = "Более" (комментарий).
+  int etaMode = 0;
 
   // Price mode: 0 = none, 1 = customer's price, 2 = custom.
   int priceMode = 0;
@@ -34,9 +27,7 @@ class CreateOtklickModel extends FlutterFlowModel<CreateOtklickWidget> {
   ApiCallResponse? adsd3;
 
   @override
-  void initState(BuildContext context) {
-    commentBTextControllerValidator = _commentBTextControllerValidator;
-  }
+  void initState(BuildContext context) {}
 
   @override
   void dispose() {
@@ -44,7 +35,5 @@ class CreateOtklickModel extends FlutterFlowModel<CreateOtklickWidget> {
     commentBTextController?.dispose();
     customPriceFocusNode?.dispose();
     customPriceTextController?.dispose();
-    etaFocusNode?.dispose();
-    etaTextController?.dispose();
   }
 }

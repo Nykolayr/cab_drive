@@ -217,6 +217,17 @@ def get_pickup_times_all_tariffs(user_lat: float, user_lng: float, api_key: str,
             except Exception:
                 continue
 
+        if best is None:
+            # API ответил, но без валидных элементов — fallback по прямой (40 км/ч)
+            fallback = top_candidates[0]
+            approx_time_sec = int((fallback["distance_km"] / 40.0) * 3600)
+            best = {
+                "eta_seconds": approx_time_sec,
+                "eta_text": f"~{max(1, int(approx_time_sec / 60))} мин",
+                "driver_uid": fallback["uid"],
+                "driver_distance_km": fallback["distance_km"],
+            }
+
         results[tariff_name] = best
 
     return results

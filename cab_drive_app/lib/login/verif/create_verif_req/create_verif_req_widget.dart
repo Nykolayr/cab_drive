@@ -34,7 +34,8 @@ class CreateVerifReqWidget extends StatefulWidget {
     required this.photoDoc,
     required this.photoCar,
     required this.city,
-    required this.region, this.commissionPercent,
+    required this.region,
+    this.commissionPercent,
   });
 
   final String? name;
@@ -56,6 +57,7 @@ class CreateVerifReqWidget extends StatefulWidget {
 
 class _CreateVerifReqWidgetState extends State<CreateVerifReqWidget> {
   late CreateVerifReqModel _model;
+  bool _submitted = false;
 
   @override
   void setState(VoidCallback callback) {
@@ -174,7 +176,7 @@ class _CreateVerifReqWidgetState extends State<CreateVerifReqWidget> {
       FFAppState().driver = true;
       FFAppState().update(() {});
 
-      context.goNamed(MainDriverWidget.routeName);
+      safeSetState(() => _submitted = true);
     });
   }
 
@@ -221,7 +223,9 @@ class _CreateVerifReqWidgetState extends State<CreateVerifReqWidget> {
                         padding:
                             EdgeInsetsDirectional.fromSTEB(0.0, 32.0, 0.0, 0.0),
                         child: AutoSizeText(
-                          'Создание заявки на верификацию',
+                          _submitted
+                              ? 'Документы отправлены'
+                              : 'Создание заявки на верификацию',
                           style:
                               FlutterFlowTheme.of(context).bodyMedium.override(
                                     fontFamily: 'SF',
@@ -246,7 +250,9 @@ class _CreateVerifReqWidgetState extends State<CreateVerifReqWidget> {
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 24.0, 0.0),
               child: Text(
-                'Создаем вашу заявку на верификацию. Это может занять несколько секунд. Пожалуйста, подождите.',
+                _submitted
+                    ? 'Ваша заявка отправлена и в ближайшее время будет рассмотрена.'
+                    : 'Создаем вашу заявку на верификацию. Это может занять несколько секунд. Пожалуйста, подождите.',
                 textAlign: TextAlign.start,
                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                       fontFamily: 'SF',
@@ -258,6 +264,26 @@ class _CreateVerifReqWidgetState extends State<CreateVerifReqWidget> {
                     ),
               ),
             ),
+            if (_submitted)
+              Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
+                child: FFButtonWidget(
+                  onPressed: () => context.goNamed(MainDriverWidget.routeName),
+                  text: 'Понятно',
+                  options: FFButtonOptions(
+                    width: double.infinity,
+                    height: 56.0,
+                    color: FlutterFlowTheme.of(context).tertiary,
+                    textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                          fontFamily: 'SF',
+                          color: FlutterFlowTheme.of(context).primaryBackground,
+                          letterSpacing: 0.0,
+                        ),
+                    elevation: 0.0,
+                    borderRadius: BorderRadius.circular(16.0),
+                  ),
+                ),
+              ),
           ],
         ),
       ),

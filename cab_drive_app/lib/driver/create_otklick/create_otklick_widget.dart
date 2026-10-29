@@ -56,6 +56,19 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
     return ((price / 100) * pct).round();
   }
 
+  static const _etaPresets = ['5-10', '10-15', '15-20'];
+
+  String? get _etaText {
+    switch (_model.etaMode) {
+      case 1:
+      case 2:
+      case 3:
+        return 'приеду через ${_etaPresets[_model.etaMode - 1]} мин';
+      default:
+        return null;
+    }
+  }
+
   bool get _canSubmit {
     if (_isSending) return false;
     if (_model.priceMode == 0) return false;
@@ -64,8 +77,6 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
       final parsed = int.tryParse(raw);
       if (parsed == null || parsed < _customerPrice) return false;
     }
-    final comment = _model.commentBTextController?.text.trim() ?? '';
-    if (comment.length < 3) return false;
     return true;
   }
 
@@ -84,8 +95,6 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
     _model.commentBFocusNode ??= FocusNode();
     _model.customPriceTextController ??= TextEditingController();
     _model.customPriceFocusNode ??= FocusNode();
-    _model.etaTextController ??= TextEditingController();
-    _model.etaFocusNode ??= FocusNode();
   }
 
   @override
@@ -112,7 +121,7 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
             '${functions.extractLatLong(widget.order!.pointA.latlng!, true)},${functions.extractLatLong(widget.order!.pointA.latlng!, false)}',
       );
 
-      final etaText = _model.etaTextController?.text.trim() ?? '';
+      final etaText = _etaText ?? '';
       final computedTime =
           DistanceMatrixCall.time(_model.adsd3?.jsonBody ?? '') ?? '';
       final timeValue = etaText.isNotEmpty ? etaText : computedTime;
@@ -210,6 +219,43 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
     );
   }
 
+  Widget _etaButton({required String label, required int mode}) {
+    final theme = FlutterFlowTheme.of(context);
+    final selected = _model.etaMode == mode;
+    return Expanded(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12.0),
+        onTap: () {
+          HapticFeedback.selectionClick();
+          setState(() => _model.etaMode = mode);
+          if (mode == 4) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _model.commentBFocusNode?.requestFocus();
+            });
+          }
+        },
+        child: Container(
+          height: 44.0,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: selected ? theme.tertiary : const Color(0xFFF4F5F8),
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+          child: Text(
+            label,
+            style: theme.bodyMedium.override(
+              fontFamily: 'SF',
+              color: selected ? Colors.white : theme.primaryText,
+              fontSize: 14.0,
+              letterSpacing: 0.0,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _priceModeOption({
     required int value,
     required String title,
@@ -246,9 +292,8 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: selected
-                          ? theme.tertiary
-                          : const Color(0xFFD0CFCE),
+                      color:
+                          selected ? theme.tertiary : const Color(0xFFD0CFCE),
                       width: 1.6,
                     ),
                   ),
@@ -322,249 +367,261 @@ class _CreateOtklickWidgetState extends State<CreateOtklickWidget> {
       ),
       child: SingleChildScrollView(
         child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Container(
-                width: double.infinity,
-                height: 64.0,
-                decoration: BoxDecoration(
-                  color: theme.secondaryBackground,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(22.0),
-                    topRight: Radius.circular(22.0),
-                  ),
-                ),
-                padding: const EdgeInsetsDirectional.fromSTEB(
-                    24.0, 0.0, 16.0, 0.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Отклик',
-                      style: theme.bodyMedium.override(
-                        fontFamily: 'SF',
-                        fontSize: 21.0,
-                        letterSpacing: 0.0,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    FlutterFlowIconButton(
-                      borderRadius: 54.0,
-                      buttonSize: 32.0,
-                      fillColor: const Color(0xFFF4F5F8),
-                      icon: const Icon(
-                        FFIcons.kkrestStroke,
-                        color: Color(0xFF21201F),
-                        size: 8.0,
-                      ),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-              ),
-              // Inputs section (white card)
-              Container(
-                width: double.infinity,
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Container(
+              width: double.infinity,
+              height: 64.0,
+              decoration: BoxDecoration(
                 color: theme.secondaryBackground,
-                padding: const EdgeInsetsDirectional.fromSTEB(
-                    24.0, 4.0, 24.0, 12.0),
-                child: Form(
-                  key: _model.formKey,
-                  autovalidateMode: AutovalidateMode.disabled,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Budget display (read-only)
-                      _underlineInput(
-                        controller: TextEditingController(),
-                        focusNode: FocusNode(),
-                        hint: customerPrice > 0
-                            ? 'Сумма, до $customerPrice ₽'
-                            : 'Сумма',
-                        enabled: false,
-                      ),
-                      _underlineInput(
-                        controller: _model.commentBTextController!,
-                        focusNode: _model.commentBFocusNode!,
-                        hint:
-                            'Расскажите о своём опыте. Уточните детали заказа или предложите свои условия.',
-                        maxLines: 5,
-                        minLines: 2,
-                        validator: _model.commentBTextControllerValidator,
-                      ),
-                      _underlineInput(
-                        controller: _model.etaTextController!,
-                        focusNode: _model.etaFocusNode!,
-                        hint: 'Прибытие до заказчика',
-                      ),
-                    ],
-                  ),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(22.0),
+                  topRight: Radius.circular(22.0),
                 ),
               ),
-              const SizedBox(height: 12.0),
-              // Price mode card
-              Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(
-                    16.0, 0.0, 16.0, 0.0),
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: theme.secondaryBackground,
-                    borderRadius: BorderRadius.circular(18.0),
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 16.0, 0.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Отклик',
+                    style: theme.bodyMedium.override(
+                      fontFamily: 'SF',
+                      fontSize: 21.0,
+                      letterSpacing: 0.0,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                  padding: const EdgeInsetsDirectional.fromSTEB(
-                      14.0, 14.0, 14.0, 14.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Предложение по цене',
-                        style: theme.bodyMedium.override(
-                          fontFamily: 'SF',
-                          fontSize: 17.0,
-                          letterSpacing: 0.0,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 12.0),
-                      _priceModeOption(
-                        value: 1,
-                        title: 'По цене заказчика',
-                        subtitle: 'до $customerPrice ₽',
-                      ),
-                      const SizedBox(height: 10.0),
-                      _priceModeOption(
-                        value: 2,
-                        title: 'По своей цене',
-                        subtitle: 'Вы можете предложить больше',
-                        trailing: TextFormField(
-                          controller: _model.customPriceTextController,
-                          focusNode: _model.customPriceFocusNode,
-                          enabled: _model.priceMode == 2,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                          ],
-                          onChanged: (_) => setState(() {}),
-                          decoration: InputDecoration(
-                            isDense: true,
-                            hintText: 'Укажите цену',
-                            hintStyle: theme.bodyMedium.override(
-                              fontFamily: 'SF',
-                              color: const Color(0xFF8F8F8E),
-                              fontSize: 16.0,
-                              letterSpacing: 0.0,
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                  color: Color(0xFFE5E7EB), width: 1.0),
-                              borderRadius: BorderRadius.circular(12.0),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                  color: theme.tertiary, width: 1.2),
-                              borderRadius: BorderRadius.circular(12.0),
-                            ),
-                            disabledBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                  color: Color(0xFFE5E7EB), width: 1.0),
-                              borderRadius: BorderRadius.circular(12.0),
-                            ),
-                            contentPadding:
-                                const EdgeInsets.symmetric(
-                                    horizontal: 12.0, vertical: 12.0),
-                          ),
-                          style: theme.bodyMedium.override(
-                            fontFamily: 'SF',
-                            fontSize: 16.0,
-                            letterSpacing: 0.0,
-                          ),
-                        ),
-                      ),
-                    ],
+                  FlutterFlowIconButton(
+                    borderRadius: 54.0,
+                    buttonSize: 32.0,
+                    fillColor: const Color(0xFFF4F5F8),
+                    icon: const Icon(
+                      FFIcons.kkrestStroke,
+                      color: Color(0xFF21201F),
+                      size: 8.0,
+                    ),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                ),
+                ],
               ),
-              const SizedBox(height: 16.0),
-              // Commission + help
-              Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(
-                    24.0, 0.0, 16.0, 0.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            ),
+            // Inputs section (white card)
+            Container(
+              width: double.infinity,
+              color: theme.secondaryBackground,
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(24.0, 4.0, 24.0, 12.0),
+              child: Form(
+                key: _model.formKey,
+                autovalidateMode: AutovalidateMode.disabled,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Budget display (read-only)
+                    _underlineInput(
+                      controller: TextEditingController(),
+                      focusNode: FocusNode(),
+                      hint: customerPrice > 0
+                          ? 'Сумма, до $customerPrice ₽'
+                          : 'Сумма',
+                      enabled: false,
+                    ),
+                    const SizedBox(height: 16.0),
                     Text(
-                      _commission > 0
-                          ? 'Комиссия за заказ - $_commission ₽'
-                          : 'Комиссия за заказ',
+                      'Время подачи, мин',
                       style: theme.bodyMedium.override(
                         fontFamily: 'SF',
+                        color: const Color(0xFF8F8F8E),
                         fontSize: 14.0,
                         letterSpacing: 0.0,
                       ),
                     ),
-                    FlutterFlowIconButton(
-                      borderRadius: 8.0,
-                      buttonSize: 32.0,
-                      icon: Icon(
-                        FFIcons.khelpOctagon,
-                        color: theme.secondaryText,
-                        size: 18.0,
-                      ),
-                      onPressed: () async {
-                        await showModalBottomSheet(
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          context: context,
-                          builder: (context) => WebViewAware(
-                            child: Padding(
-                              padding: MediaQuery.viewInsetsOf(context),
-                              child: ZaChtoPlataWidget(),
-                            ),
-                          ),
-                        );
-                      },
+                    const SizedBox(height: 8.0),
+                    Row(
+                      children: [
+                        _etaButton(label: '5-10', mode: 1),
+                        const SizedBox(width: 8.0),
+                        _etaButton(label: '10-15', mode: 2),
+                        const SizedBox(width: 8.0),
+                        _etaButton(label: '15-20', mode: 3),
+                        const SizedBox(width: 8.0),
+                        _etaButton(label: 'Более', mode: 4),
+                      ],
+                    ),
+                    _underlineInput(
+                      controller: _model.commentBTextController!,
+                      focusNode: _model.commentBFocusNode!,
+                      hint: 'Уточните детали заказа',
+                      maxLines: 5,
+                      minLines: 2,
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 12.0),
-              // Submit button
-              Padding(
+            ),
+            const SizedBox(height: 12.0),
+            // Price mode card
+            Padding(
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: theme.secondaryBackground,
+                  borderRadius: BorderRadius.circular(18.0),
+                ),
                 padding: const EdgeInsetsDirectional.fromSTEB(
-                    16.0, 0.0, 16.0, 28.0),
-                child: FFButtonWidget(
-                  onPressed: _canSubmit ? () => _submit() : null,
-                  text: 'Откликнуться',
-                  showLoadingIndicator: _isSending,
-                  options: FFButtonOptions(
-                    width: double.infinity,
-                    height: 56.0,
-                    color: _canSubmit
-                        ? theme.tertiary
-                        : const Color(0xFFEDEEF1),
-                    textStyle: theme.titleSmall.override(
-                      fontFamily: 'SF',
-                      color: _canSubmit
-                          ? theme.primaryBackground
-                          : const Color(0xFFA4A6B2),
-                      letterSpacing: 0.0,
-                      fontWeight: FontWeight.w500,
+                    14.0, 14.0, 14.0, 14.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Предложение по цене',
+                      style: theme.bodyMedium.override(
+                        fontFamily: 'SF',
+                        fontSize: 17.0,
+                        letterSpacing: 0.0,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    elevation: 0.0,
-                    borderRadius: BorderRadius.circular(16.0),
-                    disabledColor: const Color(0xFFEDEEF1),
-                    disabledTextColor: const Color(0xFFA4A6B2),
-                  ),
+                    const SizedBox(height: 12.0),
+                    _priceModeOption(
+                      value: 1,
+                      title: 'По цене заказчика',
+                      subtitle: 'до $customerPrice ₽',
+                    ),
+                    const SizedBox(height: 10.0),
+                    _priceModeOption(
+                      value: 2,
+                      title: 'По своей цене',
+                      subtitle: 'Вы можете предложить больше',
+                      trailing: TextFormField(
+                        controller: _model.customPriceTextController,
+                        focusNode: _model.customPriceFocusNode,
+                        enabled: _model.priceMode == 2,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        onChanged: (_) => setState(() {}),
+                        decoration: InputDecoration(
+                          isDense: true,
+                          hintText: 'Укажите цену',
+                          hintStyle: theme.bodyMedium.override(
+                            fontFamily: 'SF',
+                            color: const Color(0xFF8F8F8E),
+                            fontSize: 16.0,
+                            letterSpacing: 0.0,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                                color: Color(0xFFE5E7EB), width: 1.0),
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: theme.tertiary, width: 1.2),
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          disabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                                color: Color(0xFFE5E7EB), width: 1.0),
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12.0, vertical: 12.0),
+                        ),
+                        style: theme.bodyMedium.override(
+                          fontFamily: 'SF',
+                          fontSize: 16.0,
+                          letterSpacing: 0.0,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 16.0),
+            // Commission + help
+            Padding(
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 16.0, 0.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    _commission > 0
+                        ? 'Комиссия за заказ - $_commission ₽'
+                        : 'Комиссия за заказ',
+                    style: theme.bodyMedium.override(
+                      fontFamily: 'SF',
+                      fontSize: 14.0,
+                      letterSpacing: 0.0,
+                    ),
+                  ),
+                  FlutterFlowIconButton(
+                    borderRadius: 8.0,
+                    buttonSize: 32.0,
+                    icon: Icon(
+                      FFIcons.khelpOctagon,
+                      color: theme.secondaryText,
+                      size: 18.0,
+                    ),
+                    onPressed: () async {
+                      await showModalBottomSheet(
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        context: context,
+                        builder: (context) => WebViewAware(
+                          child: Padding(
+                            padding: MediaQuery.viewInsetsOf(context),
+                            child: ZaChtoPlataWidget(),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12.0),
+            // Submit button
+            Padding(
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 28.0),
+              child: FFButtonWidget(
+                onPressed: _canSubmit ? () => _submit() : null,
+                text: 'Откликнуться',
+                showLoadingIndicator: _isSending,
+                options: FFButtonOptions(
+                  width: double.infinity,
+                  height: 56.0,
+                  color: _canSubmit ? theme.tertiary : const Color(0xFFEDEEF1),
+                  textStyle: theme.titleSmall.override(
+                    fontFamily: 'SF',
+                    color: _canSubmit
+                        ? theme.primaryBackground
+                        : const Color(0xFFA4A6B2),
+                    letterSpacing: 0.0,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  elevation: 0.0,
+                  borderRadius: BorderRadius.circular(16.0),
+                  disabledColor: const Color(0xFFEDEEF1),
+                  disabledTextColor: const Color(0xFFA4A6B2),
+                ),
+              ),
+            ),
+          ],
         ),
+      ),
     );
   }
 }

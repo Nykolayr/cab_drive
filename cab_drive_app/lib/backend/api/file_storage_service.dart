@@ -52,7 +52,11 @@ class FileStorageService {
   }
 
   /// Получение URL для отображения — UUID и старые Firebase URLs.
+  /// Пустая строка → '' (не дёргаем files/get с пустым uuid — 500 на сервере).
   static String getImageUrl(String uuidOrUrl) {
+    if (uuidOrUrl.trim().isEmpty) {
+      return '';
+    }
     if (isFirebaseUrl(uuidOrUrl)) {
       return uuidOrUrl;
     }

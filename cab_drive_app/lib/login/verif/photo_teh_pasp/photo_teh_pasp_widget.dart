@@ -11,6 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:webviewx_plus/webviewx_plus.dart';
 import 'photo_teh_pasp_model.dart';
+import '/backend/api/client_error_reporter.dart';
 export 'photo_teh_pasp_model.dart';
 
 class PhotoTehPaspWidget extends StatefulWidget {
@@ -38,6 +39,7 @@ class _PhotoTehPaspWidgetState extends State<PhotoTehPaspWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => PhotoTehPaspModel());
+    ClientErrorReporter.instance?.crumb('verif', 'photo_sheet=teh_pasp');
   }
 
   @override

@@ -75,6 +75,8 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   SharedPrefs.sharedPreferences = await SharedPreferences.getInstance();
+  unawaited(ClientErrorReporter.reportPendingStepIfAny());
+  ClientErrorReporter.instance?.crumb('lifecycle', 'app_started');
   final appState = FFAppState(); // Initialize FFAppState
   await appState.initializePersistedState();
   // Fire-and-forget: серверные тайминги подъедут асинхронно
@@ -92,18 +94,19 @@ void main() async {
 
   // Handle foreground messages (both notification and data-only)
   FirebaseMessaging.onMessage.listen((message) {
-    final title = message.data['title'] ?? message.notification?.title ?? 'no title';
+    final title =
+        message.data['title'] ?? message.notification?.title ?? 'no title';
     print('[FCM.foreground] Received message: $title');
     print('[FCM.foreground] Data: ${message.data}');
     showFlutterNotificationFromFirebase(message);
   });
 
+  // Сетевые вызовы — не блокируем runApp на плохой сети (фриз сплэша).
+  unawaited(initializeFirebaseRemoteConfig());
 
-
-  await initializeFirebaseRemoteConfig();
-
-  // Платёжный base URL с сервера (смена домена без обновления стора)
-  await PaymentsApiConfig.load();
+  // Платёжный base URL с сервера (смена домена без обновления стора);
+  // до ответа работает defaultBaseUrl.
+  unawaited(PaymentsApiConfig.load());
 
   runApp(ChangeNotifierProvider(
     create: (context) => appState,

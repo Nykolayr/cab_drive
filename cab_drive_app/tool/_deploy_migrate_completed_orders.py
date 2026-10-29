@@ -18,7 +18,7 @@ USER = "root"
 PASSWORD = (
     os.environ.get("CAB_DRIVE_SSH_PASSWORD")
     or os.environ.get("CAB_SSH_PASSWORD")
-    or "wZX++X-+TJ7kqn"
+   
 )
 ROOT = Path(r"D:\Projects\cab_drive")
 REMOTE_DIR = "/root/projects/cab_drive"

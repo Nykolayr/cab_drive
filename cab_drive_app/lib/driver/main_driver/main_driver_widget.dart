@@ -110,6 +110,10 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
+      _loadOrdersFeed();
+      _ordersFeedTimer =
+          Timer.periodic(const Duration(seconds: 5), (_) => _loadOrdersFeed());
+
       if (AppEnv.isTest) {
         if (!mounted) return;
         await Navigator.of(context).push(
@@ -120,10 +124,6 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
         );
         return;
       }
-
-      _loadOrdersFeed();
-      _ordersFeedTimer =
-          Timer.periodic(const Duration(seconds: 5), (_) => _loadOrdersFeed());
 
       if (valueOrDefault(currentUserDocument?.onShift, false)) {
         toggleDriverPosTracking();
@@ -137,8 +137,7 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
         if (!ok) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text('Не удалось начислить штраф')),
+              const SnackBar(content: Text('Не удалось начислить штраф')),
             );
           }
           return;
@@ -532,8 +531,7 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                             FFButtonWidget(
                               onPressed: () async {
                                 final commission = valueOrDefault(
-                                    currentUserDocument?.currentCommision,
-                                    0.0);
+                                    currentUserDocument?.currentCommision, 0.0);
                                 final bonus = effectiveBonusBalance;
                                 final mainBefore = effectiveBalance;
                                 var fromBonus =
@@ -564,11 +562,10 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                                 mainAfter = (apiResult['balance'] is num)
                                     ? (apiResult['balance'] as num).toDouble()
                                     : mainAfter;
-                                bonusAfter =
-                                    (apiResult['bonus_balance'] is num)
-                                        ? (apiResult['bonus_balance'] as num)
-                                            .toDouble()
-                                        : bonusAfter;
+                                bonusAfter = (apiResult['bonus_balance'] is num)
+                                    ? (apiResult['bonus_balance'] as num)
+                                        .toDouble()
+                                    : bonusAfter;
                                 await refreshAppMeCache();
 
                                 createPayOrderRecordData(

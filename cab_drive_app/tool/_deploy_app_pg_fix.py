@@ -18,7 +18,7 @@ USER = "root"
 PASSWORD = (
     os.environ.get("CAB_DRIVE_SSH_PASSWORD")
     or os.environ.get("CAB_SSH_PASSWORD")
-    or "wZX++X-+TJ7kqn"
+   
 )
 LOCAL = Path(r"D:\Projects\cab_drive\server\app_pg.py")
 REMOTE = "/root/projects/cab_drive/app_pg.py"

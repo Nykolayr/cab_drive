@@ -12,7 +12,7 @@ USER = "root"
 PASSWORD = (
     os.environ.get("CAB_DRIVE_SSH_PASSWORD")
     or os.environ.get("CAB_SSH_PASSWORD")
-    or "wZX++X-+TJ7kqn"
+   
 )
 PHONE = "%9667499985%"
 JUMP_KEY = "12b46b45-f258-4e3c-9509-9dc7280cdeed"

@@ -17,7 +17,7 @@ USER = "root"
 PASSWORD = (
     os.environ.get("CAB_DRIVE_SSH_PASSWORD")
     or os.environ.get("CAB_SSH_PASSWORD")
-    or "wZX++X-+TJ7kqn"
+   
 )
 
 

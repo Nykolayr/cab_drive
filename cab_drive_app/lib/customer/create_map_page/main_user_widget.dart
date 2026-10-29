@@ -18,12 +18,15 @@ import '/flutter_flow/flutter_flow_widgets.dart';
 import '/pages/bottom/main_load/main_load_widget.dart';
 import '/pages/bottom/navbar/navbar_widget.dart';
 import 'dart:ui';
+import '/backend/api/client_error_reporter.dart';
+import '/core/utils/geo_resolver.dart';
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/permissions_util.dart';
 import '/index.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -58,14 +61,19 @@ class _MainUserWidgetState extends State<MainUserWidget> {
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      currentUserLocationValue =
-          await getCurrentUserLocation(defaultLocation: const LatLng(0.0, 0.0));
+      final geo =
+          await resolveUserLocation(defaultLocation: const LatLng(0.0, 0.0));
+      currentUserLocationValue = geo.latLng;
       if (currentUserLocationValue != null &&
           (currentUserLocationValue!.latitude != 0.0 ||
               currentUserLocationValue!.longitude != 0.0)) {
         FFAppState().mskGeo = currentUserLocationValue;
       }
-      if (await getPermissionStatus(locationPermission)) {
+      if (mounted && geo.reason != GeoFailReason.none) {
+        _showGeoUnavailableWarning(geo.reason);
+      }
+      if (geo.reason == GeoFailReason.none ||
+          (geo.fromCache && geo.reason == GeoFailReason.serviceDisabled)) {
         final controller = _model.yandexMapController;
         if (controller != null &&
             currentUserLocationValue != null &&
@@ -99,6 +107,101 @@ class _MainUserWidgetState extends State<MainUserWidget> {
     _model.dispose();
 
     super.dispose();
+  }
+
+  /// Геолокация недоступна — честно сообщаем и ведём в настройки,
+  /// вместо молчаливой Москвы на карте.
+  void _showGeoUnavailableWarning(GeoFailReason reason) {
+    final String text = switch (reason) {
+      GeoFailReason.serviceDisabled =>
+        'Геолокация выключена на телефоне. Без неё карта покажет не ваш город. Включите её в настройках.',
+      GeoFailReason.permissionDenied ||
+      GeoFailReason.permissionDeniedForever =>
+        'Нет доступа к геолокации. Без него карта покажет не ваш город. Разрешите доступ в настройках приложения.',
+      _ =>
+        'Не удалось определить ваше местоположение. Проверьте, включена ли геолокация.',
+    };
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: FlutterFlowTheme.of(ctx).secondaryBackground,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 34),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Местоположение не определено',
+              style: FlutterFlowTheme.of(ctx).bodyMedium.override(
+                    fontFamily: 'SF',
+                    fontSize: 20.0,
+                    letterSpacing: 0.0,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              text,
+              style: FlutterFlowTheme.of(ctx).bodyMedium.override(
+                    fontFamily: 'SF',
+                    fontSize: 15.0,
+                    letterSpacing: 0.0,
+                  ),
+            ),
+            const SizedBox(height: 20),
+            FFButtonWidget(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                ClientErrorReporter.instance
+                    ?.crumb('geo', 'warn_settings_${reason.name}');
+                if (reason == GeoFailReason.serviceDisabled) {
+                  await Geolocator.openLocationSettings();
+                } else {
+                  await Geolocator.openAppSettings();
+                }
+              },
+              text: reason == GeoFailReason.serviceDisabled
+                  ? 'Включить геолокацию'
+                  : 'Открыть настройки',
+              options: FFButtonOptions(
+                width: double.infinity,
+                height: 56.0,
+                color: FlutterFlowTheme.of(ctx).tertiary,
+                textStyle: FlutterFlowTheme.of(ctx).titleSmall.override(
+                      fontFamily: 'SF',
+                      color: FlutterFlowTheme.of(ctx).primaryBackground,
+                      letterSpacing: 0.0,
+                      fontWeight: FontWeight.w500,
+                    ),
+                elevation: 0.0,
+                borderRadius: BorderRadius.circular(16.0),
+              ),
+            ),
+            const SizedBox(height: 8),
+            FFButtonWidget(
+              onPressed: () => Navigator.pop(ctx),
+              text: 'Позже',
+              options: FFButtonOptions(
+                width: double.infinity,
+                height: 56.0,
+                color: FlutterFlowTheme.of(ctx).alternate,
+                textStyle: FlutterFlowTheme.of(ctx).titleSmall.override(
+                      fontFamily: 'SF',
+                      color: FlutterFlowTheme.of(ctx).tertiary,
+                      letterSpacing: 0.0,
+                    ),
+                elevation: 0.0,
+                borderRadius: BorderRadius.circular(16.0),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -1136,8 +1239,9 @@ class _MainUserWidgetState extends State<MainUserWidget> {
                                             8.0, 0.0, 8.0, 8.0),
                                     child: Builder(builder: (context) {
                                       final eta = ordersState.mapOrNull(
-                                          loaded: (_) =>
-                                              _.etas?[_model.car?.name ?? '']);
+                                          loaded: (_) => _.etas?[
+                                              (_model.car?.name ?? '')
+                                                  .toLowerCase()]);
                                       final bool loading =
                                           ordersState.mapOrNull(
                                                   loading: (_) => true) ??

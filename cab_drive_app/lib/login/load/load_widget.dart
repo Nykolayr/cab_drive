@@ -53,10 +53,16 @@ class _LoadWidgetState extends State<LoadWidget> {
         return;
       }
 
-      // До ветвления — актуальный /me (иначе race → Vibor / Geo)
+      // До ветвления — актуальный /me (иначе race → Vibor / Geo).
+      // Две попытки по 6с: на плохой сети сплэш не висит 15+ секунд.
       try {
-        await refreshAppMeCache();
+        await refreshAppMeCache().timeout(const Duration(seconds: 6));
       } catch (_) {}
+      if (currentUserDocument == null) {
+        try {
+          await refreshAppMeCache().timeout(const Duration(seconds: 6));
+        } catch (_) {}
+      }
       if (!context.mounted) return;
 
       if (valueOrDefault<bool>(currentUserDocument?.admin, false)) {
@@ -103,8 +109,7 @@ class _LoadWidgetState extends State<LoadWidget> {
             FFAppState().roleSelected = true;
           }
 
-          final isRoleSelected =
-              FFAppState().roleSelected || firestoreIsDriver;
+          final isRoleSelected = FFAppState().roleSelected || firestoreIsDriver;
           final isDriver = FFAppState().driver || firestoreIsDriver;
           debugPrint(
             '[LoadWidget] Navigation: roleSelected=$isRoleSelected, '
@@ -169,6 +174,24 @@ class _LoadWidgetState extends State<LoadWidget> {
 
           return;
         } else {
+          // /me недоступен после двух попыток: зарегистрированного юзера
+          // не шлём в онбординг — маршрутизируем по локальным флагам,
+          // профиль подтянется фоновым поллингом.
+          if (currentUserDocument == null && FFAppState().roleSelected) {
+            context.goNamed(
+              FFAppState().driver
+                  ? MainDriverWidget.routeName
+                  : MainUserWidget.routeName,
+              extra: <String, dynamic>{
+                kTransitionInfoKey: TransitionInfo(
+                  hasTransition: true,
+                  transitionType: PageTransitionType.fade,
+                  duration: Duration(milliseconds: 0),
+                ),
+              },
+            );
+            return;
+          }
           context.goNamed(
             GeoWidget.routeName,
             queryParameters: {

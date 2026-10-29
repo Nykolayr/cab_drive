@@ -81,6 +81,7 @@ class PricesResponse(SuccessAnswer):
 # Входные модели для view:
 class GetETARequest(BaseModel):
     user_location: LocationModel = Field(..., description="Позиция пассажира")
+    radius_km: Optional[float] = Field(default=None, description="Радиус поиска водителей, км")
 
 
 class GetPricesRequest(BaseModel):

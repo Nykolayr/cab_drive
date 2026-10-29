@@ -6,9 +6,11 @@ import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mime_type/mime_type.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:video_player/video_player.dart';
 
 import '../auth/firebase_auth/auth_util.dart';
+import '/backend/api/client_error_reporter.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow_util.dart';
 
@@ -116,14 +118,12 @@ Future<List<SelectedFile>?> selectMediaWithSourceBottomSheet({
               ),
               const Divider(),
               createUploadMediaListTile('Камера', MediaSource.camera),
-
-            ] else if (allowPhoto)
-              ...[createUploadMediaListTile(
+            ] else if (allowPhoto) ...[
+              createUploadMediaListTile(
                 'Галерея',
                 MediaSource.photoGallery,
               ),
-              ]
-            else
+            ] else
               createUploadMediaListTile(
                 'Галерея',
                 MediaSource.videoGallery,
@@ -199,19 +199,60 @@ Future<List<SelectedFile>?> selectMedia({
   final source = mediaSource == MediaSource.camera
       ? ImageSource.camera
       : ImageSource.gallery;
-  final pickedMediaFuture = isVideo
-      ? picker.pickVideo(source: source)
-      : picker.pickImage(
-          maxWidth: maxWidth,
-          maxHeight: maxHeight,
-          imageQuality: imageQuality,
-          source: source,
-        );
-  final pickedMedia = await pickedMediaFuture;
-  final mediaBytes = await pickedMedia?.readAsBytes();
-  if (mediaBytes == null) {
+
+  // CAMERA объявлен в манифесте — image_picker требует пермишн заранее,
+  // иначе pickImage бросает PlatformException.
+  if (source == ImageSource.camera) {
+    try {
+      final camStatus = await Permission.camera.status;
+      if (!camStatus.isGranted) {
+        await ClientErrorReporter.markPendingStep('camera_permission');
+        final req = await Permission.camera.request();
+        ClientErrorReporter.instance?.crumb('photo', 'camera_perm=${req.name}');
+      }
+    } catch (e) {
+      ClientErrorReporter.instance?.crumb('photo', 'camera_perm_check_err=$e');
+    }
+  }
+
+  await ClientErrorReporter.markPendingStep('media_pick');
+  XFile? pickedMedia;
+  try {
+    pickedMedia = isVideo
+        ? await picker.pickVideo(source: source)
+        : await picker.pickImage(
+            // Ограничиваем исходник: imageQuality:100 без рамок даёт
+            // 10–25 МБ и OOM-килл на слабых телефонах при декоде.
+            maxWidth: maxWidth ?? 2048,
+            maxHeight: maxHeight ?? 2048,
+            imageQuality: imageQuality,
+            source: source,
+          );
+  } catch (e) {
+    ClientErrorReporter.instance?.crumb('photo', 'pick_error=$e');
+  }
+  if (pickedMedia == null) {
+    // Приложение могло пережить смерть activity пока была открыта камера —
+    // пробуем забрать потерянное фото.
+    try {
+      final lost = await picker.retrieveLostData();
+      if (lost.file != null) {
+        ClientErrorReporter.instance?.crumb('photo', 'recovered_lost_media');
+        pickedMedia = lost.file;
+      } else if (lost.exception != null) {
+        ClientErrorReporter.instance
+            ?.crumb('photo', 'lost_exc=${lost.exception}');
+      }
+    } catch (_) {}
+  }
+  await ClientErrorReporter.clearPendingStep();
+  if (pickedMedia == null) {
+    ClientErrorReporter.instance?.crumb('photo', 'pick_cancelled');
     return null;
   }
+  final mediaBytes = await pickedMedia.readAsBytes();
+  ClientErrorReporter.instance
+      ?.crumb('photo', 'picked_bytes=${mediaBytes.length}');
   final path = _getStoragePath(storageFolderPath, pickedMedia!.name, isVideo);
   final dimensions = includeDimensions
       ? isVideo

@@ -53,7 +53,8 @@ class AppMeApi {
       map['_status'] = resp.statusCode;
       if (resp.statusCode < 200 || resp.statusCode >= 300) {
         // ignore: avoid_print
-        print('[AppMeApi] $method $relative status=${resp.statusCode} body=${resp.body}');
+        print(
+            '[AppMeApi] $method $relative status=${resp.statusCode} body=${resp.body}');
       }
       return map;
     } catch (e) {
@@ -78,9 +79,19 @@ class AppMeApi {
   }
 
   /// Частичный апдейт профиля → PATCH /api/app/me (Postgres).
-  static Future<Map<String, dynamic>?> patchMe(Map<String, dynamic> body) async {
+  /// Один ретрай на сетевой сбой/таймаут (r == null) — без него регистрация
+  /// застревает на login_complete=false при моргании сети.
+  static Future<Map<String, dynamic>?> patchMe(
+      Map<String, dynamic> body) async {
     if (body.isEmpty) return null;
-    final r = await _request('PATCH', '/api/app/me', body: body);
+    Map<String, dynamic>? r;
+    for (var attempt = 0; attempt < 2; attempt++) {
+      r = await _request('PATCH', '/api/app/me', body: body);
+      if (r != null) break;
+      if (attempt == 0) {
+        await Future.delayed(const Duration(milliseconds: 1500));
+      }
+    }
     if (r == null || r['_ok'] != true) return null;
     final result = r['result'];
     if (result is Map) {
@@ -329,7 +340,8 @@ class AppMeApi {
     Map<String, dynamic>? extra,
   }) async {
     final body = <String, dynamic>{'status': status, ...?extra};
-    final r = await _request('POST', '/api/app/orders/$orderId/status', body: body);
+    final r =
+        await _request('POST', '/api/app/orders/$orderId/status', body: body);
     return r != null && r['_ok'] == true;
   }
 
@@ -460,9 +472,7 @@ class AppMeApi {
   }
 
   static Future<List<Map<String, dynamic>>> listChats({bool? support}) async {
-    final q = support == null
-        ? ''
-        : '?support=${support ? 'true' : 'false'}';
+    final q = support == null ? '' : '?support=${support ? 'true' : 'false'}';
     final r = await _request('GET', '/api/app/chats$q');
     if (r == null || r['_ok'] != true) return const [];
     final chats = r['chats'];
@@ -473,7 +483,8 @@ class AppMeApi {
         .toList();
   }
 
-  static Future<Map<String, dynamic>?> createOrder(Map<String, dynamic> body) async {
+  static Future<Map<String, dynamic>?> createOrder(
+      Map<String, dynamic> body) async {
     final r = await _request('POST', '/api/app/orders/create', body: body);
     if (r == null || r['_ok'] != true) return null;
     final result = r['result'];
@@ -481,7 +492,8 @@ class AppMeApi {
     return null;
   }
 
-  static Future<List<Map<String, dynamic>>> ordersFeed({String status = 'newOrder'}) async {
+  static Future<List<Map<String, dynamic>>> ordersFeed(
+      {String status = 'newOrder'}) async {
     final r = await _request('GET', '/api/app/orders/feed?status=$status');
     if (r == null || r['_ok'] != true) return const [];
     final orders = r['orders'];
@@ -643,7 +655,8 @@ class AppMeApi {
     return null;
   }
 
-  static Future<Map<String, dynamic>?> createPayment(Map<String, dynamic> body) async {
+  static Future<Map<String, dynamic>?> createPayment(
+      Map<String, dynamic> body) async {
     final r = await _request('POST', '/api/app/payments', body: body);
     if (r == null || r['_ok'] != true) return null;
     final result = r['result'];
@@ -651,7 +664,8 @@ class AppMeApi {
     return null;
   }
 
-  static Future<bool> patchPayment(String payId, Map<String, dynamic> body) async {
+  static Future<bool> patchPayment(
+      String payId, Map<String, dynamic> body) async {
     final token = await _idToken();
     if (token == null) return false;
     final uri = Uri.parse(PaymentsApiConfig.path('/api/app/payments/$payId'));
@@ -698,6 +712,7 @@ class AppMe {
   final String id;
   final double balance;
   final double bonusBalance;
+
   /// Сумма на одобрении вывода (Jump pending).
   final double balancePayoutPending;
   final String? displayName;

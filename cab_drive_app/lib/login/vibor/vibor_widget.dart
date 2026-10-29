@@ -1,5 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api/app_me_api.dart';
+import '/backend/api/client_error_reporter.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -191,6 +192,8 @@ class _ViborWidgetState extends State<ViborWidget> {
                         FFAppState().driver = true;
                         FFAppState().roleSelected = true;
                         debugPrint('[ViborWidget] Selected role: driver');
+                        ClientErrorReporter.instance
+                            ?.crumb('verif', 'vibor_tap=driver');
                         safeSetState(() {});
 
                         try {
@@ -210,8 +213,7 @@ class _ViborWidgetState extends State<ViborWidget> {
 
                         _model.kek = null;
                         try {
-                          _model.kek =
-                              await AppMeApi.verificationCountMine();
+                          _model.kek = await AppMeApi.verificationCountMine();
                         } catch (_) {
                           _model.kek =
                               await queryRequestVereficationRecordCount(
@@ -223,12 +225,18 @@ class _ViborWidgetState extends State<ViborWidget> {
                           );
                         }
                         _shouldSetState = true;
+                        ClientErrorReporter.instance
+                            ?.crumb('verif', 'verif_count=${_model.kek}');
                         if (_model.kek! > 0) {
+                          ClientErrorReporter.instance
+                              ?.crumb('verif', 'nav=MainDriver_existing_req');
                           context.goNamed(MainDriverWidget.routeName);
 
                           if (_shouldSetState) safeSetState(() {});
                           return;
                         } else {
+                          ClientErrorReporter.instance
+                              ?.crumb('verif', 'nav=OnbordDriver');
                           context.pushNamed(OnbordDriverWidget.routeName);
 
                           if (_shouldSetState) safeSetState(() {});

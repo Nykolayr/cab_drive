@@ -11,6 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:webviewx_plus/webviewx_plus.dart';
 import 'photo_vu_copy_model.dart';
+import '/backend/api/client_error_reporter.dart';
 export 'photo_vu_copy_model.dart';
 
 class PhotoVuCopyWidget extends StatefulWidget {
@@ -38,6 +39,7 @@ class _PhotoVuCopyWidgetState extends State<PhotoVuCopyWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => PhotoVuCopyModel());
+    ClientErrorReporter.instance?.crumb('verif', 'photo_sheet=vu_copy');
   }
 
   @override

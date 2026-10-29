@@ -10,6 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:webviewx_plus/webviewx_plus.dart';
 import 'photo_transport_model.dart';
+import '/backend/api/client_error_reporter.dart';
 export 'photo_transport_model.dart';
 
 class PhotoTransportWidget extends StatefulWidget {
@@ -37,6 +38,7 @@ class _PhotoTransportWidgetState extends State<PhotoTransportWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => PhotoTransportModel());
+    ClientErrorReporter.instance?.crumb('verif', 'photo_sheet=transport');
   }
 
   @override

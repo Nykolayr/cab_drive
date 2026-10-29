@@ -18,7 +18,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 #version: 1.0.5+17
 
 #IOS
-version: 1.1.104+104
+version: 1.1.107+107
 
 
 environment:
@@ -196,6 +196,7 @@ dependencies:
   flutter_dotenv: ^5.2.1
   open_route_service: 1.2.7
   cupertino_icons: ^1.0.0
+  material_ui: ^1.8.0
   pinput:
 
   #GEN

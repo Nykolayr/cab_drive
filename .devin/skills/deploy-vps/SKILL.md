@@ -26,8 +26,9 @@ ssh.connect("37.252.20.248", username="root",
 
 - Код на сервере: `/root/projects/cab_drive` (sftp-upload нужных файлов).
 - Health: `curl -sS http://127.0.0.1:5000/api/app/health`.
-- Сервис — systemd `troika.service` (см. server/troika.service);
-  перезапуск через `systemctl restart troika` по SSH.
+- Сервис — systemd `cab.service` (gunicorn -w 4 на 0.0.0.0:5000);
+  перезапуск через `systemctl restart cab` по SSH.
+  (`troika.service` на сервере не существует.)
 
 ## MySQL — только через SSH
 

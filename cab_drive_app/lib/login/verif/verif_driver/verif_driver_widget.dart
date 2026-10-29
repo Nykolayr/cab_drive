@@ -1,5 +1,6 @@
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/api/app_me_api.dart';
+import '/backend/api/client_error_reporter.dart';
 import '/backend/backend.dart';
 import '/backend/firebase_storage/storage.dart';
 import '/backend/schema/enums/enums.dart';
@@ -88,6 +89,8 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
 
     _model.numberTextController ??= TextEditingController();
     _model.numberFocusNode ??= FocusNode();
+
+    ClientErrorReporter.instance?.crumb('verif', 'verif_driver_opened');
   }
 
   @override
@@ -244,7 +247,9 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                       onPageChanged: (_) => safeSetState(() {}),
                       scrollDirection: Axis.horizontal,
                       children: [
-                        DriverTypePage(model: _model,),
+                        DriverTypePage(
+                          model: _model,
+                        ),
                         ClipRRect(
                           borderRadius: BorderRadius.only(
                             bottomLeft: Radius.circular(0.0),
@@ -396,8 +401,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                                         padding: MediaQuery
                                                             .viewInsetsOf(
                                                                 context),
-                                                        child:
-                                                            ErrorPopupWidget(
+                                                        child: ErrorPopupWidget(
                                                           title:
                                                               'Что-то пошло не так',
                                                           text:
@@ -3137,7 +3141,7 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                                               : () async {
                                                   await actions.closeKeyboard();
                                                   final selectedMedia =
-                                                  await selectMediaWithSourceBottomSheet(
+                                                      await selectMediaWithSourceBottomSheet(
                                                     context: context,
                                                     maxWidth: 350.00,
                                                     maxHeight: 350.00,
@@ -3415,146 +3419,153 @@ class _VerifDriverWidgetState extends State<VerifDriverWidget> {
                 ),
               ),
             ),
-            if(_model.pageViewCurrentIndex > 0)
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: FlutterFlowTheme.of(context).secondary,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(0.0),
-                  bottomRight: Radius.circular(0.0),
-                  topLeft: Radius.circular(18.0),
-                  topRight: Radius.circular(18.0),
+            if (_model.pageViewCurrentIndex > 0)
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).secondary,
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(0.0),
+                    bottomRight: Radius.circular(0.0),
+                    topLeft: Radius.circular(18.0),
+                    topRight: Radius.circular(18.0),
+                  ),
                 ),
-              ),
-              child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(
-                    8.0,
-                    8.0,
-                    8.0,
-                    valueOrDefault<double>(
-                      (isWeb
-                              ? MediaQuery.viewInsetsOf(context).bottom > 0
-                              : _isKeyboardVisible)
-                          ? 8.0
-                          : 35.0,
-                      35.0,
-                    )),
-                child: FFButtonWidget(
-                  onPressed: () {
-                    if (_model.pageViewCurrentIndex == 1) {
-                      return ((_model.nameInputTextController.text == null ||
-                              _model.nameInputTextController.text == '') ||
-                          (_model.dtbInputTextController.text == null ||
-                              _model.dtbInputTextController.text == '') ||
-                          (_model.cityInputTextController.text == null ||
-                              _model.cityInputTextController.text == '') ||
-                          (_model.emailInputTextController.text == null ||
-                              _model.emailInputTextController.text == '') ||
-                          (_model.dtbInputTextController.text == null ||
-                              _model.dtbInputTextController.text == ''));
-                    } else if (_model.pageViewCurrentIndex == 2) {
-                      return ((_model.passport == null ||
-                              _model.passport == '') ||
-                          (_model.prava1 == null || _model.prava1 == '') ||
-                          (_model.tehps1 == null || _model.tehps1 == '') ||
-                          (_model.selfi1 == null || _model.selfi1 == ''));
-                    } else if (_model.pageViewCurrentIndex == 3) {
-                      return (!(_model.car.isNotEmpty) ||
-                          (_model.numberTextController.text == null ||
-                              _model.numberTextController.text == ''));
-                    } else {
-                      return false;
-                    }
-                  }()
-                      ? null
-                      : () async {
-                          await actions.closeKeyboard();
-                          if (_model.pageViewCurrentIndex == 1) {
-                            if (_model.formKey2.currentState == null ||
-                                !_model.formKey2.currentState!.validate()) {
-                              return;
-                            }
-                          } else if (_model.pageViewCurrentIndex == 2) {
-                          } else {
-                            if (_model.formKey1.currentState == null ||
-                                !_model.formKey1.currentState!.validate()) {
-                              return;
-                            }
-                            await showModalBottomSheet(
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                              isDismissible: false,
-                              enableDrag: false,
-                              context: context,
-                              builder: (context) {
-                                return WebViewAware(
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      FocusScope.of(context).unfocus();
-                                      FocusManager.instance.primaryFocus
-                                          ?.unfocus();
-                                    },
-                                    child: Padding(
-                                      padding: MediaQuery.viewInsetsOf(context),
-                                      child: CreateVerifReqWidget(
-
-                                        commissionPercent: _model.commissionPercent,
-                                        name:
-                                            _model.nameInputTextController.text,
-                                        surnme: _model
-                                            .lastNameInputTextController.text,
-                                        city:
-                                            _model.cityInputTextController.text,
-                                        mail: _model
-                                            .emailInputTextController.text,
-                                        dtb: _model.datePicked!,
-                                        marka: _model.mark!,
-                                        nomer: _model.numberTextController.text,
-                                        photoDoc: functions.combineUploadedFile(
-                                            _model.passport!,
-                                            _model.selfi1!,
-                                            _model.prava1!,
-                                            _model.prava2!,
-                                            _model.tehps1!),
-                                        photoCar: _model.car,
-                                        region: _model.region!,
+                child: Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(
+                      8.0,
+                      8.0,
+                      8.0,
+                      valueOrDefault<double>(
+                        (isWeb
+                                ? MediaQuery.viewInsetsOf(context).bottom > 0
+                                : _isKeyboardVisible)
+                            ? 8.0
+                            : 35.0,
+                        35.0,
+                      )),
+                  child: FFButtonWidget(
+                    onPressed: () {
+                      if (_model.pageViewCurrentIndex == 1) {
+                        return ((_model.nameInputTextController.text == null ||
+                                _model.nameInputTextController.text == '') ||
+                            (_model.dtbInputTextController.text == null ||
+                                _model.dtbInputTextController.text == '') ||
+                            (_model.cityInputTextController.text == null ||
+                                _model.cityInputTextController.text == '') ||
+                            (_model.emailInputTextController.text == null ||
+                                _model.emailInputTextController.text == '') ||
+                            (_model.dtbInputTextController.text == null ||
+                                _model.dtbInputTextController.text == ''));
+                      } else if (_model.pageViewCurrentIndex == 2) {
+                        return ((_model.passport == null ||
+                                _model.passport == '') ||
+                            (_model.prava1 == null || _model.prava1 == '') ||
+                            (_model.tehps1 == null || _model.tehps1 == '') ||
+                            (_model.selfi1 == null || _model.selfi1 == ''));
+                      } else if (_model.pageViewCurrentIndex == 3) {
+                        return (!(_model.car.isNotEmpty) ||
+                            (_model.numberTextController.text == null ||
+                                _model.numberTextController.text == ''));
+                      } else {
+                        return false;
+                      }
+                    }()
+                        ? null
+                        : () async {
+                            await actions.closeKeyboard();
+                            if (_model.pageViewCurrentIndex == 1) {
+                              if (_model.formKey2.currentState == null ||
+                                  !_model.formKey2.currentState!.validate()) {
+                                return;
+                              }
+                            } else if (_model.pageViewCurrentIndex == 2) {
+                            } else {
+                              if (_model.formKey1.currentState == null ||
+                                  !_model.formKey1.currentState!.validate()) {
+                                return;
+                              }
+                              await showModalBottomSheet(
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                                isDismissible: false,
+                                enableDrag: false,
+                                context: context,
+                                builder: (context) {
+                                  return WebViewAware(
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        FocusScope.of(context).unfocus();
+                                        FocusManager.instance.primaryFocus
+                                            ?.unfocus();
+                                      },
+                                      child: Padding(
+                                        padding:
+                                            MediaQuery.viewInsetsOf(context),
+                                        child: CreateVerifReqWidget(
+                                          commissionPercent:
+                                              _model.commissionPercent,
+                                          name: _model
+                                              .nameInputTextController.text,
+                                          surnme: _model
+                                              .lastNameInputTextController.text,
+                                          city: _model
+                                              .cityInputTextController.text,
+                                          mail: _model
+                                              .emailInputTextController.text,
+                                          dtb: _model.datePicked!,
+                                          marka: _model.mark!,
+                                          nomer:
+                                              _model.numberTextController.text,
+                                          photoDoc:
+                                              functions.combineUploadedFile(
+                                                  _model.passport!,
+                                                  _model.selfi1!,
+                                                  _model.prava1!,
+                                                  _model.prava2!,
+                                                  _model.tehps1!),
+                                          photoCar: _model.car,
+                                          region: _model.region!,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                );
-                              },
-                            ).then((value) => safeSetState(() {}));
+                                  );
+                                },
+                              ).then((value) => safeSetState(() {}));
 
-                            return;
-                          }
+                              return;
+                            }
 
-                          await _model.pageViewController?.nextPage(
-                            duration: Duration(milliseconds: 300),
-                            curve: Curves.ease,
-                          );
-                        },
-                  text: 'Далее',
-                  options: FFButtonOptions(
-                    width: double.infinity,
-                    height: 56.0,
-                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                    iconPadding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                    color: FlutterFlowTheme.of(context).tertiary,
-                    textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                          fontFamily: 'SF',
-                          color: FlutterFlowTheme.of(context).primaryBackground,
-                          letterSpacing: 0.0,
-                        ),
-                    elevation: 0.0,
-                    borderRadius: BorderRadius.circular(16.0),
-                    disabledColor: Color(0xFFEEEEEE),
-                    disabledTextColor: Color(0xFF8B8B8B),
+                            await _model.pageViewController?.nextPage(
+                              duration: Duration(milliseconds: 300),
+                              curve: Curves.ease,
+                            );
+                          },
+                    text: 'Далее',
+                    options: FFButtonOptions(
+                      width: double.infinity,
+                      height: 56.0,
+                      padding:
+                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                      iconPadding:
+                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                      color: FlutterFlowTheme.of(context).tertiary,
+                      textStyle: FlutterFlowTheme.of(context)
+                          .titleSmall
+                          .override(
+                            fontFamily: 'SF',
+                            color:
+                                FlutterFlowTheme.of(context).primaryBackground,
+                            letterSpacing: 0.0,
+                          ),
+                      elevation: 0.0,
+                      borderRadius: BorderRadius.circular(16.0),
+                      disabledColor: Color(0xFFEEEEEE),
+                      disabledTextColor: Color(0xFF8B8B8B),
+                    ),
                   ),
                 ),
               ),
-            ),
           ].divide(SizedBox(height: 5.0)),
         ),
       ),

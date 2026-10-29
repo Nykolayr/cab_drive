@@ -1,0 +1,2 @@
+{"name": "Диана Тест", "phone": "+79667499985", "uid": "132ipwKCpbXrRTyC2p4RNIkkf6D2", "result": {"success": true, "success_count": 1, "failure_count": 0, "tokens_cleaned": 0, "token_count": 1, "source": "postgres"}}
+{"name": "Наталья Тест", "phone": "+79918783116", "uid": "4EFSVlkodRUv5BrnSJQUS6kjmom1", "result": {"success": true, "success_count": 1, "failure_count": 0, "tokens_cleaned": 0, "token_count": 1, "source": "postgres"}}

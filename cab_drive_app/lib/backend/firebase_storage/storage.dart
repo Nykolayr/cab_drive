@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:image/image.dart' as img;
+import '../api/client_error_reporter.dart';
 import '../api/file_storage_service.dart';
 
 const int _targetBytes = 950 * 1024;
@@ -40,11 +41,19 @@ Uint8List compressToLimit(Uint8List data) {
 /// (Ранее использовался Firebase Storage, теперь собственный бэкенд)
 Future<String?> uploadData(String path, Uint8List data) async {
   var filename = path.split('/').last;
+  ClientErrorReporter.instance
+      ?.crumb('photo', 'upload_start_bytes=${data.length}');
   final compressed = compressToLimit(data);
-  if (!identical(compressed, data) && !filename.toLowerCase().endsWith('.jpg')) {
+  if (!identical(compressed, data) &&
+      !filename.toLowerCase().endsWith('.jpg')) {
     filename = '${filename.split('.').first}.jpg';
   }
   final uuid = await FileStorageService.uploadFile(compressed, filename);
+  ClientErrorReporter.instance?.crumb(
+      'photo',
+      uuid != null
+          ? 'upload_ok_compressed=${compressed.length}'
+          : 'upload_failed');
   if (uuid == null) return null;
   return FileStorageService.getFileUrl(uuid);
 }
