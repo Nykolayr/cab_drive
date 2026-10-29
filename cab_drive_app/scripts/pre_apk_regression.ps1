@@ -8,7 +8,22 @@ Set-Location $root
 Write-Host "==> pre_apk_regression: Cab Drive"
 Write-Host "    doc: $repoRoot\docs\ARCHITECTURE_AND_FLOWS.md"
 
-Write-Host "`n==> 1/5 Auth invariants (server files)"
+Write-Host "`n==> 1/6 Version sync (pubspec vs ClientErrorReporter)"
+$pubspecRaw = Get-Content "pubspec.yaml" -Raw
+if ($pubspecRaw -notmatch '(?m)^version:\s*(\d+\.\d+\.\d+)\+(\d+)') {
+  throw "pubspec.yaml: version: line not found"
+}
+$vName = $Matches[1]; $vCode = $Matches[2]
+$repRaw = Get-Content "lib\backend\api\client_error_reporter.dart" -Raw
+if ($repRaw -notmatch "appVersion = '$vName'") {
+  throw "client_error_reporter.dart: appVersion must be '$vName' (sync with pubspec)"
+}
+if ($repRaw -notmatch "buildNumber = '$vCode'") {
+  throw "client_error_reporter.dart: buildNumber must be '$vCode' (sync with pubspec)"
+}
+Write-Host "version sync OK: $vName+$vCode"
+
+Write-Host "`n==> 2/6 Auth invariants (server files)"
 $serverApi = Join-Path $repoRoot "server\users\api.py"
 $serverEntities = Join-Path $repoRoot "server\users\entities.py"
 foreach ($f in @($serverApi, $serverEntities)) {
@@ -24,7 +39,7 @@ if (Select-String -Path $serverApi -Pattern "email = f'\{phone\}@ydrive\.com'" -
   throw "server/api.py: forbidden bare @ydrive.com for new users"
 }
 
-Write-Host "`n==> 2/5 Auth invariants (client files)"
+Write-Host "`n==> 3/6 Auth invariants (client files)"
 if (-not (Select-String -Path "lib\login\load\load_widget.dart" -Pattern "firestoreIsDriver" -Quiet)) {
   throw "load_widget.dart: must sync driver role from Firestore (firestoreIsDriver)"
 }
@@ -36,7 +51,7 @@ if ($beforeCity -match 'responsiveVisibility\([\s\S]*phone:\s*false') {
   throw "profile_widget: city picker must not be phone:false only"
 }
 
-Write-Host "`n==> 3/5 flutter test (auth + role)"
+Write-Host "`n==> 4/6 flutter test (auth + role)"
 $prevEap = $ErrorActionPreference
 $ErrorActionPreference = 'Continue'
 flutter test test/auth_architecture_test.dart test/role_selection_test.dart 2>&1 | ForEach-Object { Write-Host $_ }
@@ -44,7 +59,7 @@ $testExit = $LASTEXITCODE
 $ErrorActionPreference = $prevEap
 if ($testExit -ne 0) { throw "flutter test failed (exit $testExit)" }
 
-Write-Host "`n==> 4/5 flutter analyze (errors only)"
+Write-Host "`n==> 5/6 flutter analyze (errors only)"
 $ErrorActionPreference = 'Continue'
 $analyzeOut = (flutter analyze 2>&1 | Out-String)
 $ErrorActionPreference = $prevEap
@@ -55,7 +70,7 @@ if ($errors) {
 }
 Write-Host "analyze: no errors"
 
-Write-Host "`n==> 5/5 server auth unit tests (if pytest available)"
+Write-Host "`n==> 6/6 server auth unit tests (if pytest available)"
 $serverTests = Join-Path $repoRoot "server\tests\test_auth_invariants.py"
 if ((Test-Path $serverTests) -and (Get-Command pytest -ErrorAction SilentlyContinue)) {
   Push-Location (Join-Path $repoRoot "server")

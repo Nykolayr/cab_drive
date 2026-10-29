@@ -18,6 +18,10 @@ description: >-
 ## Версия
 
 `pubspec.yaml`: `version: 1.1.{N}+{N}` — patch == buildNumber, оба +1.
+**Обязательно** синхронно бампить `appVersion`/`buildNumber` в
+`lib/backend/api/client_error_reporter.dart` — иначе в логах сервера будет
+лежать чужая версия (уже ловили: сборки 1.1.104-106 слали `1.1.100`).
+Гейт шаг 1/6 падает при рассинхроне.
 
 ## Шаги (PowerShell)
 
