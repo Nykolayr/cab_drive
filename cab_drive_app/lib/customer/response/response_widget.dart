@@ -58,8 +58,7 @@ class _ResponseWidgetState extends State<ResponseWidget> {
   }
 
   double get _remainingFraction {
-    final reference =
-        widget.order?.dateUpd ?? widget.responseDT?.dateCreated;
+    final reference = widget.order?.dateUpd ?? widget.responseDT?.dateCreated;
     if (reference == null) return 1.0;
     final elapsed = DateTime.now().difference(reference);
     final remainingMs =
@@ -114,8 +113,8 @@ class _ResponseWidgetState extends State<ResponseWidget> {
                       child: CachedNetworkImage(
                         fadeInDuration: const Duration(milliseconds: 5),
                         fadeOutDuration: const Duration(milliseconds: 5),
-                        imageUrl: FileStorageService.getImageUrl(
-                            driver.photoUrl),
+                        imageUrl:
+                            FileStorageService.getImageUrl(driver.photoUrl),
                         width: 57.0,
                         height: 78.0,
                         fit: BoxFit.cover,
@@ -174,8 +173,7 @@ class _ResponseWidgetState extends State<ResponseWidget> {
                                 0.0, 6.0, 0.0, 0.0),
                             child: Row(
                               mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Row(
@@ -201,8 +199,7 @@ class _ResponseWidgetState extends State<ResponseWidget> {
                                         width: 16.0,
                                         height: 16.0,
                                       ),
-                                      label:
-                                          driver.numberOfReviews.toString(),
+                                      label: driver.numberOfReviews.toString(),
                                     ),
                                   ],
                                 ),
@@ -233,25 +230,59 @@ class _ResponseWidgetState extends State<ResponseWidget> {
                           Padding(
                             padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 6.0, 0.0, 0.0),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context).tertiary,
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              padding: const EdgeInsetsDirectional.fromSTEB(
-                                  8.0, 2.0, 8.0, 2.0),
-                              child: Text(
-                                'Стоимость ${widget.responseDT!.price} руб',
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      fontFamily: 'SF',
-                                      color: Colors.white,
-                                      fontSize: 14.0,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.w500,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    'Цена ${widget.responseDT!.price} ₽',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .override(
+                                          fontFamily: 'SF',
+                                          color: const Color(0xFF0C0C0C),
+                                          fontSize: 22.0,
+                                          letterSpacing: 0.0,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                  ),
+                                ),
+                                if ((widget.responseDT!.time).trim().isNotEmpty)
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF4F5F8),
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      border: Border.all(
+                                        color: const Color(0x26969EAB),
+                                        width: 0.5,
+                                      ),
                                     ),
-                              ),
+                                    padding:
+                                        const EdgeInsetsDirectional.fromSTEB(
+                                            10.0, 6.0, 10.0, 6.0),
+                                    child: Text(
+                                      widget.responseDT!.time
+                                          .trim()
+                                          .replaceFirst('приеду через ', '')
+                                          .replaceFirst('~ ', ''),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .override(
+                                            fontFamily: 'SF',
+                                            color: const Color(0xFF0C0C0C),
+                                            fontSize: 14.0,
+                                            letterSpacing: 0.0,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
                         ],
@@ -261,8 +292,8 @@ class _ResponseWidgetState extends State<ResponseWidget> {
                 ],
               ),
               Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(
-                    0.0, 12.0, 0.0, 0.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
                 child: Row(
                   mainAxisSize: MainAxisSize.max,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -285,8 +316,8 @@ class _ResponseWidgetState extends State<ResponseWidget> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(
-                    0.0, 16.0, 0.0, 0.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
                 child: Container(
                   height: 2.0,
                   color: const Color(0xFFF4F5F8),

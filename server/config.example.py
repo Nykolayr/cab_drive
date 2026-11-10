@@ -8,6 +8,10 @@ class Production:
     ZVONOK_API_KEY = 'CHANGE_ME'
     ZVONOK_CAMPAIGN_ID = 0
 
+    # ByteHand SMS API v2 (код авторизации SMS-кой)
+    BYTEHAND_API_KEY = 'CHANGE_ME'
+    BYTEHAND_SENDER = 'SMS-INFO'
+
     REDIS_ADDRESS = '127.0.0.1'
     REDIS_PORT = 6379
     REDIS_PASSWORD = 'CHANGE_ME'

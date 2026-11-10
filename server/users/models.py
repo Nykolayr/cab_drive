@@ -54,6 +54,10 @@ class AuthResponseModel(models.SuccessAnswer):
     call_token: str = Field(description='Токен звонка, который необходимо передавать в методе подтверждения авторизации')
 
 
+class AuthResendRequestModel(BaseModel):
+    phone: str = Field(description='Номер телефона пользователя в любом формате', default='')
+
+
 class AuthByCodeRequestModel(BaseModel):
     call_token: str = Field(description='Токен звонка, полученный в методе авторизации')
     code: int = Field(description='4 последних цифры номера входящего звонка')

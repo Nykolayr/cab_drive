@@ -17,6 +17,7 @@
     "files.exclude": {
       "**/cab_drive_old/**": true,
       "**/__MACOSX/**": true
-    }
+    },
+    "powershell.cwd": "cab_drive (root)"
   }
 }

@@ -58,4 +58,7 @@ Copy-Item build\app\outputs\bundle\release\app-release.aab D:\Temp\cabdrive_{N}.
 - `mergeDexRelease` / файл занят → `gradlew --stop`, удалить
   `build/app/intermediates/dex`, повторить один раз.
 - APK и AAB — по очереди, не параллельно.
-- Build только по явной просьбе; commit/push отдельным разрешением.
+- **Сборка ТОЛЬКО по явной просьбе пользователя** («APK заказчику»,
+  «собери», «билд»). Никогда не собирать «для проверки» или «на всякий
+  случай» — см. глобальное правило `apk-only-on-request`.
+- commit/push отдельным разрешением.

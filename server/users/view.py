@@ -40,6 +40,27 @@ class AuthView:
             {'call_token': call_token}
         )
 
+@app.route('/auth_resend')
+class AuthResendView:
+    @app.doc(
+        summary='Повторная отправка SMS-кода авторизации',
+        responses={
+            '200': models.SuccessAnswer,
+            '500': models.ErrorAnswer
+        },
+        security=None
+    )
+    def post(self, body: AuthResendRequestModel):
+        try:
+            users.api.auth_resend(body.phone)
+        except IncorrectDataValue as e:
+            return utils.get_error(e.message)
+        except Exception as e:
+            return utils.get_error(str(e))
+
+        return utils.get_answer('ok')
+
+
 @app.route('/auth_by_code')
 class AuthByCodeView:
     @app.doc(

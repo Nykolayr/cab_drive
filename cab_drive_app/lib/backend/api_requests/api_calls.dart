@@ -10,33 +10,29 @@ import '/custom_code/services/ors_route_service.dart';
 import '/custom_code/services/yandex_geocoder_service.dart';
 import 'api_manager.dart';
 import 'payments_api_config.dart';
+import '/core/utils/app_dio.dart';
 
 export 'api_manager.dart' show ApiCallResponse;
 
 const _kPrivateApiFunctionName = 'ffPrivateApiCall';
 
+/// Повторная отправка SMS-кода через наш бэкенд (ByteHand).
+/// Сервер шлёт последний выданный код — ключ провайдера не светится в APK.
 class ApSmsCall {
   static Future<ApiCallResponse> call({
-    String? token = 'f216e5f9710bc967c59cc36ce41a38d9b52e0ef690d6ad04',
-    String? title = 'send sms',
-    String? sender = 'test4sms.ru',
     String? receiver = '',
     String? msgdata = '',
   }) async {
     final ffApiRequestBody = '''
 {
-  "title": "send_sms",
-  "sender": "${sender}",
-  "receiver": "${receiver}",
-  "msgdata": "${msgdata}"
+  "phone": "${receiver}"
 }''';
     return ApiManager.instance.makeApiCall(
       callName: 'AP SMS',
-      apiUrl: 'https://a2p-sms-api.mcn.ru/api/a2p_sms/api/v1.1/send_sms',
+      apiUrl: '${AppDio.domain}users/auth_resend',
       callType: ApiCallType.POST,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${token}',
         'Accept': 'application/json',
       },
       params: {},

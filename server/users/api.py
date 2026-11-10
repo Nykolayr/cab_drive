@@ -20,6 +20,7 @@ import files
 import utils
 import json
 import zvonok
+import bytehand
 import cache
 import datetime
 import notify
@@ -83,7 +84,7 @@ def auth(model: AuthRequestModel) -> str:
         if check is not None:
             raise IncorrectDataValue('Please try again later.')
         cache.set_cache('auth_check', model.phone, '1', 1)
-        code = zvonok.call(model.phone)
+        code = bytehand.send_code(model.phone)
 
     with Session() as session:
         identity = model.phone
@@ -100,6 +101,36 @@ def auth(model: AuthRequestModel) -> str:
 
     return token
 
+
+
+def auth_resend(phone: str) -> None:
+    """Повторная отправка последнего кода SMS-кой (ByteHand).
+
+    Тот же антиспам-кэш, что и в auth(). Тест-номера не шлём.
+    """
+    phone = utils.telephone(phone)
+    if phone is None:
+        raise IncorrectDataValue('Please provide a valid phone number.')
+
+    if phone in ('9001112233', '9956641268') or phone.startswith('111'):
+        return
+
+    check = cache.get_cache('auth_check', phone)
+    if check is not None:
+        raise IncorrectDataValue('Please try again later.')
+    cache.set_cache('auth_check', phone, '1', 1)
+
+    with Session() as session:
+        last = (
+            session.query(AuthCode)
+            .filter(AuthCode.identity == phone)
+            .order_by(AuthCode.created_at.desc())
+            .first()
+        )
+    if last is None or not last.code:
+        raise IncorrectDataValue('Сначала запросите код.')
+
+    bytehand.send_sms(phone, str(last.code))
 
 
 def _find_firebase_user_by_phone(phone: str):
