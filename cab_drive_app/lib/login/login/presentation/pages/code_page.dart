@@ -1,4 +1,3 @@
-import 'package:cab_drive/core/config/app_env.dart';
 import 'package:cab_drive/core/extensions/double_extension.dart';
 import 'package:cab_drive/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
@@ -34,7 +33,7 @@ class CodePage extends StatelessWidget {
                       padding:
                           EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 16.0, 0.0),
                       child: Text(
-                        'Введите последние 4 цифры номера',
+                        'Введите код из SMS',
                         style: FlutterFlowTheme.of(context).bodyMedium.override(
                               font: GoogleFonts.inter(
                                 fontWeight: FontWeight.w400,
@@ -57,7 +56,7 @@ class CodePage extends StatelessWidget {
                     ),
                     SizedBox(
                       width: 300.getAdaptiveWidth(context),
-                      child: _TestMaterialWrap(
+                      child: _PinputMaterialWrap(
                         child: Pinput(
                           length: 4,
                           autofocus: true,
@@ -65,32 +64,18 @@ class CodePage extends StatelessWidget {
                           onCompleted: (str) {
                             bloc.add(
                                 AuthEvent.confirmCode(onSuccess: (_user) async {
-                              try {
-                                final user = await authManager.signInWithEmail(
-                                  context,
-                                  _user.email!,
-                                  _user.password!,
-                                );
-
-                                if (user == null) {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Не удалось войти. Проверьте код или попробуйте позже',
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                  return;
-                                }
-                                bloc.add(AuthEvent.sendFcmToken());
-
-                                context.goNamedAuth(
-                                    LoadWidget.routeName, context.mounted);
-                              } catch (_) {
-                                rethrow;
+                              final user = await authManager.signInWithEmail(
+                                context,
+                                _user.email!,
+                                _user.password!,
+                              );
+                              if (user == null) {
+                                throw StateError('firebase_sign_in_failed');
                               }
+                              bloc.add(AuthEvent.sendFcmToken());
+                              if (!context.mounted) return;
+                              context.goNamedAuth(
+                                  LoadWidget.routeName, context.mounted);
                             }));
                           },
                           controller: _.controller,
@@ -165,16 +150,14 @@ class CodePage extends StatelessWidget {
   }
 }
 
-/// Debug/test-only: pinput 7.x проверяет предков типа material_ui.Material
-/// и material_ui.MaterialLocalizations — оборачиваем поле кода только в
-/// тест-режиме. В release [AppEnv.isTest] всегда `false` — дерево не меняется.
-class _TestMaterialWrap extends StatelessWidget {
+/// pinput 7.x требует предка material_ui.Material + MaterialLocalizations
+/// (не достаточно Scaffold/Material из package:flutter).
+class _PinputMaterialWrap extends StatelessWidget {
   final Widget child;
-  const _TestMaterialWrap({required this.child});
+  const _PinputMaterialWrap({required this.child});
 
   @override
   Widget build(BuildContext context) {
-    if (!AppEnv.isTest) return child;
     return Localizations(
       locale: Localizations.localeOf(context),
       delegates: const [

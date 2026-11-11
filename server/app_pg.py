@@ -1878,6 +1878,51 @@ def remove_order_respondent(order_id: str, driver_uid: str) -> bool:
     return soft_execute("remove_order_respondent", _run)
 
 
+def _bid_driver_uid_from_row(bid: dict) -> Optional[str]:
+    if bid.get("driver_id"):
+        return str(bid["driver_id"])
+    ref = bid.get("user_driver")
+    if isinstance(ref, dict) and ref.get("_ref"):
+        return str(ref["_ref"]).rsplit("/", 1)[-1]
+    if isinstance(ref, str) and ref:
+        return ref.rsplit("/", 1)[-1] if "/" in ref else ref
+    return None
+
+
+def rebuild_order_respondents(order_id: str) -> bool:
+    """SoT: user_who_responced и count_resp из app_order_responses (после отмены отклика)."""
+    if not order_id:
+        return False
+    bids = list_order_responses(order_id)
+    uids: list[str] = []
+    seen: set[str] = set()
+    for bid in bids:
+        du = _bid_driver_uid_from_row(bid)
+        if du and du not in seen:
+            seen.add(du)
+            uids.append(du)
+    count = len(bids)
+
+    def _run(conn):
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE app_orders SET
+                    count_resp = %s,
+                    user_who_responced = %s::text[],
+                    raw_json = COALESCE(raw_json, '{}'::jsonb) || jsonb_build_object(
+                        'count_resp', %s::int,
+                        'user_who_responced', to_jsonb(%s::text[])
+                    ),
+                    updated_at = NOW()
+                WHERE id = %s
+                """,
+                (count, uids, count, uids, order_id),
+            )
+
+    return soft_execute("rebuild_order_respondents", _run)
+
+
 def upsert_fcm_token(user_id: str, token: str) -> bool:
     if not user_id or not token:
         return False

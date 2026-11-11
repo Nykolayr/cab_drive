@@ -54,6 +54,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(state.copyWith(status: LoadingStatus()));
       final response = await _repository.sendCode(_number.text);
       _session = response;
+      _code.clear();
       emit(_Code(controller: _code, status: SuccessStatus()));
     } on DioException catch (e) {
       final message = e.response?.data is Map
@@ -77,6 +78,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       emit(state.copyWith(status: LoadingStatus()));
       _session = await _repository.sendCode(_number.text);
+      _code.clear();
       emit(state.copyWith(status: SuccessStatus()));
     } on DioException catch (e) {
       final message = e.response?.data is Map
@@ -96,16 +98,30 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final response = await _repository.confirmCode(_code.text, _session);
       SharedPrefs.setToken = response.token;
       _user ??= response.user;
-      emit(state.copyWith(status: SuccessStatus()));
-      v.onSuccess?.call(response.user);
+      try {
+        final r = v.onSuccess?.call(response.user);
+        if (r is Future) {
+          await r;
+        }
+        emit(state.copyWith(status: SuccessStatus()));
+      } catch (_) {
+        _code.clear();
+        emit(state.copyWith(
+          status: FailedStatus(
+            exception: 'Не удалось войти. Проверьте код или попробуйте позже',
+          ),
+        ));
+      }
     } on DioException catch (e) {
       final message = e.response?.data is Map
           ? e.response?.data['message']?.toString()
           : null;
+      _code.clear();
       emit(state.copyWith(
         status: FailedStatus(exception: message ?? e.toString()),
       ));
     } catch (e) {
+      _code.clear();
       emit(state.copyWith(status: FailedStatus(exception: e.toString())));
     }
   }
@@ -136,7 +152,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       emit(state.copyWith(status: LoadingStatus()));
       _session = await _repository.sendResetCode(_number.text);
-      _code.text = '';
+      _code.clear();
       emit(_Code(controller: _code, status: SuccessStatus()));
     } on DioException catch (e) {
       final message = e.response?.data is Map

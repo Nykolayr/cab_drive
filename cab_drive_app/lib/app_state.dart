@@ -299,6 +299,14 @@ class FFAppState extends ChangeNotifier {
     _lastPickerMapZoom = value;
   }
 
+  /// Инкремент → лента заказов водителя сразу перечитывает feed (после отмены отклика).
+  int _driverFeedVersion = 0;
+  int get driverFeedVersion => _driverFeedVersion;
+  void bumpDriverFeed() {
+    _driverFeedVersion++;
+    notifyListeners();
+  }
+
   Future<void> loadServerSettings() async {
     try {
       final res = await AppDio.dio.get('settings/get');

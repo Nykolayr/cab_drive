@@ -164,8 +164,8 @@ def delete_bid(actor_uid: str, order_id: str, bid_id: str) -> dict[str, Any]:
     filter_uid = None if is_owner else actor_uid
     if not app_pg.delete_order_response(order_id, bid_id, driver_uid=filter_uid):
         raise ValueError("bid not found or not owned")
-    if driver_uid:
-        app_pg.remove_order_respondent(order_id, driver_uid)
+    if not app_pg.rebuild_order_respondents(order_id):
+        logger.warning("[delete_bid] rebuild_order_respondents failed order=%s", order_id)
 
     def _fs():
         import utils

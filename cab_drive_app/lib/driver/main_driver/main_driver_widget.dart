@@ -58,6 +58,7 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
   List<OrderRecord> _apiFeedOrders = [];
   bool _apiFeedLoading = true;
   bool _apiFeedUseFallbackStream = false;
+  int _lastDriverFeedVersion = 0;
 
   Future<void> _loadOrdersFeed() async {
     try {
@@ -283,6 +284,11 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
+    final feedVer = FFAppState().driverFeedVersion;
+    if (feedVer != _lastDriverFeedVersion) {
+      _lastDriverFeedVersion = feedVer;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadOrdersFeed());
+    }
 
     return GestureDetector(
       onTap: () {

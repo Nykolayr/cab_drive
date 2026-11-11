@@ -1,3 +1,4 @@
+import '/app_state.dart';
 import '/backend/api/app_me_api.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -161,7 +162,8 @@ class _OtmenaOtklikaWidgetState extends State<OtmenaOtklikaWidget> {
                         );
                         return;
                       }
-                      Navigator.pop(context);
+                      FFAppState().bumpDriverFeed();
+                      if (context.mounted) Navigator.pop(context, true);
                     },
                     text: 'Отменить отклик',
                     options: FFButtonOptions(
