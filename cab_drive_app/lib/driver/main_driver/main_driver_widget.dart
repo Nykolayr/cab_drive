@@ -240,6 +240,26 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
                 (e.status == StatusOrder.newOrder)) ||
             e.selectedDriver == currentUserReference)
         .isEmpty;
+    // Заказ, на котором уже висит отклик/назначение — для подсказки в карточке.
+    OrderRecord? activeBidOrder;
+    for (final e in orders) {
+      if (e.userWhoResponced.contains(currentUserReference) &&
+          e.status == StatusOrder.newOrder) {
+        activeBidOrder = e;
+        break;
+      }
+    }
+    if (activeBidOrder == null) {
+      for (final e in orders) {
+        if (e.selectedDriver == currentUserReference &&
+            e.status != StatusOrder.completed &&
+            e.status != StatusOrder.cancelled &&
+            e.status != StatusOrder.hidden) {
+          activeBidOrder = e;
+          break;
+        }
+      }
+    }
     final hasUnrespondedOrders = orders.any(
       (e) =>
           !e.userWhoResponced.contains(currentUserReference) &&
@@ -262,6 +282,7 @@ class _MainDriverWidgetState extends State<MainDriverWidget> {
             final ordersItem = orders[ordersIndex];
             return OrderCardDriverWidget(
               canGetNew: canGetNew,
+              activeBidOrder: activeBidOrder,
               key: Key('Keydjd_${ordersIndex}_of_${orders.length}'),
               order: ordersItem,
             );

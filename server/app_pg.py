@@ -1923,6 +1923,71 @@ def rebuild_order_respondents(order_id: str) -> bool:
     return soft_execute("rebuild_order_respondents", _run)
 
 
+def driver_active_bid_order(
+    driver_uid: str, exclude_order_id: Optional[str] = None
+) -> Optional[str]:
+    """id заказа newOrder, на который у водителя уже есть отклик (кроме exclude)."""
+    if not enabled() or not driver_uid:
+        return None
+    try:
+        with connection() as conn:
+            if conn is None:
+                return None
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT r.order_id FROM app_order_responses r
+                    JOIN app_orders o ON o.id = r.order_id
+                    WHERE COALESCE(o.status, '') = 'newOrder'
+                      AND r.order_id <> %s
+                      AND (
+                            r.raw_json->>'driver_id' = %s
+                            OR r.raw_json->'user_driver'->>'_ref' = %s
+                            OR r.raw_json->>'user_driver' = %s
+                      )
+                    LIMIT 1
+                    """,
+                    (
+                        exclude_order_id or "",
+                        driver_uid,
+                        f"users/{driver_uid}",
+                        driver_uid,
+                    ),
+                )
+                row = cur.fetchone()
+                return str(row[0]) if row and row[0] else None
+    except Exception:
+        logger.exception("[app_pg] driver_active_bid_order failed")
+        return None
+
+
+def list_expired_shift_drivers(hours: int = 24, limit: int = 200) -> list[str]:
+    """uid водителей, у которых смена длится дольше N часов (авто-завершение)."""
+    if not enabled():
+        return []
+    try:
+        with connection() as conn:
+            if conn is None:
+                return []
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT id FROM app_users
+                    WHERE COALESCE(is_driver, false) = true
+                      AND COALESCE(on_shift, false) = true
+                      AND shift_start_date_time IS NOT NULL
+                      AND shift_start_date_time < NOW() - make_interval(hours => %s)
+                    ORDER BY shift_start_date_time
+                    LIMIT %s
+                    """,
+                    (hours, limit),
+                )
+                return [str(r[0]) for r in cur.fetchall() if r and r[0]]
+    except Exception:
+        logger.exception("[app_pg] list_expired_shift_drivers failed")
+        return []
+
+
 def upsert_fcm_token(user_id: str, token: str) -> bool:
     if not user_id or not token:
         return False

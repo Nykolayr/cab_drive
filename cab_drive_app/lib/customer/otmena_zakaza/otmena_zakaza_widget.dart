@@ -18,9 +18,11 @@ class OtmenaZakazaWidget extends StatefulWidget {
   const OtmenaZakazaWidget({
     super.key,
     required this.order,
+    this.orderRec,
   });
 
   final DocumentReference? order;
+  final OrderRecord? orderRec;
 
   @override
   State<OtmenaZakazaWidget> createState() => _OtmenaZakazaWidgetState();
@@ -50,6 +52,8 @@ class _OtmenaZakazaWidgetState extends State<OtmenaZakazaWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final paid = widget.orderRec?.isPaid ?? false;
+    final hasDriver = widget.orderRec?.selectedDriver != null;
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -85,7 +89,7 @@ class _OtmenaZakazaWidgetState extends State<OtmenaZakazaWidget> {
                 children: [
                   Flexible(
                     child: Text(
-                      'Выберите причину отмены',
+                      paid ? 'Заказ уже оплачен' : 'Выберите причину отмены',
                       textAlign: TextAlign.start,
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             fontFamily: 'SF',
@@ -117,135 +121,178 @@ class _OtmenaZakazaWidgetState extends State<OtmenaZakazaWidget> {
               ),
             ),
           ),
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: FlutterFlowTheme.of(context).secondaryBackground,
-              borderRadius: BorderRadius.circular(5.0),
-            ),
-            child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 12.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  wrapWithModel(
-                    model: _model.chipsCardModel1,
-                    updateCallback: () => safeSetState(() {}),
-                    child: ChipsCardWidget(
-                      text: 'Изменились планы',
-                      selectedItem: _model.reason,
-                      action: (text) async {
-                        _model.reason = text;
-                        safeSetState(() {});
-                      },
-                    ),
-                  ),
-                  wrapWithModel(
-                    model: _model.chipsCardModel2,
-                    updateCallback: () => safeSetState(() {}),
-                    child: ChipsCardWidget(
-                      text: 'Нет подходящих предложений',
-                      selectedItem: _model.reason,
-                      action: (text) async {
-                        _model.reason = text;
-                        safeSetState(() {});
-                      },
-                    ),
-                  ),
-                  wrapWithModel(
-                    model: _model.chipsCardModel3,
-                    updateCallback: () => safeSetState(() {}),
-                    child: ChipsCardWidget(
-                      text: 'Уже нашел специалиста',
-                      selectedItem: _model.reason,
-                      action: (text) async {
-                        _model.reason = text;
-                        safeSetState(() {});
-                      },
-                    ),
-                  ),
-                  wrapWithModel(
-                    model: _model.chipsCardModel4,
-                    updateCallback: () => safeSetState(() {}),
-                    child: ChipsCardWidget(
-                      text: 'Хочу изменить заказ',
-                      selectedItem: _model.reason,
-                      action: (text) async {
-                        _model.reason = text;
-                        safeSetState(() {});
-                      },
-                    ),
-                  ),
-                  wrapWithModel(
-                    model: _model.chipsCardModel5,
-                    updateCallback: () => safeSetState(() {}),
-                    child: ChipsCardWidget(
-                      text: 'Другое',
-                      selectedItem: _model.reason,
-                      action: (text) async {
-                        _model.reason = text;
-                        safeSetState(() {});
-                      },
-                    ),
-                  ),
-                ],
+          if (paid)
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: FlutterFlowTheme.of(context).secondaryBackground,
+                borderRadius: BorderRadius.circular(5.0),
               ),
-            ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              color: FlutterFlowTheme.of(context).secondary,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(0.0),
-                bottomRight: Radius.circular(0.0),
-                topLeft: Radius.circular(5.0),
-                topRight: Radius.circular(5.0),
-              ),
-            ),
-            child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 34.0),
-              child: FFButtonWidget(
-                onPressed: (_model.reason == null || _model.reason == '')
-                    ? null
-                    : () async {
-                        unawaited(
-                          () async {
-                            final oid = widget!.order!.id;
-                            final ok = await AppMeApi.cancelOrder(oid);
-                            if (!ok && context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Не удалось отменить заказ'),
-                                ),
-                              );
-                            }
-                          }(),
-                        );
-                        Navigator.pop(context);
-                      },
-                text: 'Отменить заказ',
-                options: FFButtonOptions(
-                  width: double.infinity,
-                  height: 56.0,
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                  iconPadding:
-                      EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                  color: FlutterFlowTheme.of(context).tertiary,
-                  textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+              child: Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(24.0, 16.0, 24.0, 20.0),
+                child: Text(
+                  'Оплата по заказу уже подтверждена, отменить его нельзя. Если возникла проблема — обратитесь в поддержку.',
+                  style: FlutterFlowTheme.of(context).bodyMedium.override(
                         fontFamily: 'SF',
-                        color: FlutterFlowTheme.of(context).primaryBackground,
+                        fontSize: 16.0,
                         letterSpacing: 0.0,
                       ),
-                  elevation: 0.0,
-                  borderRadius: BorderRadius.circular(16.0),
-                  disabledColor: FlutterFlowTheme.of(context).primaryBackground,
-                  disabledTextColor: FlutterFlowTheme.of(context).secondaryText,
                 ),
-                showLoadingIndicator: false,
               ),
             ),
-          ),
+          if (!paid && hasDriver)
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: FlutterFlowTheme.of(context).secondaryBackground,
+                borderRadius: BorderRadius.circular(5.0),
+              ),
+              child: Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(24.0, 16.0, 24.0, 16.0),
+                child: Text(
+                  'Водитель уже назначен и может быть в пути',
+                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                        fontFamily: 'SF',
+                        fontSize: 16.0,
+                        color: FlutterFlowTheme.of(context).tertiary,
+                        letterSpacing: 0.0,
+                      ),
+                ),
+              ),
+            ),
+          if (!paid)
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: FlutterFlowTheme.of(context).secondaryBackground,
+                borderRadius: BorderRadius.circular(5.0),
+              ),
+              child: Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 12.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    wrapWithModel(
+                      model: _model.chipsCardModel1,
+                      updateCallback: () => safeSetState(() {}),
+                      child: ChipsCardWidget(
+                        text: 'Изменились планы',
+                        selectedItem: _model.reason,
+                        action: (text) async {
+                          _model.reason = text;
+                          safeSetState(() {});
+                        },
+                      ),
+                    ),
+                    wrapWithModel(
+                      model: _model.chipsCardModel2,
+                      updateCallback: () => safeSetState(() {}),
+                      child: ChipsCardWidget(
+                        text: 'Нет подходящих предложений',
+                        selectedItem: _model.reason,
+                        action: (text) async {
+                          _model.reason = text;
+                          safeSetState(() {});
+                        },
+                      ),
+                    ),
+                    wrapWithModel(
+                      model: _model.chipsCardModel3,
+                      updateCallback: () => safeSetState(() {}),
+                      child: ChipsCardWidget(
+                        text: 'Уже нашел специалиста',
+                        selectedItem: _model.reason,
+                        action: (text) async {
+                          _model.reason = text;
+                          safeSetState(() {});
+                        },
+                      ),
+                    ),
+                    wrapWithModel(
+                      model: _model.chipsCardModel4,
+                      updateCallback: () => safeSetState(() {}),
+                      child: ChipsCardWidget(
+                        text: 'Хочу изменить заказ',
+                        selectedItem: _model.reason,
+                        action: (text) async {
+                          _model.reason = text;
+                          safeSetState(() {});
+                        },
+                      ),
+                    ),
+                    wrapWithModel(
+                      model: _model.chipsCardModel5,
+                      updateCallback: () => safeSetState(() {}),
+                      child: ChipsCardWidget(
+                        text: 'Другое',
+                        selectedItem: _model.reason,
+                        action: (text) async {
+                          _model.reason = text;
+                          safeSetState(() {});
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          if (!paid)
+            Container(
+              decoration: BoxDecoration(
+                color: FlutterFlowTheme.of(context).secondary,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(0.0),
+                  bottomRight: Radius.circular(0.0),
+                  topLeft: Radius.circular(5.0),
+                  topRight: Radius.circular(5.0),
+                ),
+              ),
+              child: Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 34.0),
+                child: FFButtonWidget(
+                  onPressed: (_model.reason == null || _model.reason == '')
+                      ? null
+                      : () async {
+                          unawaited(
+                            () async {
+                              final oid = widget!.order!.id;
+                              final ok = await AppMeApi.cancelOrder(oid);
+                              if (!ok && context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Не удалось отменить заказ'),
+                                  ),
+                                );
+                              }
+                            }(),
+                          );
+                          Navigator.pop(context);
+                        },
+                  text: 'Отменить заказ',
+                  options: FFButtonOptions(
+                    width: double.infinity,
+                    height: 56.0,
+                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                    iconPadding:
+                        EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                    color: FlutterFlowTheme.of(context).tertiary,
+                    textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                          fontFamily: 'SF',
+                          color: FlutterFlowTheme.of(context).primaryBackground,
+                          letterSpacing: 0.0,
+                        ),
+                    elevation: 0.0,
+                    borderRadius: BorderRadius.circular(16.0),
+                    disabledColor:
+                        FlutterFlowTheme.of(context).primaryBackground,
+                    disabledTextColor:
+                        FlutterFlowTheme.of(context).secondaryText,
+                  ),
+                  showLoadingIndicator: false,
+                ),
+              ),
+            ),
         ].divide(SizedBox(height: 5.0)),
       ),
     );

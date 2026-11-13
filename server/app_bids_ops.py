@@ -26,6 +26,11 @@ def create_bid(driver_uid: str, order_id: str, body: dict[str, Any]) -> dict[str
     if status != "newOrder":
         raise ValueError(f"order not open for bids, status={status}")
 
+    # правило «один активный отклик»: новый отклик, пока висит отклик на другом newOrder
+    other_oid = app_pg.driver_active_bid_order(driver_uid, exclude_order_id=order_id)
+    if other_oid:
+        raise ValueError("already have an active bid on another order")
+
     bid_id = str(body.get("id") or uuid.uuid4().hex)
     now = _now()
     raw = {

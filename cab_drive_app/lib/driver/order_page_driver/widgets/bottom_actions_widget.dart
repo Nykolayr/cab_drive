@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '/backend/backend.dart';
 import '/custom_code/actions/index.dart' as actions;
+import '/driver/active_bid_dialog.dart';
 import '/driver/order_page_driver/order_page_driver_widget.dart';
 import '/driver/vkl_geo/vkl_geo_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -73,8 +74,10 @@ class BottomActionsWidget extends StatelessWidget {
         return;
       }
       await _patchCurrentOrder(order.reference.id);
-      await actions.toggleRouteTracking(
-          '', true, widgetOrderRef, order.pointB.latlng!);
+      if (order.pointB.latlng != null) {
+        await actions.toggleRouteTracking(
+            '', true, widgetOrderRef, order.pointB.latlng!);
+      }
       triggerPushNotification(
         notificationTitle: 'Статус заказа изменен на \"Готов к подаче\"',
         notificationText: 'Водитель ожидает подачи в течении 10 минут',
@@ -115,8 +118,10 @@ class BottomActionsWidget extends StatelessWidget {
         return;
       }
       await _patchCurrentOrder(order.reference.id);
-      await actions.toggleRouteTracking(
-          '', true, widgetOrderRef, order.pointB.latlng!);
+      if (order.pointB.latlng != null) {
+        await actions.toggleRouteTracking(
+            '', true, widgetOrderRef, order.pointB.latlng!);
+      }
       triggerPushNotification(
         notificationTitle: 'Статус заказа изменен на \"Готов к разгрузке\"',
         notificationText:
@@ -158,8 +163,10 @@ class BottomActionsWidget extends StatelessWidget {
         return;
       }
       await _patchCurrentOrder(order.reference.id);
-      await actions.toggleRouteTracking(
-          '', true, widgetOrderRef, order.pointB.latlng!);
+      if (order.pointB.latlng != null) {
+        await actions.toggleRouteTracking(
+            '', true, widgetOrderRef, order.pointB.latlng!);
+      }
       triggerPushNotification(
         notificationTitle: 'Статус заказа изменен на \"В работе\"',
         notificationText:
@@ -448,6 +455,36 @@ class BottomActionsWidget extends StatelessWidget {
           padding: EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 34.0),
           child: FFButtonWidget(
             onPressed: () async {
+              // Гейт «один активный отклик» — такой же, как на карточке заказа:
+              // если отклик уже висит на другом newOrder — показываем подсказку.
+              final meRef = currentUserReference;
+              if (meRef != null) {
+                try {
+                  final feed = await AppMeApi.ordersFeed(status: 'newOrder');
+                  Map<String, dynamic>? other;
+                  for (final m in feed) {
+                    final oid = m['id']?.toString();
+                    if (oid == null || oid == order.reference.id) continue;
+                    final resp = (m['user_who_responced'] as List?) ?? const [];
+                    if (resp.any((e) => e.toString() == meRef.id)) {
+                      other = m;
+                      break;
+                    }
+                  }
+                  if (other != null) {
+                    if (!context.mounted) return;
+                    final pr = other['current_price'] ?? other['budget'];
+                    await showActiveBidDialog(
+                      context,
+                      orderRef:
+                          OrderRecord.collection.doc(other['id'].toString()),
+                      orderInfo:
+                          (pr is num && pr > 0) ? 'за ${pr.toInt()} ₽' : null,
+                    );
+                    return;
+                  }
+                } catch (_) {}
+              }
               if (valueOrDefault<bool>(
                   currentUserDocument?.verifCompl, false)) {
                 if (await getPermissionStatus(locationPermission)) {

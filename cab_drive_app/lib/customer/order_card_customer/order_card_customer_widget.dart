@@ -1285,7 +1285,7 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                                 padding: EdgeInsetsDirectional.fromSTEB(
                                     6.0, 0.0, 0.0, 0.0),
                                 child: Text(
-                                  widget!.order?.supply == 1
+                                  widget!.order?.dateTime == null
                                       ? 'В ближайшее время'
                                       : dateTimeFormat(
                                           "d MMM (E) hh:mm",
@@ -1350,8 +1350,9 @@ class _OrderCardCustomerWidgetState extends State<OrderCardCustomerWidget> {
                     ),
                   ),
                   FutureBuilder<UsersRecord>(
-                    future:
-                        UsersRecordApi.getOnce(widget!.order!.selectedDriver!),
+                    future: widget!.order!.selectedDriver != null
+                        ? UsersRecordApi.getOnce(widget!.order!.selectedDriver!)
+                        : null,
                     builder: (context, snapshot) {
                       // Customize what your widget looks like when it's loading.
                       if (!snapshot.hasData) {

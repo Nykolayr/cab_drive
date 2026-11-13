@@ -3,6 +3,7 @@ import '/backend/api/app_me_api.dart';
 import '/backend/api/order_record_mapper.dart';
 import '/backend/backend.dart';
 import '/backend/schema/enums/enums.dart';
+import '/driver/active_bid_dialog.dart';
 import '/driver/create_otklick/create_otklick_widget.dart';
 import '/driver/vkl_geo/vkl_geo_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -28,6 +29,7 @@ class OrderCardDriverWidget extends StatefulWidget {
     this.canGetNew = false,
     this.isExtraOrderPreview = false,
     this.currentOrderId,
+    this.activeBidOrder,
   });
 
   final OrderRecord? order;
@@ -40,6 +42,10 @@ class OrderCardDriverWidget extends StatefulWidget {
 
   /// ID активного заказа (только при isExtraOrderPreview=true) — для контекста.
   final String? currentOrderId;
+
+  /// Заказ, на котором висит активный отклик/назначение (если !canGetNew) —
+  /// для подсказки «перейти к заказу».
+  final OrderRecord? activeBidOrder;
 
   @override
   State<OrderCardDriverWidget> createState() => _OrderCardDriverWidgetState();
@@ -69,7 +75,8 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
     if (_acceptingExtra) return;
     final order = widget.order;
     if (order == null) return;
-    print('[OrderCardDriver.respondAsExtra] tap order_id=${order.reference.id}');
+    print(
+        '[OrderCardDriver.respondAsExtra] tap order_id=${order.reference.id}');
 
     setState(() => _acceptingExtra = true);
     OrderRecord fresh = order;
@@ -151,7 +158,7 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                   Padding(
                     padding: EdgeInsetsDirectional.fromSTEB(6.0, 0.0, 0.0, 0.0),
                     child: Text(
-                      widget!.order?.supply == 1
+                      widget!.order?.dateTime == null
                           ? 'В ближайшее время'
                           : dateTimeFormat(
                               "d MMM (E) hh:mm",
@@ -219,7 +226,7 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                 ].divide(SizedBox(width: 8.0)),
               ),
             ),
-            if(widget.order!.pointC.latlng != null)
+            if (widget.order!.pointC.latlng != null)
               Padding(
                 padding: EdgeInsetsDirectional.fromSTEB(8.0, 10.0, 8.0, 5.0),
                 child: Row(
@@ -243,10 +250,10 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                       child: Text(
                         widget!.order!.pointC.address,
                         style: FlutterFlowTheme.of(context).bodyMedium.override(
-                          fontFamily: 'SF',
-                          fontSize: 16.0,
-                          letterSpacing: 0.0,
-                        ),
+                              fontFamily: 'SF',
+                              fontSize: 16.0,
+                              letterSpacing: 0.0,
+                            ),
                       ),
                     ),
                   ].divide(SizedBox(width: 8.0)),
@@ -371,9 +378,23 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                                 return;
                               }
 
-                              if(!widget.canGetNew) {
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(SnackBar(content: Text('У вас уже есть один активный отклик')));
+                              if (!widget.canGetNew) {
+                                final active = widget.activeBidOrder;
+                                if (active != null) {
+                                  final price = active.currentPrice > 0
+                                      ? active.currentPrice
+                                      : active.budget;
+                                  await showActiveBidDialog(
+                                    context,
+                                    orderRef: active.reference,
+                                    orderInfo: price > 0 ? 'за $price ₽' : null,
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(
+                                              'У вас уже есть один активный отклик')));
+                                }
                                 return;
                               }
 
@@ -465,42 +486,42 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                         ),
                         if (!isExtra)
                           Expanded(
-                          child: FFButtonWidget(
-                            onPressed: () async {
-                              context.pushNamed(
-                                OrderPageDriverWidget.routeName,
-                                queryParameters: {
-                                  'order': serializeParam(
-                                    widget!.order?.reference,
-                                    ParamType.DocumentReference,
-                                  ),
-                                }.withoutNulls,
-                              );
-                            },
-                            text: 'Детали',
-                            options: FFButtonOptions(
-                              height: 45.0,
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 0.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 0.0, 0.0),
-                              color: FlutterFlowTheme.of(context)
-                                  .primaryBackground,
-                              textStyle: FlutterFlowTheme.of(context)
-                                  .titleSmall
-                                  .override(
-                                    fontFamily: 'SF',
-                                    color:
-                                        FlutterFlowTheme.of(context).tertiary,
-                                    fontSize: 15.0,
-                                    letterSpacing: 0.0,
-                                  ),
-                              elevation: 0.0,
-                              borderRadius: BorderRadius.circular(16.0),
+                            child: FFButtonWidget(
+                              onPressed: () async {
+                                context.pushNamed(
+                                  OrderPageDriverWidget.routeName,
+                                  queryParameters: {
+                                    'order': serializeParam(
+                                      widget!.order?.reference,
+                                      ParamType.DocumentReference,
+                                    ),
+                                  }.withoutNulls,
+                                );
+                              },
+                              text: 'Детали',
+                              options: FFButtonOptions(
+                                height: 45.0,
+                                padding: EdgeInsetsDirectional.fromSTEB(
+                                    0.0, 0.0, 0.0, 0.0),
+                                iconPadding: EdgeInsetsDirectional.fromSTEB(
+                                    0.0, 0.0, 0.0, 0.0),
+                                color: FlutterFlowTheme.of(context)
+                                    .primaryBackground,
+                                textStyle: FlutterFlowTheme.of(context)
+                                    .titleSmall
+                                    .override(
+                                      fontFamily: 'SF',
+                                      color:
+                                          FlutterFlowTheme.of(context).tertiary,
+                                      fontSize: 15.0,
+                                      letterSpacing: 0.0,
+                                    ),
+                                elevation: 0.0,
+                                borderRadius: BorderRadius.circular(16.0),
+                              ),
+                              showLoadingIndicator: false,
                             ),
-                            showLoadingIndicator: false,
                           ),
-                        ),
                       ].divide(SizedBox(width: 7.0)),
                     );
                   }

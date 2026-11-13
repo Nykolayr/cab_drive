@@ -989,6 +989,28 @@ def check_order_status():
                         f"[check_order_status.auto_complete] failed {oid}: {e}"
                     )
 
+            # Автозавершение смены через 24ч — комиссия списывается как при ручной кнопке
+            try:
+                import app_me_ops
+
+                for shift_uid in app_pg.list_expired_shift_drivers(hours=24):
+                    try:
+                        res = app_me_ops.shift_end(shift_uid)
+                        logger.info(
+                            "[check_order_status] AUTO-SHIFT-END user=%s res=%s",
+                            shift_uid,
+                            res,
+                        )
+                    except Exception as e:
+                        logger.error(
+                            "[check_order_status.auto_shift_end] "
+                            "user=%s failed: %s",
+                            shift_uid,
+                            e,
+                        )
+            except Exception as e:
+                logger.error(f"[check_order_status.auto_shift_end] failed: {e}")
+
             # Jump payouts: polling статусов (webhook в OpenAPI нет)
             try:
                 import app_payout_ops

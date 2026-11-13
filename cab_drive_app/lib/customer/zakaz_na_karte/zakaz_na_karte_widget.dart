@@ -128,15 +128,17 @@ class _ZakazNaKarteWidgetState extends State<ZakazNaKarteWidget> {
               ),
             ),
             Expanded(
-              child: custom_widgets.YandexOrderMap(
-                width: double.infinity,
-                height: double.infinity,
-                startLatLng: order.pointA.latlng!,
-                endLatLng: order.pointB.latlng!,
-                driverLocation: order.driverLocation,
-                showDriver: showDriver,
-                etaText: order.hasTimeLeft() ? order.timeLeft : null,
-              ),
+              child: order.pointA.latlng == null || order.pointB.latlng == null
+                  ? const SizedBox.shrink()
+                  : custom_widgets.YandexOrderMap(
+                      width: double.infinity,
+                      height: double.infinity,
+                      startLatLng: order.pointA.latlng!,
+                      endLatLng: order.pointB.latlng!,
+                      driverLocation: order.driverLocation,
+                      showDriver: showDriver,
+                      etaText: order.hasTimeLeft() ? order.timeLeft : null,
+                    ),
             ),
           ],
         ),

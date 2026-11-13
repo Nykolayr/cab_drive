@@ -76,11 +76,11 @@ class _OrderMenuPOPUPWidgetState extends State<OrderMenuPOPUPWidget> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if ((widget!.order?.status == StatusOrder.newOrder) ||
-                (widget!.order?.status == StatusOrder.hidden))
-              Column(
-                mainAxisSize: MainAxisSize.max,
-                children: [
+            Column(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                if ((widget!.order?.status == StatusOrder.newOrder) ||
+                    (widget!.order?.status == StatusOrder.hidden)) ...[
                   Container(
                     height: 57.0,
                     child: Stack(
@@ -158,6 +158,9 @@ class _OrderMenuPOPUPWidgetState extends State<OrderMenuPOPUPWidget> {
                     thickness: 0.3,
                     color: Color(0xFFD0CFCE),
                   ),
+                ],
+                if ((widget!.order?.status != StatusOrder.completed) &&
+                    (widget!.order?.status != StatusOrder.cancelled)) ...[
                   Container(
                     height: 57.0,
                     child: Stack(
@@ -190,6 +193,7 @@ class _OrderMenuPOPUPWidgetState extends State<OrderMenuPOPUPWidget> {
                                     padding: MediaQuery.viewInsetsOf(context),
                                     child: OtmenaZakazaWidget(
                                       order: widget!.order!.reference,
+                                      orderRec: widget!.order,
                                     ),
                                   ),
                                 );
@@ -235,6 +239,9 @@ class _OrderMenuPOPUPWidgetState extends State<OrderMenuPOPUPWidget> {
                     thickness: 0.3,
                     color: Color(0xFFD0CFCE),
                   ),
+                ],
+                if ((widget!.order?.status == StatusOrder.newOrder) ||
+                    (widget!.order?.status == StatusOrder.hidden)) ...[
                   Container(
                     height: 57.0,
                     child: Stack(
@@ -248,18 +255,22 @@ class _OrderMenuPOPUPWidgetState extends State<OrderMenuPOPUPWidget> {
                             style: FlutterFlowTheme.of(context)
                                 .bodyMedium
                                 .override(
-                              fontFamily: 'SF',
-                              fontSize: 16.0,
-                              letterSpacing: 0.0,
-                            ),
+                                  fontFamily: 'SF',
+                                  fontSize: 16.0,
+                                  letterSpacing: 0.0,
+                                ),
                           ),
                         ),
                         FFButtonWidget(
                           onPressed: () async {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => EditOrderPage(orderReference: widget.order!.reference))).then((v) {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => EditOrderPage(
+                                        orderReference: widget
+                                            .order!.reference))).then((v) {
                               Navigator.pop(context);
                               Navigator.pop(context);
-
                             });
                           },
                           text: '',
@@ -274,10 +285,10 @@ class _OrderMenuPOPUPWidgetState extends State<OrderMenuPOPUPWidget> {
                             textStyle: FlutterFlowTheme.of(context)
                                 .titleSmall
                                 .override(
-                              fontFamily: 'SF',
-                              color: Colors.white,
-                              letterSpacing: 0.0,
-                            ),
+                                  fontFamily: 'SF',
+                                  color: Colors.white,
+                                  letterSpacing: 0.0,
+                                ),
                             elevation: 0.0,
                             borderRadius: BorderRadius.only(
                               bottomLeft: Radius.circular(18.0),
@@ -297,7 +308,8 @@ class _OrderMenuPOPUPWidgetState extends State<OrderMenuPOPUPWidget> {
                     ),
                   ),
                 ],
-              ),
+              ],
+            ),
           ],
         ),
       ),

@@ -346,10 +346,10 @@ bool hours48(DateTime shiftcompletiondate) {
 }
 
 int newCustomFunction2(DateTime datetimestart) {
-  // Длительность смены — 12 часов
-  final shiftDuration = Duration(hours: 12);
+  // Длительность смены — 24 часа
+  final shiftDuration = Duration(hours: 24);
 
-  // Конец смены = старт + 12 часов
+  // Конец смены = старт + 24 часа
   final shiftEnd = datetimestart.add(shiftDuration);
 
   // Текущее время
