@@ -10,7 +10,43 @@
 -dontwarn org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider
 -keep class org.xmlpull.v1.** { *; }
 
+# --- Flutter engine & plugins ---
+-keep class io.flutter.** { *; }
+-keep class io.flutter.plugins.** { *; }
+-keep class io.flutter.embedding.** { *; }
+-keep class io.flutter.plugin.** { *; }
+-keep class io.flutter.view.** { *; }
+-keep class io.flutter.util.** { *; }
+-keep class io.flutter.app.** { *; }
+-keep class io.flutter.plugins.GeneratedPluginRegistrant { *; }
 
+# --- App classes (legacy package) ---
+-keep class com.example.my_project.** { *; }
 
+# --- JNI entry points of plugins ---
+-keepclasseswithmembernames class * { native <methods>; }
 
+# --- Firebase / Google services ---
+-keep class com.google.firebase.** { *; }
+-keep class com.google.android.gms.** { *; }
+-keep class com.google.android.play.core.** { *; }
+-keep class com.google.android.datatransport.** { *; }
+-keep class com.google.firebase.components.** { *; }
+-dontwarn com.google.firebase.**
 
+# --- Kotlin metadata / coroutines (kotlinx.serialization в плагинах) ---
+-keep class kotlin.Metadata { *; }
+-keepclassmembers class kotlin.Metadata { *; }
+-keep class kotlin.coroutines.** { *; }
+-keepclassmembers class kotlinx.serialization.** { *; }
+-keepclasseswithmembers class * { @kotlinx.serialization.Serializable <fields>; }
+-dontwarn kotlinx.**
+
+# --- Yandex MapKit ---
+-keep class com.yandex.** { *; }
+-keep class ru.yandex.** { *; }
+-keep class com.unact.** { *; }
+-dontwarn com.yandex.**
+
+# --- WebView / JS-interfaces плагинов ---
+-keepclassmembers class * { @android.webkit.JavascriptInterface <methods>; }
