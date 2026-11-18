@@ -1121,8 +1121,34 @@ def update_driver_verification_data(driver_id, update_fields):
         raise IncorrectDataValue(f'Error updating driver verification data: {e}')
 
 def send_message (user_id, message):
+    """Личный пуш из админки: юзеры — Postgres app_users, токены — PG (+FS fallback)."""
+    uid = str(user_id or '').strip()
+    text = str(message or '').strip()
+    if not uid:
+        raise IncorrectDataValue('Пользователь не найден')
+    if not text:
+        raise IncorrectDataValue('Введите сообщение для отправки')
+
+    pg_user = None
+    try:
+        import app_pg
+        pg_user = app_pg.get_user(uid) or app_pg.get_me(uid)
+    except Exception:
+        logger.exception('[send_message] app_pg lookup failed for %s', uid)
+
+    if pg_user is not None:
+        import app_fcm_ops
+        result = app_fcm_ops.send_to_users([uid], title='Cab Drive', body=text)
+        if not result.get('success'):
+            err = str(result.get('error') or 'unknown')
+            if 'tokens' in err.lower():
+                raise IncorrectDataValue('У пользователя нет FCM-токенов — он не может получить сообщение')
+            raise IncorrectDataValue(f'Не удалось отправить сообщение: {err}')
+        return
+
+    # Fallback: старые аккаунты в MySQL fb_users
     with Session() as session:
-        users = session.query(FirebaseUser).filter(FirebaseUser.user_id == user_id).all()
+        users = session.query(FirebaseUser).filter(FirebaseUser.user_id == uid).all()
     if len(users) < 1:
         raise IncorrectDataValue(f'Пользователь не найден')
     user = users[0]
@@ -1130,7 +1156,7 @@ def send_message (user_id, message):
       raise  IncorrectDataValue(f'Пользователь не может получить сообщение')
     try:
         print(user.fcm_token)
-        notify.push_service.send_push_notification(fcm_tokens=[user.fcm_token], title='Cab Drive', message=message)
+        notify.push_service.send_push_notification(fcm_tokens=[user.fcm_token], title='Cab Drive', message=text)
     except Exception as e:
         logger.error(str(e))
 

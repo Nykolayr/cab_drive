@@ -301,8 +301,9 @@
                                 <div id="verification_data_photo_avto_list" class="d-flex flex-wrap">
                                     {% if verification_data and verification_data.photo_avto %}
                                         {% for p in verification_data.photo_avto %}
-                                            <div class="verification_data-photo-item mr-2 mb-2" data-uuid="{{ p }}">
-                                                <img src="{% if p.startswith('http') %}{{ p }}{% else %}/kek/files/get?uuid={{ p }}{% endif %}" style="max-width:120px; max-height:80px; display:block;">
+                                            {% set pkey = p.split('uuid=')[-1].split('&')[0] if 'uuid=' in p else p %}
+                                            <div class="verification_data-photo-item mr-2 mb-2" data-uuid="{{ pkey }}">
+                                                <img src="{% if pkey.startswith('http') %}{{ pkey }}{% else %}/kek/files/get?uuid={{ pkey }}{% endif %}" style="max-width:120px; max-height:80px; display:block;">
                                                 <div class="mt-1">
                                                     <button class="btn btn-sm btn-primary" onclick="replaceVerificationFile(event, 'photo_avto', {{ loop.index0 }})">Заменить</button>
                                                     <button class="btn btn-sm btn-danger" onclick="removeVerificationFileFromArray(event, 'photo_avto', {{ loop.index0 }})">Удалить</button>
@@ -323,8 +324,9 @@
                                 <div id="verification_data_photo_doc_list" class="d-flex flex-wrap">
                                     {% if verification_data and verification_data.photo_doc %}
                                         {% for p in verification_data.photo_doc %}
-                                            <div class="verification_data-photo-item mr-2 mb-2" data-uuid="{{ p }}">
-                                                <img src="{% if p.startswith('http') %}{{ p }}{% else %}/kek/files/get?uuid={{ p }}{% endif %}" style="max-width:120px; max-height:80px; display:block;">
+                                            {% set pkey = p.split('uuid=')[-1].split('&')[0] if 'uuid=' in p else p %}
+                                            <div class="verification_data-photo-item mr-2 mb-2" data-uuid="{{ pkey }}">
+                                                <img src="{% if pkey.startswith('http') %}{{ pkey }}{% else %}/kek/files/get?uuid={{ pkey }}{% endif %}" style="max-width:120px; max-height:80px; display:block;">
                                                 <div class="mt-1">
                                                     <button class="btn btn-sm btn-primary" onclick="replaceVerificationFile(event, 'photo_doc', {{ loop.index0 }})">Заменить</button>
                                                     <button class="btn btn-sm btn-danger" onclick="removeVerificationFileFromArray(event, 'photo_doc', {{ loop.index0 }})">Удалить</button>
