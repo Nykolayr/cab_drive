@@ -115,3 +115,19 @@ def edit():
     order = orders.api.edit_order(order_id, budget, distance, currentPrice)
 
     return utils.get_answer('Сохранено')
+
+
+@app.route('/cancel', methods=['GET'])
+def cancel():
+    import utils
+
+    user = utils.get_user([1, 2])
+    if user is None:
+        return abort(401)
+    order_id = request.args.get('order_id') or request.args.get('id')
+    if not order_id:
+        return utils.get_error('Не указан order_id')
+
+    orders.api.edit_order(order_id, None, None, None, status='cancelled')
+
+    return utils.get_answer('Поездка успешно отменена')

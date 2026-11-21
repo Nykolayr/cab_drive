@@ -50,3 +50,23 @@
 
 # --- WebView / JS-interfaces плагинов ---
 -keepclassmembers class * { @android.webkit.JavascriptInterface <methods>; }
+
+# --- awesome_notifications (receivers/services в манифесте; без keep пуши молча не показываются) ---
+-keep class me.carda.** { *; }
+-dontwarn me.carda.**
+
+# --- geolocator / permission_handler (foreground location service — трекинг водителя) ---
+-keep class com.baseflow.** { *; }
+-dontwarn com.baseflow.**
+
+# --- method-channel плагины проекта (страховка от рефлексии) ---
+-keep class com.tekartik.sqflite.** { *; }
+-keep class com.mr.flutter.plugin.filepicker.** { *; }
+-keep class dev.fluttercommunity.plus.** { *; }
+-keep class com.it_nomads.fluttersecurestorage.** { *; }
+-keep class com.aboutyou.dart_packages.sign_in_with_apple.** { *; }
+-dontwarn com.tekartik.sqflite.**
+-dontwarn com.mr.flutter.plugin.filepicker.**
+-dontwarn dev.fluttercommunity.plus.**
+-dontwarn com.it_nomads.**
+-dontwarn com.aboutyou.**

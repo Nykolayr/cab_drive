@@ -203,7 +203,7 @@
     function removeTrip(){
         showConfirm('Отмена поездки', 'Вы действительно хотите отменить эту поездку?', 'Да', function (){
             sendRequest({
-                url: '/api/orders/cancel',
+                url: '/d/api/orders/cancel',
                 data: {
                     id: TRIP_ID
                 },
@@ -243,7 +243,7 @@
             budget: budget,
             currentPrice: currentPrice
         });
-        const url = '/api/orders/edit?' + params.toString();
+        const url = '/d/api/orders/edit?' + params.toString();
 
         // Отправим GET-запрос
         fetch(url, {
@@ -393,7 +393,7 @@
                     city: city
                 };
                 sendRequest({
-                    url: '/api/orders/update_point',
+                    url: '/d/api/orders/update_point',
                     data: payload,
                     success_callback: function (r) {
                         if (r['status'] !== 'ok') return showError(r['message'] || 'Ошибка обновления точки');

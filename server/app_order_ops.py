@@ -791,6 +791,102 @@ _PATCH_ALLOWED = {
 }
 
 
+def notify_price_changed(
+    order: dict[str, Any] | None,
+    order_id: str,
+    new_price,
+    exclude_uid: str | None = None,
+    log_tag: str = "[price_changed]",
+) -> None:
+    """FCM 'price_changed' заинтересованным: откликнувшиеся + выбранный водитель,
+    а для newOrder — все водители на смене. Best-effort: ошибки только в лог."""
+    order = order or {}
+    recipients: list[str] = []
+    respondents = (
+        order.get("user_who_responced") or order.get("userWhoResponced") or []
+    )
+    if isinstance(respondents, list):
+        for r in respondents:
+            uid = _ref_uid(r)
+            if uid:
+                recipients.append(uid)
+    # fallback: водители из app_order_responses (если колонка/raw пусты)
+    try:
+        for bid in app_pg.list_order_responses(order_id) or []:
+            uid = _ref_uid(bid.get("driver_id")) or _ref_uid(
+                bid.get("user_driver")
+            )
+            if uid:
+                recipients.append(uid)
+    except Exception:
+        logger.exception("%s list_order_responses for fcm failed", log_tag)
+    drv = _ref_uid(order.get("selected_driver")) or _ref_uid(
+        order.get("selected_driver_id")
+    )
+    if drv:
+        recipients.append(drv)
+    # Пока заказ в поиске (newOrder) — пуш всем водителям на смене, иначе до
+    # первого отклика recipients пустой → пуша нет (цена в ленте поллом, баннера нет).
+    status_now = str(order.get("status") or "").strip()
+    if status_now in ("newOrder", "new_order", ""):
+        try:
+            drivers = app_pg.list_drivers_for_geo(
+                on_shift=True, require_location=False, limit=500
+            )
+            for d in drivers or []:
+                uid = str(d.get("id") or "").strip()
+                if uid:
+                    recipients.append(uid)
+        except Exception:
+            logger.exception(
+                "%s list_drivers_for_geo for price_changed failed", log_tag
+            )
+    seen: set[str] = set()
+    uniq: list[str] = []
+    for u in recipients:
+        if u and u != exclude_uid and u not in seen:
+            seen.add(u)
+            uniq.append(u)
+    if not uniq:
+        logger.warning("%s fcm skip: no recipients order=%s", log_tag, order_id)
+        return
+    try:
+        import app_push
+
+        price_txt = (
+            f"{int(new_price)} ₽"
+            if isinstance(new_price, (int, float))
+            or (
+                isinstance(new_price, str)
+                and new_price.replace(".", "", 1).isdigit()
+            )
+            else str(new_price or "")
+        )
+        body = (
+            f"Заказчик изменил цену до {price_txt}"
+            if price_txt
+            else "Заказчик изменил цену заказа"
+        )
+        result = app_push.notify(
+            "price_changed",
+            uniq,
+            title="Цена заказа изменилась",
+            body=body,
+            initial_page_name="order_Page_Driver",
+            parameter_data={"order": order_id},
+            data={"order_id": order_id, "event": "price_changed"},
+        )
+        logger.warning(
+            "%s fcm sent order=%s recipients=%s result=%s",
+            log_tag,
+            order_id,
+            uniq,
+            result,
+        )
+    except Exception:
+        logger.exception("%s fcm notify failed order=%s", log_tag, order_id)
+
+
 def patch_order_by_customer(
     customer_uid: str, order_id: str, body: dict[str, Any]
 ) -> dict[str, Any]:
@@ -845,96 +941,13 @@ def patch_order_by_customer(
             if "current_price" in fields
             else fields.get("budget")
         )
-        recipients: list[str] = []
-        respondents = (
-            order.get("user_who_responced")
-            or order.get("userWhoResponced")
-            or []
+        notify_price_changed(
+            order,
+            order_id,
+            new_price,
+            exclude_uid=customer_uid,
+            log_tag="[patch_order]",
         )
-        if isinstance(respondents, list):
-            for r in respondents:
-                uid = _ref_uid(r)
-                if uid:
-                    recipients.append(uid)
-        # fallback: водители из app_order_responses (если колонка/raw пусты)
-        try:
-            for bid in app_pg.list_order_responses(order_id) or []:
-                uid = _ref_uid(bid.get("driver_id")) or _ref_uid(
-                    bid.get("user_driver")
-                )
-                if uid:
-                    recipients.append(uid)
-        except Exception:
-            logger.exception("[patch_order] list_order_responses for fcm failed")
-        drv = _ref_uid(order.get("selected_driver")) or _ref_uid(
-            order.get("selected_driver_id")
-        )
-        if drv:
-            recipients.append(drv)
-        # Пока заказ в поиске (newOrder) — как при create: пуш водителям на смене.
-        # Иначе при «Изменить цену» до первого отклика recipients пустой → пуша нет
-        # (цена в ленте обновляется поллом, но баннера нет — жалобы заказчика).
-        status_now = str(order.get("status") or "").strip()
-        if status_now in ("newOrder", "new_order", ""):
-            try:
-                drivers = app_pg.list_drivers_for_geo(
-                    on_shift=True, require_location=False, limit=500
-                )
-                for d in drivers or []:
-                    uid = str(d.get("id") or "").strip()
-                    if uid:
-                        recipients.append(uid)
-            except Exception:
-                logger.exception(
-                    "[patch_order] list_drivers_for_geo for price_changed failed"
-                )
-        # unique, no customer
-        seen: set[str] = set()
-        uniq: list[str] = []
-        for u in recipients:
-            if u and u != customer_uid and u not in seen:
-                seen.add(u)
-                uniq.append(u)
-        if uniq:
-            try:
-                import app_push
-
-                price_txt = (
-                    f"{int(new_price)} ₽"
-                    if isinstance(new_price, (int, float))
-                    or (
-                        isinstance(new_price, str)
-                        and new_price.replace(".", "", 1).isdigit()
-                    )
-                    else str(new_price or "")
-                )
-                body = (
-                    f"Заказчик изменил цену до {price_txt}"
-                    if price_txt
-                    else "Заказчик изменил цену заказа"
-                )
-                result = app_push.notify(
-                    "price_changed",
-                    uniq,
-                    title="Цена заказа изменилась",
-                    body=body,
-                    initial_page_name="order_Page_Driver",
-                    parameter_data={"order": order_id},
-                    data={"order_id": order_id, "event": "price_changed"},
-                )
-                logger.info(
-                    "[patch_order] fcm price_changed order=%s recipients=%s result=%s",
-                    order_id,
-                    uniq,
-                    result,
-                )
-            except Exception:
-                logger.exception("[patch_order] fcm notify failed")
-        else:
-            logger.info(
-                "[patch_order] fcm price_changed skip: no recipients order=%s",
-                order_id,
-            )
 
     return {
         "order_id": order_id,

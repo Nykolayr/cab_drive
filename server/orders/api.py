@@ -838,7 +838,7 @@ def get_order_by_id(order_id: str) -> Optional[dict]:
         logger.error("Источник ошибки:\n%s", traceback.format_exc())
         return None
 
-def edit_order(order_id: str, budget, distance, currentPrice, status) -> Optional[dict]:
+def edit_order(order_id: str, budget, distance, currentPrice, status=None) -> Optional[dict]:
     """
     Обновляет поля budget, currentPrice, distance / status у заказа.
     Postgres SoT; Firestore soft_fs только если APP_FS_MIRROR=1.
@@ -874,6 +874,20 @@ def edit_order(order_id: str, budget, distance, currentPrice, status) -> Optiona
 
         updated = app_pg.get_order(order_id) or {**existing, **pg_fields, "id": order_id}
         updated["id"] = order_id
+
+        if pg_fields.get("budget") is not None or pg_fields.get("currentPrice") is not None:
+            try:
+                import app_order_ops
+
+                app_order_ops.notify_price_changed(
+                    updated,
+                    order_id,
+                    currentPrice if currentPrice is not None else budget,
+                    log_tag="[edit_order]",
+                )
+            except Exception:
+                logger.exception("[edit_order] fcm price_changed failed order=%s", order_id)
+
         return firebase_order_to_json(updated, is_dict_already=True)
 
     except IncorrectDataValue:
