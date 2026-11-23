@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart' show DocumentReference;
 import 'serialization_util.dart';
 import '../../auth/firebase_auth/auth_util.dart';
 import '../api/app_me_api.dart';
+import '../api/client_error_reporter.dart';
 import '../../core/utils/app_dio.dart';
 
 import 'package:flutter/foundation.dart';
@@ -22,6 +23,42 @@ class UserTokenInfo {
   final String fcmToken;
 }
 
+/// iOS: `getToken()` падает с `apns-token-not-set`, пока APNs-токен не пришёл.
+/// Сначала ждём APNs-токен, затем берём FCM-токен с ретраями.
+Future<String?> getFcmTokenSafe() async {
+  final reporter = ClientErrorReporter.instance;
+  if (Platform.isIOS) {
+    String? apns;
+    for (var i = 0; i < 20 && (apns == null || apns.isEmpty); i++) {
+      try {
+        apns = await FirebaseMessaging.instance.getAPNSToken();
+      } catch (_) {}
+      if (apns == null || apns.isEmpty) {
+        await Future.delayed(const Duration(seconds: 1));
+      }
+    }
+    final got = apns != null && apns.isNotEmpty;
+    reporter?.crumb('fcm', got ? 'apns_ok' : 'apns_timeout_20s');
+    if (!got) return null;
+  }
+  for (var i = 0; i < 4; i++) {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token != null && token.isNotEmpty) {
+        reporter?.crumb('fcm', 'fcm_token_ok');
+        return token;
+      }
+    } catch (e) {
+      reporter?.crumb('fcm', 'getToken_err_$i: $e');
+    }
+    if (i < 3) {
+      await Future.delayed(const Duration(seconds: 3));
+    }
+  }
+  reporter?.crumb('fcm', 'fcm_token_null');
+  return null;
+}
+
 Stream<UserTokenInfo> getFcmTokenStream(String userPath) =>
     Stream.value(!kIsWeb && (Platform.isIOS || Platform.isAndroid))
         .where((shouldGetToken) => shouldGetToken)
@@ -29,8 +66,10 @@ Stream<UserTokenInfo> getFcmTokenStream(String userPath) =>
           print('[FCM] Requesting notification permission...');
           final settings = await FirebaseMessaging.instance.requestPermission();
           print('[FCM] Permission status: ${settings.authorizationStatus}');
+          ClientErrorReporter.instance
+              ?.crumb('fcm', 'perm=${settings.authorizationStatus}');
           if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-            final token = await FirebaseMessaging.instance.getToken();
+            final token = await getFcmTokenSafe();
             print('[FCM] Got token: ${token?.substring(0, 20)}...');
             return token;
           }
@@ -60,9 +99,11 @@ final fcmTokenUserStream = authenticatedUserStream
       try {
         final ok = await AppMeApi.registerFcm(userTokenInfo.fcmToken);
         print('[FCM] AppMeApi.registerFcm: $ok');
+        ClientErrorReporter.instance?.crumb('fcm', 'register=$ok');
         return ok;
       } catch (e) {
         print('[FCM] ERROR AppMeApi.registerFcm: $e');
+        ClientErrorReporter.instance?.crumb('fcm', 'register_err: $e');
         return null;
       }
     });
@@ -91,10 +132,8 @@ void triggerPushNotification({
     return;
   }
   final serializedParameterData = serializeParameterData(parameterData);
-  final userIds = userRefs
-      .map((u) => u.id)
-      .where((id) => id.isNotEmpty)
-      .toList();
+  final userIds =
+      userRefs.map((u) => u.id).where((id) => id.isNotEmpty).toList();
   print('[PushNotification] Sending via AppMeApi.sendPush to $userIds');
 
   try {

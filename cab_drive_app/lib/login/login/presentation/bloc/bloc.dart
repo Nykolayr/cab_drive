@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:cab_drive/backend/push_notifications/push_notifications_util.dart';
 import 'package:cab_drive/login/login/domain/entities/user/auth_user.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -131,7 +132,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await Future.delayed(const Duration(seconds: 10));
       final settings = await FirebaseMessaging.instance.requestPermission();
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-        final fcmToken = await FirebaseMessaging.instance.getToken();
+        final fcmToken = await getFcmTokenSafe();
         if (fcmToken != null && fcmToken.isNotEmpty) {
           await _repository.setFcmToken(firebaseId, fcmToken);
         }

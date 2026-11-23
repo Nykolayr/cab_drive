@@ -98,6 +98,10 @@ void main() async {
         message.data['title'] ?? message.notification?.title ?? 'no title';
     print('[FCM.foreground] Received message: $title');
     print('[FCM.foreground] Data: ${message.data}');
+    ClientErrorReporter.instance?.crumb(
+      'fcm',
+      'received event=${message.data['event']} title=$title',
+    );
     showFlutterNotificationFromFirebase(message);
   });
 
