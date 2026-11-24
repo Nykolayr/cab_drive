@@ -19,11 +19,24 @@ import YandexMapsMobile
       UNUserNotificationCenter.current().delegate = self
     }
 
+    // UIScene-приложения: firebase_messaging может пропустить вызов
+    // registerForRemoteNotifications (flutterfire #18555) — делаем сами,
+    // иначе getAPNSToken() навсегда null и FCM-токен не регистрируется.
+    application.registerForRemoteNotifications()
+
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+  }
+
+  override func application(
+    _ application: UIApplication,
+    didFailToRegisterForRemoteNotificationsWithError error: Error
+  ) {
+    NSLog("[Push] APNs registration failed: %@", error.localizedDescription)
+    super.application(application, didFailToRegisterForRemoteNotificationsWithError: error)
   }
 
   // Show notifications when app is in foreground
