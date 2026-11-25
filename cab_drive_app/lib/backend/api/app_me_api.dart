@@ -379,10 +379,16 @@ class AppMeApi {
     return <String, dynamic>{};
   }
 
-  static Future<bool> cancelOrder(String orderId) async {
-    if (orderId.isEmpty) return false;
+  /// null = успех; строка = сообщение об ошибке от сервера.
+  static Future<String?> cancelOrder(String orderId) async {
+    if (orderId.isEmpty) return 'Некорректный заказ';
     final r = await _request('POST', '/api/app/orders/$orderId/cancel');
-    return r != null && r['_ok'] == true;
+    if (r == null) return 'Нет связи с сервером';
+    if (r['_ok'] == true) return null;
+    final msg = r['message'];
+    return (msg is String && msg.isNotEmpty)
+        ? msg
+        : 'Не удалось отменить заказ';
   }
 
   static Future<bool> hideOrder(String orderId, {bool unhide = false}) async {

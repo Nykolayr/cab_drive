@@ -630,7 +630,10 @@ def cancel_order_by_customer(customer_uid: str, order_id: str) -> dict[str, Any]
     if status in ("completed", "cancelled", "hidden"):
         return {"order_id": order_id, "status": status, "already": True}
     if status == "on_confirmation":
-        raise ValueError("order awaits customer confirmation — cancel not allowed")
+        raise ValueError(
+            "Водитель уже завершил заказ — отменить его нельзя. "
+            "Если возникла проблема, обратитесь в поддержку."
+        )
 
     now = _now()
     if not app_pg.mirror_order_fields(

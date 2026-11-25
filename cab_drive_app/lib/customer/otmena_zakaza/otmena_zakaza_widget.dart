@@ -257,11 +257,11 @@ class _OtmenaZakazaWidgetState extends State<OtmenaZakazaWidget> {
                           unawaited(
                             () async {
                               final oid = widget!.order!.id;
-                              final ok = await AppMeApi.cancelOrder(oid);
-                              if (!ok && context.mounted) {
+                              final err = await AppMeApi.cancelOrder(oid);
+                              if (err != null && context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Не удалось отменить заказ'),
+                                  SnackBar(
+                                    content: Text(err),
                                   ),
                                 );
                               }

@@ -160,7 +160,9 @@ class _OrderMenuPOPUPWidgetState extends State<OrderMenuPOPUPWidget> {
                   ),
                 ],
                 if ((widget!.order?.status != StatusOrder.completed) &&
-                    (widget!.order?.status != StatusOrder.cancelled)) ...[
+                    (widget!.order?.status != StatusOrder.cancelled) &&
+                    (widget!.order?.status != StatusOrder.hidden) &&
+                    (widget!.order?.status != StatusOrder.on_confirmation)) ...[
                   Container(
                     height: 57.0,
                     child: Stack(
