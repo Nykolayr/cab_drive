@@ -51,10 +51,25 @@ if ($beforeCity -match 'responsiveVisibility\([\s\S]*phone:\s*false') {
   throw "profile_widget: city picker must not be phone:false only"
 }
 
-Write-Host "`n==> 4/6 flutter test (auth + role)"
+Write-Host "`n==> 3.5/6 Order status invariants (client files)"
+$myOrders = Get-Content "lib\pages\my_orders\my_orders_widget.dart" -Raw
+foreach ($set in @('driverActiveStatuses', 'driverArchiveStatuses', 'customerActiveStatuses', 'customerArchiveStatuses')) {
+  if ($myOrders -notmatch [regex]::Escape($set)) {
+    throw "my_orders_widget: tab filter must use $set from order_status_groups.dart"
+  }
+}
+$menu = Get-Content "lib\customer\order_menu_p_o_p_u_p\order_menu_p_o_p_u_p_widget.dart" -Raw
+if ($menu -notmatch 'customerCancellableStatuses') {
+  throw "order_menu: cancel item must be gated by customerCancellableStatuses"
+}
+if (-not (Select-String -Path "lib\order_status_groups.dart" -Pattern "StatusOrder.on_confirmation" -Quiet)) {
+  throw "order_status_groups.dart: on_confirmation must be declared (driver hidden set)"
+}
+
+Write-Host "`n==> 4/6 flutter test (auth + role + order statuses)"
 $prevEap = $ErrorActionPreference
 $ErrorActionPreference = 'Continue'
-flutter test test/auth_architecture_test.dart test/role_selection_test.dart 2>&1 | ForEach-Object { Write-Host $_ }
+flutter test test/auth_architecture_test.dart test/role_selection_test.dart test/order_status_groups_test.dart 2>&1 | ForEach-Object { Write-Host $_ }
 $testExit = $LASTEXITCODE
 $ErrorActionPreference = $prevEap
 if ($testExit -ne 0) { throw "flutter test failed (exit $testExit)" }
@@ -72,10 +87,11 @@ Write-Host "analyze: no errors"
 
 Write-Host "`n==> 6/6 server auth unit tests (if pytest available)"
 $serverTests = Join-Path $repoRoot "server\tests\test_auth_invariants.py"
-if ((Test-Path $serverTests) -and (Get-Command pytest -ErrorAction SilentlyContinue)) {
+$serverTests2 = Join-Path $repoRoot "server\tests\test_order_guards.py"
+if ((Test-Path $serverTests) -and (Test-Path $serverTests2) -and (Get-Command pytest -ErrorAction SilentlyContinue)) {
   Push-Location (Join-Path $repoRoot "server")
   $ErrorActionPreference = 'Continue'
-  pytest tests/test_auth_invariants.py -q 2>&1 | ForEach-Object { Write-Host $_ }
+  pytest tests/test_auth_invariants.py tests/test_order_guards.py -q 2>&1 | ForEach-Object { Write-Host $_ }
   $pyExit = $LASTEXITCODE
   $ErrorActionPreference = $prevEap
   Pop-Location

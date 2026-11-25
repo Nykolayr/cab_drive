@@ -8,6 +8,7 @@ import '/customer/otmena_zakaza/otmena_zakaza_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import '/order_status_groups.dart';
 import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -159,10 +160,8 @@ class _OrderMenuPOPUPWidgetState extends State<OrderMenuPOPUPWidget> {
                     color: Color(0xFFD0CFCE),
                   ),
                 ],
-                if ((widget!.order?.status != StatusOrder.completed) &&
-                    (widget!.order?.status != StatusOrder.cancelled) &&
-                    (widget!.order?.status != StatusOrder.hidden) &&
-                    (widget!.order?.status != StatusOrder.on_confirmation)) ...[
+                if (customerCancellableStatuses
+                    .contains(widget!.order?.status)) ...[
                   Container(
                     height: 57.0,
                     child: Stack(

@@ -12,6 +12,7 @@ import '/driver/order_card_driver/order_card_driver_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import '/order_status_groups.dart';
 import '/pages/bottom/navbar/navbar_widget.dart';
 import 'dart:async';
 import 'dart:ui';
@@ -504,33 +505,15 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                       ),
                                       child: Builder(
                                         builder: (context) {
-                                          final containerVar = containerOrderRecordList
-                                              .where((e) => _model.index == 1
-                                                  ? ((e.status == StatusOrder.newOrder) ||
-                                                      (e.status ==
-                                                          StatusOrder
-                                                              .place_delivery) ||
-                                                      (e.status ==
-                                                          StatusOrder
-                                                              .place_pickup) ||
-                                                      (e.status ==
-                                                          StatusOrder
-                                                              .spec_set) ||
-                                                      (e.status ==
-                                                          StatusOrder
-                                                              .at_work) ||
-                                                      (e.status ==
-                                                          StatusOrder
-                                                              .on_confirmation))
-                                                  : ((e.status ==
-                                                          StatusOrder.hidden) ||
-                                                      (e.status ==
-                                                          StatusOrder
-                                                              .cancelled) ||
-                                                      (e.status ==
-                                                          StatusOrder
-                                                              .completed)))
-                                              .toList();
+                                          final containerVar =
+                                              containerOrderRecordList
+                                                  .where((e) => _model.index ==
+                                                          1
+                                                      ? customerActiveStatuses
+                                                          .contains(e.status)
+                                                      : customerArchiveStatuses
+                                                          .contains(e.status))
+                                                  .toList();
                                           if (containerVar.isEmpty) {
                                             return Container(
                                               height: double.infinity,
@@ -822,32 +805,15 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                           final pol = containerOrderRecordList
                                               .where((e) => () {
                                                     if (_model.index == 1) {
-                                                      return ((e.status ==
-                                                              StatusOrder
-                                                                  .place_delivery) ||
-                                                          (e.status ==
-                                                              StatusOrder
-                                                                  .place_pickup) ||
-                                                          (e.status ==
-                                                              StatusOrder
-                                                                  .spec_set) ||
-                                                          (e.status ==
-                                                              StatusOrder
-                                                                  .at_work));
+                                                      return driverActiveStatuses
+                                                          .contains(e.status);
                                                     } else if (_model.index ==
                                                         2) {
-                                                      return (e.status ==
-                                                          StatusOrder.newOrder);
+                                                      return driverBidsStatuses
+                                                          .contains(e.status);
                                                     } else {
-                                                      return (e.status ==
-                                                              StatusOrder
-                                                                  .completed) ||
-                                                          (e.status ==
-                                                              StatusOrder
-                                                                  .hidden) ||
-                                                          (e.status ==
-                                                              StatusOrder
-                                                                  .cancelled);
+                                                      return driverArchiveStatuses
+                                                          .contains(e.status);
                                                     }
                                                   }())
                                               .toList();
