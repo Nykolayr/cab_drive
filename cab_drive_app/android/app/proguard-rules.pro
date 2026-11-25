@@ -30,6 +30,9 @@
 -keep class com.google.firebase.** { *; }
 -keep class com.google.android.gms.** { *; }
 -keep class com.google.android.play.core.** { *; }
+# splitcompat/splitinstall отсутствуют в classpath (deferred components не используются),
+# Flutter engine их референсит — missing_rules.txt: dontwarn на весь пакет
+-dontwarn com.google.android.play.core.**
 -keep class com.google.android.datatransport.** { *; }
 -keep class com.google.firebase.components.** { *; }
 -dontwarn com.google.firebase.**
