@@ -194,6 +194,26 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
               height: 2.0,
               color: Color(0xFFF4F5F8),
             ),
+            if ((widget!.order?.status == StatusOrder.cancelled) ||
+                (widget!.order?.status == StatusOrder.hidden) ||
+                (widget!.order?.status == StatusOrder.completed))
+              Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 0.0),
+                child: Text(
+                  widget!.order?.status == StatusOrder.cancelled
+                      ? 'Заказ отменен'
+                      : 'Доставлен',
+                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                        fontFamily: 'SF',
+                        color: widget!.order?.status == StatusOrder.cancelled
+                            ? Color(0xFFE53935)
+                            : Color(0xFF2EB518),
+                        fontSize: 15.0,
+                        letterSpacing: 0.0,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+              ),
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(8.0, 10.0, 8.0, 5.0),
               child: Row(
@@ -367,41 +387,85 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                     );
                   } else {
                     final isExtra = widget.isExtraOrderPreview;
+                    final isTerminal = (widget!.order?.status ==
+                            StatusOrder.cancelled) ||
+                        (widget!.order?.status == StatusOrder.hidden) ||
+                        (widget!.order?.status == StatusOrder.completed) ||
+                        (widget!.order?.status == StatusOrder.on_confirmation);
                     return Row(
                       mainAxisSize: MainAxisSize.max,
                       children: [
-                        Expanded(
-                          child: FFButtonWidget(
-                            onPressed: () async {
-                              if (isExtra) {
-                                await _respondAsExtra();
-                                return;
-                              }
-
-                              if (!widget.canGetNew) {
-                                final active = widget.activeBidOrder;
-                                if (active != null) {
-                                  final price = active.currentPrice > 0
-                                      ? active.currentPrice
-                                      : active.budget;
-                                  await showActiveBidDialog(
-                                    context,
-                                    orderRef: active.reference,
-                                    orderInfo: price > 0 ? 'за $price ₽' : null,
-                                  );
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                          content: Text(
-                                              'У вас уже есть один активный отклик')));
+                        if (isExtra || !isTerminal)
+                          Expanded(
+                            child: FFButtonWidget(
+                              onPressed: () async {
+                                if (isExtra) {
+                                  await _respondAsExtra();
+                                  return;
                                 }
-                                return;
-                              }
 
-                              if (valueOrDefault<bool>(
-                                  currentUserDocument?.verifCompl, false)) {
-                                if (await getPermissionStatus(
-                                    locationPermission)) {
+                                if (!widget.canGetNew) {
+                                  final active = widget.activeBidOrder;
+                                  if (active != null) {
+                                    final price = active.currentPrice > 0
+                                        ? active.currentPrice
+                                        : active.budget;
+                                    await showActiveBidDialog(
+                                      context,
+                                      orderRef: active.reference,
+                                      orderInfo:
+                                          price > 0 ? 'за $price ₽' : null,
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                'У вас уже есть один активный отклик')));
+                                  }
+                                  return;
+                                }
+
+                                if (valueOrDefault<bool>(
+                                    currentUserDocument?.verifCompl, false)) {
+                                  if (await getPermissionStatus(
+                                      locationPermission)) {
+                                    await showModalBottomSheet(
+                                      isScrollControlled: true,
+                                      backgroundColor: Colors.transparent,
+                                      context: context,
+                                      builder: (context) {
+                                        return WebViewAware(
+                                          child: Padding(
+                                            padding: MediaQuery.viewInsetsOf(
+                                                context),
+                                            child: CreateOtklickWidget(
+                                              order: widget!.order!,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ).then((value) => safeSetState(() {}));
+
+                                    return;
+                                  } else {
+                                    await showModalBottomSheet(
+                                      isScrollControlled: true,
+                                      backgroundColor: Colors.transparent,
+                                      context: context,
+                                      builder: (context) {
+                                        return WebViewAware(
+                                          child: Padding(
+                                            padding: MediaQuery.viewInsetsOf(
+                                                context),
+                                            child: VklGeoWidget(),
+                                          ),
+                                        );
+                                      },
+                                    ).then((value) => safeSetState(() {}));
+
+                                    return;
+                                  }
+                                } else {
                                   await showModalBottomSheet(
                                     isScrollControlled: true,
                                     backgroundColor: Colors.transparent,
@@ -411,8 +475,10 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                                         child: Padding(
                                           padding:
                                               MediaQuery.viewInsetsOf(context),
-                                          child: CreateOtklickWidget(
-                                            order: widget!.order!,
+                                          child: ErrorPopupWidget(
+                                            title: 'Аккаунт на модерации!',
+                                            text:
+                                                'Мы проверим ваш аккаунт в течении 24 часов, и откроем вам доступ ко всему приложению.',
                                           ),
                                         ),
                                       );
@@ -420,70 +486,31 @@ class _OrderCardDriverWidgetState extends State<OrderCardDriverWidget> {
                                   ).then((value) => safeSetState(() {}));
 
                                   return;
-                                } else {
-                                  await showModalBottomSheet(
-                                    isScrollControlled: true,
-                                    backgroundColor: Colors.transparent,
-                                    context: context,
-                                    builder: (context) {
-                                      return WebViewAware(
-                                        child: Padding(
-                                          padding:
-                                              MediaQuery.viewInsetsOf(context),
-                                          child: VklGeoWidget(),
-                                        ),
-                                      );
-                                    },
-                                  ).then((value) => safeSetState(() {}));
-
-                                  return;
                                 }
-                              } else {
-                                await showModalBottomSheet(
-                                  isScrollControlled: true,
-                                  backgroundColor: Colors.transparent,
-                                  context: context,
-                                  builder: (context) {
-                                    return WebViewAware(
-                                      child: Padding(
-                                        padding:
-                                            MediaQuery.viewInsetsOf(context),
-                                        child: ErrorPopupWidget(
-                                          title: 'Аккаунт на модерации!',
-                                          text:
-                                              'Мы проверим ваш аккаунт в течении 24 часов, и откроем вам доступ ко всему приложению.',
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ).then((value) => safeSetState(() {}));
-
-                                return;
-                              }
-                            },
-                            text: 'Откликнуться',
-                            options: FFButtonOptions(
-                              height: 45.0,
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 0.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 0.0, 0.0),
-                              color: FlutterFlowTheme.of(context).tertiary,
-                              textStyle: FlutterFlowTheme.of(context)
-                                  .titleSmall
-                                  .override(
-                                    fontFamily: 'SF',
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondaryBackground,
-                                    fontSize: 15.0,
-                                    letterSpacing: 0.0,
-                                  ),
-                              elevation: 0.0,
-                              borderRadius: BorderRadius.circular(16.0),
+                              },
+                              text: 'Откликнуться',
+                              options: FFButtonOptions(
+                                height: 45.0,
+                                padding: EdgeInsetsDirectional.fromSTEB(
+                                    0.0, 0.0, 0.0, 0.0),
+                                iconPadding: EdgeInsetsDirectional.fromSTEB(
+                                    0.0, 0.0, 0.0, 0.0),
+                                color: FlutterFlowTheme.of(context).tertiary,
+                                textStyle: FlutterFlowTheme.of(context)
+                                    .titleSmall
+                                    .override(
+                                      fontFamily: 'SF',
+                                      color: FlutterFlowTheme.of(context)
+                                          .secondaryBackground,
+                                      fontSize: 15.0,
+                                      letterSpacing: 0.0,
+                                    ),
+                                elevation: 0.0,
+                                borderRadius: BorderRadius.circular(16.0),
+                              ),
+                              showLoadingIndicator: _acceptingExtra,
                             ),
-                            showLoadingIndicator: _acceptingExtra,
                           ),
-                        ),
                         if (!isExtra)
                           Expanded(
                             child: FFButtonWidget(

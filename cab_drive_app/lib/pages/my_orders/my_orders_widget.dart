@@ -116,13 +116,10 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
     final region = currentUserDocument?.region ?? '';
     final location = city.isNotEmpty
         ? city
-        : (region.isNotEmpty
-            ? region
-            : (_resolvedLocation ?? '…'));
+        : (region.isNotEmpty ? region : (_resolvedLocation ?? '…'));
     return Container(
       width: double.infinity,
-      padding:
-          const EdgeInsetsDirectional.fromSTEB(16.0, 48.0, 16.0, 4.0),
+      padding: const EdgeInsetsDirectional.fromSTEB(16.0, 48.0, 16.0, 4.0),
       color: theme.primaryBackground,
       child: Row(
         children: [
@@ -272,8 +269,7 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
   Future<void> _resolveFromCoords(double lat, double lng) async {
     _isResolvingLocation = true;
     try {
-      final response =
-          await GeocodeLatLngCall.call(latlng: '$lat,$lng');
+      final response = await GeocodeLatLngCall.call(latlng: '$lat,$lng');
       if (!mounted || !response.succeeded) return;
       final body = response.jsonBody;
       final loc = GeocodeLatLngCall.city(body) ??
@@ -335,141 +331,147 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                           children: [
                             if (_showPriceBanner)
                               Padding(
-                                padding:
-                                    const EdgeInsetsDirectional.fromSTEB(
-                                        16.0, 8.0, 16.0, 16.0),
+                                padding: const EdgeInsetsDirectional.fromSTEB(
+                                    16.0, 8.0, 16.0, 16.0),
                                 child: _priceChangedBanner(context),
                               ),
                             if (!_showPriceBanner)
                               Container(
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context)
-                                    .primaryBackground,
-                              ),
-                              child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    16.0, 8.0, 0.0, 8.0),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    InkWell(
-                                      splashColor: Colors.transparent,
-                                      focusColor: Colors.transparent,
-                                      hoverColor: Colors.transparent,
-                                      highlightColor: Colors.transparent,
-                                      onTap: () async {
-                                        if (_model.index == 1) {
-                                          return;
-                                        }
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: FlutterFlowTheme.of(context)
+                                      .primaryBackground,
+                                ),
+                                child: Padding(
+                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                      16.0, 8.0, 0.0, 8.0),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.max,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      InkWell(
+                                        splashColor: Colors.transparent,
+                                        focusColor: Colors.transparent,
+                                        hoverColor: Colors.transparent,
+                                        highlightColor: Colors.transparent,
+                                        onTap: () async {
+                                          if (_model.index == 1) {
+                                            return;
+                                          }
 
-                                        _model.index = 1;
-                                        safeSetState(() {});
-                                        HapticFeedback.mediumImpact();
-                                        return;
-                                      },
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: valueOrDefault<Color>(
-                                            _model.index == 1
-                                                ? FlutterFlowTheme.of(context)
-                                                    .tertiary
-                                                : FlutterFlowTheme.of(context)
-                                                    .primary,
-                                            FlutterFlowTheme.of(context)
-                                                .tertiary,
+                                          _model.index = 1;
+                                          safeSetState(() {});
+                                          HapticFeedback.mediumImpact();
+                                          return;
+                                        },
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: valueOrDefault<Color>(
+                                              _model.index == 1
+                                                  ? FlutterFlowTheme.of(context)
+                                                      .tertiary
+                                                  : FlutterFlowTheme.of(context)
+                                                      .primary,
+                                              FlutterFlowTheme.of(context)
+                                                  .tertiary,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(12.0),
                                           ),
-                                          borderRadius:
-                                              BorderRadius.circular(12.0),
-                                        ),
-                                        child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  18.0, 9.0, 18.0, 9.0),
-                                          child: Text(
-                                            'Активные',
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  fontFamily: 'SF',
-                                                  color: valueOrDefault<Color>(
-                                                    _model.index == 1
-                                                        ? FlutterFlowTheme.of(
-                                                                context)
-                                                            .secondary
-                                                        : FlutterFlowTheme.of(
-                                                                context)
-                                                            .primaryText,
-                                                    FlutterFlowTheme.of(context)
-                                                        .secondary,
+                                          child: Padding(
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    18.0, 9.0, 18.0, 9.0),
+                                            child: Text(
+                                              'Активные',
+                                              style: FlutterFlowTheme.of(
+                                                      context)
+                                                  .bodyMedium
+                                                  .override(
+                                                    fontFamily: 'SF',
+                                                    color:
+                                                        valueOrDefault<Color>(
+                                                      _model.index == 1
+                                                          ? FlutterFlowTheme.of(
+                                                                  context)
+                                                              .secondary
+                                                          : FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .secondary,
+                                                    ),
+                                                    letterSpacing: 0.0,
                                                   ),
-                                                  letterSpacing: 0.0,
-                                                ),
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                    InkWell(
-                                      splashColor: Colors.transparent,
-                                      focusColor: Colors.transparent,
-                                      hoverColor: Colors.transparent,
-                                      highlightColor: Colors.transparent,
-                                      onTap: () async {
-                                        if (_model.index == 2) {
-                                          return;
-                                        }
+                                      InkWell(
+                                        splashColor: Colors.transparent,
+                                        focusColor: Colors.transparent,
+                                        hoverColor: Colors.transparent,
+                                        highlightColor: Colors.transparent,
+                                        onTap: () async {
+                                          if (_model.index == 2) {
+                                            return;
+                                          }
 
-                                        _model.index = 2;
-                                        safeSetState(() {});
-                                        HapticFeedback.mediumImpact();
-                                        return;
-                                      },
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: valueOrDefault<Color>(
-                                            _model.index == 2
-                                                ? FlutterFlowTheme.of(context)
-                                                    .tertiary
-                                                : FlutterFlowTheme.of(context)
-                                                    .primary,
-                                            FlutterFlowTheme.of(context)
-                                                .primary,
+                                          _model.index = 2;
+                                          safeSetState(() {});
+                                          HapticFeedback.mediumImpact();
+                                          return;
+                                        },
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: valueOrDefault<Color>(
+                                              _model.index == 2
+                                                  ? FlutterFlowTheme.of(context)
+                                                      .tertiary
+                                                  : FlutterFlowTheme.of(context)
+                                                      .primary,
+                                              FlutterFlowTheme.of(context)
+                                                  .primary,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(12.0),
                                           ),
-                                          borderRadius:
-                                              BorderRadius.circular(12.0),
-                                        ),
-                                        child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  18.0, 9.0, 18.0, 9.0),
-                                          child: Text(
-                                            'Архив',
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  fontFamily: 'SF',
-                                                  color: valueOrDefault<Color>(
-                                                    _model.index == 2
-                                                        ? FlutterFlowTheme.of(
-                                                                context)
-                                                            .secondary
-                                                        : FlutterFlowTheme.of(
-                                                                context)
-                                                            .primaryText,
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
+                                          child: Padding(
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    18.0, 9.0, 18.0, 9.0),
+                                            child: Text(
+                                              'Архив',
+                                              style: FlutterFlowTheme.of(
+                                                      context)
+                                                  .bodyMedium
+                                                  .override(
+                                                    fontFamily: 'SF',
+                                                    color:
+                                                        valueOrDefault<Color>(
+                                                      _model.index == 2
+                                                          ? FlutterFlowTheme.of(
+                                                                  context)
+                                                              .secondary
+                                                          : FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .primaryText,
+                                                    ),
+                                                    letterSpacing: 0.0,
                                                   ),
-                                                  letterSpacing: 0.0,
-                                                ),
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ].divide(SizedBox(width: 8.0)),
+                                    ].divide(SizedBox(width: 8.0)),
+                                  ),
                                 ),
                               ),
-                            ),
                             Expanded(
                               child: StreamBuilder<List<OrderRecord>>(
                                 stream: _mineStream(
@@ -490,7 +492,9 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                   List<OrderRecord> containerOrderRecordList =
                                       snapshot.data!;
 
-                                  print(containerOrderRecordList.map((e) => e.images).toList());
+                                  print(containerOrderRecordList
+                                      .map((e) => e.images)
+                                      .toList());
                                   return ClipRRect(
                                     borderRadius: BorderRadius.circular(18.0),
                                     child: Container(
@@ -503,8 +507,12 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                           final containerVar = containerOrderRecordList
                                               .where((e) => _model.index == 1
                                                   ? ((e.status == StatusOrder.newOrder) ||
-                                              (e.status == StatusOrder.place_delivery) ||
-                                              (e.status == StatusOrder.place_pickup) ||
+                                                      (e.status ==
+                                                          StatusOrder
+                                                              .place_delivery) ||
+                                                      (e.status ==
+                                                          StatusOrder
+                                                              .place_pickup) ||
                                                       (e.status ==
                                                           StatusOrder
                                                               .spec_set) ||
@@ -514,7 +522,6 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                                       (e.status ==
                                                           StatusOrder
                                                               .on_confirmation))
-
                                                   : ((e.status ==
                                                           StatusOrder.hidden) ||
                                                       (e.status ==
@@ -815,8 +822,13 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                           final pol = containerOrderRecordList
                                               .where((e) => () {
                                                     if (_model.index == 1) {
-                                                      return ((e.status == StatusOrder.place_delivery) ||
-                                                          (e.status == StatusOrder.place_pickup) ||(e.status ==
+                                                      return ((e.status ==
+                                                              StatusOrder
+                                                                  .place_delivery) ||
+                                                          (e.status ==
+                                                              StatusOrder
+                                                                  .place_pickup) ||
+                                                          (e.status ==
                                                               StatusOrder
                                                                   .spec_set) ||
                                                           (e.status ==
@@ -828,8 +840,14 @@ class _MyOrdersWidgetState extends State<MyOrdersWidget> {
                                                           StatusOrder.newOrder);
                                                     } else {
                                                       return (e.status ==
-                                                          StatusOrder
-                                                              .completed);
+                                                              StatusOrder
+                                                                  .completed) ||
+                                                          (e.status ==
+                                                              StatusOrder
+                                                                  .hidden) ||
+                                                          (e.status ==
+                                                              StatusOrder
+                                                                  .cancelled);
                                                     }
                                                   }())
                                               .toList();
