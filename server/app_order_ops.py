@@ -627,8 +627,10 @@ def cancel_order_by_customer(customer_uid: str, order_id: str) -> dict[str, Any]
     if owner != customer_uid:
         raise ValueError("only order customer can cancel")
     status = (order.get("status") or "").strip()
-    if status in ("completed", "cancelled"):
+    if status in ("completed", "cancelled", "hidden"):
         return {"order_id": order_id, "status": status, "already": True}
+    if status == "on_confirmation":
+        raise ValueError("order awaits customer confirmation — cancel not allowed")
 
     now = _now()
     if not app_pg.mirror_order_fields(
